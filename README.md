@@ -1,0 +1,66 @@
+<h2>Initial configuration</h2>
+
+
+To use speech recognition and translation you need to get a file to associate your Google Cloud Platform with the APIs for the payment
+(even if activating the free trial you have $ 300 credit to use in 1 year in Google Cloud Platform) based on the use of the latter,
+to get the file follow this tutorial from a computer or using the "desktop site" option on the phone, this is because the Google Cloud
+Platform mobile version site does not have some options necessary to complete the tutorial:
+
+
+<strong>1.</strong> Go to&nbsp;<a style="background-color: #fafafa; font-size: 1rem;" href="http://console.cloud.google.com/" 
+target="_blank" rel="noopener noreferrer">console.cloud.google.com</a>&nbsp;and sign in with your Google account or create one.
+
+<strong>2.</strong> Activate the free trial and enter the required data (select the private account type if you do not have a company),
+including the credit card details (only for when the free trial will be sold out), to see how to disconnect the card read the point 13.
+
+<strong>3.</strong> Create a new project from the top left (there is already a default project called "My First Project" but that
+will give problems for the operations we will perform) by clicking on "My First Project" and then on "NEW PROJECT", the name doesn't
+matter.
+
+<strong>4.</strong> From the left pop-up bar select "API and services", then "Dashboard".
+
+<strong>5.</strong> Click on "ENABLE API AND SERVICES" and enable "Cloud Speech-to-Text API" and "Cloud Translation API".
+
+<strong>6.</strong> Also from the left pop-up bar, select "APIs &amp; services" again, then "Credentials".
+
+<strong>7.</strong> Click on "Create credentials", then on "Service account key", fill out the form by creating a new service
+account (if it is not already present), choose at will the name and id of the account and clicking on the Role select "Service Usage" 
+(at the bottom), then "API Keys Admin", finally select the "Key Type" JSON and press "Create".
+
+<strong>8.</strong> At this point, the key will be generated and downloaded automatically.
+
+<strong>9.</strong> If you used a computer to do these operations, move the key file to your phone (in a random folder).
+
+<strong>10.</strong> Open the RTranslator app and after the initial configuration, click on the three dots at the top right and then
+on "APIs Management", then click on the button to attach the APIs Key and select the above file from the list.
+
+<strong>11.</strong> Excellent, from now on you can use RTranslator freely.
+<br /><br />
+
+
+<h3>Account management</h3>
+
+
+<strong>12.</strong> You must keep the key file safe, because if someone came into its possession it could use Google's API at your expense; keys can be deleted, created, limited, etc. always from&nbsp;<a style="font-size: 1rem; background-color: #fafafa;" href="http://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">console.cloud.google.com</a>, if you lose the key, therefore, it will have to be deleted via the aforementioned site, at which point the key file will no longer be valid, and to use RTranslator you will have to repeat the tutorial from step 6.
+
+<strong>13.</strong> To disconnect the credit card from the account, from the pop-up bar on the left select "Billing", then "Account management", at the top click on "CLOSE BILLING ACCOUNT" and confirm; the API keys from now until you reopen the account (click on "REOPEN BILLING ACCOUNT" instead of the button to close it) will not work, and money will not be deducted from the credit card.
+
+<strong>14.</strong> In general, you can manage everything from the&nbsp;<a style="background-color: #fafafa; font-size: 1rem;" href="http://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">console.cloud.google.com</a>&nbsp;site, visit the website to learn more.
+<br /><br />
+
+<strong>N.B.</strong> The cost of the API is around 2-3 dollars per hour, make sure you don't forget the application in background when it is in WalkieTalkie or Conversation mode (just exit from the selected mode by pressing back or the exit button instead of pressing the home button ), moreover the microphone data will be sent to Google servers to be processed in order to obtain the final result (voice recognition or translation), the aforementioned data will not be saved or used for other purposes by google unless you activate the logging in the cloud platform console.
+<br /><br />
+
+
+<h3>APIs prices</h3>
+
+The voice recognition rounds the cost of each request to the nearest multiple of 15 seconds, the average total cost (both translator and voice recognition), without taking into account the rounding, is 2.5 dollars per hour, also for WalkieTalkie must add the language detection costs to the translation, to learn more:
+
+<a href="https://cloud.google.com/speech-to-text/pricing" target="_blank" rel="noopener noreferrer">cloud.google.com/speech-to-text/pricing</a>
+
+<a href="https://cloud.google.com/translate/pricing" target="_blank" rel="noopener noreferrer">cloud.google.com/translate/pricing</a>
+
+The translator uses API Translation v2, voice recognition uses standard models, data logging is disabled by default.&nbsp;If you want
+to reduce voice recognition costs you can activate data loggin, to learn more visit&nbsp;<a style="background-color: #fafafa;
+font-size: 1rem;" href="https://cloud.google.com/speech-to-text/docs/enable-data-logging" target="_blank" rel="noopener noreferrer">
+cloud.google.com/speech-to-text/docs/enable-data-logging</a>.]]>
