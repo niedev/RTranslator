@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    * Copyright 2016 Luca Martino.
+    *
+    * Licensed under the Apache License, Version 2.0 (the "License");
+    * you may not use this file except in compliance with the License.
+    * You may obtain a copyFile of the License at
+    *
+    * http://www.apache.org/licenses/LICENSE-2.0
+    *
+    * Unless required by applicable law or agreed to in writing, software
+    * distributed under the License is distributed on an "AS IS" BASIS,
+    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    * See the License for the specific language governing permissions and
+    * limitations under the License.
+    *-->
+
+<characters>
+    <character>&#032;</character>
+    <character>!</character>
+    <character>"</character>
+    <character>#</character>
+    <character>$</character>
+    <character>%</character>
+    <character>&amp;</character>
+    <character>'</character>
+    <character>(</character>
+    <character>)</character>
+    <character>*</character>
+    <character>+</character>
+    <character>,</character>
+    <character>-</character>
+    <character>.</character>
+    <character>/</character>
+    <character>0</character>
+    <character>1</character>
+    <character>2</character>
+    <character>3</character>
+    <character>4</character>
+    <character>5</character>
+    <character>6</character>
+    <character>7</character>
+    <character>8</character>
+    <character>9</character>
+    <character>:</character>
+    <character>;</character>
+    <character>&lt;</character>
+    <character>=</character>
+    <character>&gt;</character>
+    <character>?</character>
+    <character>@</character>
+    <character>A</character>
+    <character>B</character>
+    <character>C</character>
+    <character>D</character>
+    <character>E</character>
+    <character>F</character>
+    <character>G</character>
+    <character>H</character>
+    <character>I</character>
+    <character>J</character>
+    <character>K</character>
+    <character>L</character>
+    <character>M</character>
+    <character>N</character>
+    <character>O</character>
+    <character>P</character>
+    <character>Q</character>
+    <character>R</character>
+    <character>S</character>
+    <character>T</character>
+    <character>U</character>
+    <character>V</character>
+    <character>W</character>
+    <character>X</character>
+    <character>Y</character>
+    <character>Z</character>
+    <character>[</character>
+    <character>\</character>
+    <character>]</character>
+    <character>^</character>
+    <character>_</character>
+    <character>`</character>
+    <character>a</character>
+    <character>b</character>
+    <character>c</character>
+    <character>d</character>
+    <character>e</character>
+    <character>f</character>
+    <character>g</character>
+    <character>h</character>
+    <character>i</character>
+    <character>j</character>
+    <character>k</character>
+    <character>l</character>
+    <character>m</character>
+    <character>n</character>
+    <character>o</character>
+    <character>p</character>
+    <character>q</character>
+    <character>r</character>
+    <character>s</character>
+    <character>t</character>
+    <character>u</character>
+    <character>v</character>
+    <character>w</character>
+    <character>x</character>
+    <character>y</character>
+    <character>z</character>
+    <character>{</character>
+    <character>|</character>
+    <character>}</character>
+    <character>~</character>
+</characters>

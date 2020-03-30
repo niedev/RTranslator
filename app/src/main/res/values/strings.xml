@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    * Copyright 2016 Luca Martino.
+    *
+    * Licensed under the Apache License, Version 2.0 (the "License");
+    * you may not use this file except in compliance with the License.
+    * You may obtain a copyFile of the License at
+    *
+    * http://www.apache.org/licenses/LICENSE-2.0
+    *
+    * Unless required by applicable law or agreed to in writing, software
+    * distributed under the License is distributed on an "AS IS" BASIS,
+    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    * See the License for the specific language governing permissions and
+    * limitations under the License.
+    *-->
+
+
+<resources>
+    <string name="app_name" translatable="false">RTranslator</string>
+
+    <string name="mic">mic</string>
+    <string name="btHeadset">bt-headset</string>
+    <string name="exit">exit</string>
+    <string name="retry">retry</string>
+    <string name="delete">delete</string>
+    <string name="no_devices">no devices</string>
+    <string name="available">available</string>
+    <string name="not_available">not available</string>
+    <string name="loading">loading...</string>
+    <string name="forward">forward</string>
+    <string name="no_graph_data">No usage data present</string>
+    <string name="conversation">conversation</string>
+    <string name="connection">connection</string>
+
+    <string name="notification_channel_name">use in background notification</string>
+
+    <string name="age_check_box">I declare that I am at least 14 years old</string>
+    <string name="privacy_check_box">I declare that I have read the <a href="http://www.rtranslator.com/privacy-policy-app/">privacy policy</a> and the <a href="http://www.rtranslator.com/user-information-app/">user information</a></string>
+
+    <string name="toast_working_background">RTranslator will work in background</string>
+
+    <string name="dialog_confirm_delete">Confirm cancellation</string>
+    <string name="dialog_confirm_exit">Confirm exit</string>
+    <string name="dialog_confirm_disconnection">Are you sure you want to disconnect from&#160;</string>
+    <string name="dialog_confirm_connection">Are you sure to connect with&#160;</string>
+    <string name="dialog_confirm_connection_request">Accept connection request from&#160;</string>
+    <string name="dialog_select_file">Select file</string>
+    <string name="dialog_select_personal_language">Select personal language</string>
+    <string name="dialog_select_first_language">Select primary language</string>
+    <string name="dialog_select_second_language">Select secondary language</string>
+    <string name="dialog_insert_name">Insert your name</string>
+
+    <string name="menu_image_select_from_gallery">Select from gallery</string>
+    <string name="menu_image_remove">Remove</string>
+
+    <string name="hint_edit_text_message">Write a message</string>
+    <string name="hint_user_name">Name</string>
+
+    <string name="error_missing_location_permissions">It is not possible to search for devices without location permission, go to the settings to grant it, or reinstall the app</string>
+    <string name="error_missing_mic_permissions">Without the microphone permission the voice recognition does not work, go to the settings to grant the permission or reinstall the app</string>
+    <string name="error_tts">There was an error with the tts initialization</string>
+    <string name="error_missing_tts">In this device there is no google tts engine, download it to be able to use the application</string>
+    <string name="error_wrong_api_key_file">The key file to use the API does not work, insert a working key file</string>
+    <string name="error_missing_api_key_file">Enter the key file to use the API</string>
+    <string name="error_missing_bluetooth_le">It is not possible to search because this device does not have Bluetooth Low Energy</string>
+    <string name="error_internet_lack_loading">To start RTranslator an internet connection is required, check your connection</string>
+    <string name="error_internet_lack_accessing">To perform the operation an internet connection is required, check your connection</string>
+    <string name="error_internet_lack_services">Unable to translate message, check internet connection</string>
+    <string name="error_internet_lack_loading_languages">To view the languages ​​you need an internet connection, check your connection and try again</string>
+    <string name="error_connection_rejected"> refused the connection request</string>
+    <string name="error_connection">Connection error</string>
+    <string name="error_starting_search">Error starting search</string>
+    <string name="error_cannot_interact_connection">cannot interact with devices during connection</string>
+    <string name="error_cannot_interact_disconnection">cannot interact with devices during disconnection</string>
+    <string name="error_wait_initialization">Wait for initialization</string>
+    <string name="error_invalid_key">Enter a valid key file</string>
+    <string name="error_picking_file">Error while taking the file, try again</string>
+    <string name="error_selecting_image">Error during image selection, use another gallery to select it</string>
+    <string name="error_wait_download_end">Wait download finishes</string>
+    <string name="error_age_unchecked">You must be at least 14 years old to use the app</string>
+    <string name="error_privacy_unchecked">You must have read the privacy policy and the user information to use the app</string>
+    <string name="error_missing_username">Insert a name</string>
+    <string name="error_wrong_username">The text contains illegal characters, only the following characters are allowed: </string>
+
+    <string name="title_graph">DOLLARS (USD) SPENT EVERY HOUR</string>
+
+    <string name="title_fragment_conversation">Conversation</string>
+    <string name="title_fragment_walkie_talkie">WalkieTalkie</string>
+    <string name="title_fragment_notice">Notice</string>
+    <string name="title_fragment_user_data">Insert your data</string>
+
+    <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_credit">APIs management</string>
+
+    <string name="header_recents_peers">recents</string>
+    <string name="header_found_peers">found</string>
+    <string name="header_connected_peers">connected</string>
+    <string name="header_key">APIs key</string>
+
+    <string name="description_cost">The voice recognition rounds the cost of each request to the nearest multiple of 15 seconds, the average total cost (both translator and voice recognition), without taking into account the rounding, is 2.5 dollars per hour, also for WalkieTalkie must add the language detection costs to the translation, to learn more read the <a href="http://www.rtranslator.com/tutorial">tutorial</a></string>
+    <string name="description_discovery">This screen will search and make us visible to other devices that use RTranslator
+        to be able to establish a connection with them and start the conversation</string>
+    <string name="description_key">To find out how to get the key file read the <a href="http://www.rtranslator.com/tutorial">tutorial</a></string>
+    <string name="description_fragment_user_data">Your name will be displayed by all nearby devices, while your profile picture will only be shown on devices with which you have already had conversations</string>
+    <string name="description_conversation">The Conversation mode is the main feature of RTranslator, it allows you to translate a conversation between several people in real time, for a better experience it is recommended to connect bluetooth headphones to the phone,
+        furthermore the application will continue to work also in background and with the phone on standby</string>
+    <string name="description_walkie_talkie">WalkieTalkie mode is the secondary functionality of RTranslator, it does not allow real-time translation but is designed to work with just one phone,
+        it automatically detects and translates a speech in a language into another language, and the application will continue to work in background and with the phone on standby</string>
+    <string name="description_notice">RTranslator is free only for the first 300 dollars spent during the first year from the creation of the Google Cloud account; in addition, it must be configured to work, to know how to do and know the prices read the <a href="http://www.rtranslator.com/tutorial">tutorial</a>, for know the features of RTranslator visit <a href="http://www.rtranslator.com/">rtranslator.com</a></string>
+
+    <string name="preference_header_language">Language</string>
+    <string name="preference_header_output">Output</string>
+    <string name="preference_header_input">Input</string>
+
+    <string name="preference_title_mic_sensitivity">Microphone sensitivity</string>
+    <string name="preference_title_support_tts_quality">Support languages ​​with low quality tts</string>
+    <string name="preference_title_language">Personal language</string>
+    <string name="preference_title_tts">Text to speech</string>
+
+    <string name="preference_description_mic_sensitivity">Select the volume level you need to start and maintain voice recognition</string>
+    <string name="preference_description_support_tts_quality">It allow to also supports languages ​​that have a low quality speech synthesizer</string>
+    <string name="preference_description_tts">System settings of tts</string>
+
+</resources>

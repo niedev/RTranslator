@@ -1,0 +1,136 @@
+<html>
+<title>Google Cloud Translation API v2 Client Library for Java</title>
+<body>
+<h2>Google Cloud Translation API v2 Client Library for Java</h2>
+
+<h3>Overview</h3>
+<p>High-level details about this library can be found at
+<a href="https://developers.google.com/api-client-library/java/">https://developers.google.com/api-client-library/java/</a>
+<ul>
+  <li><a href='https://developers.google.com/api-client-library/java/google-api-java-client/release-notes'>Release Notes</a></li>
+  <li><a href='http://javadoc.google-api-java-client.googlecode.com/hg/apis/translate/v2/index.html'>JavaDoc</a></li>
+  <li><a href='https://developers.google.com/api-client-library/java/google-api-java-client/dev-guide'>Developer's Guide</a></li>
+  <li><a href='http://groups.google.com/group/google-api-java-client'>Support</a></li>
+</ul>
+
+<h3>License</h3>
+The license can be found <a href='LICENSE.txt'>here</a>.<br/>
+
+<h3>Generated service-specific Library</h3>
+The generated service-specific library can be found in the top level directory
+of the zip file:
+google-api-services-translate-v2-rev51-1.22.0.jar
+
+
+<h3>Eclipse</h3>
+A .classpath file snippet that can be included in your project's .classpath has been provided <a href='classpath-include'>here</a>.
+Please only use the classpathentry's you actually need (see below for details).
+
+<h3>ProGuard</h3>
+A ProGuard configuration file <a href="proguard-google-api-client.txt">proguard-google-api-client.txt</a>
+is included for common settingsFragment for using the library. On Android projects, you may want to add a reference to
+<code>proguard-google-api-client.txt</code> in the <code>project.properties</code> file under the
+<code>proguard.config</code> property.
+
+<h3>Dependencies</h3>
+<p>
+Dependent jars for
+google-api-services-translate-v2-rev51-1.22.0.jar
+can be found in the <a href='libs'>libs</a> folder and the corresponding source
+jars can be found in the <a href='libs-sources'>libs-sources</a> folder.
+<br/><br/>
+The dependency structure and licenses can be found in the
+<a href='dependencies'>dependencies</a> directory.
+</p>
+
+<h3>Dependencies for all Platforms</h3>
+The following are the jars from the <a href='libs'>libs</a> folder required for
+applications on all platforms:
+<ul>
+  <li>google-api-client-1.22.0.jar</li>
+  <li>google-oauth-client-1.22.0.jar</li>
+  <li>google-http-client-1.22.0.jar</li>
+  <li>jsr305-1.3.9.jar</li>
+  <li>google-http-client-gson-1.22.0.jar (when using GSON)
+    <ul>
+      <li>gson-2.1.jar</li>
+    </ul>
+  </li>
+  <li>google-http-client-jackson2-1.22.0.jar (when using Jackson 2)
+    <ul>
+      <li>jackson-core-$2.1.3.jar</li>
+    </ul>
+  </li>
+  <li>google-http-client-jdo-1.22.0.jar (when using JDO)
+    <ul>
+      <li>jdo2-api-2.3-eb.jar</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>Android Dependencies</h3>
+The following are the jars from the <a href='libs'>libs</a> folder required for
+android applications or a newer compatible version of each dependency:
+<ul>
+  <li>google-api-client-android-1.22.0.jar (for SDK &gt;= 2.1)</li>
+  <li>google-http-client-android-1.22.0.jar</li>
+</ul>
+The <a href='libs'>libs</a> folder also contains properties files that specify the location of source
+jars for Android projects in Eclipse.<br/>
+Please see the
+<a href='https://developers.google.com/api-client-library/java/google-api-java-client/android'>Android</a>
+for the Android Developer's Guide.
+
+<h3>Google App Engine Dependencies</h3>
+The following are the jars from the <a href='libs'>libs</a> folder required for
+Google App Engine applications or a newer compatible version of each dependency:
+<ul>
+  <li>google-api-client-appengine-1.22.0.jar</li>
+  <li>google-api-client-servlet-1.22.0.jar</li>
+  <li>google-oauth-client-appengine-1.22.0.jar</li>
+  <li>google-oauth-client-servlet-1.22.0.jar</li>
+  <li>google-http-client-appengine-1.22.0.jar</li>
+  <li>transaction-api-1.1.jar</li>
+</ul>
+Please see the
+<a href='https://developers.google.com/api-client-library/java/google-api-java-client/app-engine'>GoogleAppEngine</a>
+for the Google App Engine Developer's Guide.
+
+<h3>Servlet Dependencies</h3>
+The following are the jars from the <a href='libs'>libs</a> folder required for
+Servlet applications or a newer compatible version of each dependency:
+<ul>
+  <li>google-api-client-servlet-1.22.0.jar</li>
+  <li>google-oauth-client-1.22.0.jar</li>
+  <li>google-oauth-client-servlet-1.22.0.jar</li>
+  <li>commons-logging-1.1.1.jar</li>
+  <li>httpclient-4.0.1.jar</li>
+  <li>httpcore-4.0.1.jar</li>
+  <li>transaction-api-1.1.jar</li>
+</ul>
+
+<h3>General Purpose Java 5 Environment Dependencies</h3>
+The following are the jars from the <a href='libs'>libs</a> folder required for
+general purpose Java 5 applications (or a newer compatible version of each dependency):
+<ul>
+  <li>google-api-client-java6-1.22.0.jar</li>
+  <li>google-oauth-client-java6-1.22.0.jar
+  <ul>
+    <li>google-oauth-client-jetty-1.22.0.jar (for Jetty 6)
+      <ul>
+        <li>jetty-6.1.26</li>
+        <li>jetty-util-6.1.26</li>
+      </ul>
+    </li>
+  </ul></li>
+  <li>google-oauth-client-java7-1.22.0.jar</li>
+  <li>commons-logging-1.1.1.jar</li>
+  <li>httpclient-4.0.1.jar</li>
+  <li>httpcore-4.0.1.jar</li>
+</ul>
+
+
+</body>
+</html>
+
+

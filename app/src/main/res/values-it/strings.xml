@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    * Copyright 2016 Luca Martino.
+    *
+    * Licensed under the Apache License, Version 2.0 (the "License");
+    * you may not use this file except in compliance with the License.
+    * You may obtain a copyFile of the License at
+    *
+    * http://www.apache.org/licenses/LICENSE-2.0
+    *
+    * Unless required by applicable law or agreed to in writing, software
+    * distributed under the License is distributed on an "AS IS" BASIS,
+    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    * See the License for the specific language governing permissions and
+    * limitations under the License.
+    *-->
+
+<resources>
+    <string name="mic">mic</string>
+    <string name="btHeadset">bt-headset</string>
+    <string name="exit">esci</string>
+    <string name="retry">riprova</string>
+    <string name="delete">elimina</string>
+    <string name="no_devices">no devices</string>
+    <string name="available">disponibile</string>
+    <string name="not_available">non disponibile</string>
+    <string name="loading">caricamento...</string>
+    <string name="forward">avanti</string>
+    <string name="no_graph_data">Nessun dato sull\' utilizzo presente</string>
+    <string name="conversation">conversazione</string>
+    <string name="connection">connessione</string>
+
+    <string name="notification_channel_name">notifica uso in background</string>
+
+    <string name="age_check_box">Dichiaro di avere almeno 14 anni</string>
+    <string name="privacy_check_box">Dichiaro di aver letto la <a href="http://www.rtranslator.com/privacy-policy-app/?lang=it">privacy policy</a> e l\'<a href="http://www.rtranslator.com/user-information-app/?lang=it">informativa utenti</a></string>
+
+    <string name="toast_working_background">RTranslator funzionerà in background</string>
+
+    <string name="dialog_confirm_delete">Conferma cancellazione</string>
+    <string name="dialog_confirm_exit">Conferma uscita</string>
+    <string name="dialog_confirm_disconnection">Sei sicuro di volerti disconnettere da&#160;</string>
+    <string name="dialog_confirm_connection">Sei sicuro di volerti connettere con&#160;</string>
+    <string name="dialog_confirm_connection_request">Accetti la richiesta di connessione da&#160;</string>
+    <string name="dialog_select_file">Seleziona il file</string>
+    <string name="dialog_select_personal_language">Seleziona la lingua personale</string>
+    <string name="dialog_select_first_language">Seleziona la lingua primaria</string>
+    <string name="dialog_select_second_language">Seleziona la lingua secondaria</string>
+    <string name="dialog_insert_name">Inserisci il tuo nome</string>
+
+    <string name="menu_image_select_from_gallery">Seleziona dalla galleria</string>
+    <string name="menu_image_remove">Rimuovi</string>
+
+    <string name="hint_edit_text_message">Scrivi un messaggio</string>
+    <string name="hint_user_name">Nome utente</string>
+
+    <string name="error_missing_location_permissions">Non é possibile eseguire la ricerca di dispositivi senza il permesso per la posizione, andare nelle impostazioni per concederlo, oppure reinstallare l\' app</string>
+    <string name="error_missing_mic_permissions">Senza il permesso per il microfono il riconoscimento vocale non funziona, andare nelle impostazioni per concedere il permesso oppure reinstalla l\' app</string>
+    <string name="error_tts">C\'è stato un errore con l\'inizializzazione del tts</string>
+    <string name="error_missing_tts">In questo device non è presente il motore di sintesi vocale di google, scaricalo per poter usare l\' applicazione</string>
+    <string name="error_wrong_api_key_file">Il file chiave per usare l\'API non funziona, inserire un file chiave funzionante</string>
+    <string name="error_missing_api_key_file">Inserire il file chiave per usare l\'API</string>
+    <string name="error_missing_bluetooth_le">Non é possibile eseguire la ricerca perchè questo dispositivo non ha il Bluetooth Low Energy</string>
+    <string name="error_internet_lack_loading">Per avviare RTranslator è necessaria una connessione a internet, controllare la propria connessione</string>
+    <string name="error_internet_lack_accessing">Per eseguire l\'operazione è necessaria una connessione a internet, controllare la propria connessione</string>
+    <string name="error_internet_lack_services">Impossibile tradurre il messaggio, controllare la connessione a internet</string>
+    <string name="error_internet_lack_loading_languages">Per visualizzare le lingue è necessaria una connessione a internet, controllare la propria connessione e riprovare</string>
+    <string name="error_connection_rejected"> ha rifiutato la richiesta di connessione</string>
+    <string name="error_connection">Errore di connessione</string>
+    <string name="error_starting_search">Errore durante l\' avvio della ricerca</string>
+    <string name="error_cannot_interact_connection">Non si può interagire con i dispositivi durante la connessione</string>
+    <string name="error_cannot_interact_disconnection">Non si può interagire con i dispositivi durante la disconnessione</string>
+    <string name="error_wait_initialization">Attendere inizializzazione</string>
+    <string name="error_invalid_key">Inserire un file chiave valido</string>
+    <string name="error_picking_file">Errore durante il prelevamento del file, riprovare</string>
+    <string name="error_selecting_image">Errore durante la selezione dell\' immagine, usa un\' altra galleria per selezionarla</string>
+    <string name="error_wait_download_end">Aspetta che il download finisca</string>
+    <string name="error_age_unchecked">Devi avere almeno 14 anni per usare l\'app</string>
+    <string name="error_privacy_unchecked">Devi aver letto la privacy policy e l\'informativa utenti per usare l\'app</string>
+    <string name="error_missing_username">Inserire un nome</string>
+    <string name="error_wrong_username">Il testo contiene caratteri non ammessi, sono ammessi solo i seguenti caratteri: </string>
+
+    <string name="title_graph">DOLLARI (USD) SPESI OGNI ORA</string>
+
+    <string name="title_fragment_conversation">Conversazione</string>
+    <string name="title_fragment_walkie_talkie">WalkieTalkie</string>
+    <string name="title_fragment_notice">Avviso</string>
+    <string name="title_fragment_user_data">Inserisci i tuoi dati</string>
+
+    <string name="title_activity_settings">Impostazioni</string>
+    <string name="title_activity_credit">Gestione APIs</string>
+
+    <string name="header_recents_peers">recenti</string>
+    <string name="header_found_peers">trovati</string>
+    <string name="header_connected_peers">connessi</string>
+    <string name="header_key">Chiave APIs</string>
+
+    <string name="description_cost">Il riconoscimento vocale arrotonda il costo di ogni richiesta al più vicino multiplo di 15 secondi, il costo medio totale (sia traduttore che riconoscimento vocale), senza tenere conto dell\' arrotondamento, è di 2,5 dollari l\' ora, inoltre per WalkieTalkie bisogna aggiungere ai costi di traduzione anche quelli del rilevamento della lingua, per approfondire leggere il <a href="http://www.rtranslator.com/tutorial/?lang=it">tutorial</a></string>
+    <string name="description_discovery">In questa schermata si cercano e ci rendiamo visibili ad altri dispositivi che usano RTranslator
+        per poter stabilire una connessione con loro e iniziare la conversazione</string>
+    <string name="description_key">Per sapere come procurarsi il file chiave leggere il <a href="http://www.rtranslator.com/tutorial/?lang=it">tutorial</a></string>
+    <string name="description_fragment_user_data">Il tuo nome verrà visualizzato da tutti i dispositivi nelle vicinanze, mentre la tua immagine del profilo solo dai dispositivi con cui hai già avuto conversazioni</string>
+    <string name="description_conversation">La modalità Conversazione è la funzionalità principale di RTranslator, permette di tradurre una conversazione tra più persone in tempo reale, per un\' esperienza migliore         si consiglia di collegare delle cuffie bluetooth al telefono, inoltre l\' applicazione continuerà a funzionare anche in background e con il telefono in standby</string>
+    <string name="description_walkie_talkie">La modalità WalkieTalkie è la funzionalità secondaria di RTranslator, non permette una traduzione in tempo reale ma è pensata per funzionare con un solo telefono,
+        rileva e traduce automaticamente un discorso in una lingua nell\' altra, inoltre l\' applicazione continuerà a funzionare anche in background e con il telefono in standby</string>
+    <string name="description_notice">RTranslator è gratuito solo per i primi 300 dollari spesi durante il primo anno dalla creazione dell\'account Google Cloud; inoltre, deve essere configurato per funzionare, per sapere come fare e conoscere i prezzi leggi il <a href="http://www.rtranslator.com/tutorial/?lang=it">tutorial</a>, per conoscere le funzionalità di RTranslator visita <a href="http://www.rtranslator.com/?lang=it">rtranslator.com</a></string>
+
+    <string name="preference_header_language">Lingua</string>
+    <string name="preference_header_output">Output</string>
+    <string name="preference_header_input">Input</string>
+
+    <string name="preference_title_mic_sensitivity">Sensibilità microfono</string>
+    <string name="preference_title_support_tts_quality">Supporto lingue con tts a bassa qualità</string>
+    <string name="preference_title_language">Lingua personale</string>
+    <string name="preference_title_tts">Sintetizzatore vocale</string>
+
+    <string name="preference_description_mic_sensitivity">Seleziona il livello di volume che serve per avviare e mantenere il riconoscimento vocale</string>
+    <string name="preference_description_support_tts_quality">Permette di supportare anche le lingue che hanno una bassa qualità del sintetizzatore vocale</string>
+    <string name="preference_description_tts">Impostazioni di sistema del tts</string>
+</resources>

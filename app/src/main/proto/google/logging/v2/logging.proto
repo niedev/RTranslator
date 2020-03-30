@@ -1,0 +1,167 @@
+// Copyright (c) 2015, Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package google.logging.v2;
+
+import "google/api/annotations.proto";
+import "google/api/monitored_resource.proto";
+import "google/logging/v2/log_entry.proto";
+import "google/protobuf/empty.proto";
+import "google/rpc/status.proto";
+
+option cc_enable_arenas = true;
+option java_multiple_files = true;
+option java_outer_classname = "LoggingProto";
+option java_package = "com.google.logging.v2";
+
+
+// Service for ingesting and querying logs.
+service LoggingServiceV2 {
+  // Deletes a log and all its log entries.
+  // The log will reappear if it receives new entries.
+  //
+  rpc DeleteLog(DeleteLogRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { delete: "/v2beta1/{log_name=projects/*/logs/*}" };
+  }
+
+  // Writes log entries to Cloud Logging.
+  // All log entries in Cloud Logging are written by this method.
+  //
+  rpc WriteLogEntries(WriteLogEntriesRequest) returns (WriteLogEntriesResponse) {
+    option (google.api.http) = { post: "/v2beta1/entries:write" body: "*" };
+  }
+
+  // Lists log entries.  Use this method to retrieve log entries from Cloud
+  // Logging.  For ways to export log entries, see
+  // [Exporting Logs](/logging/docs/export).
+  //
+  rpc ListLogEntries(ListLogEntriesRequest) returns (ListLogEntriesResponse) {
+    option (google.api.http) = { post: "/v2beta1/entries:list" body: "*" };
+  }
+
+  // Lists monitored resource descriptors that are used by Cloud Logging.
+  rpc ListMonitoredResourceDescriptors(ListMonitoredResourceDescriptorsRequest) returns (ListMonitoredResourceDescriptorsResponse) {
+    option (google.api.http) = { get: "/v2beta1/monitoredResourceDescriptors" };
+  }
+}
+
+// The parameters to Delete//
+message DeleteLogRequest {
+  // Required. The resource name of the log to delete.  Example:
+  // `"projects/my-project/logs/syslog"`.
+  string log_name = 1;
+}
+
+// The parameters to WriteLogEntries.
+message WriteLogEntriesRequest {
+  // Optional. A default log resource name for those log entries in `entries`
+  // that do not specify their own `logName`.  Example:
+  // `"projects/my-project/logs/syslog"`.  See
+  // [LogEntry][google.logging.v2.LogEntry].
+  string log_name = 1;
+
+  // Optional. A default monitored resource for those log entries in `entries`
+  // that do not specify their own `resource`.
+  google.api.MonitoredResource resource = 2;
+
+  // Optional. User-defined `key:value` items that are added to
+  // the `labels` field of each log entry in `entries`, except when a log
+  // entry specifies its own `key:value` item with the same key.
+  // Example: `{ "size": "large", "color":"red" }`
+  map<string, string> labels = 3;
+
+  // Required. The log entries to write. The log entries must have values for
+  // all required fields.
+  repeated LogEntry entries = 4;
+}
+
+// Result returned from WriteLogEntries.
+message WriteLogEntriesResponse {
+
+}
+
+// The parameters to `ListLogEntries`.
+message ListLogEntriesRequest {
+  // Required. One or more project IDs or project numbers from which to retrieve
+  // log entries.  Examples of a project ID: `"my-project-1A"`, `"1234567890"`.
+  repeated string project_ids = 1;
+
+  // Optional. An [advanced logs filter](/logging/docs/view/advanced_filters).
+  // The filter is compared against all log entries in the projects specified by
+  // `projectIds`.  Only entries that match the filter are retrieved.  An empty
+  // filter matches all log entries.
+  string filter = 2;
+
+  // Optional. How the results should be sorted.  Presently, the only permitted
+  // values are `"timestamp"` (default) and `"timestamp desc"`.  The first
+  // option returns entries in order of increasing values of
+  // `LogEntry.timestamp` (oldest first), and the second option returns entries
+  // in order of decreasing timestamps (newest first).  Entries with equal
+  // timestamps are returned in order of `LogEntry.insertId`.
+  string order_by = 3;
+
+  // Optional. The maximum number of results to return from this request.  Fewer
+  // results might be returned. You must check for the `nextPageToken` result to
+  // determine if additional results are available, which you can retrieve by
+  // passing the `nextPageToken` value in the `pageToken` parameter to the next
+  // request.
+  int32 page_size = 4;
+
+  // Optional. If the `pageToken` request parameter is supplied, then the next
+  // page of results in the setGroup are retrieved.  The `pageToken` parameter must
+  // be setGroup with the value of the `nextPageToken` result parameter from the
+  // previous request.  The values of `projectIds`, `filter`, and `orderBy` must
+  // be the same as in the previous request.
+  string page_token = 5;
+}
+
+// Result returned from `ListLogEntries`.
+message ListLogEntriesResponse {
+  // A list of log entries.
+  repeated LogEntry entries = 1;
+
+  // If there are more results than were returned, then `nextPageToken` is
+  // given a value in the response.  To getGroup the next batch of results, call
+  // this method again using the value of `nextPageToken` as `pageToken`.
+  string next_page_token = 2;
+}
+
+// The parameters to ListMonitoredResourceDescriptors
+message ListMonitoredResourceDescriptorsRequest {
+  // Optional. The maximum number of results to return from this request.  Fewer
+  // results might be returned. You must check for the `nextPageToken` result to
+  // determine if additional results are available, which you can retrieve by
+  // passing the `nextPageToken` value in the `pageToken` parameter to the next
+  // request.
+  int32 page_size = 1;
+
+  // Optional. If the `pageToken` request parameter is supplied, then the next
+  // page of results in the setGroup are retrieved.  The `pageToken` parameter must
+  // be setGroup with the value of the `nextPageToken` result parameter from the
+  // previous request.
+  string page_token = 2;
+}
+
+// Result returned from ListMonitoredResourceDescriptors.
+message ListMonitoredResourceDescriptorsResponse {
+  // A list of resource descriptors.
+  repeated google.api.MonitoredResourceDescriptor resource_descriptors = 1;
+
+  // If there are more results than were returned, then `nextPageToken` is
+  // returned in the response.  To getGroup the next batch of results, call this
+  // method again using the value of `nextPageToken` as `pageToken`.
+  string next_page_token = 2;
+}

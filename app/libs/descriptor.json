@@ -1,0 +1,691 @@
+{
+  "kind": "discovery#directoryItem", 
+  "id": "translate:v2", 
+  "name": "translate", 
+  "version": "v2", 
+  "title": "Google Cloud Translation API", 
+  "description": "The Google Cloud Translation API lets websites and programs integrate with Google Translate programmatically.", 
+  "discoveryRestUrl": "https://translation.googleapis.com/$discovery/rest?version=v2", 
+  "icons": {
+    "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png", 
+    "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
+  }, 
+  "documentationLink": "https://code.google.com/apis/language/translate/v2/getting_started.html", 
+  "preferred": true, 
+  "packagePath": null, 
+  "canonicalName": "Translate", 
+  "files": [
+    {
+      "downloadUrl": "/downloads/translate/v2/51/java/1.22.0/google-api-services-translate-v2-rev51-1.22.0.jar", 
+      "path": "google-api-services-translate-v2-rev51-1.22.0.jar", 
+      "type": "binary", 
+      "timestamp": "2017-05-29 07:23"
+    }, 
+    {
+      "downloadUrl": "/downloads/translate/v2/51/java/1.22.0/google-api-services-translate-v2-rev51-1.22.0-javadoc.jar", 
+      "path": "google-api-services-translate-v2-rev51-1.22.0-javadoc.jar", 
+      "type": "documentation", 
+      "timestamp": "2017-05-29 07:23"
+    }, 
+    {
+      "downloadUrl": "/downloads/translate/v2/51/java/1.22.0/google-api-services-translate-v2-rev51-1.22.0-sources.jar", 
+      "path": "google-api-services-translate-v2-rev51-1.22.0-sources.jar", 
+      "type": "source", 
+      "timestamp": "2017-05-29 08:21"
+    }, 
+    {
+      "path": "google-api-services-translate-v2-rev51-1.22.0.jar.properties", 
+      "type": "android.properties"
+    }
+  ], 
+  "revision": 51, 
+  "language": "java", 
+  "language_version": "1.22.0", 
+  "dependencies": [
+    {
+      "files": [
+        {
+          "downloadUrl": "http://google-api-java-client.googlecode.com/files/google-api-java-client-1.22.0.zip", 
+          "type": "bundle"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Google API Java Client Bundle", 
+      "environments": [
+        "manual"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-api-client-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-api-client-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }, 
+        {
+          "path": "libs/google-api-client-1.22.0.jar.properties", 
+          "type": "android-properties"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Google APIs Client Library", 
+      "environments": [
+        "*"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-api-client-android-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-api-client-android-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }, 
+        {
+          "path": "libs/google-api-client-android-1.22.0.jar.properties", 
+          "type": "android-properties"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Android platform extensions to the Google APIs Client Library", 
+      "environments": [
+        "android"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-api-client-appengine-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-api-client-appengine-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Google App Engine extensions to the Google APIs Client Library", 
+      "environments": [
+        "appengine"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-api-client-gson-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-api-client-gson-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "GSON extensions to the Google APIs Client Library", 
+      "environments": [
+        "generic"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-api-client-jackson2-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-api-client-jackson2-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Jackson 2 extensions to the Google APIs Client Library", 
+      "environments": [
+        "generic"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-api-client-java6-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-api-client-java6-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Java 6 (and higher) extensions to the Google APIs Client Library", 
+      "environments": [
+        "generic"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-api-client-servlet-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-api-client-servlet-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Servlet extensions to the Google APIs Client Library", 
+      "environments": [
+        "appengine", 
+        "servlet"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-oauth-client-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-oauth-client-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }, 
+        {
+          "path": "libs/google-oauth-client-1.22.0.jar.properties", 
+          "type": "android-properties"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Google OAuth Client Library", 
+      "environments": [
+        "*"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-oauth-client-appengine-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-oauth-client-appengine-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Google App Engine extensions to the Google OAuth Client Library", 
+      "environments": [
+        "appengine"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-oauth-client-java6-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-oauth-client-java6-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Java 6 (and higher) extensions to the Google OAuth Client Library", 
+      "environments": [
+        "generic"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-oauth-client-jetty-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-oauth-client-jetty-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Jetty extensions to the Google OAuth Client Library", 
+      "environments": [
+        "generic"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-oauth-client-servlet-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-oauth-client-servlet-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Servlet and JDO extensions to the Google OAuth Client Library", 
+      "environments": [
+        "appengine", 
+        "servlet"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-http-client-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-http-client-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }, 
+        {
+          "path": "libs/google-http-client-1.22.0.jar.properties", 
+          "type": "android-properties"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Google HTTP Client Library", 
+      "environments": [
+        "*"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-http-client-android-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-http-client-android-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }, 
+        {
+          "path": "libs/google-http-client-android-1.22.0.jar.properties", 
+          "type": "android-properties"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Android platform extensions to the Google HTTP Client Library", 
+      "environments": [
+        "android"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-http-client-appengine-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-http-client-appengine-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Google App Engine extensions to the Google HTTP Client Library", 
+      "environments": [
+        "appengine"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-http-client-gson-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-http-client-gson-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }, 
+        {
+          "path": "libs/google-http-client-gson-1.22.0.jar.properties", 
+          "type": "android-properties"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "GSON extensions to the Google HTTP Client Library", 
+      "environments": [
+        "*"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-http-client-jackson2-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-http-client-jackson2-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }, 
+        {
+          "path": "libs/google-http-client-jackson2-1.22.0.jar.properties", 
+          "type": "android-properties"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "Jackson 2 extensions to the Google HTTP Client Library", 
+      "environments": [
+        "*"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/google-http-client-jdo-1.22.0.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/google-http-client-jdo-1.22.0-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }, 
+        {
+          "path": "libs/google-http-client-jdo-1.22.0.jar.properties", 
+          "type": "android-properties"
+        }
+      ], 
+      "version": "1.22.0", 
+      "name": "JDO extensions to the Google HTTP Client Library", 
+      "environments": [
+        "*"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/commons-logging-1.1.1.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/commons-logging-1.1.1-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.1.1", 
+      "name": "Commons Logging", 
+      "environments": [
+        "servlet", 
+        "generic"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/gson-2.1.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/gson-2.1-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }, 
+        {
+          "path": "libs/gson-2.1.jar.properties", 
+          "type": "android-properties"
+        }
+      ], 
+      "version": "2.1", 
+      "name": "GSON", 
+      "environments": [
+        "*"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/httpclient-4.0.1.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/httpclient-4.0.1-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "4.0.1", 
+      "name": "HTTP Client", 
+      "environments": [
+        "servlet", 
+        "generic"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/httpcore-4.0.1.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/httpcore-4.0.1-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "4.0.1", 
+      "name": "HTTP Core", 
+      "environments": [
+        "servlet", 
+        "generic"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/jackson-core-2.1.3.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/jackson-core-2.1.3-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }, 
+        {
+          "path": "libs/jackson-core-2.1.3.jar.properties", 
+          "type": "android-properties"
+        }
+      ], 
+      "version": "2.1.3", 
+      "name": "Jackson2 Core", 
+      "environments": [
+        "*"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/jdo2-api-2.3-eb.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/jdo2-api-2.3-eb-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "2.3-eb", 
+      "name": "JDO2 API", 
+      "environments": [
+        "appengine", 
+        "servlet"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/jetty-6.1.26.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/jetty-6.1.26-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "6.1.26", 
+      "name": "Jetty", 
+      "environments": [
+        "generic"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/jetty-util-6.1.26.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/jetty-util-6.1.26-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "6.1.26", 
+      "name": "Jetty Util", 
+      "environments": [
+        "generic"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/jsr305-1.3.9.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "dependencies/APACHE-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.3.9", 
+      "name": "JSR 305", 
+      "environments": [
+        "*"
+      ]
+    }, 
+    {
+      "files": [
+        {
+          "path": "libs/transaction-api-1.1.jar", 
+          "type": "binary"
+        }, 
+        {
+          "path": "libs-sources/transaction-api-1.1-sources.jar", 
+          "type": "source"
+        }, 
+        {
+          "path": "dependencies/CDDL-LICENSE.txt", 
+          "type": "license"
+        }
+      ], 
+      "version": "1.1", 
+      "name": "Transaction API", 
+      "environments": [
+        "appengine", 
+        "servlet"
+      ]
+    }
+  ], 
+  "proguard-config": "proguard-google-api-client.txt"
+}

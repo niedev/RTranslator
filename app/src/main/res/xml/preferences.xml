@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    * Copyright 2016 Luca Martino.
+    *
+    * Licensed under the Apache License, Version 2.0 (the "License");
+    * you may not use this file except in compliance with the License.
+    * You may obtain a copyFile of the License at
+    *
+    * http://www.apache.org/licenses/LICENSE-2.0
+    *
+    * Unless required by applicable law or agreed to in writing, software
+    * distributed under the License is distributed on an "AS IS" BASIS,
+    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    * See the License for the specific language governing permissions and
+    * limitations under the License.
+    *-->
+
+
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <nie.translator.rtranslatordevedition.settings.UserImagePreference
+        android:key="userImage"
+        android:layout="@layout/preference_user_image"
+        app:iconSpaceReserved="false" />
+
+    <nie.translator.rtranslatordevedition.settings.UserNamePreference
+        android:key="changeName"
+        android:layout="@layout/preference_user_name"
+        app:iconSpaceReserved="false" />
+
+    <androidx.preference.PreferenceCategory
+        android:title="@string/preference_header_input"
+        app:iconSpaceReserved="false">
+        <nie.translator.rtranslatordevedition.settings.SeekBarPreference
+            android:key="micSensibility"
+            android:layout="@layout/preference_seekbar"
+            app:iconSpaceReserved="false" />
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
+        android:title="@string/preference_header_language"
+        app:iconSpaceReserved="false">
+        <nie.translator.rtranslatordevedition.settings.SupportTtsQualityPreference
+            android:defaultValue="false"
+            android:key="languagesQualityLow"
+            android:title="@string/preference_title_support_tts_quality"
+            android:summary="@string/preference_description_support_tts_quality"
+            app:iconSpaceReserved="false" />
+        <nie.translator.rtranslatordevedition.settings.LanguagePreference
+            android:key="language"
+            android:title="@string/preference_title_language"
+            android:dialogTitle="Application language"
+            app:iconSpaceReserved="false" />
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
+        android:title="@string/preference_header_output"
+        app:iconSpaceReserved="false">
+        <androidx.preference.Preference
+            android:key="tts"
+            android:title="@string/preference_title_tts"
+            android:summary="@string/preference_description_tts"
+            app:iconSpaceReserved="false" />
+    </androidx.preference.PreferenceCategory>
+</androidx.preference.PreferenceScreen>

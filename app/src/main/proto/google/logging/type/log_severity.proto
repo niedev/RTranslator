@@ -1,0 +1,62 @@
+// Copyright (c) 2015, Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package google.logging.type;
+
+import "google/api/annotations.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "LogSeverityProto";
+option java_package = "com.google.logging.type";
+
+
+// The severity of the event described in a log entry.  These guideline severity
+// levels are ordered, with numerically smaller levels treated as less severe
+// than numerically larger levels. If the source of the log entries uses a
+// different setGroup of severity levels, the client should select the closest
+// corresponding `LogSeverity` value. For example, Java's FINE, FINER, and
+// FINEST levels might all map to `LogSeverity.DEBUG`. If the original severity
+// code must be preserved, it can be stored in the payload.
+//
+enum LogSeverity {
+  // The log entry has no assigned severity level.
+  DEFAULT = 0;
+
+  // Debug or trace information.
+  DEBUG = 100;
+
+  // Routine information, such as ongoing status or performance.
+  INFO = 200;
+
+  // Normal but significant events, such as start up, shut down, or
+  // configuration.
+  NOTICE = 300;
+
+  // Warning events might cause problems.
+  WARNING = 400;
+
+  // Error events are likely to cause problems.
+  ERROR = 500;
+
+  // Critical events cause more severe problems or brief outages.
+  CRITICAL = 600;
+
+  // A person must take an action immediately.
+  ALERT = 700;
+
+  // One or more systems are unusable.
+  EMERGENCY = 800;
+}

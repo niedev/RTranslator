@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="nie.translator.rtranslatordevedition">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BROADCAST_STICKY" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application
+        android:name="nie.translator.rtranslatordevedition.Global"
+        android:allowBackup="true"
+        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+        android:fullBackupContent="@xml/backup_scheme"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Speech"
+        tools:ignore="GoogleAppIndexingWarning">
+        <activity
+            android:name="nie.translator.rtranslatordevedition.LoadingActivity"
+            android:launchMode="singleTask"
+            android:noHistory="true"
+            android:theme="@style/Theme.Speech">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <!--configChanges serve a evitare il riavvio dell' activity quando ruota e quindi per evitare che alla rotazione si notifichi con un Toast l' avvio del
+        service in background, inoltre così la rotazione sarà più fluida e per ora non abbiamo problemi ne per la rotazione ne per il ridimensionamento quando in finestra-->
+        <activity
+            android:name="nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationActivity"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Speech" />
+        <activity
+            android:name="nie.translator.rtranslatordevedition.settings.SettingsActivity"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Speech" />
+        <activity
+            android:name="nie.translator.rtranslatordevedition.access.AccessActivity"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Speech" />
+        <activity
+            android:name="nie.translator.rtranslatordevedition.api_management.ApiManagementActivity"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Speech" />
+        <activity android:name="nie.translator.rtranslatordevedition.GeneralActivity" />
+
+        <service android:name="nie.translator.rtranslatordevedition.voice_translation._conversation_mode._conversation.ConversationService" />
+        <service android:name="nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieService" />
+        <service android:name="nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode.recognizer_services.FirstLanguageRecognizerService" />
+        <service android:name="nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode.recognizer_services.SecondLanguageRecognizerService" />
+        <service android:name="nie.translator.rtranslatordevedition.GeneralService" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="nie.translator.rtranslatordevedition.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+        <uses-library
+            android:name="com.sec.android.app.multiwindow"
+            android:required="false" />
+    </application>
+</manifest>

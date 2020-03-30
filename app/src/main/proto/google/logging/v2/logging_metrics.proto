@@ -1,0 +1,146 @@
+// Copyright (c) 2015, Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package google.logging.v2;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+option java_multiple_files = true;
+option java_package = "com.google.logging.v2";
+
+
+service MetricsServiceV2 {
+  // Lists logs-based metrics.
+  rpc ListLogMetrics(ListLogMetricsRequest) returns (ListLogMetricsResponse) {
+    option (google.api.http) = { get: "/v2beta1/{project_name=projects/*}/metrics" };
+  }
+
+  // Gets a logs-based metric.
+  rpc GetLogMetric(GetLogMetricRequest) returns (LogMetric) {
+    option (google.api.http) = { get: "/v2beta1/{metric_name=projects/*/metrics/*}" };
+  }
+
+  // Creates a logs-based metric.
+  rpc CreateLogMetric(CreateLogMetricRequest) returns (LogMetric) {
+    option (google.api.http) = { post: "/v2beta1/{project_name=projects/*}/metrics" body: "metric" };
+  }
+
+  // Creates or updates a logs-based metric.
+  rpc UpdateLogMetric(UpdateLogMetricRequest) returns (LogMetric) {
+    option (google.api.http) = { put: "/v2beta1/{metric_name=projects/*/metrics/*}" body: "metric" };
+  }
+
+  // Deletes a logs-based metric.
+  rpc DeleteLogMetric(DeleteLogMetricRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { delete: "/v2beta1/{metric_name=projects/*/metrics/*}" };
+  }
+}
+
+// Describes a logs-based metric.  The value of the metric is the
+// number of log entries that match a logs filter.
+message LogMetric {
+  // Required. The client-assigned metric identifier. Example:
+  // `"severe_errors"`.  Metric identifiers are limited to 1000
+  // characters and can include only the following characters: `A-Z`,
+  // `a-z`, `0-9`, and the special characters `_-.,+!*',()%/\`.  The
+  // forward-slash character (`/`) denotes a hierarchy of name pieces,
+  // and it cannot be the first character of the name.
+  string name = 1;
+
+  // A description of this metric, which is used in documentation.
+  string description = 2;
+
+  // An [advanced logs filter](/logging/docs/view/advanced_filters).
+  // Example: `"logName:syslog AND severity>=ERROR"`.
+  string filter = 3;
+}
+
+// The parameters to ListLogMetrics.
+message ListLogMetricsRequest {
+  // Required. The resource name of the project containing the metrics.
+  // Example: `"projects/my-project-id"`.
+  string project_name = 1;
+
+  // Optional. If the `pageToken` request parameter is supplied, then the next
+  // page of results in the setGroup are retrieved.  The `pageToken` parameter must
+  // be setGroup with the value of the `nextPageToken` result parameter from the
+  // previous request.  The value of `projectName` must
+  // be the same as in the previous request.
+  string page_token = 2;
+
+  // Optional. The maximum number of results to return from this request.  Fewer
+  // results might be returned. You must check for the `nextPageToken` result to
+  // determine if additional results are available, which you can retrieve by
+  // passing the `nextPageToken` value in the `pageToken` parameter to the next
+  // request.
+  int32 page_size = 3;
+}
+
+// Result returned from ListLogMetrics.
+message ListLogMetricsResponse {
+  // A list of logs-based metrics.
+  repeated LogMetric metrics = 1;
+
+  // If there are more results than were returned, then `nextPageToken` is given
+  // a value in the response.  To getGroup the next batch of results, call this
+  // method again using the value of `nextPageToken` as `pageToken`.
+  string next_page_token = 2;
+}
+
+// The parameters to GetLogMetric.
+message GetLogMetricRequest {
+  // The resource name of the desired metric.
+  // Example: `"projects/my-project-id/metrics/my-metric-id"`.
+  string metric_name = 1;
+}
+
+// The parameters to CreateLogMetric.
+message CreateLogMetricRequest {
+  // The resource name of the project in which to create the metric.
+  // Example: `"projects/my-project-id"`.
+  //
+  // The new metric must be provided in the request.
+  string project_name = 1;
+
+  // The new logs-based metric, which must not have an identifier that
+  // already exists.
+  LogMetric metric = 2;
+}
+
+// The parameters to UpdateLogMetric.
+//
+message UpdateLogMetricRequest {
+  // The resource name of the metric to update.
+  // Example: `"projects/my-project-id/metrics/my-metric-id"`.
+  //
+  // The updated metric must be provided in the request and have the
+  // same identifier that is specified in `metricName`.
+  // If the metric does not exist, it is created.
+  string metric_name = 1;
+
+  // The updated metric, whose name must be the same as the
+  // metric identifier in `metricName`. If `metricName` does not
+  // exist, then a new metric is created.
+  LogMetric metric = 2;
+}
+
+// The parameters to DeleteLogMetric.
+message DeleteLogMetricRequest {
+  // The resource name of the metric to delete.
+  // Example: `"projects/my-project-id/metrics/my-metric-id"`.
+  string metric_name = 1;
+}

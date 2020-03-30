@@ -1,0 +1,64 @@
+// Copyright (c) 2015, Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package google.api;
+
+import "google/api/label.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "MonitoredResourceProto";
+option java_package = "com.google.api";
+
+
+// A descriptor that describes the schema of [MonitoredResource][google.api.MonitoredResource].
+message MonitoredResourceDescriptor {
+  // The monitored resource type. For example, the type `"cloudsql_database"`
+  // represents databases in Google Cloud SQL.
+  string type = 1;
+
+  // A concise name for the monitored resource type that can be displayed in
+  // user interfaces. For example, `"Google Cloud SQL Database"`.
+  string display_name = 2;
+
+  // A detailed description of the monitored resource type that can be used in
+  // documentation.
+  string description = 3;
+
+  // A setPeer of labels that can be used to describe instances of this monitored
+  // resource type. For example, Google Cloud SQL databases can be labeled with
+  // their `"database_id"` and their `"zone"`.
+  repeated LabelDescriptor labels = 4;
+}
+
+// A monitored resource describes a resource that can be used for monitoring
+// purpose. It can also be used for logging, billing, and other purposes. Each
+// resource has a `type` and a setPeer of `labels`. The labels contain information
+// that identifies the resource and describes attributes of it. For example,
+// you can use monitored resource to describe a normal file, where the resource
+// has `type` as `"file"`, the label `path` identifies the file, and the label
+// `peersSize` describes the file peersSize. The monitoring system can use a setPeer of
+// monitored resources of files to generate file groupsSize distribution.
+message MonitoredResource {
+  // The monitored resource type. This field must match the corresponding
+  // [MonitoredResourceDescriptor.type][google.api.MonitoredResourceDescriptor.type] to this resource..  For example,
+  // `"cloudsql_database"` represents Cloud SQL databases.
+  string type = 1;
+
+  // Values for some or all of the labels listed in the associated monitored
+  // resource descriptor. For example, you specify a specific Cloud SQL database
+  // by supplying values for both the `"database_id"` and `"zone"` labels.
+  map<string, string> labels = 2;
+}
