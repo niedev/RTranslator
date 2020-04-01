@@ -10,7 +10,7 @@ Connect to someone who has the app, connect bluetooth headphones, put the phone 
 <img src="https://github.com/LucaMartino/RTranslator/blob/master/images/WalkieTalkie_image_en.png" width="430">
 <img src="https://github.com/LucaMartino/RTranslator/blob/master/images/Costs_image_en.png" width="430">
 
-<h2>Initial configuration</h2>
+<h3>Initial configuration</h3>
 
 
 To use speech recognition and translation you need to get a file to associate your Google Cloud Platform with the APIs for the payment
@@ -78,7 +78,7 @@ font-size: 1rem;" href="https://cloud.google.com/speech-to-text/docs/enable-data
 cloud.google.com/speech-to-text/docs/enable-data-logging</a>.
 <br /><br />
 
-<h2>Informations</h2>
+<h3>Informations</h3>
 
 Supported languages (excluding variants) are as follows:
 
