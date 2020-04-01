@@ -75,4 +75,18 @@ The voice recognition rounds the cost of each request to the nearest multiple of
 The translator uses API Translation v2, voice recognition uses standard models, data logging is disabled by default.&nbsp;If you want
 to reduce voice recognition costs you can activate data loggin, to learn more visit&nbsp;<a style="background-color: #fafafa;
 font-size: 1rem;" href="https://cloud.google.com/speech-to-text/docs/enable-data-logging" target="_blank" rel="noopener noreferrer">
-cloud.google.com/speech-to-text/docs/enable-data-logging</a>.]]>
+cloud.google.com/speech-to-text/docs/enable-data-logging</a>.
+<br /><br />
+
+<h2>Informations</h2>
+
+Supported languages (excluding variants) are as follows:
+
+Bengali, Czech, Chinese, Korean, Danish, Finnish, French, Japanese, Greek, Hindi, Indonesian, English, Italian, Khmer, Nepalese, Dutch, Polish, Portuguese, Romanian, Russian, Sinhalese, Slovak, Spanish, Sundanese, Swedish, German, Thai, Turkish, Ukrainian, Hungarian, Vietnamese.
+<br /><br />
+
+I remember that the app is still a beta, the bugs found are the following:
+
+- for some languages the TTS does not work, reinstall the text-to-speech engine to resolve
+- on some devices there are device search problems
+- sometimes at the first start the app notify that bluetooth le is not supported, if your device supports bluetooth le the following starts the message should no longer appear
