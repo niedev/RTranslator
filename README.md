@@ -9,6 +9,7 @@ Connect to someone who has the app, connect bluetooth headphones, put the phone 
 <br /><br />
 <img src="https://github.com/LucaMartino/RTranslator/blob/master/images/WalkieTalkie_image_en.png" width="430">
 <img src="https://github.com/LucaMartino/RTranslator/blob/master/images/Costs_image_en.png" width="430">
+<br /><br />
 
 <h3>Initial configuration</h3>
 
