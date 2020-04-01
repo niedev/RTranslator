@@ -1,8 +1,9 @@
-<img src="https://github.com/LucaMartino/RTranslator/blob/master/images/logo_beta_cut.png" width="200">
+<img src="https://github.com/LucaMartino/RTranslator/blob/master/images/logo_beta_cut.png" width="175">
 
 RTranslator is the world's first open source real-time translation app.
 
 Connect to someone who has the app, connect bluetooth headphones, put the phone in your pocket and you can have a conversation as if the other person spoke your language.
+<br /><br />
 
 ![Conversation mode](https://github.com/LucaMartino/RTranslator/blob/master/images/conversation_image_en.png)
 <br /><br />
