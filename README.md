@@ -7,8 +7,7 @@ Connect to someone who has the app, connect bluetooth headphones, put the phone 
 
 ![Conversation mode](https://github.com/LucaMartino/RTranslator/blob/master/images/conversation_image_en.png)
 <br /><br />
-<img src="https://github.com/LucaMartino/RTranslator/blob/master/images/WalkieTalkie_image_en.png" width="430">
-<img src="https://github.com/LucaMartino/RTranslator/blob/master/images/Costs_image_en.png" width="430">
+![WalkieTalkie mode and Costs](https://github.com/LucaMartino/RTranslator/blob/master/images/WalkieTalkie_and_Costs_image_en.png)
 <br /><br />
 
 <h3>Initial configuration</h3>
