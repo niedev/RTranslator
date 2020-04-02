@@ -10,9 +10,10 @@ Connect to someone who has the app, connect bluetooth headphones, put the phone 
 ![WalkieTalkie mode and Costs](https://github.com/LucaMartino/RTranslator/blob/master/images/WalkieTalkie_and_Costs_image_github.png)
 <br /><br /><br />
 
+
 <h3>Initial configuration</h3>
 
-
+First download the app apk file from the "apk" folder and install it.
 To use speech recognition and translation you need to get a file to associate your Google Cloud Platform with the APIs for the payment
 (even if activating the free trial you have $ 300 credit to use in 1 year in Google Cloud Platform) based on the use of the latter,
 to get the file follow this tutorial from a computer or using the "desktop site" option on the phone, this is because the Google Cloud
