@@ -2,7 +2,7 @@
 
 RTranslator is the world's first open source real-time translation app.
 
-Connect to someone who has the app, connect bluetooth headphones, put the phone in your pocket and you can have a conversation as if the other person spoke your language.
+Connect to someone who has the app, connect Bluetooth headphones, put the phone in your pocket and you can have a conversation as if the other person spoke your language.
 <br /><br /><br />
 
 ![Conversation mode](https://github.com/LucaMartino/RTranslator/blob/master/images/conversation_image_github.png)
