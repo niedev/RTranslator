@@ -1,4 +1,4 @@
-<img src="https://github.com/LucaMartino/RTranslator/blob/master/images/logo_beta_cut.png" width="200">
+<img src="https://github.com/niedev/RTranslator/blob/master/images/logo_beta_cut.png" width="200">
 
 RTranslator is the world's first open source real-time translation app.
 
