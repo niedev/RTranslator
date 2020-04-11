@@ -95,15 +95,15 @@
     <string name="header_connected_peers">connessi</string>
     <string name="header_key">Chiave APIs</string>
 
-    <string name="description_cost">Il riconoscimento vocale arrotonda il costo di ogni richiesta al più vicino multiplo di 15 secondi, il costo medio totale (sia traduttore che riconoscimento vocale), senza tenere conto dell\' arrotondamento, è di 2,5 dollari l\' ora, inoltre per WalkieTalkie bisogna aggiungere ai costi di traduzione anche quelli del rilevamento della lingua, per approfondire leggere il <a href="https://github.com/LucaMartino/RTranslator">tutorial</a></string>
+    <string name="description_cost">Il riconoscimento vocale arrotonda il costo di ogni richiesta al più vicino multiplo di 15 secondi, il costo medio totale (sia traduttore che riconoscimento vocale), senza tenere conto dell\' arrotondamento, è di 2,5 dollari l\' ora, inoltre per WalkieTalkie bisogna aggiungere ai costi di traduzione anche quelli del rilevamento della lingua, per approfondire leggere il <a href="https://github.com/niedev/RTranslator">tutorial</a></string>
     <string name="description_discovery">In questa schermata si cercano e ci rendiamo visibili ad altri dispositivi che usano RTranslator
         per poter stabilire una connessione con loro e iniziare la conversazione</string>
-    <string name="description_key">Per sapere come procurarsi il file chiave leggere il <a href="https://github.com/LucaMartino/RTranslator">tutorial</a></string>
+    <string name="description_key">Per sapere come procurarsi il file chiave leggere il <a href="https://github.com/niedev/RTranslator">tutorial</a></string>
     <string name="description_fragment_user_data">Il tuo nome verrà visualizzato da tutti i dispositivi nelle vicinanze, mentre la tua immagine del profilo solo dai dispositivi con cui hai già avuto conversazioni</string>
     <string name="description_conversation">La modalità Conversazione è la funzionalità principale di RTranslator, permette di tradurre una conversazione tra più persone in tempo reale, per un\' esperienza migliore         si consiglia di collegare delle cuffie bluetooth al telefono, inoltre l\' applicazione continuerà a funzionare anche in background e con il telefono in standby</string>
     <string name="description_walkie_talkie">La modalità WalkieTalkie è la funzionalità secondaria di RTranslator, non permette una traduzione in tempo reale ma è pensata per funzionare con un solo telefono,
         rileva e traduce automaticamente un discorso in una lingua nell\' altra, inoltre l\' applicazione continuerà a funzionare anche in background e con il telefono in standby</string>
-    <string name="description_notice">RTranslator è gratuito solo per i primi 300 dollari spesi durante il primo anno dalla creazione dell\'account Google Cloud; inoltre, deve essere configurato per funzionare, per sapere come fare, conoscere i prezzi e le funzionalità di RTranslator visita il progetto GitHub dell\'app <a href="https://github.com/LucaMartino/RTranslator">qui</a></string>
+    <string name="description_notice">RTranslator è gratuito solo per i primi 300 dollari spesi durante il primo anno dalla creazione dell\'account Google Cloud; inoltre, deve essere configurato per funzionare, per sapere come fare, conoscere i prezzi e le funzionalità di RTranslator visita il progetto GitHub dell\'app <a href="https://github.com/niedev/RTranslator">qui</a></string>
 
     <string name="preference_header_language">Lingua</string>
     <string name="preference_header_output">Output</string>
