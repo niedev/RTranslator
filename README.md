@@ -91,6 +91,6 @@ I remember that the app is still a beta, the bugs found are the following:
 - for some languages the TTS does not work, reinstall the text-to-speech engine to resolve
 - on some devices there are device search problems
 - sometimes at the first start the app notify that Bluetooth LE is not supported, if your device supports Bluetooth LE at the next app starts the message should no longer appear
-
+<br /><br />
 
 Enjoy your real-time translator
