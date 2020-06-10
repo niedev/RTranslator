@@ -75,7 +75,7 @@ public class Global extends Application {
         super.onCreate();
         mainHandler = new Handler(Looper.getMainLooper());
         recentPeersDataManager = new RecentPeersDataManager(this);
-        bluetoothCommunicator = new ConversationBluetoothCommunicator(this, getName(), BluetoothConnection.STRATEGY_P2P_WITH_MANUAL_RECONNECTION);
+        bluetoothCommunicator = new ConversationBluetoothCommunicator(this, getName(), BluetoothConnection.STRATEGY_P2P_WITH_RECONNECTION);
         translator = new Translator(this);
         databaseManager = new ConsumptionsDataManager(this);
         getMicSensitivity();
@@ -90,7 +90,7 @@ public class Global extends Application {
         bluetoothCommunicator.destroy(new BluetoothCommunicator.DestroyCallback() {
             @Override
             public void onDestroyed() {
-                bluetoothCommunicator = new ConversationBluetoothCommunicator(Global.this, getName(), BluetoothConnection.STRATEGY_P2P_WITH_MANUAL_RECONNECTION);
+                bluetoothCommunicator = new ConversationBluetoothCommunicator(Global.this, getName(), BluetoothConnection.STRATEGY_P2P_WITH_RECONNECTION);
             }
         });
     }

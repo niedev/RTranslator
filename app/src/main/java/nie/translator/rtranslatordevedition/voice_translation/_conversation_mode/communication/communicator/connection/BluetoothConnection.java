@@ -33,9 +33,7 @@ public abstract class BluetoothConnection {
     public static final int REJECT = 1;
     public static final UUID APP_UUID = UUID.fromString("00001234-0000-1000-8000-00805F9B34FB");
     public static final int MTU = 247;
-    public static final int STRATEGY_P2P = 0;
-    public static final int STRATEGY_P2P_WITH_AUTO_RECONNECTION = 1;
-    public static final int STRATEGY_P2P_WITH_MANUAL_RECONNECTION = 2;
+    public static final int STRATEGY_P2P_WITH_RECONNECTION = 2;
     public static final int SUB_MESSAGES_LENGTH = 192;
     //oggetti e variabili
     private String uniqueName;
