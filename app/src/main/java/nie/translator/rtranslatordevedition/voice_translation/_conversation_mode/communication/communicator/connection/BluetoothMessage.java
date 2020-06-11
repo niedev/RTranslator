@@ -23,7 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import nie.translator.rtranslatordevedition.tools.Tools;
+import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.BluetoothTools;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Message;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
 
@@ -65,7 +65,7 @@ public class BluetoothMessage implements Parcelable {
             SequenceNumber id = new SequenceNumber(context, completeText.substring(0, ID_LENGTH), ID_LENGTH);
             SequenceNumber sequenceNumber = new SequenceNumber(context, completeText.substring(ID_LENGTH, ID_LENGTH + SEQUENCE_NUMBER_LENGTH), SEQUENCE_NUMBER_LENGTH);
             int type = Integer.valueOf(completeText.substring(ID_LENGTH + SEQUENCE_NUMBER_LENGTH, TOTAL_LENGTH));
-            byte[] data = Tools.subBytes(completeData, TOTAL_LENGTH, completeData.length);   // the header is deleted
+            byte[] data = BluetoothTools.subBytes(completeData, TOTAL_LENGTH, completeData.length);   // the header is deleted
             if (data != null && sender != null) {
                 return new BluetoothMessage(context, sender, id, sequenceNumber, type, data);
             }
@@ -117,7 +117,7 @@ public class BluetoothMessage implements Parcelable {
     public void addMessage(@NonNull BluetoothMessage message) {
         if (this.equals(message)) {
             if (getSequenceNumber() != null && message.getSequenceNumber() != null && message.getSequenceNumber().compare(getSequenceNumber()) > 0) {
-                this.data = Tools.concatBytes(this.data, message.getData());
+                this.data = BluetoothTools.concatBytes(this.data, message.getData());
                 setSequenceNumber(message.getSequenceNumber());
                 type = message.getType();
             }
@@ -125,7 +125,7 @@ public class BluetoothMessage implements Parcelable {
     }
 
     public byte[] getCompleteData() {
-        return Tools.concatBytes(getId().getValue().getBytes(StandardCharsets.UTF_8),
+        return BluetoothTools.concatBytes(getId().getValue().getBytes(StandardCharsets.UTF_8),
                 getSequenceNumber().getValue().getBytes(StandardCharsets.UTF_8),
                 String.valueOf(getType()).getBytes(StandardCharsets.UTF_8),
                 getData());
@@ -135,7 +135,7 @@ public class BluetoothMessage implements Parcelable {
         String completeText = new String(data, StandardCharsets.UTF_8);
         if (completeText.length() > 0) {
             String header = completeText.substring(0, Message.HEADER_LENGTH);
-            byte[] data = Tools.subBytes(getData(), header.getBytes(StandardCharsets.UTF_8).length, getData().length);
+            byte[] data = BluetoothTools.subBytes(getData(), header.getBytes(StandardCharsets.UTF_8).length, getData().length);
             if (data != null) {
                 return new Message(context, sender, header, data);
             }
@@ -170,7 +170,7 @@ public class BluetoothMessage implements Parcelable {
         public SequenceNumber(Context context, int size) {
             this.context = context;
             this.size = size;
-            this.supportedUTFCharacters = Tools.getSupportedUTFCharacters(context);
+            this.supportedUTFCharacters = BluetoothTools.getSupportedUTFCharacters(context);
             this.value = new Character[size];
             for (int i = 0; i < size; i++) {
                 this.value[i] = supportedUTFCharacters.get(0);
@@ -183,9 +183,9 @@ public class BluetoothMessage implements Parcelable {
         public SequenceNumber(Context context, String value, int size) {
             this.context = context;
             this.size = size;
-            this.supportedUTFCharacters = Tools.getSupportedUTFCharacters(context);
+            this.supportedUTFCharacters = BluetoothTools.getSupportedUTFCharacters(context);
             this.value = new Character[size];
-            String fixedValue = Tools.fixLength(context, value, size, Tools.FIX_NUMBER);
+            String fixedValue = BluetoothTools.fixLength(context, value, size, BluetoothTools.FIX_NUMBER);
             for (int i = 0; i < size; i++) {
                 this.value[i] = fixedValue.charAt(i);
             }

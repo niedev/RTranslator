@@ -35,8 +35,8 @@ import java.util.ArrayList;
 
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
-import nie.translator.rtranslatordevedition.tools.Tools;
 import nie.translator.rtranslatordevedition.tools.gui.GuiTools;
+import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.BluetoothTools;
 
 
 public class UserNamePreference extends Preference {
@@ -90,7 +90,7 @@ public class UserNamePreference extends Preference {
                                     String savedName = editText.getText().toString();
                                     if (savedName.length() > 0) {
                                         //compatibility check with supported characters
-                                        ArrayList<Character> supportedCharacters = Tools.getSupportedUTFCharacters(context);
+                                        ArrayList<Character> supportedCharacters = BluetoothTools.getSupportedUTFCharacters(context);
                                         boolean equals = true;
                                         for (int i = 0; i < savedName.length() && equals; i++) {
                                             if (!supportedCharacters.contains(Character.valueOf(savedName.charAt(i)))) {
@@ -103,7 +103,7 @@ public class UserNamePreference extends Preference {
                                             username.setText(savedName);
                                             dialog.dismiss();
                                         } else {
-                                            editTextLayout.setError(global.getResources().getString(R.string.error_wrong_username) + Tools.getSupportedNameCharactersString(global));
+                                            editTextLayout.setError(global.getResources().getString(R.string.error_wrong_username) + BluetoothTools.getSupportedNameCharactersString(global));
                                         }
                                     } else {
                                         editTextLayout.setError(global.getResources().getString(R.string.error_missing_username));

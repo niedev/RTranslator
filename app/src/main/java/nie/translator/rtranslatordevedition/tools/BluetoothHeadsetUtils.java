@@ -11,6 +11,8 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import java.util.List;
 
+import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.CustomCountDownTimer;
+
 /**
  * This is a utility to detect bluetooth headset connection and establish audio connection
  * for android API >= 8. This includes a work around for  API < 11 to detect already connected headset

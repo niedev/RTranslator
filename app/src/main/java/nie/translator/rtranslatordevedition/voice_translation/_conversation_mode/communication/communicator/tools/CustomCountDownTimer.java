@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nie.translator.rtranslatordevedition.tools;
+package nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools;
 
 import android.os.Handler;
 import android.os.Looper;

@@ -31,8 +31,8 @@ import androidx.annotation.NonNull;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import nie.translator.rtranslatordevedition.tools.Tools;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.BluetoothCommunicator;
+import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.BluetoothTools;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Message;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.BluetoothConnection;
@@ -339,7 +339,7 @@ public class BluetoothConnectionClient extends BluetoothConnection {
                                         BluetoothGattService service = gatt.getService(BluetoothConnection.APP_UUID);
                                         BluetoothGattCharacteristic output = service.getCharacteristic(BluetoothConnectionServer.READ_RESPONSE_MESSAGE_RECEIVED_UUID);
                                         if (output != null) {
-                                            byte[] responseData = Tools.concatBytes(subMessage.getId().getValue().getBytes(StandardCharsets.UTF_8), subMessage.getSequenceNumber().getValue().getBytes(StandardCharsets.UTF_8));
+                                            byte[] responseData = BluetoothTools.concatBytes(subMessage.getId().getValue().getBytes(StandardCharsets.UTF_8), subMessage.getSequenceNumber().getValue().getBytes(StandardCharsets.UTF_8));
                                             output.setValue(responseData);
                                             gatt.writeCharacteristic(output);
                                         }
@@ -397,7 +397,7 @@ public class BluetoothConnectionClient extends BluetoothConnection {
                                             BluetoothGattService service = gatt.getService(BluetoothConnection.APP_UUID);
                                             BluetoothGattCharacteristic output = service.getCharacteristic(BluetoothConnectionServer.READ_RESPONSE_DATA_RECEIVED_UUID);
                                             if (output != null) {
-                                                byte[] responseData = Tools.concatBytes(subData.getId().getValue().getBytes(StandardCharsets.UTF_8), subData.getSequenceNumber().getValue().getBytes(StandardCharsets.UTF_8));
+                                                byte[] responseData = BluetoothTools.concatBytes(subData.getId().getValue().getBytes(StandardCharsets.UTF_8), subData.getSequenceNumber().getValue().getBytes(StandardCharsets.UTF_8));
                                                 output.setValue(responseData);
                                                 gatt.writeCharacteristic(output);
                                             }

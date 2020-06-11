@@ -34,8 +34,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import nie.translator.rtranslatordevedition.tools.Tools;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.BluetoothCommunicator;
+import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.BluetoothTools;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Message;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.BluetoothConnection;
@@ -265,7 +265,7 @@ public class BluetoothConnectionServer extends BluetoothConnection {
                                             }
                                         }
                                         //response
-                                        byte[] responseData = Tools.concatBytes(subMessage.getId().getValue().getBytes(StandardCharsets.UTF_8), subMessage.getSequenceNumber().getValue().getBytes(StandardCharsets.UTF_8));
+                                        byte[] responseData = BluetoothTools.concatBytes(subMessage.getId().getValue().getBytes(StandardCharsets.UTF_8), subMessage.getSequenceNumber().getValue().getBytes(StandardCharsets.UTF_8));
                                         bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, responseData);
                                     }
                                 }
@@ -294,7 +294,7 @@ public class BluetoothConnectionServer extends BluetoothConnection {
                                             }
                                         }
                                         //response
-                                        byte[] responseData = Tools.concatBytes(subData.getId().getValue().getBytes(StandardCharsets.UTF_8), subData.getSequenceNumber().getValue().getBytes(StandardCharsets.UTF_8));
+                                        byte[] responseData = BluetoothTools.concatBytes(subData.getId().getValue().getBytes(StandardCharsets.UTF_8), subData.getSequenceNumber().getValue().getBytes(StandardCharsets.UTF_8));
                                         bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, responseData);
                                     }
                                 }

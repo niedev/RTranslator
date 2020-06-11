@@ -23,9 +23,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
-import nie.translator.rtranslatordevedition.tools.Tools;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.BluetoothConnection;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.BluetoothMessage;
+import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.BluetoothTools;
 
 
 public class Message implements Parcelable, Cloneable {
@@ -45,7 +45,7 @@ public class Message implements Parcelable, Cloneable {
      */
     public Message(Context context, String header, @NonNull String text) {
         this.context = context;
-        this.header = Tools.fixLength(context, header, HEADER_LENGTH, Tools.FIX_TEXT);
+        this.header = BluetoothTools.fixLength(context, header, HEADER_LENGTH, BluetoothTools.FIX_TEXT);
         this.data = text.getBytes(StandardCharsets.UTF_8);
     }
 
@@ -60,7 +60,7 @@ public class Message implements Parcelable, Cloneable {
      */
     public Message(Context context, String header, @NonNull byte[] data) {
         this.context = context;
-        this.header = Tools.fixLength(context, header, HEADER_LENGTH, Tools.FIX_TEXT);
+        this.header = BluetoothTools.fixLength(context, header, HEADER_LENGTH, BluetoothTools.FIX_TEXT);
         this.data = data;
     }
 
@@ -75,7 +75,7 @@ public class Message implements Parcelable, Cloneable {
      */
     public Message(Context context, String header, String text, @Nullable Peer receiver) {
         this.context = context;
-        this.header = Tools.fixLength(context, header, HEADER_LENGTH, Tools.FIX_TEXT);
+        this.header = BluetoothTools.fixLength(context, header, HEADER_LENGTH, BluetoothTools.FIX_TEXT);
         this.data = text.getBytes(StandardCharsets.UTF_8);
         this.receiver = receiver;
     }
@@ -86,7 +86,7 @@ public class Message implements Parcelable, Cloneable {
      */
     public Message(Context context, String header, @NonNull byte[] data, @Nullable Peer receiver) {
         this.context = context;
-        this.header = Tools.fixLength(context, header, HEADER_LENGTH, Tools.FIX_TEXT);
+        this.header = BluetoothTools.fixLength(context, header, HEADER_LENGTH, BluetoothTools.FIX_TEXT);
         this.data = data;
         this.receiver = receiver;
     }
@@ -99,7 +99,7 @@ public class Message implements Parcelable, Cloneable {
     public Message(Context context, @Nullable Peer sender, String header, @NonNull String text) {
         this.context = context;
         this.sender = sender;
-        this.header = Tools.fixLength(context, header, HEADER_LENGTH, Tools.FIX_TEXT);
+        this.header = BluetoothTools.fixLength(context, header, HEADER_LENGTH, BluetoothTools.FIX_TEXT);
         this.data = text.getBytes(StandardCharsets.UTF_8);
     }
 
@@ -116,7 +116,7 @@ public class Message implements Parcelable, Cloneable {
     public Message(Context context, @Nullable Peer sender, String header, @NonNull byte[] data) {
         this.context = context;
         this.sender = sender;
-        this.header = Tools.fixLength(context, header, HEADER_LENGTH, Tools.FIX_TEXT);
+        this.header = BluetoothTools.fixLength(context, header, HEADER_LENGTH, BluetoothTools.FIX_TEXT);
         this.data = data;
     }
 
@@ -131,7 +131,7 @@ public class Message implements Parcelable, Cloneable {
      * @param header must contain 1 character to avoid errors
      */
     public void setHeader(String header) {
-        this.header = Tools.fixLength(context, header, HEADER_LENGTH, Tools.FIX_TEXT);
+        this.header = BluetoothTools.fixLength(context, header, HEADER_LENGTH, BluetoothTools.FIX_TEXT);
     }
 
     public String getHeader() {
@@ -164,7 +164,7 @@ public class Message implements Parcelable, Cloneable {
 
     public ArrayDeque<BluetoothMessage> splitInBluetoothMessages(BluetoothMessage.SequenceNumber id) {
         int subDataLength = BluetoothConnection.SUB_MESSAGES_LENGTH - BluetoothMessage.TOTAL_LENGTH;
-        ArrayDeque<byte[]> subDataArray = Tools.splitBytes(Tools.concatBytes(header.getBytes(StandardCharsets.UTF_8), data), subDataLength);
+        ArrayDeque<byte[]> subDataArray = BluetoothTools.splitBytes(BluetoothTools.concatBytes(header.getBytes(StandardCharsets.UTF_8), data), subDataLength);
 
         BluetoothMessage.SequenceNumber sequenceNumber = new BluetoothMessage.SequenceNumber(context,BluetoothMessage.SEQUENCE_NUMBER_LENGTH);
         ArrayDeque<BluetoothMessage> bluetoothMessages = new ArrayDeque<>();

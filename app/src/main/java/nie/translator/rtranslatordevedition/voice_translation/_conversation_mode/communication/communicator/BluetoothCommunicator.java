@@ -39,11 +39,12 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import nie.translator.rtranslatordevedition.tools.Tools;
+
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.BluetoothConnection;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.Channel;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.client.BluetoothConnectionClient;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.server.BluetoothConnectionServer;
+import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.BluetoothTools;
 
 
 public class BluetoothCommunicator {
@@ -57,6 +58,7 @@ public class BluetoothCommunicator {
     public static final int NOT_MAIN_THREAD = -5;
     public static final int DESTROYING = -6;
     public static final int BLUETOOTH_LE_NOT_SUPPORTED = -7;
+    public static final int STRATEGY_P2P_WITH_RECONNECTION = 2;
     // variables
     private boolean advertising = false;
     private boolean discovering = false;
@@ -93,7 +95,7 @@ public class BluetoothCommunicator {
     public BluetoothCommunicator(final Context context, String name, int strategy) {
         this.context = context;
         this.strategy = strategy;
-        this.uniqueName = name + Tools.generateBluetoothNameId(context);
+        this.uniqueName = name + BluetoothTools.generateBluetoothNameId(context);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         // verify that it is called only when bluetooth is actually turned on again
@@ -232,6 +234,11 @@ public class BluetoothCommunicator {
             }
 
         }
+    }
+
+    public BluetoothCommunicator(final Context context, String name, int strategy, Callback callback) {
+        this(context,name,strategy);
+        addCallback(callback);
     }
 
 
@@ -694,7 +701,7 @@ public class BluetoothCommunicator {
 
     public int setName(String name) {
         if (bluetoothAdapter != null && connectionServer != null && connectionClient != null) {
-            this.uniqueName = name + Tools.generateBluetoothNameId(context);
+            this.uniqueName = name + BluetoothTools.generateBluetoothNameId(context);
             connectionServer.updateName(uniqueName);
             connectionClient.updateName(uniqueName);
             if (isAdvertising()) {

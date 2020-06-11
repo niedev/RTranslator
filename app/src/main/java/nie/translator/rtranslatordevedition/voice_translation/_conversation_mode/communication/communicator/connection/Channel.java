@@ -24,7 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import nie.translator.rtranslatordevedition.tools.CustomCountDownTimer;
+import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.CustomCountDownTimer;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Message;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
 

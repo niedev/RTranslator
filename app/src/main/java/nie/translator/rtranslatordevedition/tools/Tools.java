@@ -33,6 +33,8 @@ import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.widget.Toast;
+
 import androidx.core.content.ContextCompat;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -77,8 +79,6 @@ public class Tools {
     public static final int CONNECTION_SERVICE = 0;
     public static final int CONVERSATION_SERVICE = 1;
     public static final int WALKIE_TALKIE_SERVICE = 2;
-    public static final int FIX_NUMBER = 0;
-    public static final int FIX_TEXT = 1;
 
     public static synchronized String convertBitmapToString(Bitmap image) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -200,30 +200,6 @@ public class Tools {
             ret = false;
         }
         return ret;
-    }
-
-    public static String fixLength(Context context, String string, int length, int typeOfFix) {
-        int fillingLength = length - string.length();
-        if (fillingLength > 0) {
-            // filling
-            Character fillChar = getSupportedUTFCharacters(context).get(0);
-            StringBuilder outputBuffer = new StringBuilder(fillingLength);
-            for (int i = 0; i < fillingLength; i++) {
-                outputBuffer.append(fillChar);
-            }
-            if (typeOfFix == FIX_NUMBER) {
-                return outputBuffer.toString().concat(string);
-            } else {
-                return string.concat(outputBuffer.toString());
-            }
-        } else {
-            // cut
-            if (typeOfFix == FIX_NUMBER) {
-                return string.substring(fillingLength * -1);
-            } else {
-                return string.substring(0, length);
-            }
-        }
     }
 
     public static boolean deleteFile(File file) {
@@ -388,104 +364,6 @@ public class Tools {
         }
     }
 
-    public static String generateRandomUTFString(Context context, int length) {
-        return new RandomString(length).nextString(context);
-    }
-
-    public static String generateBluetoothNameId(Context context) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String id = sharedPreferences.getString("bluetoothNameId", "");
-        if (id != null && id.length() == 2) {
-            return id;
-        } else {
-            //generazione dell'id e salvataggio
-            SharedPreferences.Editor edit = sharedPreferences.edit();
-            id = generateRandomUTFString(context, 2);
-            edit.putString("bluetoothNameId", id);
-            edit.apply();
-            return id;
-        }
-    }
-
-    /**
-     * index cell goes in second array
-     */
-    public static ArrayDeque<byte[]> splitBytes(byte[] array, int subArraysLength) {
-
-        ArrayDeque<byte[]> resultMatrixList = new ArrayDeque<>();
-        for (int j = 0; j < array.length; j += subArraysLength) {
-            byte[] subArray;
-            if (j + subArraysLength < array.length) {
-                subArray = new byte[subArraysLength];
-            } else {
-                subArray = new byte[array.length - j];
-            }
-            System.arraycopy(array, j, subArray, 0, subArray.length);
-            resultMatrixList.addLast(subArray);
-        }
-
-        return resultMatrixList;
-    }
-
-    public static byte[] concatBytes(byte[]... arrays) {
-        int resultArrayLength = 0;
-        for (byte[] array : arrays) {
-            resultArrayLength += array.length;
-        }
-        byte[] resultArray = new byte[resultArrayLength];
-        int destIndex = 0;
-        for (byte[] array : arrays) {
-            System.arraycopy(array, 0, resultArray, destIndex, array.length);
-            destIndex += array.length;
-        }
-        return resultArray;
-    }
-
-    public static byte[] subBytes(byte[] array, int begin, int end) {
-        if (end <= begin || begin < 0 || end > array.length) {
-            return null;
-        }
-        int length = end - begin;
-        byte[] subArray = new byte[length];
-        System.arraycopy(array, begin, subArray, 0, length);
-        return subArray;
-    }
-
-    /**
-     * return all characters of UTF encoding (this is because bluetooth only support a certain amount of bytes
-     * to send to nearby devices)
-     * @param context
-     * @return
-     */
-    public static ArrayList<Character> getSupportedUTFCharacters(Context context) {
-        ArrayList<Character> characters = new ArrayList<>();
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        try {
-            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            Document document = documentBuilder.parse(context.getResources().openRawResource(R.raw.name_supported_characters));
-            NodeList list = document.getElementsByTagName("character");
-            for (int i = 0; i < list.getLength(); i++) {
-                characters.add(list.item(i).getTextContent().charAt(0));
-            }
-        } catch (IOException | SAXException | ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-        ;
-        Collections.sort(characters);  // alphabetical order
-        return characters;
-    }
-
-    public static String getSupportedNameCharactersString(Context context) {
-        String string = "";
-        ArrayList<Character> characters = getSupportedUTFCharacters(context);
-        for (Character character : characters) {
-            string = string.concat(" " + character.toString());
-        }
-        int lentgh = string.getBytes(StandardCharsets.UTF_8).length;
-        Log.e("lenght", lentgh + "");
-        return string;
-    }
-
     public static ArrayList<GuiPeer> cloneList(ArrayList<GuiPeer> list) {
         ArrayList<GuiPeer> clone = new ArrayList<GuiPeer>(list.size());
         for (Peer item : list) clone.add((GuiPeer) item.clone());
@@ -516,37 +394,6 @@ public class Tools {
 
         public byte[] getIv() {
             return iv;
-        }
-    }
-
-    private static class RandomString {
-        private final Random random;
-        private final char[] buf;
-
-        /**
-         * Create an alphanumeric string generator.
-         */
-        private RandomString(int length, Random random) {
-            if (length < 1) throw new IllegalArgumentException();
-            this.random = Objects.requireNonNull(random);
-            this.buf = new char[length];
-        }
-
-        /**
-         * Create an alphanumeric strings from a secure generator.
-         */
-        private RandomString(int length) {
-            this(length, new SecureRandom());
-        }
-
-        /**
-         * Generate a random string.
-         */
-        private String nextString(Context context) {
-            for (int idx = 0; idx < buf.length; ++idx) {
-                buf[idx] = (getSupportedUTFCharacters(context).get(random.nextInt(95)));  //si genera un carattere casuale composto da tutti i valori possibili del codice ascii normale (non esteso) per poter essere espressi da un solo byte in utf-8
-            }
-            return new String(buf);
         }
     }
 }

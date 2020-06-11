@@ -18,12 +18,10 @@ package nie.translator.rtranslatordevedition.access;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
@@ -35,8 +33,8 @@ import java.util.ArrayList;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.settings.UserImageContainer;
-import nie.translator.rtranslatordevedition.tools.Tools;
 import nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationActivity;
+import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.BluetoothTools;
 
 
 public class UserDataFragment extends Fragment {
@@ -93,7 +91,7 @@ public class UserDataFragment extends Fragment {
                     inputNameLayout.setError(getResources().getString(R.string.error_missing_username));
                 }else{
                     //compatibily check for supported characters
-                    ArrayList<Character> supportedCharacters = Tools.getSupportedUTFCharacters(global);
+                    ArrayList<Character> supportedCharacters = BluetoothTools.getSupportedUTFCharacters(global);
                     boolean equals = true;
                     for (int i = 0; i < name.length() && equals; i++) {
                         if (!supportedCharacters.contains(Character.valueOf(name.charAt(i)))) {
@@ -103,7 +101,7 @@ public class UserDataFragment extends Fragment {
 
                     if (!equals) {
                         error=true;
-                        inputNameLayout.setError(getResources().getString(R.string.error_wrong_username) + Tools.getSupportedNameCharactersString(global));
+                        inputNameLayout.setError(getResources().getString(R.string.error_wrong_username) + BluetoothTools.getSupportedNameCharactersString(global));
                     }
                 }
                 /*if (!ageTerms.isChecked() && !error) {
