@@ -270,7 +270,7 @@ public class PairingFragment extends PairingToolbarFragment {
         // because they are not passed to it if started with a Transaction and therefore it overlaps the status bar because it fitsSystemWindows does not work
         WindowInsets windowInsets = activity.getFragmentContainer().getRootWindowInsets();
         if (windowInsets != null) {
-            constraintLayout.dispatchApplyWindowInsets(windowInsets);
+            constraintLayout.dispatchApplyWindowInsets(windowInsets.replaceSystemWindowInsets(windowInsets.getSystemWindowInsetLeft(),windowInsets.getSystemWindowInsetTop(),windowInsets.getSystemWindowInsetRight(),0));
         }
 
         // setting of listeners
