@@ -20,8 +20,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
+
 import java.io.File;
 import java.util.ArrayList;
+
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.tools.Tools;
 import nie.translator.rtranslatordevedition.tools.gui.peers.GuiPeer;
@@ -301,7 +303,7 @@ public class ConversationBluetoothCommunicator {
         global.getMyID(new Global.MyIDListener() {
             @Override
             public void onSuccess(String id) {
-                bluetoothCommunicator.sendMessage(new Message(global, "d", id,receiver));
+                bluetoothCommunicator.sendMessage(new Message(global, "d", id, receiver));
             }
         });
     }

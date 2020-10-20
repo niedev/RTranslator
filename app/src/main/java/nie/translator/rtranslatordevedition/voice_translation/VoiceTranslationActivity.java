@@ -84,7 +84,6 @@ public class VoiceTranslationActivity extends GeneralActivity {
     };
     //objects
     private Global global;
-    private CustomAnimator animator;
     private Fragment fragment;
     private CoordinatorLayout fragmentContainer;
     private int currentFragment = -1;
@@ -102,7 +101,6 @@ public class VoiceTranslationActivity extends GeneralActivity {
         setContentView(R.layout.activity_main);
         global = (Global) getApplication();
         mainHandler = new Handler(Looper.getMainLooper());
-        animator = new CustomAnimator();
 
         // Clean fragments (only if the app is recreated (When user disable permission))
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -121,7 +119,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
-        fragmentContainer=findViewById(R.id.fragment_container);
+        fragmentContainer = findViewById(R.id.fragment_container);
 
         /*if (savedInstanceState != null) {
             //Restore the fragment's instance

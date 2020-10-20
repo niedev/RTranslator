@@ -184,6 +184,12 @@ public class PairingFragment extends PairingToolbarFragment {
             }
 
             @Override
+            public void onPeerUpdated(GuiPeer peer, GuiPeer newPeer) {
+                super.onPeerUpdated(peer, newPeer);
+                onPeerFound(newPeer);
+            }
+
+            @Override
             public void onPeerLost(GuiPeer peer) {
                 synchronized (lock) {
                     if (listView != null) {

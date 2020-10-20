@@ -30,25 +30,28 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import androidx.fragment.app.Fragment;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.tools.Tools;
 
 public class UserImageContainer {
-    private final String DEFAULT_IMAGE ="default";
-    private final String CUSTOM_IMAGE ="custom";
-    private static final String TEMP_PHOTO_DIRECTORY="temporary_images";
+    private final String DEFAULT_IMAGE = "default";
+    private final String CUSTOM_IMAGE = "custom";
+    private static final String TEMP_PHOTO_DIRECTORY = "temporary_images";
     private static final String TEMP_PICKED_PHOTO_FILE = "temporary_picked_holder.jpg";
     private static final String TEMP_CROPPED_PHOTO_FILE = "temporary_cropped_holder.jpg";
     private static int PICK_IMAGE = 1;
@@ -59,21 +62,21 @@ public class UserImageContainer {
     private Fragment fragment;
 
 
-    public UserImageContainer(ImageView image, @NonNull final Activity activity, final Fragment fragment){
-        this.imageView=image;
-        this.activity=activity;
-        this.fragment=fragment;
+    public UserImageContainer(ImageView image, @NonNull final Activity activity, final Fragment fragment) {
+        this.imageView = image;
+        this.activity = activity;
+        this.fragment = fragment;
 
         //user image initialization
-        Bitmap imageBitmap= Tools.getBitmapFromFile(new File(activity.getFilesDir(),"user_image"));
-        if(imageBitmap!=null){
+        Bitmap imageBitmap = Tools.getBitmapFromFile(new File(activity.getFilesDir(), "user_image"));
+        if (imageBitmap != null) {
             // get the user image and set it as the image
-            RoundedBitmapDrawable circlularImage= RoundedBitmapDrawableFactory.create(activity.getResources(),imageBitmap);
+            RoundedBitmapDrawable circlularImage = RoundedBitmapDrawableFactory.create(activity.getResources(), imageBitmap);
             circlularImage.setCircular(true);
             imageView.setImageDrawable(circlularImage);
             imageView.setTag(CUSTOM_IMAGE);
-            this.image=circlularImage.getBitmap();
-        }else{
+            this.image = circlularImage.getBitmap();
+        } else {
             imageView.setImageResource(R.drawable.user_icon);
             imageView.setTag(DEFAULT_IMAGE);
         }
@@ -99,16 +102,16 @@ public class UserImageContainer {
                             Intent pickIntent = new Intent("android.intent.action.PICK");
                             pickIntent.setType("image/*");
 
-                            if(fragment!=null) {
+                            if (fragment != null) {
                                 fragment.startActivityForResult(pickIntent, PICK_IMAGE);
-                            }else{
+                            } else {
                                 activity.startActivityForResult(pickIntent, PICK_IMAGE);
                             }
                         } else {
                             // insert the default image in the imageView
                             imageView.setImageResource(R.drawable.user_icon);
                             imageView.setTag(DEFAULT_IMAGE);
-                            UserImageContainer.this.image=null;
+                            UserImageContainer.this.image = null;
                             // delete the previous saved image
                             File file = new File(activity.getFilesDir(), "user_image");
                             file.delete();
@@ -121,13 +124,13 @@ public class UserImageContainer {
         });
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data, boolean saveImage){
-        if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK && data!=null && data.getData()!=null) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data, boolean saveImage) {
+        if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
             //copyFile the result into cache
-            copyImageUriIntoFile(data.getData(),getTempPickedFile());
+            copyImageUriIntoFile(data.getData(), getTempPickedFile());
             //start crop
             Intent intent = new Intent("com.android.camera.action.CROP");
-            intent.setDataAndTypeAndNormalize(getTempPickedUri(),"image/*");
+            intent.setDataAndTypeAndNormalize(getTempPickedUri(), "image/*");
             intent.putExtra("crop", "true");
             intent.putExtra("aspectX", 1);
             intent.putExtra("aspectY", 1);
@@ -137,19 +140,19 @@ public class UserImageContainer {
             intent.putExtra("noFaceDetection", true);
             intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.putExtra("output",getTempCroppedUri());
+            intent.putExtra("output", getTempCroppedUri());
             intent.setClipData(ClipData.newRawUri("output", getTempCroppedUri()));
-            if(fragment!=null) {
+            if (fragment != null) {
                 fragment.startActivityForResult(intent, CROP_IMAGE);
-            }else{
+            } else {
                 activity.startActivityForResult(intent, CROP_IMAGE);
             }
 
-        }else if(requestCode==CROP_IMAGE && resultCode == Activity.RESULT_OK && data != null){
-            Bitmap image=null;
+        } else if (requestCode == CROP_IMAGE && resultCode == Activity.RESULT_OK && data != null) {
+            Bitmap image = null;
             File tempFile = getTempCroppedFile();
 
-            if(tempFile!=null && tempFile.exists()) {
+            if (tempFile != null && tempFile.exists()) {
                 String path = tempFile.getAbsolutePath();
 
                 /*String filePath= Environment.getExternalStorageDirectory()+"/"+TEMP_PHOTO_FILE;
@@ -159,10 +162,10 @@ public class UserImageContainer {
                 tempFile.delete();
             }
 
-            if(image==null && data.getData()!=null){  //nel caso non sia stata salvata nel file
+            if (image == null && data.getData() != null) {  //nel caso non sia stata salvata nel file
                 String[] filePathColumn = {MediaStore.Images.Media.DATA};
                 Cursor cursor = activity.getContentResolver().query(data.getData(), filePathColumn, null, null, null);
-                if(cursor!=null) {
+                if (cursor != null) {
                     cursor.moveToFirst();
                     int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                     String picturePath = cursor.getString(columnIndex);
@@ -171,41 +174,41 @@ public class UserImageContainer {
                     image = BitmapFactory.decodeFile(picturePath);
                     // to prevent rotation bug
                     try {
-                        image=modifyOrientation(image,picturePath);
+                        image = modifyOrientation(image, picturePath);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             }
 
-            if(image!=null) {
+            if (image != null) {
                 // insertion of the selected image in the imageView
                 RoundedBitmapDrawable circlularImage = RoundedBitmapDrawableFactory.create(activity.getResources(), image);
                 circlularImage.setCircular(true);
                 imageView.setImageDrawable(circlularImage);
                 imageView.setTag(CUSTOM_IMAGE);
-                this.image=image;
-                if(saveImage) {
+                this.image = image;
+                if (saveImage) {
                     // saving the selected image
                     Tools.saveBitmapToFile(new File(activity.getFilesDir(), "user_image"), image);
                 }
-            }else{
-                Toast.makeText(activity,activity.getResources().getString(R.string.error_selecting_image),Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(activity, activity.getResources().getString(R.string.error_selecting_image), Toast.LENGTH_LONG).show();
             }
         }
     }
 
     private void copyImageUriIntoFile(Uri sourceUri, File destinationFile) {
-        InputStream inputStream=null;
+        InputStream inputStream = null;
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
         try {
             inputStream = activity.getContentResolver().openInputStream(sourceUri);
-            if(inputStream!=null) {
+            if (inputStream != null) {
                 bis = new BufferedInputStream(inputStream);
-                bos = new BufferedOutputStream(new FileOutputStream(destinationFile,false));
+                bos = new BufferedOutputStream(new FileOutputStream(destinationFile, false));
                 byte[] buf = new byte[1024];
-                while(bis.read(buf) != -1) {
+                while (bis.read(buf) != -1) {
                     bos.write(buf);
                 }
             }
@@ -222,8 +225,8 @@ public class UserImageContainer {
 
     }
 
-    public void saveContent(){
-        if(image!=null){
+    public void saveContent() {
+        if (image != null) {
             Tools.saveBitmapToFile(new File(activity.getFilesDir(), "user_image"), image);
         }
     }
@@ -270,7 +273,7 @@ public class UserImageContainer {
     }
 
     private Uri getTempCroppedUri() {
-        return FileProvider.getUriForFile(activity, "nie.translator.rtranslatordevedition.fileprovider",getTempCroppedFile());
+        return FileProvider.getUriForFile(activity, "nie.translator.rtranslatordevedition.fileprovider", getTempCroppedFile());
     }
 
     private File getTempPickedFile() {
@@ -284,10 +287,10 @@ public class UserImageContainer {
             return null;
         }*/
         activity.getCacheDir().mkdirs();
-        File directory= new File(activity.getCacheDir(),TEMP_PHOTO_DIRECTORY);
+        File directory = new File(activity.getCacheDir(), TEMP_PHOTO_DIRECTORY);
         directory.mkdirs();
-        File file = new File(directory,TEMP_PICKED_PHOTO_FILE);
-        if(!file.exists()) {
+        File file = new File(directory, TEMP_PICKED_PHOTO_FILE);
+        if (!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {
@@ -307,10 +310,10 @@ public class UserImageContainer {
             return null;
         }*/
         activity.getCacheDir().mkdirs();
-        File directory= new File(activity.getCacheDir(),TEMP_PHOTO_DIRECTORY);
+        File directory = new File(activity.getCacheDir(), TEMP_PHOTO_DIRECTORY);
         directory.mkdirs();
-        File file = new File(directory,TEMP_CROPPED_PHOTO_FILE);
-        if(!file.exists()) {
+        File file = new File(directory, TEMP_CROPPED_PHOTO_FILE);
+        if (!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {

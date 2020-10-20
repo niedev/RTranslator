@@ -19,10 +19,13 @@ package nie.translator.rtranslatordevedition.voice_translation._conversation_mod
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
+
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.BluetoothConnection;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.BluetoothMessage;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.BluetoothTools;
@@ -166,7 +169,7 @@ public class Message implements Parcelable, Cloneable {
         int subDataLength = BluetoothConnection.SUB_MESSAGES_LENGTH - BluetoothMessage.TOTAL_LENGTH;
         ArrayDeque<byte[]> subDataArray = BluetoothTools.splitBytes(BluetoothTools.concatBytes(header.getBytes(StandardCharsets.UTF_8), data), subDataLength);
 
-        BluetoothMessage.SequenceNumber sequenceNumber = new BluetoothMessage.SequenceNumber(context,BluetoothMessage.SEQUENCE_NUMBER_LENGTH);
+        BluetoothMessage.SequenceNumber sequenceNumber = new BluetoothMessage.SequenceNumber(context, BluetoothMessage.SEQUENCE_NUMBER_LENGTH);
         ArrayDeque<BluetoothMessage> bluetoothMessages = new ArrayDeque<>();
         while (subDataArray.peekFirst() != null) {
             byte[] subData = subDataArray.pollFirst();

@@ -24,12 +24,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+
 import com.google.android.material.textfield.TextInputLayout;
+
 import java.util.ArrayList;
+
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.settings.UserImageContainer;
@@ -63,10 +67,10 @@ public class UserDataFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        imageView= view.findViewById(R.id.user_image_initialization);
-        buttonConfirm= view.findViewById(R.id.buttonConfirm);
-        inputName= view.findViewById(R.id.input_name);
-        inputNameLayout=view.findViewById(R.id.input_name_layout);
+        imageView = view.findViewById(R.id.user_image_initialization);
+        buttonConfirm = view.findViewById(R.id.buttonConfirm);
+        inputName = view.findViewById(R.id.input_name);
+        inputNameLayout = view.findViewById(R.id.input_name_layout);
         //this.ageTerms = view.findViewById(R.id.checkBoxAge);
         //this.privacyTerms = view.findViewById(R.id.checkBoxPrivacy);
         //this.privacyTerms.setMovementMethod(LinkMovementMethod.getInstance());
@@ -75,9 +79,9 @@ public class UserDataFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        activity= (AccessActivity) requireActivity();
-        global= (Global) activity.getApplication();
-        userImageContainer= new UserImageContainer(imageView,activity,this);
+        activity = (AccessActivity) requireActivity();
+        global = (Global) activity.getApplication();
+        userImageContainer = new UserImageContainer(imageView, activity, this);
 
         buttonConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,11 +89,11 @@ public class UserDataFragment extends Fragment {
                 inputNameLayout.setErrorEnabled(false);
                 inputNameLayout.setErrorEnabled(true);
                 boolean error = false;
-                String name=inputName.getText().toString();
+                String name = inputName.getText().toString();
                 if (name.length() == 0) {
                     error = true;
                     inputNameLayout.setError(getResources().getString(R.string.error_missing_username));
-                }else{
+                } else {
                     //compatibily check for supported characters
                     ArrayList<Character> supportedCharacters = BluetoothTools.getSupportedUTFCharacters(global);
                     boolean equals = true;
@@ -100,7 +104,7 @@ public class UserDataFragment extends Fragment {
                     }
 
                     if (!equals) {
-                        error=true;
+                        error = true;
                         inputNameLayout.setError(getResources().getString(R.string.error_wrong_username) + BluetoothTools.getSupportedNameCharactersString(global));
                     }
                 }
@@ -121,7 +125,7 @@ public class UserDataFragment extends Fragment {
                     global.setFirstStart(false);
                     //start activity
                     Intent intent = new Intent(activity, VoiceTranslationActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     activity.startActivity(intent);
                     activity.finish();
                 }
@@ -146,6 +150,6 @@ public class UserDataFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        userImageContainer.onActivityResult(requestCode,resultCode,data,false);
+        userImageContainer.onActivityResult(requestCode, resultCode, data, false);
     }
 }
