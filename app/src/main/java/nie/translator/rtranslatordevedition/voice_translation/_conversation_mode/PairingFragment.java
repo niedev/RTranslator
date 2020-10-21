@@ -19,6 +19,9 @@ package nie.translator.rtranslatordevedition.voice_translation._conversation_mod
 import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -111,9 +114,9 @@ public class PairingFragment extends PairingToolbarFragment {
                             activity.rejectConnection(peer);
                         }
                     });
-                    connectionRequestDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                         @Override
-                        public void onDismiss(DialogInterface dialog) {
+                        public void onCancel(DialogInterface dialog) {
                             connectionRequestDialog = null;
                         }
                     });
@@ -205,7 +208,7 @@ public class PairingFragment extends PairingToolbarFragment {
                         if (peer.equals(getConfirmConnectionPeer())) {
                             RequestDialog requestDialog = getConnectionConfirmDialog();
                             if (requestDialog != null) {
-                                requestDialog.dismiss();
+                                requestDialog.cancel();
                             }
                         }
                     }
@@ -375,9 +378,9 @@ public class PairingFragment extends PairingToolbarFragment {
                 startConnectionTimer();
             }
         }, null);
-        connectionConfirmDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+        connectionConfirmDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
-            public void onDismiss(DialogInterface dialog) {
+            public void onCancel(DialogInterface dialog) {
                 confirmConnectionPeer = null;
                 connectionConfirmDialog = null;
             }

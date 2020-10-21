@@ -96,9 +96,9 @@ public class PeersInfoFragment extends Fragment {
                             activity.rejectConnection(peer);
                         }
                     });
-                    connectionRequestDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    connectionRequestDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                         @Override
-                        public void onDismiss(DialogInterface dialog) {
+                        public void onCancel(DialogInterface dialog) {
                             connectionRequestDialog = null;
                         }
                     });
@@ -190,7 +190,7 @@ public class PeersInfoFragment extends Fragment {
                         if (peer.equals(getConfirmConnectionPeer())) {
                             RequestDialog requestDialog = getConnectionConfirmDialog();
                             if (requestDialog != null) {
-                                requestDialog.dismiss();
+                                requestDialog.cancel();
                             }
                         }
                     }
@@ -392,9 +392,9 @@ public class PeersInfoFragment extends Fragment {
                 startConnectionTimer();
             }
         }, null);
-        connectionConfirmDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+        connectionConfirmDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
-            public void onDismiss(DialogInterface dialog) {
+            public void onCancel(DialogInterface dialog) {
                 confirmConnectionPeer = null;
                 connectionConfirmDialog = null;
             }

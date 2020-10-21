@@ -76,17 +76,16 @@ public class RequestDialog {
                 @Override
                 public void onEnd() {
                     alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
-                    //negativeListener.onClick();
                 }
             }).start();
         }
     }
 
-    public void setOnDismissListener(DialogInterface.OnDismissListener onDismissListener) {
-        alertDialog.setOnDismissListener(onDismissListener);
+    public void setOnCancelListener(DialogInterface.OnCancelListener onCancelListener) {
+        alertDialog.setOnCancelListener(onCancelListener);
     }
 
-    public void dismiss() {
-        alertDialog.dismiss();
+    public void cancel() {
+        alertDialog.cancel();
     }
 }
