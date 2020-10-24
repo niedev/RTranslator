@@ -86,6 +86,7 @@ Supported languages (excluding variants) are as follows:
 Bengali, Czech, Chinese, Korean, Danish, Finnish, French, Japanese, Greek, Hindi, Indonesian, English, Italian, Khmer, Nepalese, Dutch, Polish, Portuguese, Romanian, Russian, Sinhalese, Slovak, Spanish, Sundanese, Swedish, German, Thai, Turkish, Ukrainian, Hungarian, Vietnamese.
 <br /><br />
 
+<h3>Bugs and problems</h3>
 I remember that the app is still a beta, the bugs found are the following:
 
 - for some languages the TTS does not work, reinstall the text-to-speech engine to resolve
