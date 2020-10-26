@@ -30,9 +30,10 @@ import nie.translator.rtranslatordevedition.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslatordevedition.tools.gui.peers.GuiPeer;
 import nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationService;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Message;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.Channel;
+
+import com.bluetooth.communicator.tools.Timer;
+import com.bluetooth.communicator.Message;
+import com.bluetooth.communicator.Peer;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.CloudApiText;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.translation.Translator;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.voice.Recognizer;
@@ -44,7 +45,7 @@ public class ConversationService extends VoiceTranslationService {
     public static final int CHANGE_LANGUAGE = 15;
 
     private static final long WAKELOCK_TIMEOUT = 20 * 1000L;  // 10 minutes, so if the service stopped without calling onDestroyed the wakeLock would still be released within 10 minutes
-    private Channel.Timer wakeLockTimer;  // to reactivate the timer every 10 minutes, so as long as the service is active the wakelock will never expire
+    private Timer wakeLockTimer;  // to reactivate the timer every 10 minutes, so as long as the service is active the wakelock will never expire
     private PowerManager.WakeLock screenWakeLock;
     private String textRecognized = "";
     private Translator translator;
@@ -269,11 +270,11 @@ public class ConversationService extends VoiceTranslationService {
         return mBluetoothHelper.isOnHeadsetSco();
     }
 
-    private void startWakeLockReactivationTimer(final Channel.Timer.Callback callback) {
+    private void startWakeLockReactivationTimer(final Timer.Callback callback) {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                wakeLockTimer = new Channel.Timer(WAKELOCK_TIMEOUT - 10000);  //si riattiva 10 secondi prima cosi da essere sicuri che non ci siano istanti in cui il wakelock è rilasciato
+                wakeLockTimer = new Timer(WAKELOCK_TIMEOUT - 10000);  //si riattiva 10 secondi prima cosi da essere sicuri che non ci siano istanti in cui il wakelock è rilasciato
                 wakeLockTimer.setCallback(callback);
                 wakeLockTimer.start();
             }
@@ -296,7 +297,7 @@ public class ConversationService extends VoiceTranslationService {
         PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
         screenWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "speechGoogleUserEdition:screenWakeLock");
         screenWakeLock.acquire(WAKELOCK_TIMEOUT);
-        startWakeLockReactivationTimer(new Channel.Timer.Callback() {
+        startWakeLockReactivationTimer(new Timer.Callback() {
             @Override
             public void onFinished() {
                 acquireWakeLock();

@@ -46,10 +46,9 @@ import nie.translator.rtranslatordevedition.tools.gui.peers.array.InfoArray;
 import nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.PairingFragment;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode._conversation.ConversationFragment;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.BluetoothCommunicator;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.Channel;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.client.BluetoothConnectionClient;
+import com.bluetooth.communicator.BluetoothCommunicator;
+import com.bluetooth.communicator.Peer;
+import com.bluetooth.communicator.tools.Timer;
 
 
 public class PeersInfoFragment extends Fragment {
@@ -67,7 +66,7 @@ public class PeersInfoFragment extends Fragment {
     private Global global;
     private final Object lock = new Object();
     private VoiceTranslationActivity.Callback communicatorCallback;
-    private Channel.Timer connectionTimer;
+    private Timer connectionTimer;
     private Peer connectingPeer;
     private ArrayList<Peer> disconnectingPeers = new ArrayList<>();
 
@@ -132,7 +131,7 @@ public class PeersInfoFragment extends Fragment {
             public void onConnectionFailed(GuiPeer peer, int errorCode) {
                 super.onConnectionFailed(peer, errorCode);
                 if (connectingPeer != null) {
-                    if (connectionTimer != null && !connectionTimer.isFinished() && errorCode != BluetoothConnectionClient.CONNECTION_REJECTED) {
+                    if (connectionTimer != null && !connectionTimer.isFinished() && errorCode != BluetoothCommunicator.CONNECTION_REJECTED) {
                         // the timer has not expired and the connection has not been refused, so we try again
                         activity.connect(peer);
                     } else {
@@ -144,7 +143,7 @@ public class PeersInfoFragment extends Fragment {
                         disappearLoading();
                         activateInputs();
                         connectingPeer = null;
-                        if (errorCode == BluetoothConnectionClient.CONNECTION_REJECTED) {
+                        if (errorCode == BluetoothCommunicator.CONNECTION_REJECTED) {
                             Toast.makeText(activity, peer.getName() + getResources().getString(R.string.error_connection_rejected), Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(activity, getResources().getString(R.string.error_connection), Toast.LENGTH_SHORT).show();
@@ -409,7 +408,7 @@ public class PeersInfoFragment extends Fragment {
     }
 
     private void startConnectionTimer() {
-        connectionTimer = new Channel.Timer(PairingFragment.CONNECTION_TIMEOUT);
+        connectionTimer = new Timer(PairingFragment.CONNECTION_TIMEOUT);
         connectionTimer.start();
     }
 

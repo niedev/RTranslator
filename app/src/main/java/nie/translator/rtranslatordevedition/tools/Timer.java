@@ -19,7 +19,7 @@ package nie.translator.rtranslatordevedition.tools;
 import android.os.Handler;
 import android.os.Looper;
 
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.CustomCountDownTimer;
+import com.bluetooth.communicator.tools.CustomCountDownTimer;
 
 public class Timer {
     private final long hourMillis=3600000;

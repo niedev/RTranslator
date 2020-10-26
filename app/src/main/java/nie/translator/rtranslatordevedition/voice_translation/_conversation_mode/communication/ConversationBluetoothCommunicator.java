@@ -21,15 +21,17 @@ import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.bluetooth.communicator.BluetoothCommunicator;
+import com.bluetooth.communicator.Message;
+import com.bluetooth.communicator.Peer;
+import com.gallery.imageselector.GalleryImageSelector;
+
 import java.io.File;
 import java.util.ArrayList;
 
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.tools.Tools;
 import nie.translator.rtranslatordevedition.tools.gui.peers.GuiPeer;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.BluetoothCommunicator;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Message;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeersDataManager;
 
@@ -309,7 +311,7 @@ public class ConversationBluetoothCommunicator {
     }
 
     private void sendImage(Peer receiver) {
-        Bitmap imageBitmap = Tools.getBitmapFromFile(new File(global.getFilesDir(), "user_image"));
+        Bitmap imageBitmap = GalleryImageSelector.getSavedImage(global);
         if (imageBitmap != null) {
             Bitmap compressedImage = Tools.getResizedBitmap(global, imageBitmap, 160);
             bluetoothCommunicator.sendData(new Message(global, "i", Tools.convertBitmapToBytes(compressedImage, 70), receiver));

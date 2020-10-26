@@ -109,6 +109,10 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:$supportLibraryVersion"
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation "androidx.preference:preference:1.1.0-alpha02"  //prima era l'apha 2
+    //bluetooth communicator
+    implementation 'com.github.niedev:BluetoothCommunicator:1.0.6'
+    //gallery image selector
+    implementation 'com.github.niedev:GalleryImageSelector:1.0.7'
     //JWS parser
     implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '5.1'
     // gRPC

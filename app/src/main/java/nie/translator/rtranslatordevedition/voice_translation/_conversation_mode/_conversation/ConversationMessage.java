@@ -18,7 +18,7 @@ package nie.translator.rtranslatordevedition.voice_translation._conversation_mod
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
+import com.bluetooth.communicator.Peer;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.CloudApiResult;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.CloudApiText;
 

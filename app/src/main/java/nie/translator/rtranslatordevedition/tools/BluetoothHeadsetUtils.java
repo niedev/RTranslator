@@ -11,7 +11,7 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import java.util.List;
 
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.CustomCountDownTimer;
+import com.bluetooth.communicator.tools.CustomCountDownTimer;
 
 /**
  * This is a utility to detect bluetooth headset connection and establish audio connection

@@ -27,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -35,6 +36,9 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceGroupAdapter;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.gallery.imageselector.GalleryImageSelector;
+
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.tools.ErrorCodes;
@@ -51,7 +55,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private int downloads = 0;
     private boolean isDownloading = false;
     //objects
-    private UserImageContainer userImageContainer;
+    private GalleryImageSelector userImageContainer;
     private ProgressBar progressBar;
     private Global global;
     private SettingsActivity activity;
@@ -135,7 +139,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         userImagePreference.setLifecycleListener(new UserImagePreference.LifecycleListener() {
             @Override
             public void onBindViewHolder() {
-                userImageContainer = new UserImageContainer(userImagePreference.getImage(), activity, SettingsFragment.this);
+                userImageContainer = new GalleryImageSelector(userImagePreference.getImage(), activity, SettingsFragment.this, R.drawable.user_icon, "com.gallery.RTranslator.provider");
             }
         });
 

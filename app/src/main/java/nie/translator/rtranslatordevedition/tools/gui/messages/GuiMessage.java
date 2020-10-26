@@ -18,7 +18,7 @@ package nie.translator.rtranslatordevedition.tools.gui.messages;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Message;
+import com.bluetooth.communicator.Message;
 
 public class GuiMessage implements Parcelable {
     private Message message;

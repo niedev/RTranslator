@@ -60,8 +60,8 @@ import nie.translator.rtranslatordevedition.voice_translation._conversation_mode
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode._conversation.ConversationService;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode._conversation.main.ConversationMainFragment;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.BluetoothCommunicator;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
+import com.bluetooth.communicator.BluetoothCommunicator;
+import com.bluetooth.communicator.Peer;
 import nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieFragment;
 import nie.translator.rtranslatordevedition.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieService;
 

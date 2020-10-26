@@ -25,7 +25,7 @@ import androidx.annotation.Nullable;
 import java.util.Objects;
 import nie.translator.rtranslatordevedition.tools.gui.peers.GuiPeer;
 import nie.translator.rtranslatordevedition.tools.gui.peers.Listable;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
+import com.bluetooth.communicator.Peer;
 
 
 public class RecentPeer implements Parcelable, Listable {

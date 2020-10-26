@@ -73,7 +73,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.tools.gui.peers.GuiPeer;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
+import com.bluetooth.communicator.Peer;
 
 public class Tools {
     public static final int CONNECTION_SERVICE = 0;

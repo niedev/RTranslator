@@ -26,7 +26,7 @@ import androidx.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 
 import nie.translator.rtranslatordevedition.tools.Tools;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
+import com.bluetooth.communicator.Peer;
 
 public class GuiPeer extends Peer implements Listable {
     private byte[] userImage;

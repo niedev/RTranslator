@@ -34,7 +34,7 @@ import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.tools.gui.animations.CustomAnimator;
 import nie.translator.rtranslatordevedition.tools.gui.peers.array.PeerListArray;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
+import com.bluetooth.communicator.Peer;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeersDataManager;
 

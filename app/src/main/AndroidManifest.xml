@@ -71,7 +71,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="nie.translator.rtranslatordevedition.fileprovider"
+            android:authorities="com.gallery.RTranslator.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

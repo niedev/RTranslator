@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
 import nie.translator.rtranslatordevedition.tools.gui.GuiTools;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.BluetoothTools;
+import com.bluetooth.communicator.tools.BluetoothTools;
 
 
 public class UserNamePreference extends Preference {

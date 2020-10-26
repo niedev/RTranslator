@@ -40,10 +40,8 @@ import nie.translator.rtranslatordevedition.api_management.ConsumptionsDataManag
 import nie.translator.rtranslatordevedition.tools.CustomLocale;
 import nie.translator.rtranslatordevedition.tools.ErrorCodes;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.BluetoothCommunicator;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Message;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.connection.BluetoothConnection;
+import com.bluetooth.communicator.BluetoothCommunicator;
+import com.bluetooth.communicator.Peer;
 import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.recent_peer.RecentPeersDataManager;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.translation.Translator;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.voice.Recorder;

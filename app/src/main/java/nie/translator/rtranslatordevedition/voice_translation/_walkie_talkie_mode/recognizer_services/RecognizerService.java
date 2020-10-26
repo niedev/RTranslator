@@ -28,7 +28,7 @@ import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.tools.CustomLocale;
 import nie.translator.rtranslatordevedition.tools.services_communication.ServiceCallback;
 import nie.translator.rtranslatordevedition.tools.services_communication.ServiceCommunicator;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.Peer;
+import com.bluetooth.communicator.Peer;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.CloudApiResult;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.translation.Translator;
 import nie.translator.rtranslatordevedition.voice_translation.cloud_apis.voice.Recognizer;

@@ -30,15 +30,15 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import com.gallery.imageselector.GalleryImageSelector;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 
 import nie.translator.rtranslatordevedition.Global;
 import nie.translator.rtranslatordevedition.R;
-import nie.translator.rtranslatordevedition.settings.UserImageContainer;
 import nie.translator.rtranslatordevedition.voice_translation.VoiceTranslationActivity;
-import nie.translator.rtranslatordevedition.voice_translation._conversation_mode.communication.communicator.tools.BluetoothTools;
+import com.bluetooth.communicator.tools.BluetoothTools;
 
 
 public class UserDataFragment extends Fragment {
@@ -50,7 +50,7 @@ public class UserDataFragment extends Fragment {
     //private CheckBox ageTerms;
     private AccessActivity activity;
     private Global global;
-    private UserImageContainer userImageContainer;
+    private GalleryImageSelector userImageContainer;
 
 
     public UserDataFragment() {
@@ -81,7 +81,7 @@ public class UserDataFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         activity = (AccessActivity) requireActivity();
         global = (Global) activity.getApplication();
-        userImageContainer = new UserImageContainer(imageView, activity, this);
+        userImageContainer = new GalleryImageSelector(imageView, activity, this, R.drawable.user_icon, "com.gallery.RTranslator.provider");
 
         buttonConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,7 +120,7 @@ public class UserDataFragment extends Fragment {
                     //save name
                     global.setName(inputName.getText().toString());
                     //save image
-                    userImageContainer.saveContent();
+                    userImageContainer.saveImage();
                     //modification of the firstStart
                     global.setFirstStart(false);
                     //start activity
