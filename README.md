@@ -86,6 +86,13 @@ Supported languages (excluding variants) are as follows:
 Bengali, Czech, Chinese, Korean, Danish, Finnish, French, Japanese, Greek, Hindi, Indonesian, English, Italian, Khmer, Nepalese, Dutch, Polish, Portuguese, Romanian, Russian, Sinhalese, Slovak, Spanish, Sundanese, Swedish, German, Thai, Turkish, Ukrainian, Hungarian, Vietnamese.
 <br /><br />
 
+<h3>Libraries</h3>
+
+RTranslator uses two libraries, one for communication between devices based on Bluetooth Low Energy and another for selecting and cropping the profile image from the gallery.
+
+The two libraries are <a href="https://github.com/niedev/BluetoothCommunicator" target="_blank" rel="noopener noreferrer">BluetoothCommunicator</a> and <a href="https://github.com/niedev/GalleryImageSelector" target="_blank" rel="noopener noreferrer">GalleryImageSelector</a> respectively, see their github pages and sample apps for more details.
+<br /><br />
+
 <h3>Bugs and problems</h3>
 I remember that the app is still a beta, the bugs found are the following:
 
