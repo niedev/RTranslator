@@ -83,7 +83,7 @@ Ai sensi del Regolamento europeo 679/2016 (GDPR) e della normativa nazionale, l'
 - avere informazioni circa la logica, le modalità e le finalità del trattamento;
 - richiederne l'aggiornamento, la rettifica, l'integrazione, la cancellazione, la trasformazione in forma anonima, il blocco dei dati trattati in violazione di legge, ivi compresi quelli non più necessari al perseguimento degli scopi per i quali sono stati raccolti;
 - nei casi di trattamento basato su consenso, ricevere, al solo costo dell’eventuale supporto, i suoi dati forniti al titolare e da esso detenuti, in forma strutturata e leggibile da un elaboratore di dati e in un formato comunemente usato da un dispositivo elettronico;
-- il diritto di presentare un reclamo all’Autorità di controllo (Garante Privacy – link alla pagina del Garante); 
+- il diritto di presentare un reclamo all’Autorità di controllo (Garante Privacy – <a href="http://www.garanteprivacy.it/web/guest/home/docweb/-/docweb-display/docweb/4535524" target="_blank" rel="noopener noreferrer">link alla pagina del Garante</a>); 
 - nonché, più in generale, esercitare tutti i diritti che gli sono riconosciuti dalle vigenti disposizioni di legge.
 
 Le richieste vanno rivolte al Titolare del trattamento. <br />
