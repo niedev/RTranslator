@@ -86,9 +86,19 @@ Supported languages (excluding variants) are as follows:
 Bengali, Czech, Chinese, Korean, Danish, Finnish, French, Japanese, Greek, Hindi, Indonesian, English, Italian, Khmer, Nepalese, Dutch, Polish, Portuguese, Romanian, Russian, Sinhalese, Slovak, Spanish, Sundanese, Swedish, German, Thai, Turkish, Ukrainian, Hungarian, Vietnamese.
 <br /><br />
 
+<h3>Privacy</h3>
+
+Privacy is a very important right, that's why RTranslator does not collect any personal data (I don't even have a server), for more information read the <a href="https://github.com/niedev/RTranslator/blob/master/privacy/Privacy_Policy_en.md" target="_blank" rel="noopener noreferrer">privacy policy</a>.
+
+Also with regard to audio data and transcripts sent to Google for translation and speech recognition (only when speaking in WalkieTalkie mode or Conversation mode and the microphone becomes clearer, so only when necessary), the latter are used by Google only to carry out these operations and in no other way.
+
+On the other hand, if data logging for Google Cloud Speech is activated, the audio data sent will be used by Google only to improve its products and services.
+For more information read https://cloud.google.com/speech-to-text/docs/data-logging#data-security for Google Cloud Speech and https://cloud.google.com/translate/data-usage for Google Cloud Translation API.
+<br /><br />
+
 <h3>Libraries</h3>
 
-RTranslator uses two libraries, one for communication between devices based on Bluetooth Low Energy and another for selecting and cropping the profile image from the gallery.
+RTranslator uses two open source libraries, one for communication between devices based on Bluetooth Low Energy and another for selecting and cropping the profile image from the gallery.
 
 The two libraries are <a href="https://github.com/niedev/BluetoothCommunicator" target="_blank" rel="noopener noreferrer">BluetoothCommunicator</a> and <a href="https://github.com/niedev/GalleryImageSelector" target="_blank" rel="noopener noreferrer">GalleryImageSelector</a> respectively, see their github pages and sample apps for more details.
 <br /><br />
