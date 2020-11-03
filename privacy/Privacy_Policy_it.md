@@ -36,6 +36,7 @@ Il download dell'App viene, inoltre, utilizzato come dato numerico al solo fine 
 Per quanto attiene ai dati salvati dalla App nel keystore del device, sulla base del sistema operativo utilizzato si segnala quanto segue:
 - Android: i dati sono salvati nelle shared preferences fino a quando il cliente non esegue “Cancella dati” da Gestione Applicazioni oppure non disinstalla l’App;
 - iOS: i dati sono salvati nel keystore. 
+
 Il Titolare dell'App non è coinvolto in tali trattamenti; per ulteriori informazioni relativamente al salvataggio e cancellazione dei dati sul device vi invitiamo a fare riferimento ai produttori dei sistemi operativi utilizzati.
 <br /><br />
 
