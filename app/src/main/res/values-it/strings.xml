@@ -24,7 +24,7 @@
     <string name="no_devices">no devices</string>
     <string name="available">disponibile</string>
     <string name="not_available">non disponibile</string>
-    <string name="loading">caricamento...</string>
+    <string name="loading">caricamento…</string>
     <string name="forward">avanti</string>
     <string name="no_graph_data">Nessun dato sull\' utilizzo presente</string>
     <string name="conversation">conversazione</string>
@@ -33,7 +33,7 @@
     <string name="notification_channel_name">notifica uso in background</string>
 
     <string name="age_check_box">Dichiaro di avere almeno 14 anni</string>
-    <string name="privacy_check_box">Dichiaro di aver letto la <a href="http://www.rtranslator.com/privacy-policy-app/?lang=it">privacy policy</a> e l\'<a href="http://www.rtranslator.com/user-information-app/?lang=it">informativa utenti</a></string>
+    <string name="privacy_check_box">Dichiaro di aver letto la <a href="https://github.com/niedev/RTranslator/blob/master/privacy/Privacy_Policy_it.md">privacy policy</a></string>
 
     <string name="toast_working_background">RTranslator funzionerà in background</string>
 
@@ -76,7 +76,7 @@
     <string name="error_selecting_image">Errore durante la selezione dell\' immagine, usa un\' altra galleria per selezionarla</string>
     <string name="error_wait_download_end">Aspetta che il download finisca</string>
     <string name="error_age_unchecked">Devi avere almeno 14 anni per usare l\'app</string>
-    <string name="error_privacy_unchecked">Devi aver letto la privacy policy e l\'informativa utenti per usare l\'app</string>
+    <string name="error_privacy_unchecked">Devi aver letto la privacy policy per usare l\'app</string>
     <string name="error_missing_username">Inserire un nome</string>
     <string name="error_wrong_username">Il testo contiene caratteri non ammessi, sono ammessi solo i seguenti caratteri: </string>
 

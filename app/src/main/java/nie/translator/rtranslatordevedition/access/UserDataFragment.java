@@ -18,10 +18,12 @@ package nie.translator.rtranslatordevedition.access;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -46,7 +48,7 @@ public class UserDataFragment extends Fragment {
     private Button buttonConfirm;
     private EditText inputName;
     private TextInputLayout inputNameLayout;
-    //private CheckBox privacyTerms;
+    private CheckBox privacyTerms;
     //private CheckBox ageTerms;
     private AccessActivity activity;
     private Global global;
@@ -72,8 +74,8 @@ public class UserDataFragment extends Fragment {
         inputName = view.findViewById(R.id.input_name);
         inputNameLayout = view.findViewById(R.id.input_name_layout);
         //this.ageTerms = view.findViewById(R.id.checkBoxAge);
-        //this.privacyTerms = view.findViewById(R.id.checkBoxPrivacy);
-        //this.privacyTerms.setMovementMethod(LinkMovementMethod.getInstance());
+        this.privacyTerms = view.findViewById(R.id.checkBoxPrivacy);
+        this.privacyTerms.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     @Override
@@ -111,11 +113,11 @@ public class UserDataFragment extends Fragment {
                 /*if (!ageTerms.isChecked() && !error) {
                     error = true;
                     showAgeTermsError();
-                }
+                }*/
                 if (!privacyTerms.isChecked() && !error) {
                     error = true;
                     showPrivacyTermsError();
-                }*/
+                }
                 if (!error) {
                     //save name
                     global.setName(inputName.getText().toString());
