@@ -10,13 +10,16 @@ Connect to someone who has the app, connect Bluetooth headphones, put the phone 
 ![WalkieTalkie mode and Costs](https://github.com/niedev/RTranslator/blob/master/images/WalkieTalkie_and_Costs_image_github.png)
 <br /><br /><br />
 
-
 <h3>Initial configuration</h3>
 
 To use speech recognition and translation (without it the app can do nothing) you need to create a Google Cloud Platform and create and get a file to associate the account with the APIs for the payment (even if, activating the free trial, you have $ 300 credit to use in 1 year in Google Cloud Platform) based on the use of the latter.
 To create the account and get the file follow this tutorial from a computer or using the "desktop site" option on the phone, this is because the Google Cloud Platform mobile version site does not have some options necessary to complete the tutorial.
 
-First download the latest version of the app apk file from https://github.com/niedev/RTranslator/releases/ and install it, then follow these passages:
+First download the latest version of the app apk file from https://github.com/niedev/RTranslator/releases/ or from google play store and install it.
+
+<a href='https://play.google.com/store/apps/details?id=nie.translator.rtranslatordevedition&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200"/></a>
+
+Then follow these passages:
 
 
 <strong>1.</strong> Go to&nbsp;<a style="background-color: #fafafa; font-size: 1rem;" href="http://console.cloud.google.com/" 
