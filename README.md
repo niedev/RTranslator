@@ -15,22 +15,22 @@ Connect to someone who has the app, connect Bluetooth headphones, put the phone 
 The Conversation mode is the main feature of RTranslator, in this mode you can connect with another phone that uses this app, if the user accept you connection request your audio will be captured by the microphone of your phone, or by that of the Bluetooth headset if connected, it will be converted into text and sent to the interlocutor's phone, which will translate it into his language and convert it into audio that will be played on the speaker of the phone, or on the Bluetooth headset of the interlocutor if it is connected to his phone.
 All this in both directions.
 
-Each user can have more than 1 interlocutor, so you can translate conversations between more than two people and in any combination.<br /><br />
-
+Each user can have more than 1 interlocutor, so you can translate conversations between more than two people and in any combination.
+<br /><br />
 
 <h3>WalkieTalkie mode</h3>
 
 If conversation mode is useful for having a long conversation with someone, this mode is designed for quick conversations, such as asking for information on the street or talking to a shop assistant, this mode only translates conversations between two people, it don't work with Bluetooth headsets and you have to talk in turns, it's not a real simultaneous translation, but it can work with only one phone.
 
-In this mode, the smartphone microphone will listen in two languages (selectable in the same screen of the walkie talkie mode) simultaneously. The app will detect in which language the interlocutor is speaking, translate the audio into the other language, convert the text into audio, and then reproduce it from the phone speaker. When the TTS has finished, it will automatically resume listening.<br /><br />
-
+In this mode, the smartphone microphone will listen in two languages (selectable in the same screen of the walkie talkie mode) simultaneously. The app will detect in which language the interlocutor is speaking, translate the audio into the other language, convert the text into audio, and then reproduce it from the phone speaker. When the TTS has finished, it will automatically resume listening.
+<br /><br />
 
 <h3>General</h3>
 
 Both translation and speech recognition use Google's API, to ensure the best possible quality.
 
-In addition, RTranslator (only when Conversation or WalkieTalkie modes are used) works even in the background, with the phone in standby or when using other apps.<br /><br />
-
+In addition, RTranslator (only when Conversation or WalkieTalkie modes are used) works even in the background, with the phone in standby or when using other apps.
+<br /><br />
 
 <h3>Initial configuration</h3>
 
@@ -104,9 +104,9 @@ font-size: 1rem;" href="https://cloud.google.com/speech-to-text/docs/enable-data
 cloud.google.com/speech-to-text/docs/enable-data-logging</a>.
 <br /><br />
 
-<h3>Informations</h3>
+<h3>Supported languages</h3>
 
-Supported languages (excluding variants) are as follows:
+The languages supported (excluding variants) are as follows:
 
 Bengali, Czech, Chinese, Korean, Danish, Finnish, French, Japanese, Greek, Hindi, Indonesian, English, Italian, Khmer, Nepalese, Dutch, Polish, Portuguese, Romanian, Russian, Sinhalese, Slovak, Spanish, Sundanese, Swedish, German, Thai, Turkish, Ukrainian, Hungarian, Vietnamese.
 <br /><br />
