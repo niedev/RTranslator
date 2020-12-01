@@ -13,6 +13,7 @@ Connect to someone who has the app, connect Bluetooth headphones, put the phone 
 <h3>Conversation mode</h3>
 
 The Conversation mode is the main feature of RTranslator. In this mode, you can connect with another phone that uses this app. If the user accepts your connection request:
+
 - When you talk, your phone (or the Bluetooth headset, if connected) will capture the audio.
 
 - The audio captured will be converted into text and sent to the interlocutor's phone.
