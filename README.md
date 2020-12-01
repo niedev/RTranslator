@@ -45,7 +45,10 @@ In addition, RTranslator (only when Conversation or WalkieTalkie modes are used)
 
 <h3>Initial configuration</h3>
 
-To use speech recognition and translation (without it the app can do nothing) you need to create a Google Cloud Platform and create and get a file to associate the account with the APIs for the payment (even if, activating the free trial, you have $ 300 credit to use in 1 year in Google Cloud Platform) based on the use of the latter.
+To use speech recognition and translation (without it the app can do nothing) you need to create a Google Cloud Platform and create and get a file to associate the account with the APIs for the payment based on the use of the latter.
+
+If you create the account for the first time, activating the free trial, you have $ 300 credit to use in 1 year in Google Cloud Platform
+
 To create the account and get the file follow this tutorial from a computer or using the "desktop site" option on the phone, this is because the Google Cloud Platform mobile version site does not have some options necessary to complete the tutorial.
 
 First download the latest version of the app apk file from https://github.com/niedev/RTranslator/releases/ or from Google Play Store and install it.
