@@ -40,7 +40,7 @@ The app will detect in which language the interlocutor is speaking, translate th
 
 Both translation and speech recognition use Google's APIs to ensure the best possible quality.
 
-Also, RTranslator works even in the background, with the phone on standby or using other apps (only when you use Conversation or WalkieTalkie modes).
+Also, RTranslator works even in the background, with the phone on standby or when using other apps (only when you use Conversation or WalkieTalkie modes).
 <br /><br />
 
 <h3>Initial configuration</h3>
