@@ -134,9 +134,9 @@ On the other hand, if data logging for Google Cloud Speech is activated, the aud
 
 <h3>Libraries</h3>
 
-RTranslator uses two open-source libraries, one for communication between devices and another for selecting and cropping the profile image from the gallery.
+RTranslator uses three open-source libraries, one for communication between devices, another for selecting and cropping the profile image from the gallery and another for the cost chart.
 
-The two libraries are <a href="https://github.com/niedev/BluetoothCommunicator" target="_blank" rel="noopener noreferrer">BluetoothCommunicator</a> and <a href="https://github.com/niedev/GalleryImageSelector" target="_blank" rel="noopener noreferrer">GalleryImageSelector</a>, respectively. See their GitHub pages and sample apps for more details.
+The three libraries are <a href="https://github.com/niedev/BluetoothCommunicator" target="_blank" rel="noopener noreferrer">BluetoothCommunicator</a>, <a href="https://github.com/niedev/GalleryImageSelector" target="_blank" rel="noopener noreferrer">GalleryImageSelector</a> and [GraphView](https://github.com/jjoe64/GraphView) respectively. See their GitHub pages and sample apps for more details.
 <br /><br />
 
 <h3>Bugs and problems</h3>
