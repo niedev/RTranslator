@@ -42,8 +42,10 @@ The app will detect in which language the interlocutor is speaking, translate th
 Both translation and speech recognition use Google's APIs to ensure the best possible quality.
 
 Also, RTranslator works even in the background, with the phone on standby or when using other apps (only when you use Conversation or WalkieTalkie modes).
-<br /><br />
+<a href='https://play.google.com/store/apps/details?id=nie.translator.rtranslatordevedition&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200"/></a>
+<a href="https://www.producthunt.com/posts/rtranslator?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-rtranslator" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=274849&theme=light" alt="RTranslator - World's first open-source simultaneous translation app. | Product Hunt" style="width: 250px; height: 54px;" width="250" height="77"/></a>
 
+<br />
 <h3>Initial configuration</h3>
 
 To use speech recognition and translation (without it, the app can do nothing), you need to create a Google Cloud Platform account and create and get a file to associate the account with the APIs for the payment based on the latter's use. If you create the account for the first time, activating the free trial, you will have $ 300 credit to use for one year in Google Cloud Platform.
@@ -51,9 +53,6 @@ To use speech recognition and translation (without it, the app can do nothing), 
 To create the account and get the file follow this tutorial from a computer or using the "desktop site" option on the phone, this is because the Google Cloud Platform mobile version site does not have some options necessary to complete the tutorial.
 
 First, download the latest version of the app apk file from https://github.com/niedev/RTranslator/releases/ or Google Play Store and install it.
-
-<a href='https://play.google.com/store/apps/details?id=nie.translator.rtranslatordevedition&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200"/></a>
-<a href="https://www.producthunt.com/posts/rtranslator?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-rtranslator" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=274849&theme=light" alt="RTranslator - World's first open-source simultaneous translation app. | Product Hunt" style="width: 250px; height: 54px;" width="250" height="77"/></a>
 
 Then follow these passages:
 
