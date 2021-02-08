@@ -54,7 +54,7 @@ To use speech recognition and translation (without it, the app can do nothing), 
 To create the account and get the file follow this tutorial from a computer or using the "desktop site" option on the phone, this is because the Google Cloud Platform mobile version site does not have some options necessary to complete the tutorial.
 
 First, download the latest version of the app apk file from https://github.com/niedev/RTranslator/releases/ or Google Play Store and install it. Then follow these passages:
-
+<br /><br />
 
 <strong>1.</strong> Go to&nbsp;<a style="background-color: #fafafa; font-size: 1rem;" href="http://console.cloud.google.com/" 
 target="_blank" rel="noopener noreferrer">console.cloud.google.com</a>&nbsp;and sign in with your Google account or create one.
