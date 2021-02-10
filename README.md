@@ -145,4 +145,4 @@ I remember that the app is still a beta. The bugs found are the following:
 - Sometimes at the first start, the app notifies that Bluetooth LE is not supported. If your device supports Bluetooth LE, the next time you start the app, the message should no longer appear.
 <br /><br />
 
-Enjoy your real-time translator.
+Enjoy your simultaneous translator.
