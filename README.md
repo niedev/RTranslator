@@ -143,6 +143,8 @@ I remember that the app is still a beta. The bugs found are the following:
 - For some languages, the TTS does not work. Reinstall the text-to-speech engine to resolve.
 - On some devices, there are device search problems.
 - Sometimes at the first start, the app notifies that Bluetooth LE is not supported. If your device supports Bluetooth LE, the next time you start the app, the message should no longer appear.
+
+If you have found any other bug please report it by writing an email to contact.niedev@gmail.com
 <br /><br />
 
 Enjoy your simultaneous translator.
