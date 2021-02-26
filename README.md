@@ -73,8 +73,7 @@ matter.
 <strong>6.</strong> Also from the left pop-up bar, select "APIs &amp; services" again, then "Credentials".
 
 <strong>7.</strong> Click on "Create credentials", then on "Service account key", fill out the form by creating a new service
-account (if it is not already present), choose at will the name and id of the account and clicking on the Role select "Service Usage" 
-(at the bottom), then "API Keys Admin", finally select the "Key Type" JSON and press "Create".
+account (if it is not already present), choose at will the name, the id and the description of the account and click on "Create", then, clicking on the Role, select "Owner" then press "Create". At this point under "Service Accounts" click on the one just created (the email start with the name you choose before), click on "KEYS" at the top, then on "ADD KEY", "Create new key", select "JSON" and press "Create".
 
 <strong>8.</strong> At this point, the key will be generated and downloaded automatically.
 
