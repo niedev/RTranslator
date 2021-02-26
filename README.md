@@ -49,7 +49,7 @@ Also, RTranslator works even in the background, with the phone on standby or whe
 <br />
 <h3>Initial configuration</h3>
 
-To use speech recognition and translation (without it, the app can do nothing), you need to create a Google Cloud Platform account and create and get a file to associate the account with the APIs for the payment based on the latter's use. If you create the account for the first time, activating the free trial, you will have $ 300 credit to use for one year in Google Cloud Platform.
+To use speech recognition and translation (without it, the app can do nothing), you need to create a Google Cloud Platform account and create and get a file to associate the account with the APIs for the payment based on the latter's use. If you create the account for the first time, activating the free trial, you will have $ 300 credit to use for 3 months in Google Cloud Platform.
 
 To create the account and get the file follow this tutorial from a computer or using the "desktop site" option on the phone, this is because the Google Cloud Platform mobile version site does not have some options necessary to complete the tutorial.
 
