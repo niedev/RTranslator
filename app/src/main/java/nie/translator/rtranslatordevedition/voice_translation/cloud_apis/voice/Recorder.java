@@ -47,11 +47,15 @@ public class Recorder {
     public static final int MAX_AMPLITUDE_THRESHOLD = 15000;
     public static final int DEFAULT_AMPLITUDE_THRESHOLD = 2000; //original: 1500
     public static final int MIN_AMPLITUDE_THRESHOLD = 400;
-    private static final int SPEECH_TIMEOUT_MILLIS = 750; //original: 2000
-    private static final int MAX_SPEECH_LENGTH_MILLIS = 30 * 1000;
-    private static final double PREV_VOICE_DURATION = 800;
+    public static final int MAX_SPEECH_TIMEOUT_MILLIS = 5000;
+    public static final int DEFAULT_SPEECH_TIMEOUT_MILLIS = 800; //original: 2000
+    public static final int MIN_SPEECH_TIMEOUT_MILLIS = 100;
+    public static final int MAX_PREV_VOICE_DURATION = 1500;
+    public static final int DEFAULT_PREV_VOICE_DURATION = 800;
+    public static final int MIN_PREV_VOICE_DURATION = 100;
+    private static final int MAX_SPEECH_LENGTH_MILLIS = 29 * 1000; //original: 30 * 1000
     private Timer timer;
-    private Callback mCallback;
+    private final Callback mCallback;
     private AudioRecord mAudioRecord;
     private Thread mThread;
     private int mPrevBufferMaxSize;
@@ -70,6 +74,8 @@ public class Recorder {
     public Recorder(Global global, @NonNull Callback callback) {
         this.global = global;
         global.getMicSensitivity();
+        global.getSpeechTimeout();
+        global.getPrevVoiceDuration();
         mCallback = callback;
         mCallback.setRecorder(this);
         if(!(callback instanceof SimpleCallback)){
@@ -179,7 +185,7 @@ public class Recorder {
             audioRecord = new AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, sampleRate, CHANNEL, ENCODING, sizeInBytes);
             if (audioRecord.getState() == AudioRecord.STATE_INITIALIZED) {
                 mBuffer = new byte[sizeInBytes * 2];  //attention here
-                mPrevBufferMaxSize = (int) Math.floor((((16f * sampleRate) / 8) * (PREV_VOICE_DURATION /1000)) / mBuffer.length);
+                mPrevBufferMaxSize = (int) Math.floor((((16f * sampleRate) / 8) * (((double)global.getPrevVoiceDuration()) /1000)) / mBuffer.length);
                 mPrevBuffer = new ArrayDeque<>();   // the prev buffer must contain PREV_VOICE_DURATION seconds of data prior to the buffer
                 return audioRecord;
             } else {
@@ -226,7 +232,7 @@ public class Recorder {
                     }
                 } else if (mLastVoiceHeardMillis != Long.MAX_VALUE) {
                     mCallback.onVoice(mBuffer, size);
-                    if (now - mLastVoiceHeardMillis > SPEECH_TIMEOUT_MILLIS) {
+                    if (now - mLastVoiceHeardMillis > global.getSpeechTimeout()) {
                         end();
                     }
                 }

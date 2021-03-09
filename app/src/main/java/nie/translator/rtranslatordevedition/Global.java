@@ -62,6 +62,8 @@ public class Global extends Application {
     private ConsumptionsDataManager databaseManager;
     private AccessToken apiToken;
     private int micSensitivity = -1;
+    private int speechTimeout = -1;
+    private int prevVoiceDuration = -1;
     private int amplitudeThreshold = Recorder.DEFAULT_AMPLITUDE_THRESHOLD;
     private Handler mainHandler;
     private Thread getApiTokenThread;
@@ -292,6 +294,38 @@ public class Global extends Application {
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("micSensibility", value);
+        editor.apply();
+    }
+
+    public int getSpeechTimeout() {
+        if (speechTimeout == -1) {
+            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            speechTimeout = sharedPreferences.getInt("speechTimeout", Recorder.DEFAULT_SPEECH_TIMEOUT_MILLIS);
+        }
+        return speechTimeout;
+    }
+
+    public void setSpeechTimeout(int value) {
+        speechTimeout = value;
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("speechTimeout", value);
+        editor.apply();
+    }
+
+    public int getPrevVoiceDuration() {
+        if (prevVoiceDuration == -1) {
+            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            prevVoiceDuration = sharedPreferences.getInt("prevVoiceDuration", Recorder.DEFAULT_PREV_VOICE_DURATION);
+        }
+        return prevVoiceDuration;
+    }
+
+    public void setPrevVoiceDuration(int value) {
+        prevVoiceDuration = value;
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("prevVoiceDuration", value);
         editor.apply();
     }
 

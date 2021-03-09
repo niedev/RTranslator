@@ -31,7 +31,7 @@
         android:title="@string/preference_header_input"
         app:iconSpaceReserved="false">
         <nie.translator.rtranslatordevedition.settings.SeekBarPreference
-            android:key="micSensibility"
+            android:key="micSensibilitySetting"
             android:layout="@layout/preference_seekbar"
             app:iconSpaceReserved="false" />
     </androidx.preference.PreferenceCategory>
@@ -59,6 +59,18 @@
             android:key="tts"
             android:title="@string/preference_title_tts"
             android:summary="@string/preference_description_tts"
+            app:iconSpaceReserved="false" />
+    </androidx.preference.PreferenceCategory>
+    <androidx.preference.PreferenceCategory
+        android:title="@string/preference_header_advanced"
+        app:iconSpaceReserved="false">
+        <nie.translator.rtranslatordevedition.settings.SeekBarPreference
+            android:key="SpeechTimeoutSetting"
+            android:layout="@layout/preference_seekbar"
+            app:iconSpaceReserved="false" />
+        <nie.translator.rtranslatordevedition.settings.SeekBarPreference
+            android:key="PrevVoiceDurationSetting"
+            android:layout="@layout/preference_seekbar"
             app:iconSpaceReserved="false" />
     </androidx.preference.PreferenceCategory>
 </androidx.preference.PreferenceScreen>

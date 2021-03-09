@@ -108,13 +108,18 @@
     <string name="preference_header_language">Lingua</string>
     <string name="preference_header_output">Output</string>
     <string name="preference_header_input">Input</string>
+    <string name="preference_header_advanced">Avanzate</string>
 
     <string name="preference_title_mic_sensitivity">Sensibilità microfono</string>
     <string name="preference_title_support_tts_quality">Supporto lingue con tts a bassa qualità</string>
     <string name="preference_title_language">Lingua personale</string>
     <string name="preference_title_tts">Sintetizzatore vocale</string>
+    <string name="preference_title_speech_timeout">Timeout fine voce</string>
+    <string name="preference_title_prev_voice_duration">Durata anticipo voce</string>
 
     <string name="preference_description_mic_sensitivity">Seleziona il livello di volume che serve per avviare e mantenere il riconoscimento vocale</string>
     <string name="preference_description_support_tts_quality">Permette di supportare anche le lingue che hanno una bassa qualità del sintetizzatore vocale</string>
     <string name="preference_description_tts">Impostazioni di sistema del tts</string>
+    <string name="preference_description_speech_timeout">Seleziona il tempo che deve trascorrere dopo aver smesso di parlare per inviare il testo trascritto</string>
+    <string name="preference_description_prev_voice_duration">Seleziona la durata della registrazione precedente a quando si inizia a parlare che verrà inclusa nel riconoscimento vocale</string>
 </resources>

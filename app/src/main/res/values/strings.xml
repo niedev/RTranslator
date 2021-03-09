@@ -112,14 +112,19 @@
     <string name="preference_header_language">Language</string>
     <string name="preference_header_output">Output</string>
     <string name="preference_header_input">Input</string>
+    <string name="preference_header_advanced">Advanced</string>
 
     <string name="preference_title_mic_sensitivity">Microphone sensitivity</string>
     <string name="preference_title_support_tts_quality">Support languages ​​with low quality tts</string>
     <string name="preference_title_language">Personal language</string>
     <string name="preference_title_tts">Text to speech</string>
+    <string name="preference_title_speech_timeout">End of voice timeout</string>
+    <string name="preference_title_prev_voice_duration">Voice anticipation duration</string>
 
     <string name="preference_description_mic_sensitivity">Select the volume level you need to start and maintain voice recognition</string>
     <string name="preference_description_support_tts_quality">It allow to also supports languages ​​that have a low quality speech synthesizer</string>
     <string name="preference_description_tts">System settings of tts</string>
+    <string name="preference_description_speech_timeout">Select the time after you stop talking to send the transcribed text</string>
+    <string name="preference_description_prev_voice_duration">Select the length of the recording before you start speaking that will be included in the voice recognition</string>
 
 </resources>

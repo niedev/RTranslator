@@ -154,8 +154,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         });*/
 
         // change microphone sensibility initialization
-        SeekBarPreference seekBarPreference = (SeekBarPreference) findPreference("micSensibility");
-        seekBarPreference.initialize(activity);
+        SeekBarPreference micSensibilityPreference = (SeekBarPreference) findPreference("micSensibilitySetting");
+        micSensibilityPreference.initialize(activity, SeekBarPreference.MIC_SENSIBILITY_MODE);
 
         // language support option with low quality tts initialization
         supportTtsQualityPreference = (SupportTtsQualityPreference) findPreference("languagesQualityLow");
@@ -178,6 +178,14 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
+
+        // change microphone sensibility initialization
+        SeekBarPreference speechTimeoutPreference = (SeekBarPreference) findPreference("SpeechTimeoutSetting");
+        speechTimeoutPreference.initialize(activity, SeekBarPreference.SPEECH_TIMEOUT_MODE);
+
+        // change microphone sensibility initialization
+        SeekBarPreference prevVoiceDurationPreference = (SeekBarPreference) findPreference("PrevVoiceDurationSetting");
+        prevVoiceDurationPreference.initialize(activity, SeekBarPreference.PREV_VOICE_DURATION_MODE);
     }
 
     @Override

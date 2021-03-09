@@ -81,7 +81,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:max="100"
-        android:progress="50"
+        android:progress="0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/textViewValue"
         app:layout_constraintStart_toEndOf="@+id/buttonRestore"
