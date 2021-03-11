@@ -102,7 +102,7 @@ on "APIs Management", then click on the button to attach the APIs Key and select
 
 <h3>APIs prices</h3>
 
-The voice recognition rounds the cost of each request to the nearest multiple of 15 seconds. The average total cost (both translator and voice recognition), without taking into account the rounding, is 2.5 dollars per hour of usage, but both have a free usage margin per month (the first 500,000 characters for translation and the first 60 minutes for speech recognition). Also for WalkieTalkie must add the language detection costs to the translation. To learn more:
+The voice recognition rounds the cost of each request to the nearest multiple of 15 seconds. The average total cost (both translator and voice recognition), without taking into account the rounding, is 2.5 dollars per hour of usage, but both have a free usage margin per month (500,000 characters for translation and 60 minutes for speech recognition). Also for WalkieTalkie must add the language detection costs to the translation. To learn more:
 
 <a href="https://cloud.google.com/speech-to-text/pricing" target="_blank" rel="noopener noreferrer">cloud.google.com/speech-to-text/pricing</a>
 
