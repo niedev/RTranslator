@@ -46,7 +46,7 @@ Also, RTranslator works even in the background, with the phone on standby or whe
 <a href='https://play.google.com/store/apps/details?id=nie.translator.rtranslatordevedition&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200"/></a>
 <a href="https://www.producthunt.com/posts/rtranslator?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-rtranslator" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=274849&theme=light" alt="RTranslator - World's first open-source simultaneous translation app. | Product Hunt" style="width: 250px; height: 54px;" width="250" height="77"/></a>
 
-**Attention:** The app has been temporarily removed from the play store because it uses the position to use the bluetooth le (the position is necessary to use the bluetooth and is not collected in any way, but particular notices are required in the app) I am working to solve the problem and it should be back online within a few days.<br />
+**Attention:** The app has been temporarily removed from the play store because it uses the position to use the bluetooth le (the position is necessary to use the bluetooth and is not collected in any way, but particular notices are required in the app) I am working to solve the problem and it should be back online within a few weeks.<br />
 In the meantime, you can always download the latest version directly from github [releases](https://github.com/niedev/RTranslator/releases).
 
 <br />
