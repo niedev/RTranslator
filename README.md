@@ -43,8 +43,8 @@ Both translation and speech recognition use Google's APIs to ensure the best pos
 
 Also, RTranslator works even in the background, with the phone on standby or when using other apps (only when you use Conversation or WalkieTalkie modes).
 
-<a href='https://play.google.com/store/apps/details?id=nie.translator.rtranslatordevedition&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200"/></a>
-<a href="https://www.producthunt.com/posts/rtranslator?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-rtranslator" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=274849&theme=light" alt="RTranslator - World's first open-source simultaneous translation app. | Product Hunt" style="width: 250px; height: 54px;" width="250" height="77"/></a>
+<a href='https://play.google.com/store/apps/details?id=nie.translator.rtranslatordevedition&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' style="width: 210px; height: 80px;"/></a>
+<a href="https://www.producthunt.com/posts/rtranslator?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-rtranslator" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=274849&theme=light" alt="RTranslator - World's first open-source simultaneous translation app. | Product Hunt" style="width: 250px; height: 80px;" /></a>
 
 **Attention:** The app has been temporarily removed from the play store because it uses the position to use the bluetooth le (the position is necessary to use the bluetooth and is not collected in any way, but particular notices are required in the app) I am working to solve the problem and it should be back online within a few weeks.<br />
 In the meantime, you can always download the latest version directly from github [releases](https://github.com/niedev/RTranslator/releases).
@@ -80,7 +80,7 @@ account (if it is not already present), choose at will the name, the id and the 
 
 <strong>8.</strong> At this point, the key will be generated and downloaded automatically.
 
-<strong>9.</strong> If you used a computer to do these operations, move the key file to your phone (in a random folder).
+<strong>9.</strong> If you used a computer to do these operations, move the key file to your phone in the download folder.
 
 <strong>10.</strong> Open the RTranslator app and after the initial configuration, click on the three dots at the top right and then
 on "APIs Management", then click on the button to attach the APIs Key and select the above file from the list.
