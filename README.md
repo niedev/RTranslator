@@ -80,7 +80,7 @@ account (if it is not already present), choose at will the name, the id and the 
 
 <strong>8.</strong> At this point, the key will be generated and downloaded automatically.
 
-<strong>9.</strong> If you used a computer to do these operations, move the key file to your phone (in a random folder).
+<strong>9.</strong> If you used a computer to do these operations, move the key file to your phone in the download folder.
 
 <strong>10.</strong> Open the RTranslator app and after the initial configuration, click on the three dots at the top right and then
 on "APIs Management", then click on the button to attach the APIs Key and select the above file from the list.
