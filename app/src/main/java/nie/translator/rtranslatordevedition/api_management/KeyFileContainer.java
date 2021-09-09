@@ -89,8 +89,9 @@ public class KeyFileContainer {
 
                 final ListView listViewGui = (ListView) editDialogLayout.findViewById(R.id.list_view_dialog);
                 final ProgressBar progressBar = (ProgressBar) editDialogLayout.findViewById(R.id.progressBar3);
+                //Environment.getExternalStorageDirectory().getAbsolutePath()  //this is for viewing all directories of the phone, but the search became slow if the phone has a lot of files
 
-                findJsonFiles(new File(Environment.getExternalStorageDirectory().getAbsolutePath()), (FilesListListener) new FilesListListener() {
+                findJsonFiles(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()), (FilesListListener) new FilesListListener() {
                     public void onSuccess(ArrayList<File> filesList) {
                         progressBar.setVisibility(View.GONE);
                         listViewGui.setVisibility(View.VISIBLE);
@@ -138,9 +139,10 @@ public class KeyFileContainer {
         File[] listFile = dir.listFiles();
         if (listFile != null) {
             for (int i = 0; i < listFile.length; i++) {
+                String filename = listFile[i].getName();
                 if (listFile[i].isDirectory()) {
                     findJsonFiles(listFile[i], matchingSAFFiles);
-                } else if (listFile[i].getName().endsWith(safPattern)) {
+                } else if (filename.endsWith(safPattern)) {
                     StringBuilder sb = new StringBuilder();
                     sb.append(dir.toString());
                     sb.append(File.separator);
