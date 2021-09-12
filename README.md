@@ -43,7 +43,7 @@ Both translation and speech recognition use Google's APIs to ensure the best pos
 
 Also, RTranslator works even in the background, with the phone on standby or when using other apps (only when you use Conversation or WalkieTalkie modes).
 
-<a href='https://play.google.com/store/apps/details?id=nie.translator.rtranslatordevedition&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://github.com/niedev/RTranslator/blob/master/images/get_it_on_github_white_border.png' style="width: 190px; height: 80px;" /></a>
+<a href='https://github.com/niedev/RTranslator/releases'><img alt='Get it on GitHub' src='https://github.com/niedev/RTranslator/blob/master/images/get_it_on_github_white_border.png' style="width: 190px; height: 80px;" /></a>
 <a href='https://play.google.com/store/apps/details?id=nie.translator.rtranslatordevedition&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' style="width: 210px; height: 80px;"/></a>
 <a href="https://www.producthunt.com/posts/rtranslator?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-rtranslator" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=274849&theme=light" alt="RTranslator - World's first open-source simultaneous translation app. | Product Hunt" style="width: 250px; height: 80px;" /></a>
 
