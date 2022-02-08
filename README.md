@@ -43,23 +43,21 @@ Both translation and speech recognition use Google's APIs to ensure the best pos
 
 Also, RTranslator works even in the background, with the phone on standby or when using other apps (only when you use Conversation or WalkieTalkie modes).
 
-<a href='https://github.com/niedev/RTranslator/releases'><img alt='Get it on GitHub' src='https://github.com/niedev/RTranslator/blob/master/images/get_it_on_github_white_border.png' style="width: 190px; height: 80px;" /></a>
-<a href='https://play.google.com/store/apps/details?id=nie.translator.rtranslatordevedition&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' style="width: 210px; height: 80px;"/></a>
 <a href="https://www.producthunt.com/posts/rtranslator?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-rtranslator" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=274849&theme=light" alt="RTranslator - World's first open-source simultaneous translation app. | Product Hunt" style="width: 250px; height: 80px;" /></a>
 
-
-**Attention:** The app has been temporarily removed from the play store because it uses the position to use the bluetooth le (the position is necessary to use the bluetooth and is not collected in any way, but particular notices are required in the app) I am working to solve the problem and it should be back online within a few weeks.<br />
-In the meantime, you can always download the latest version directly from github [releases](https://github.com/niedev/RTranslator/releases).
-
 <br />
-<h3>Initial configuration</h3>
+<h3>Download and initial configuration</h3>
 
 To use speech recognition and translation (without it, the app can do nothing), you need to create a Google Cloud Platform account and create and get a file to associate the account with the APIs for the payment based on the latter's use. If you create the account for the first time, activating the free trial, you will have $ 300 credit to use for 3 months in Google Cloud Platform.
 
 To create the account and get the file follow this tutorial from a computer or using the "desktop site" option on the phone, this is because the Google Cloud Platform mobile version site does not have some options necessary to complete the tutorial.
 
-First, download the latest version of the app apk file from https://github.com/niedev/RTranslator/releases/ or Google Play Store and install it. Then follow these passages:
-<br /><br />
+First, download the latest version of the app apk file from https://github.com/niedev/RTranslator/releases/ and install it. 
+
+<a href='https://github.com/niedev/RTranslator/releases'><img alt='Get it on GitHub' src='https://github.com/niedev/RTranslator/blob/master/images/get_it_on_github_white_border.png' style="width: 190px; height: 80px;" /></a>
+
+Then follow these passages:
+<br />
 
 <strong>1.</strong> Go to&nbsp;<a style="background-color: #fafafa; font-size: 1rem;" href="http://console.cloud.google.com/" 
 target="_blank" rel="noopener noreferrer">console.cloud.google.com</a>&nbsp;and sign in with your Google account or create one.
