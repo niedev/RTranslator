@@ -140,7 +140,7 @@ The three libraries are <a href="https://github.com/niedev/BluetoothCommunicator
 <br /><br />
 
 <h3>Bugs and problems</h3>
-I remember that the app is still a beta. The bugs found are the following:
+I remind you that the app is still in beta. The bugs found are the following:
 
 - For some languages, the TTS does not work. Reinstall the text-to-speech engine to solve.
 - On some devices, there are device search problems.
