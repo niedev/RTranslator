@@ -151,7 +151,7 @@ If you have found any other bug please report it by writing an email to contact.
 
 <h3>Donations</h3>
 
-This is an open source and completely ad-free project, I don't make money from it (as you can see from the tutorial, any payments for the APIs are made directly to google).
+This is an open source and completely ad-free project, I don't make any money from it (as you can see from the tutorial, any payments for the APIs are made directly to google).
 
 So, if you like the project and want to say thank you and support it, you can make a donation via paypal by clicking on the button below.
 
