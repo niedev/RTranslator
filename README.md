@@ -139,6 +139,17 @@ RTranslator uses three open-source libraries, one for communication between devi
 The three libraries are <a href="https://github.com/niedev/BluetoothCommunicator" target="_blank" rel="noopener noreferrer">BluetoothCommunicator</a>, <a href="https://github.com/niedev/GalleryImageSelector" target="_blank" rel="noopener noreferrer">GalleryImageSelector</a> and [GraphView](https://github.com/jjoe64/GraphView) respectively. See their GitHub pages and sample apps for more details.
 <br /><br />
 
+<h3>Donations</h3>
+
+This is an open source and completely ad-free project, I don't make any money from it (as you can see from the tutorial, any payments for the APIs are made directly to google).
+
+So, if you like the project and want to say thank you and support it, you can make a donation via paypal by clicking on the button below.
+
+<a href='https://www.paypal.com/donate/?business=3VBKS3WC6AFHN&no_recurring=0&currency_code=EUR'><img alt='Donate' src='https://raw.githubusercontent.com/niedev/RTranslator/master/images/Paypal.png' style="width: 190px; height: 80px;" /></a>
+
+In case you will donate, thank you :heart:
+<br /><br />
+
 <h3>Bugs and problems</h3>
 I remind you that the app is still in beta. The bugs found are the following:
 
@@ -149,15 +160,4 @@ I remind you that the app is still in beta. The bugs found are the following:
 If you have found any other bug please report it by writing an email to contact.niedev@gmail.com
 <br /><br />
 
-<h3>Donations</h3>
-
-This is an open source and completely ad-free project, I don't make any money from it (as you can see from the tutorial, any payments for the APIs are made directly to google).
-
-So, if you like the project and want to say thank you and support it, you can make a donation via paypal by clicking on the button below.
-
-<a href='https://www.paypal.com/donate/?hosted_button_id=LR7HZ8L7EUEK6'><img alt='Donate' src='https://raw.githubusercontent.com/niedev/RTranslator/master/images/Paypal.png' style="width: 190px; height: 80px;" /></a>
-
-In case you will donate, thank you :heart:
-
-<br /><br />
 Enjoy your simultaneous translator.
