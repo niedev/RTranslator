@@ -149,4 +149,15 @@ I remind you that the app is still in beta. The bugs found are the following:
 If you have found any other bug please report it by writing an email to contact.niedev@gmail.com
 <br /><br />
 
+<h3>Donations</h3>
+
+This is an open source and completely ad-free project, I don't make money from it (as you can see from the tutorial, any payments for the APIs are made directly to google).
+
+So, if you like the project and want to say thank you and support it, you can make a donation via paypal by clicking on the button below.
+
+<a href='https://www.paypal.com/donate/?hosted_button_id=LR7HZ8L7EUEK6'><img alt='Donate' src='https://raw.githubusercontent.com/niedev/RTranslator/master/images/Paypal.png' style="width: 190px; height: 80px;" /></a>
+
+In case you will donate, thank you :heart:
+
+<br /><br />
 Enjoy your simultaneous translator.
