@@ -147,7 +147,7 @@ So, if you like the project and want to say thank you and support it, you can ma
 
 <a href='https://www.paypal.com/donate/?business=3VBKS3WC6AFHN&no_recurring=0&currency_code=EUR'><img alt='Donate' src='https://raw.githubusercontent.com/niedev/RTranslator/master/images/Paypal.png' style="width: 190px; height: 80px;" /></a>
 
-In case you will donate, thank you :heart:
+In case you will donate, or just live a star, thank you :heart:
 <br /><br />
 
 <h3>Bugs and problems</h3>
