@@ -1,0 +1,17 @@
+{
+  "name": "RTranslator Android DevContainer",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "settings": {
+    "java.configuration.runtimes": [
+      {
+        "name": "JavaSE-17",
+        "path": "/usr/lib/jvm/java-17-openjdk-amd64",
+        "default": true
+      }
+    ]
+  },
+  "postCreateCommand": "bash .devcontainer/postCreateSetup.sh",
+  "remoteUser": "codespace"
+}
