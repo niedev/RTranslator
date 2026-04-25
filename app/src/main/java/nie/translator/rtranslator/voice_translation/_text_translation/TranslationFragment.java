@@ -94,6 +94,7 @@ public class TranslationFragment extends Fragment {
     private FloatingActionButton ttsOutputButton;
     private ConstraintLayout outputContainer;
     private TextView resultTypeText;
+    private TextView synonymsText;
     private CustomAnimator animator = new CustomAnimator();
     private Animator colorAnimator = null;
     private int activatedColor = R.color.primary;
@@ -103,8 +104,10 @@ public class TranslationFragment extends Fragment {
     private boolean isInputEmpty = true;
     private boolean isOutputEmpty = true;
     private boolean isOutputTypeVisible = false;
+    private boolean isSynonymsTextVisible = false;
     ViewTreeObserver.OnGlobalLayoutListener layoutListener;
     private static final int REDUCED_GUI_THRESHOLD_DP = 550;
+    private static final int synonymsTopMargin = 16;
 
     //languageListDialog
     private LanguageListAdapter listView;
@@ -130,6 +133,8 @@ public class TranslationFragment extends Fragment {
     private Animator animationOutput;
     @Nullable
     private Animator animationResultType;
+    @Nullable
+    private Animator animationSynonyms;
 
 
     @Override
@@ -171,6 +176,7 @@ public class TranslationFragment extends Fragment {
         ttsOutputButton = view.findViewById(R.id.ttsButtonOutput);
         outputContainer = view.findViewById(R.id.outputContainer);
         resultTypeText = view.findViewById(R.id.resultTypeText);
+        synonymsText = view.findViewById(R.id.synonymsText);
         //we set the initial tag for the tts buttons
         ttsInputButton.setTag(R.drawable.sound_icon);
         ttsOutputButton.setTag(R.drawable.sound_icon);
@@ -215,9 +221,10 @@ public class TranslationFragment extends Fragment {
         conversationButtonSmall.setOnClickListener(conversationButtonListener);
         translateListener = new Translator.TranslateListener() {
             @Override
-            public void onTranslatedText(String textToTranslate, String text, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
+            public void onTranslatedText(String textToTranslate, String text, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
                 outputText.setText(text);
                 if(isFinal){
+                    //eventually we show result type text
                     if(resultType != ResultType.NORMAL){
                         isOutputTypeVisible = true;
                         if(animationResultType != null) {
@@ -234,6 +241,25 @@ public class TranslationFragment extends Fragment {
                             public void onAnimationEnd() {
                                 super.onAnimationEnd();
                                 animationResultType = null;
+                            }
+                        });
+                    }
+                    //eventually we show the synonyms of the translated word
+                    if(synonyms != null && synonyms.length > 0){
+                        isSynonymsTextVisible = true;
+                        if(animationSynonyms != null) {
+                            animationSynonyms.cancel();
+                        }
+                        String t = synonyms[0];
+                        for(int i=1; i<synonyms.length; i++){
+                            t = ", "+synonyms[i];
+                        }
+                        synonymsText.setText(t);
+                        animationSynonyms = animator.animateSynonymsTextEnlargement(activity, synonymsText, synonymsTopMargin, new CustomAnimator.Listener() {
+                            @Override
+                            public void onAnimationEnd() {
+                                super.onAnimationEnd();
+                                animationSynonyms = null;
                             }
                         });
                     }
@@ -355,7 +381,7 @@ public class TranslationFragment extends Fragment {
                 }
                 if(isInputEmpty != s.toString().isEmpty()){  //the input editText transitioned from empty to not empty or vice versa
                     isInputEmpty = s.toString().isEmpty();
-                    if(animationInput != null){
+                    if(animationInput != null) {
                         animationInput.cancel();
                     }
                     if(!s.toString().isEmpty()) {
@@ -403,6 +429,7 @@ public class TranslationFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
+                //we eventually make the result type disappear
                 if(isOutputTypeVisible) {
                     isOutputTypeVisible = false;
                     if (animationResultType != null) {
@@ -416,6 +443,21 @@ public class TranslationFragment extends Fragment {
                         }
                     });
                 }
+                //we eventually make the synonyms of the result disappear
+                if(isSynonymsTextVisible) {
+                    isSynonymsTextVisible = false;
+                    if (animationSynonyms != null) {
+                        animationSynonyms.cancel();
+                    }
+                    animationSynonyms = animator.animateSynonymsTextReduction(activity, synonymsText, synonymsTopMargin, new CustomAnimator.Listener() {
+                        @Override
+                        public void onAnimationEnd() {
+                            super.onAnimationEnd();
+                            animationSynonyms = null;
+                        }
+                    });
+                }
+                //if the output text is empty we make it disappear
                 if(isOutputEmpty != s.toString().isEmpty()){  //the output editText transitioned from empty to not empty or vice versa
                     isOutputEmpty = s.toString().isEmpty();
                     if(animationOutput != null) {

@@ -103,6 +103,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         createNotificationChannel();
         SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
         useTatoeba = sharedPreferences.getBoolean("useTatoeba", false);
+        useTranslationDictionaries = sharedPreferences.getBoolean("useTranslationDictionaries", false);
     }
 
     public void initializeTranslator(Translator.GeneralListener initListener){

@@ -34,7 +34,7 @@ public class LanguageResourcesManager {
         this.global = global;
         this.modelMode = modelMode;
         String tatoebaDbPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Tatoeba/tatoeba.db";
-        String translationDictionariesDbPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/TranslationDictionaries/translation_dict_redux.db";
+        String translationDictionariesDbPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/TranslationDictionaries/translation_dict_freedict.db";
         tatoebaDb = new TatoebaDbWrapper(tatoebaDbPath);
         BergamotTranslator.initializeService();
         DictionaryTranslator.initializeService(translationDictionariesDbPath);

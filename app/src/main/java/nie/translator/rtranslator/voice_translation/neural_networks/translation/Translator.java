@@ -329,7 +329,7 @@ public class Translator extends NeuralNetworkApi {
             TATOEBA,
             DICTIONARY
         }
-        public abstract void onTranslatedText(String textToTranslate, String TranslatedText, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText);
+        public abstract void onTranslatedText(String textToTranslate, String TranslatedText, @Nullable String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText);
     }
 
     public void translateMessage(final ConversationMessage conversationMessageToTranslate, final CustomLocale languageOutput, int beamSize, final TranslateMessageListener responseListener) {  // what the thread does
@@ -359,7 +359,7 @@ public class Translator extends NeuralNetworkApi {
                     public void onSuccess() {
                         performTextTranslation(text, languageInput, data.languageOutput, data.beamSize, false, new TranslateListener() {
                             @Override
-                            public void onTranslatedText(String textToTranslate, String text, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
+                            public void onTranslatedText(String textToTranslate, String text, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
                                 data.conversationMessageToTranslate.getPayload().setText(text);
                                 data.conversationMessageToTranslate.getPayload().setLanguage(data.languageOutput);
                                 mainHandler.post(() -> data.responseListener.onTranslatedMessage(data.conversationMessageToTranslate, resultID, isFinal));
@@ -733,9 +733,9 @@ public class Translator extends NeuralNetworkApi {
         callbacks.remove(callback);
     }
 
-    private void notifyResult(String textToTranslate, String text, long resultID, boolean isFinal, TranslateListener.ResultType resultType, CustomLocale languageOfText) {
+    private void notifyResult(String textToTranslate, String text, @Nullable String[] synonyms, long resultID, boolean isFinal, TranslateListener.ResultType resultType, CustomLocale languageOfText) {
         for (int i = 0; i < callbacks.size(); i++) {
-            callbacks.get(i).onTranslatedText(textToTranslate, text, resultID, isFinal, resultType, languageOfText);
+            callbacks.get(i).onTranslatedText(textToTranslate, text, synonyms, resultID, isFinal, resultType, languageOfText);
         }
     }
 
@@ -755,6 +755,7 @@ public class Translator extends NeuralNetworkApi {
             }
             boolean isTatoebaResult = false;  //will be true and remain true is one of the splits of the text is translated by tatoeba
             boolean isDictionaryResult = false;  //will be true and remain true only if all the splits of the text are translated by a dictionary
+            String[] synonyms = null;
 
             if(mode != MOZILLA){
                 int maxLength = 200;
@@ -801,6 +802,10 @@ public class Translator extends NeuralNetworkApi {
                         String[] dictionaryResult = performDictionaryTranslation(textSplit.get(i), inputLanguage, outputLanguage);
                         if(dictionaryResult != null && dictionaryResult.length > 0) {
                             finalSplitResult = dictionaryResult[0];
+                            if(textSplit.size() == 1 && dictionaryResult.length > 1){
+                                synonyms = new String[dictionaryResult.length-1];
+                                System.arraycopy(dictionaryResult, 1, synonyms, 0, dictionaryResult.length - 1);
+                            }
                         }
                     }
                     if(finalSplitResult == null) {
@@ -838,6 +843,10 @@ public class Translator extends NeuralNetworkApi {
                     String[] dictionaryResult = performDictionaryTranslation(textToTranslate, inputLanguage, outputLanguage);
                     if(dictionaryResult != null && dictionaryResult.length > 0) {
                         finalResult = dictionaryResult[0];
+                        if(dictionaryResult.length > 1){
+                            synonyms = new String[dictionaryResult.length-1];
+                            System.arraycopy(dictionaryResult, 1, synonyms, 0, dictionaryResult.length - 1);
+                        }
                     }
                 }
                 if(finalResult == null) {
@@ -869,10 +878,11 @@ public class Translator extends NeuralNetworkApi {
             } else {
                 resultType = TranslateListener.ResultType.NORMAL;
             }
+            String[] finalSynonyms = synonyms;
             if (responseListener != null) {
-                mainHandler.post(() -> responseListener.onTranslatedText(textToTranslate, finalResultConst, currentResultIDCopy, true, resultType, outputLanguage));
+                mainHandler.post(() -> responseListener.onTranslatedText(textToTranslate, finalResultConst, finalSynonyms, currentResultIDCopy, true, resultType, outputLanguage));
             } else {
-                mainHandler.post(() -> notifyResult(textToTranslate, finalResultConst, currentResultIDCopy, true, resultType, outputLanguage));
+                mainHandler.post(() -> notifyResult(textToTranslate, finalResultConst, finalSynonyms, currentResultIDCopy, true, resultType, outputLanguage));
             }
             currentResultID++;
         } catch (Exception e) {
@@ -926,7 +936,12 @@ public class Translator extends NeuralNetworkApi {
     @Nullable
     private String[] performDictionaryTranslation(String text, CustomLocale inputLanguage, CustomLocale outputLanguage){
         synchronized (langResourcesLock){
-            return DictionaryTranslator.translateWord(text, inputLanguage, outputLanguage);
+            try {
+                return DictionaryTranslator.translateWord(text, inputLanguage, outputLanguage);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
         }
     }
 
@@ -960,7 +975,7 @@ public class Translator extends NeuralNetworkApi {
         //decoder execution
         TranslateListener translateListener = new TranslateListener() {
             @Override
-            public void onTranslatedText(String textToTranslate, String text, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
+            public void onTranslatedText(String textToTranslate, String text, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
                 //we return the partial results
                 String outputText;
                 if (joinedStringOutput[0].equals("")) {
@@ -973,9 +988,9 @@ public class Translator extends NeuralNetworkApi {
                 }
                 final long currentResultIDCopy = currentResultID;  //we do a copy because otherwise the currentResultID is incremented before notifying the message (due to the notification being executed in the mainThread)
                 if (responseListener != null) {
-                    mainHandler.post(() -> responseListener.onTranslatedText(textToTranslate, outputText, currentResultIDCopy, false, resultType, outputLanguage));
+                    mainHandler.post(() -> responseListener.onTranslatedText(textToTranslate, outputText, synonyms, currentResultIDCopy, false, resultType, outputLanguage));
                 } else {
-                    mainHandler.post(() -> notifyResult(textToTranslate, outputText, currentResultIDCopy, false, resultType, outputLanguage));
+                    mainHandler.post(() -> notifyResult(textToTranslate, outputText, synonyms, currentResultIDCopy, false, resultType, outputLanguage));
                 }
             }
 
@@ -1295,9 +1310,9 @@ public class Translator extends NeuralNetworkApi {
                 int[] outputIDs = completeBeamOutput[indexMax].stream().mapToInt(k -> k).toArray();
                 String partialResult = tokenizer.decode(outputIDs);
                 if(responseListener != null) {
-                    responseListener.onTranslatedText(textToTranslate, partialResult, currentResultID, false, TranslateListener.ResultType.NORMAL, outputLanguage);
+                    responseListener.onTranslatedText(textToTranslate, partialResult, null, currentResultID, false, TranslateListener.ResultType.NORMAL, outputLanguage);
                 }else {
-                    notifyResult(textToTranslate, partialResult, currentResultID, false, TranslateListener.ResultType.NORMAL, outputLanguage);
+                    notifyResult(textToTranslate, partialResult, null, currentResultID, false, TranslateListener.ResultType.NORMAL, outputLanguage);
                 }
                 j++;
                 for(int i=0; i<beamSize; i++){

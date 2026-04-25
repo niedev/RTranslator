@@ -204,7 +204,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         });
 
         // useTranslationDict initialization
-        Preference translationDictPreference = findPreference("useTranslationDict");
+        Preference translationDictPreference = findPreference("useTranslationDictionaries");
         translationDictPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {

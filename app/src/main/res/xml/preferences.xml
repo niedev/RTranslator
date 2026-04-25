@@ -93,7 +93,7 @@
             app:iconSpaceReserved="false" />
         <androidx.preference.SwitchPreference
             android:defaultValue="false"
-            android:key="useTranslationDict"
+            android:key="useTranslationDictionaries"
             android:title="Enable Translation Dictionaries"
             android:summary="When this option is activated, translation dictionaries will be used to improve the translations"
             app:iconSpaceReserved="false" />

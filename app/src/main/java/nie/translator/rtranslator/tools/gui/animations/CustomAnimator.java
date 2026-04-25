@@ -795,6 +795,73 @@ public class CustomAnimator {
         return animationAppearance;
     }
 
+    public Animator animateSynonymsTextEnlargement(Context context, TextView textView, int topMarginDp, Listener listener){
+        AnimatorSet animatorSet= new AnimatorSet();
+        int duration=context.getResources().getInteger(R.integer.durationStandard);
+        int durationShort=context.getResources().getInteger(R.integer.durationShort);
+
+        textView.setVisibility(View.VISIBLE);
+
+        textView.measure(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        final int textViewFinalHeight = textView.getMeasuredHeight();
+        Animator textHeightAnimator = createAnimatorHeight(textView, textView.getHeight(), textViewFinalHeight, duration);
+        Animator textMarginAnimator = createAnimatorTopMargin(textView, 0, Tools.convertDpToPixels(context, topMarginDp), duration);
+        Animator textAlphaAnimator = createAnimatorAlpha(textView, textView.getAlpha(), 1, duration);
+        animatorSet.play(textHeightAnimator).with(textMarginAnimator).with(textAlphaAnimator);
+        animatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(@NonNull Animator animator) {
+                if (listener != null) {
+                    listener.onAnimationStart();
+                }
+            }
+            @Override
+            public void onAnimationEnd(@NonNull Animator animator) {
+                if (listener != null) {
+                    listener.onAnimationEnd();
+                }
+            }
+            @Override
+            public void onAnimationCancel(@NonNull Animator animator) {}
+            @Override
+            public void onAnimationRepeat(@NonNull Animator animator) {}
+        });
+        animatorSet.start();
+        return animatorSet;
+    }
+
+    public Animator animateSynonymsTextReduction(Context context, TextView textView, int topMarginDp, Listener listener){
+        AnimatorSet animatorSet= new AnimatorSet();
+        int duration=context.getResources().getInteger(R.integer.durationStandard);
+        int durationShort=context.getResources().getInteger(R.integer.durationShort);
+
+        Animator textHeightAnimator = createAnimatorHeight(textView, textView.getHeight(), 0, duration);
+        Animator textMarginAnimator = createAnimatorTopMargin(textView, Tools.convertDpToPixels(context, topMarginDp), 0, duration);
+        Animator textAlphaAnimator = createAnimatorAlpha(textView, textView.getAlpha(), 0, duration);
+        animatorSet.play(textHeightAnimator).with(textMarginAnimator).with(textAlphaAnimator);
+        animatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(@NonNull Animator animator) {
+                if (listener != null) {
+                    listener.onAnimationStart();
+                }
+            }
+            @Override
+            public void onAnimationEnd(@NonNull Animator animator) {
+                textView.setVisibility(View.INVISIBLE);
+                if (listener != null) {
+                    listener.onAnimationEnd();
+                }
+            }
+            @Override
+            public void onAnimationCancel(@NonNull Animator animator) {}
+            @Override
+            public void onAnimationRepeat(@NonNull Animator animator) {}
+        });
+        animatorSet.start();
+        return animatorSet;
+    }
+
     public void animateSwitchLanguages(Context context, CardView firstLanguageContainer, CardView secondLanguageContainer, AppCompatImageButton invertLanguagesButton, Listener listener){
         int duration = context.getResources().getInteger(R.integer.durationStandard);
 
