@@ -105,9 +105,10 @@ public class TranslationFragment extends Fragment {
     private boolean isOutputEmpty = true;
     private boolean isOutputTypeVisible = false;
     private boolean isSynonymsTextVisible = false;
+    private boolean isRestoringOutputText = false;
     ViewTreeObserver.OnGlobalLayoutListener layoutListener;
     private static final int REDUCED_GUI_THRESHOLD_DP = 550;
-    private static final int synonymsTopMargin = 16;
+    private static final int synonymsTopMargin = 4;
 
     //languageListDialog
     private LanguageListAdapter listView;
@@ -250,11 +251,11 @@ public class TranslationFragment extends Fragment {
                         if(animationSynonyms != null) {
                             animationSynonyms.cancel();
                         }
-                        String t = synonyms[0];
+                        StringBuilder t = new StringBuilder(synonyms[0]);
                         for(int i=1; i<synonyms.length; i++){
-                            t = ", "+synonyms[i];
+                            t.append(", ").append(synonyms[i]);
                         }
-                        synonymsText.setText(t);
+                        synonymsText.setText(t.toString());
                         animationSynonyms = animator.animateSynonymsTextEnlargement(activity, synonymsText, synonymsTopMargin, new CustomAnimator.Listener() {
                             @Override
                             public void onAnimationEnd() {
@@ -429,35 +430,37 @@ public class TranslationFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                //we eventually make the result type disappear
-                if(isOutputTypeVisible) {
-                    isOutputTypeVisible = false;
-                    if (animationResultType != null) {
-                        animationResultType.cancel();
-                    }
-                    animationResultType = animator.animateViewDisappearance(activity, resultTypeText, new CustomAnimator.Listener() {
-                        @Override
-                        public void onAnimationEnd() {
-                            super.onAnimationEnd();
-                            animationResultType = null;
+                if(!isRestoringOutputText) {
+                    //we eventually make the result type disappear
+                    if (isOutputTypeVisible) {
+                        isOutputTypeVisible = false;
+                        if (animationResultType != null) {
+                            animationResultType.cancel();
                         }
-                    });
-                }
-                //we eventually make the synonyms of the result disappear
-                if(isSynonymsTextVisible) {
-                    isSynonymsTextVisible = false;
-                    if (animationSynonyms != null) {
-                        animationSynonyms.cancel();
+                        animationResultType = animator.animateViewDisappearance(activity, resultTypeText, new CustomAnimator.Listener() {
+                            @Override
+                            public void onAnimationEnd() {
+                                super.onAnimationEnd();
+                                animationResultType = null;
+                            }
+                        });
                     }
-                    animationSynonyms = animator.animateSynonymsTextReduction(activity, synonymsText, synonymsTopMargin, new CustomAnimator.Listener() {
-                        @Override
-                        public void onAnimationEnd() {
-                            super.onAnimationEnd();
-                            animationSynonyms = null;
+                    //we eventually make the synonyms of the result disappear
+                    if (isSynonymsTextVisible) {
+                        isSynonymsTextVisible = false;
+                        if (animationSynonyms != null) {
+                            animationSynonyms.cancel();
                         }
-                    });
+                        animationSynonyms = animator.animateSynonymsTextReduction(activity, synonymsText, synonymsTopMargin, new CustomAnimator.Listener() {
+                            @Override
+                            public void onAnimationEnd() {
+                                super.onAnimationEnd();
+                                animationSynonyms = null;
+                            }
+                        });
+                    }
                 }
-                //if the output text is empty we make it disappear
+                //if the output text is empty we make it disappear, if it is not we eventually make it appear
                 if(isOutputEmpty != s.toString().isEmpty()){  //the output editText transitioned from empty to not empty or vice versa
                     isOutputEmpty = s.toString().isEmpty();
                     if(animationOutput != null) {
@@ -481,6 +484,7 @@ public class TranslationFragment extends Fragment {
                         });
                     }
                 }
+                isRestoringOutputText = false;
             }
         };
         outputText.addTextChangedListener(outputTextListener);
@@ -490,6 +494,7 @@ public class TranslationFragment extends Fragment {
             inputText.setText(lastInputText.getMessage().getText());
         }
         if(lastOutputText != null){
+            isRestoringOutputText = true;
             outputText.setText(lastOutputText.getMessage().getText());
         }
         //we attach the translate listener

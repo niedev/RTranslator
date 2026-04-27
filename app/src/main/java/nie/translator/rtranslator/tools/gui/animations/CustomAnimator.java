@@ -43,6 +43,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -805,7 +806,7 @@ public class CustomAnimator {
         textView.measure(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
         final int textViewFinalHeight = textView.getMeasuredHeight();
         Animator textHeightAnimator = createAnimatorHeight(textView, textView.getHeight(), textViewFinalHeight, duration);
-        Animator textMarginAnimator = createAnimatorTopMargin(textView, 0, Tools.convertDpToPixels(context, topMarginDp), duration);
+        Animator textMarginAnimator = createAnimatorTopMarginLinear(textView, 0, Tools.convertDpToPixels(context, topMarginDp), duration);
         Animator textAlphaAnimator = createAnimatorAlpha(textView, textView.getAlpha(), 1, duration);
         animatorSet.play(textHeightAnimator).with(textMarginAnimator).with(textAlphaAnimator);
         animatorSet.addListener(new Animator.AnimatorListener() {
@@ -836,7 +837,7 @@ public class CustomAnimator {
         int durationShort=context.getResources().getInteger(R.integer.durationShort);
 
         Animator textHeightAnimator = createAnimatorHeight(textView, textView.getHeight(), 0, duration);
-        Animator textMarginAnimator = createAnimatorTopMargin(textView, Tools.convertDpToPixels(context, topMarginDp), 0, duration);
+        Animator textMarginAnimator = createAnimatorTopMarginLinear(textView, Tools.convertDpToPixels(context, topMarginDp), 0, duration);
         Animator textAlphaAnimator = createAnimatorAlpha(textView, textView.getAlpha(), 0, duration);
         animatorSet.play(textHeightAnimator).with(textMarginAnimator).with(textAlphaAnimator);
         animatorSet.addListener(new Animator.AnimatorListener() {
@@ -1402,6 +1403,21 @@ public class CustomAnimator {
                     layoutParams.bottomMargin=(int)valueAnimator.getAnimatedValue();
                     view.setLayoutParams(layoutParams);
                 }
+            }
+        });
+        animator.setDuration(duration);
+
+        return animator;
+    }
+
+    private Animator createAnimatorTopMarginLinear(final View view, int initialPixels, int finalPixels, int duration){
+        ValueAnimator animator= ValueAnimator.ofInt(initialPixels,finalPixels);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) view.getLayoutParams();
+                layoutParams.topMargin=(int)valueAnimator.getAnimatedValue();
+                view.setLayoutParams(layoutParams);
             }
         });
         animator.setDuration(duration);
