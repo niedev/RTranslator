@@ -19,6 +19,7 @@
 #include <vector>
 #include <android/log.h>
 #include <string>
+#include <cstring> // Required for memcpy
 //#include "onnxruntime/core/session/onnxruntime_c_api.h"
 //#include "onnxruntime/core/session/onnxruntime_c_api.h"
 
@@ -28,6 +29,7 @@ std::vector<int> jintArrayTointVector2(JNIEnv* env, jintArray jarray);
 class CacheContainer{
 private:
     float ** cacheContainer;
+    float * cacheValueTempContainer;
     int dim1;  //32*2
     int dim2;  //batch_size
     int dim3;  //16
@@ -42,6 +44,7 @@ public:
         this->dim4 = dim4;  //sequence_length
         this->dim5 = dim5;  //128
         cacheContainer = new float*[dim1];
+        cacheValueTempContainer = new float[dim2*dim1*dim3*dim4*dim5];
     }
 
     void insertData(JNIEnv *env, int index, jobject dataBuffer){
@@ -58,22 +61,28 @@ public:
     }
 
     void reorder(std::vector<int> * indexes){
-        if((*indexes)[0] == 0 && (*indexes)[1] == 1 && (*indexes)[2] == 2 && (*indexes)[3] == 3){
+        // if there is no reorder to be done we return
+        bool change = false;
+        for (int i = 0; i < indexes->size() && !change; ++i) {
+            if((*indexes)[i] != i) {
+                change = true;
+            }
+        }
+        if(!change){
             return;
         }
-        float * cacheValueTemp = new float[dim2*dim1*dim3*dim4*dim5];
+
         for (int i = 0; i < indexes->size(); ++i) {  //the cacheValue vectors are copied and will be reinserted into the cacheValue
             if((*indexes)[i] != i) {
-                getCacheBatchValue((*indexes)[i], &cacheValueTemp[getFlatIndexB(i,0,0,0,0)]);
+                getCacheBatchValueFast((*indexes)[i], &cacheValueTempContainer[getFlatIndexB(i,0,0,0,0)]);
             }
         }
         //reorder is performed
         for (int i = 0; i < indexes->size(); ++i) {
             if((*indexes)[i] != i) {
-                setCacheBatchValue(i, &cacheValueTemp[getFlatIndexB(i,0,0,0,0)]);
+                setCacheBatchValueFast(i, &cacheValueTempContainer[getFlatIndexB(i,0,0,0,0)]);
             }
         }
-        delete[] cacheValueTemp;
     }
 
     jobject getBuffer(JNIEnv *env, int index){
@@ -93,6 +102,7 @@ public:
 
     ~CacheContainer(){
         delete[] cacheContainer;
+        delete[] cacheValueTempContainer;
     }
 
 private:
@@ -119,6 +129,36 @@ private:
             }
         }
     }
+
+    void getCacheBatchValueFast(int batchIndex, float * cacheBatchValue){
+        size_t blockSize = (size_t)dim3 * dim4 * dim5;
+        size_t blockBytes = blockSize * sizeof(float);
+
+        for(int l = 0; l < dim1; l++) {
+            // Memory address in the main cache for this specific layer and batch
+            float* src = cacheContainer[l] + (batchIndex * blockSize);
+            // Memory address in the temp container
+            float* dst = cacheBatchValue + (l * blockSize);
+
+            // Instantly copy the entire chunk of dim3*dim4*dim5 floats
+            std::memcpy(dst, src, blockBytes);
+        }
+    }
+
+    void setCacheBatchValueFast(int batchIndex, float * cacheBatchValue){
+        size_t blockSize = (size_t)dim3 * dim4 * dim5;
+        size_t blockBytes = blockSize * sizeof(float);
+
+        for(int l = 0; l < dim1; l++) {
+            // Memory address in the main cache for this specific layer and batch
+            float* dst = cacheContainer[l] + (batchIndex * blockSize);
+            // Memory address in the temp container
+            float* src = cacheBatchValue + (l * blockSize);
+
+            // Instantly copy the entire chunk of dim3*dim4*dim5 floats
+            std::memcpy(dst, src, blockBytes);
+        }
+    }
 };
 
 
@@ -138,7 +178,7 @@ JNIEXPORT void JNICALL
 Java_nie_translator_rtranslator_tools_nn_CacheContainerNative_insertValues(JNIEnv *env,
                                      jobject thiz,
                                      jlong cacheContainerPointer, jint index, jobject data) {
-    __android_log_print(ANDROID_LOG_ERROR, "CACHE CONTAINER NATIVE", "%s", "inserting data");
+    //__android_log_print(ANDROID_LOG_ERROR, "CACHE CONTAINER NATIVE", "%s", "inserting data");
     CacheContainer *cacheContainer = (CacheContainer *) cacheContainerPointer;
     cacheContainer->insertData(env, index, data);
 }
@@ -179,6 +219,6 @@ std::vector<int> jintArrayTointVector2(JNIEnv* env, jintArray jarray) {
     jsize size = env->GetArrayLength(jarray);
     std::vector<int> vector(size);
     env->GetIntArrayRegion(jarray, jsize{0}, size, &vector[0]);
-    std::vector<int> vectorFinal(vector.begin(), vector.end());
-    return vectorFinal;
+    env->DeleteLocalRef(jarray);
+    return vector;
 }

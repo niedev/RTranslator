@@ -5,6 +5,7 @@ import java.util.Objects;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.TextTools;
 
+//todo: aggiungere una vera gestione degli errori (basata sulle eccezioni)
 public class DictionaryTranslator {
     //Used to load BergamotTranslator.cpp with bergamot library on application startup
     static {

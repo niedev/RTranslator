@@ -42,6 +42,19 @@ public class CacheContainerNative {
         System.loadLibrary("cache_container_native");
     }
 
+    /**
+     * This object will represents the data of the passed cache result, the reorder method will reorder the data of the cache result itself,
+     * so if you pass a result to this object and then reorder, if you access to the result data those will be reordered.
+     * @param env
+     * @param cache
+     * @param nLevels
+     * @param batchSize
+     * @param nHeads
+     * @param sequenceLength
+     * @param hiddenSize
+     * @param mode
+     */
+
     public CacheContainerNative(OrtEnvironment env, OrtSession.Result cache, int nLevels, int batchSize, int nHeads, int sequenceLength, int hiddenSize, int mode){
         try {
             cacheTensors = new OnnxTensor[nLevels*2];

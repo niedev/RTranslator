@@ -97,6 +97,23 @@ public class Utils {
         return largestIndex; // position of the largest found
     }
 
+    public static int getIndexOfLargest(ArrayList<Double> array){
+        //long time = System.currentTimeMillis();
+        if (array == null || array.isEmpty()){
+            return -1;
+        } // null or empty
+        int largestIndex = 0;
+        double largest = -Double.MAX_VALUE;
+        for (int i = 0; i < array.size(); i++) {
+            if (array.get(i) > largest) {
+                largestIndex = i;
+                largest = array.get(largestIndex);
+            }
+        }
+        //android.util.Log.i("performance", "index of largest time: " + (System.currentTimeMillis()-time) + "ms");
+        return largestIndex; // position of the largest found
+    }
+
     public static int getIndexOfLargest(float[] array, ArrayList<Integer> indexesToAvoid){
         //long time = System.currentTimeMillis();
         if (array == null || array.length == 0){
