@@ -312,6 +312,7 @@ public class Recognizer extends NeuralNetworkApi {
                     OrtSession.Result outputsInit = initSession.run(initInputs);
                     OnnxTensor outputInit = (OnnxTensor) outputsInit.get(0);
                     android.util.Log.i("performance", "pre ops done in: " + (System.currentTimeMillis()-time) + "ms");
+                    audioTensor.close();
 
                     //execution of the encoder
                     Map inputs = (Map) (new LinkedHashMap());
@@ -363,6 +364,7 @@ public class Recognizer extends NeuralNetworkApi {
                         initInput.put("encoder_hidden_states", outputEncoderBatched);
                         time = System.currentTimeMillis();
                         initResult = cacheInitBatchSession.run(initInput);
+                        outputEncoderBatched.close();
                         android.util.Log.i("performance", "Cache initialization done in: " + (System.currentTimeMillis() - time) + "ms");
                     }
 
@@ -395,9 +397,10 @@ public class Recognizer extends NeuralNetworkApi {
                         //We prepare the decoder input
                         decoderInput = new HashMap<String, OnnxTensor>();
                         decoderInput.put("input_ids", inputIDsTensor);
+                        OnnxTensor decoderPastTensor = null;
                         if (isFirstIteration) {
                             long[] shape = {batchSize, 12, 0, 64};
-                            OnnxTensor decoderPastTensor = TensorUtils.createFloatTensorWithSingleValue(onnxEnv, 0, shape);
+                            decoderPastTensor = TensorUtils.createFloatTensorWithSingleValue(onnxEnv, 0, shape);
                             for (int i = 0; i < 12; i++) {
                                 decoderInput.put("past_key_values." + i + ".decoder.key", decoderPastTensor);
                                 decoderInput.put("past_key_values." + i + ".decoder.value", decoderPastTensor);
@@ -425,6 +428,8 @@ public class Recognizer extends NeuralNetworkApi {
                             oldResult.close(); //serve a rilasciare la memoria occupata dal risultato (altrimenti di accumula e aumenta molto)
                             android.util.Log.i("performance", "release RAM of " + j + "th word done in: " + (System.currentTimeMillis() - time) + "ms");
                         }
+                        inputIDsTensor.close();
+                        if(decoderPastTensor != null) decoderPastTensor.close();
                         //we extract the logits and the highest value
                         decoderOutput = (OnnxTensor) result.get("logits").get();
                         value = (float[][][]) decoderOutput.getValue();
