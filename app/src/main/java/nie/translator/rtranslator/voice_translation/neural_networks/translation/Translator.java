@@ -41,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.text.Normalizer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,10 +94,12 @@ public class Translator extends NeuralNetworkApi {
     private OrtSession embedSession;
     private final Map<String, String> nllbLanguagesCodes = new HashMap<>();
     private final Map<String, HyLanguageInfo> hyLanguagesInfo = new HashMap<>();
-    private static final double EOS_PENALTY = 1.0;
+    private static final double EOS_PENALTY = 0.0;
+    private static final double WORD_REWARD = 0.5;  //When this is > 0 the LENGTH_ALPHA should be 0, deactivating length normalization, because this already do that job, but it can also generate positive scores, which will break classic length normalization
     private static final float PATIENCE = 1.5F;
-    private static final float LENGTH_ALPHA = 0.5F;  //The length penalty strength for length normalization of beams probabilities in beam search, 0 means no length normalization, 1 is similar of division by length, higher value will favourite longer results
-    private static final float PARTIAL_RESULT_MARGIN = 0.1F;
+    private static final float LENGTH_ALPHA = 0.0F;  //The length penalty strength for length normalization of beams probabilities in beam search, 0 means no length normalization, 1 is similar of division by length, higher value will favourite longer results
+    private static final double SIBLING_PENALTY = 0.2;
+    private static final float PARTIAL_RESULT_MARGIN = 0.2F;
     @Nullable
     private GuiMessage lastInputText;
     @Nullable
@@ -269,9 +270,12 @@ public class Translator extends NeuralNetworkApi {
                             embedAndLmHeadSession.close();
                         }
                         mainHandler.post(() -> listener.onSuccess());
-                    } else if (mode == MOZILLA) {
+                    } else if(mode == HY_MT) {
+                        decoderSession.close();
+                    } else if(mode == MOZILLA){
                         unloadAllMozillaResources(listener);
                     }
+                    onnxEnv.close();
                 } catch (OrtException e) {
                     e.printStackTrace();
                     mainHandler.post(() -> listener.onFailure(new int[]{ErrorCodes.ERROR_LOADING_MODEL},0));
@@ -1008,14 +1012,7 @@ public class Translator extends NeuralNetworkApi {
         } else {  //greedy search (with kv cache)
             completeOutputArray = executeCacheDecoder(textToTranslate, input, encoderResult, inputLanguage, outputLanguage, 1, translateListener);
         }
-        //we convert the ids of completeBeamOutputs into a string and return it
-        /*if(encoderResult != null) encoderResult.close();
-        if ((mode == MADLAD_CACHE || mode == NLLB_CACHE) && beamSize > 1) {
-            int indexMax = Utils.getIndexOfLargest(beamsOutputsProbabilities);
-            completeOutputArray = completeBeamOutput[indexMax].stream().mapToInt(k -> k).toArray();
-        } else {
-            completeOutputArray = completeBeamOutput[0].stream().mapToInt(k -> k).toArray();  //convert completeBeamOutput in an array of int
-        }*/
+        if(encoderResult != null) encoderResult.close();
         if(completeOutputArray != null) {
             return tokenizer.decode(completeOutputArray);
         }else{
@@ -1029,10 +1026,10 @@ public class Translator extends NeuralNetworkApi {
             OnnxTensor inputIDsTensor = TensorUtils.convertIntArrayToTensor(onnxEnv, inputIDs);
             OnnxTensor attentionMaskTensor = TensorUtils.convertIntArrayToTensor(onnxEnv, attentionMask);
             Map<String,OnnxTensor> input = new HashMap<String,OnnxTensor>();
+            Map<String,OnnxTensor> embedInput = new HashMap<String,OnnxTensor>();
             OrtSession.Result embedResult = null;
             if(mode == NLLB_CACHE) {
                 //we do the embedding separately and then we pass the result to the encoder
-                Map<String,OnnxTensor> embedInput = new HashMap<String,OnnxTensor>();
                 embedInput.put("input_ids", inputIDsTensor);
                 embedInput.put("pre_logits", TensorUtils.createFloatTensorWithSingleValue(onnxEnv, 0, new long[]{EMPTY_BATCH_SIZE, 1, 1024}));
                 embedInput.put("use_lm_head", TensorUtils.convertBooleanToTensor(onnxEnv, false));
@@ -1045,7 +1042,6 @@ public class Translator extends NeuralNetworkApi {
                 input.put("embed_matrix", (OnnxTensor) embedResult.get(0));
             }else if(mode == MADLAD_CACHE) {
                 //we do the embedding separately and then we pass the result to the encoder
-                Map<String,OnnxTensor> embedInput = new HashMap<String,OnnxTensor>();
                 embedInput.put("input_ids", inputIDsTensor);
                 ArraySet<String> requestedOutputs = new ArraySet<>();
                 requestedOutputs.add("embed_matrix");
@@ -1063,7 +1059,13 @@ public class Translator extends NeuralNetworkApi {
                 embedResult.close();
             }
             Optional<OnnxValue> output = result.get("last_hidden_state");
-            //Object value = output.get().getValue();   //utile solo per il debug
+
+            //release memory
+            inputIDsTensor.close();
+            attentionMaskTensor.close();
+            embedInput.forEach((s, onnxTensor) -> onnxTensor.close());
+            input.forEach((s, onnxTensor) -> onnxTensor.close());
+
             return (OnnxTensor) output.get();
         } catch (OrtException e) {
             e.printStackTrace();
@@ -1193,6 +1195,7 @@ public class Translator extends NeuralNetworkApi {
                     decoderInput.put("embed_matrix", (OnnxTensor) embedResult.get(0));
                 }
                 decoderInput.put("input_ids", inputIDsTensor);
+                OnnxTensor decoderPastTensor = null;
                 if(j == 1){  //if it is the first iteration
                     //we run the decoder with a batch_size = 1
                     if(mode != HY_MT) {
@@ -1201,7 +1204,7 @@ public class Translator extends NeuralNetworkApi {
                         decoderInput.put("attention_mask", attentionMaskTensor);
                     }
                     long[] shape = {1, nHeads, 0, hiddenSizeAttention};
-                    OnnxTensor decoderPastTensor = TensorUtils.createFloatTensorWithSingleValue(onnxEnv,0, shape);
+                    decoderPastTensor = TensorUtils.createFloatTensorWithSingleValue(onnxEnv,0, shape);
                     for (int i = 0; i < nLayers; i++) {
                         decoderInput.put("past_key_values." + i + (mode != HY_MT ? ".decoder" : "") + ".key", decoderPastTensor);
                         decoderInput.put("past_key_values." + i + (mode != HY_MT ? ".decoder" : "") + ".value", decoderPastTensor);
@@ -1236,6 +1239,8 @@ public class Translator extends NeuralNetworkApi {
 
                 //decoder execution (with cache)
                 result = decoderSession.run(decoderInput);
+
+                if(decoderPastTensor != null) decoderPastTensor.close();
                 android.util.Log.i("performance", "execution of"+j+"th word done in: " + (System.currentTimeMillis()-time) + "ms");
                 time = System.currentTimeMillis();
 
@@ -1283,6 +1288,7 @@ public class Translator extends NeuralNetworkApi {
                     }else {
                         input_ids = max;
                     }
+                    if(inputIDsTensor != null) inputIDsTensor.close();
                     inputIDsTensor = TensorUtils.createIntTensor(onnxEnv, input_ids, new long[]{beamSize,1});
                     //we convert the cache making it have a batch_size=beamSize ("beamSize" copies of the same cache)
                     result = batchDecoderKvCache(result, decoderOutput, nLayers, beamSize, true);
@@ -1312,6 +1318,7 @@ public class Translator extends NeuralNetworkApi {
 
                     //we prepare the inputs of the next iteration
                     input_ids = max;
+                    if(inputIDsTensor != null) inputIDsTensor.close();
                     inputIDsTensor = TensorUtils.createIntTensor(onnxEnv, input_ids, new long[]{beamSize,1});
                 }
                 if(mode == HY_MT) {  //todo: make this part more optimized (measure and increase the speed and efficiency)
@@ -1319,8 +1326,10 @@ public class Translator extends NeuralNetworkApi {
                     attentionMask = new int[attentionMask.length + 1];
                     Arrays.fill(attentionMask, 1);
                     if(beamSize > 1) {
+                        if(attentionMaskTensorBatched != null) attentionMaskTensorBatched.close();
                         attentionMaskTensorBatched = batchEncoderAttentionMask(attentionMask, beamSize, true);
                     }else{
+                        if(attentionMaskTensor != null) attentionMaskTensor.close();
                         attentionMaskTensor = TensorUtils.convertIntArrayToTensor(onnxEnv, attentionMask);
                     }
                 }
@@ -1347,6 +1356,8 @@ public class Translator extends NeuralNetworkApi {
                 double partialResultScore = -Double.MAX_VALUE;
                 int[] partialResultIds;
                 if(beamSize > 1) {
+                    // if the beam search is active, to avoid too many back and forth changes in the partial results, we will prefer to show the continuation of the previous partial result (if present in the results)
+                    // unless the new partial result has a much higher score (previous score + PARTIAL_RESULT_MARGIN)
                     boolean surpassedLastScoreMargin = false;
                     if(maxSentenceFinished){
                         surpassedLastScoreMargin = lastPartialResult == null || finishedBeamSentencesProbabilities.get(indexMaxFinished) > lastPartialResult.score + PARTIAL_RESULT_MARGIN;
@@ -1411,6 +1422,7 @@ public class Translator extends NeuralNetworkApi {
                     partialResult = tokenizer.decode(partialResultIds);
                     lastPartialResult.text = partialResult;
                 }else{
+                    // if beam search is not active we return the only partial result normally
                     partialResult = tokenizer.decode(outputIDs);
                 }
                 if(responseListener != null) {
@@ -1430,6 +1442,8 @@ public class Translator extends NeuralNetworkApi {
                     partialResults[i] = tokenizer.decode(completeBeamOutput[i].stream().mapToInt(k -> k).toArray());
                     android.util.Log.i("result "+i, partialResults[i]+"  Score: "+beamsOutputsProbabilities[i]);
                 }
+
+                if(lmHeadResult != null) lmHeadResult.close();
 
                 //stopping conditions
                 if(beamSize == 1){
@@ -1465,6 +1479,10 @@ public class Translator extends NeuralNetworkApi {
             if(cacheContainer != null) cacheContainer.close();
             if(attentionMaskTensorBatched != null) attentionMaskTensorBatched.close();
             if(initResultBatched != null) initResultBatched.close();
+            if(emptyInputIds != null) emptyInputIds.close();
+            if(emptyInputIdsBatch != null) emptyInputIdsBatch.close();
+            if(emptyPreLogits != null) emptyPreLogits.close();
+            if(emptyPreLogitsBatch != null) emptyPreLogitsBatch.close();
 
             //selection of the best final result
             if(beamSize == 1){
@@ -1514,15 +1532,17 @@ public class Translator extends NeuralNetworkApi {
      * @return The normalized score
      */
     public static double normalizeScoreByLength(double logProb, int length) {
-        // Math optimization: (5 + length)^alpha / (5 + 1)^alpha == ((5 + length) / 6.0)^alpha
-        // This eliminates one expensive Math.pow() call completely.
-        double base = (5.0 + length) / 6.0;
-
-        // Calculate the actual length penalty
-        double penalty = Math.pow(base, LENGTH_ALPHA);
-
-        // Return the normalized log probability
-        return logProb / penalty;
+        if(LENGTH_ALPHA != 0) {
+            // Math optimization: (5 + length)^alpha / (5 + 1)^alpha == ((5 + length) / 6.0)^alpha
+            // This eliminates one expensive Math.pow() call completely.
+            double base = (5.0 + length) / 6.0;
+            // Calculate the actual length penalty
+            double penalty = Math.pow(base, LENGTH_ALPHA);
+            // Return the normalized log probability
+            return logProb / penalty;
+        }else{
+            return logProb;
+        }
     }
 
     public long incrementCurrentResultID(){
@@ -1682,9 +1702,11 @@ public class Translator extends NeuralNetworkApi {
             for (int i = 0; i < beamSize; i++) {
                 float maxLogit = logits[k][seqLen-1][beamMax[k][i]];
                 beamsOutputsProbabilitiesTemp[(k*beamSize)+i] = beamsOutputsProbabilities[k] + maxLogit - logSumExp;
-                /*if(beamMax[k][i] == eos) {
-                    beamsOutputsProbabilitiesTemp[(k*beamSize)+i] = beamsOutputsProbabilitiesTemp[(k*beamSize)+i]/EOS_PENALTY;
-                }*/
+                if(beamMax[k][i] == eos) {
+                    beamsOutputsProbabilitiesTemp[(k*beamSize)+i] = beamsOutputsProbabilitiesTemp[(k*beamSize)+i] - EOS_PENALTY;
+                }else{
+                    beamsOutputsProbabilitiesTemp[(k*beamSize)+i] = beamsOutputsProbabilitiesTemp[(k*beamSize)+i] + WORD_REWARD;
+                }
             }
         }
         android.util.Log.i("performance", "softmax done in: " + (System.currentTimeMillis()-timeSoftmax) + "ms");
@@ -1696,6 +1718,16 @@ public class Translator extends NeuralNetworkApi {
         for(int i=0; i<beamSize; i++){
             int largestIndex = Utils.getIndexOfLargest(beamsOutputsProbabilitiesTemp, indexesToAvoid);
             indexesToAvoid.add(largestIndex);
+            // we apply sibling penalty to the remaining sentences
+            int token = beamMax[largestIndex/beamSize][largestIndex%beamSize];
+            for(int j=0; j<beamsOutputsProbabilitiesTemp.length; j++){
+                if(!indexesToAvoid.contains(j)){
+                    if(beamMax[j/beamSize][j%beamSize] == token){
+                        beamsOutputsProbabilitiesTemp[j] = beamsOutputsProbabilitiesTemp[j] - SIBLING_PENALTY;
+                    }
+                }
+            }
+            // we eventually save a finished sentence, or we insert the index in maxProbabilities
             if(beamMax[largestIndex/beamSize][largestIndex%beamSize] == eos) {
                 Integer[] sentence = new Integer[completeBeamOutput[largestIndex/beamSize].size()+1];
                 completeBeamOutput[largestIndex/beamSize].toArray(sentence);
