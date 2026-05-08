@@ -177,7 +177,7 @@
         <zh_name>藏语</zh_name>
     </language>
     <language>
-        <code>zh-Hant</code>  <!-- todo: implement a management of this -->
+        <code>zh-HANT</code>
         <en_name>Traditional Chinese</en_name>
         <zh_name>繁体中文</zh_name>
     </language>
