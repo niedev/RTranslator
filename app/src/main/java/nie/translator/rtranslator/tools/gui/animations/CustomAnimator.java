@@ -803,7 +803,10 @@ public class CustomAnimator {
 
         textView.setVisibility(View.VISIBLE);
 
-        textView.measure(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        int width = textView.getWidth();
+        int widthSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY);
+        int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);  //WRAP_CONTENT
+        textView.measure(widthSpec, heightSpec);
         final int textViewFinalHeight = textView.getMeasuredHeight();
         Animator textHeightAnimator = createAnimatorHeight(textView, textView.getHeight(), textViewFinalHeight, duration);
         Animator textMarginAnimator = createAnimatorTopMarginLinear(textView, 0, Tools.convertDpToPixels(context, topMarginDp), duration);
