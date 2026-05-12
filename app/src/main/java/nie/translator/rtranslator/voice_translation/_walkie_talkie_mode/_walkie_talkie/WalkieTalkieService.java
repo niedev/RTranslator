@@ -289,7 +289,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
         };
         firstResultTranslateListener = new Translator.TranslateListener() {
             @Override
-            public void onTranslatedText(String textToTranslate, String text, long resultID, boolean isFinal, boolean isTatoeba, CustomLocale languageOfText) {
+            public void onTranslatedText(String textToTranslate, String text, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
                 ((Global) getApplication()).getTTSLanguages(true, new Global.GetLocalesListListener() {
                     @Override
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
@@ -332,7 +332,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
         };
         secondResultTranslateListener = new Translator.TranslateListener() {
             @Override
-            public void onTranslatedText(String textToTranslate, String text, long resultID, boolean isFinal, boolean isTatoeba, CustomLocale languageOfText) {
+            public void onTranslatedText(String textToTranslate, String text,  String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
                 ((Global) getApplication()).getTTSLanguages(true, new Global.GetLocalesListListener() {
                     @Override
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {

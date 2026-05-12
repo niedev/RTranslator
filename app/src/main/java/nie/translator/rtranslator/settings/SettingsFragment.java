@@ -203,6 +203,18 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
 
+        // useTranslationDict initialization
+        Preference translationDictPreference = findPreference("useTranslationDictionaries");
+        translationDictPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                if(global != null) {
+                    global.setUseTranslationDictionaries((Boolean) newValue);
+                }
+                return true;
+            }
+        });
+
         // link models manager initialization
         Preference modelsManagerPreference = findPreference("modelsManager");
         modelsManagerPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

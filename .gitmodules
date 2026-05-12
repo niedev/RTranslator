@@ -2,5 +2,8 @@
 	path = app/src/main/cpp/src/libs/sentencepiece
 	url = https://github.com/niedev/sentencepiece
 [submodule "app/src/main/cpp/src/libs/bergamot"]
-	path = app/src/main/cpp/src/libs/bergamot
+	path = app/src/main/cpp/src/bergamot_translator/libs/bergamot
 	url = https://github.com/niedev/bergamot-translator
+[submodule "app/src/main/cpp/src/libs/protobuf-lite"]
+	path = app/src/main/cpp/src/libs/protobuf-lite
+	url = https://github.com/niedev/protobuf

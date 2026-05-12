@@ -65,6 +65,10 @@ android {
         }
     }
 
+    buildFeatures {
+        prefab true
+    }
+
     buildTypes {
         debug {
             minifyEnabled false

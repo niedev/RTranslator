@@ -52,6 +52,8 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.crypto.BadPaddingException;
@@ -86,6 +88,18 @@ public class Tools {
         StringBuilder sb = new StringBuilder(outLenBytes * 2);
         for (byte b : out) sb.append(String.format("%02x", b));
         return sb.toString();
+    }
+
+    public static int findArray(Integer[] array, Integer[] subArray) {
+        return Collections.indexOfSubList(Arrays.asList(array), Arrays.asList(subArray));
+    }
+
+    public static int findArray(int[] array, int[] subArray) {
+        return Collections.indexOfSubList(Arrays.stream(array).boxed().toList(), Arrays.stream(subArray).boxed().toList());
+    }
+
+    public static int findArray(ArrayList<Integer> array, int[] subArray) {
+        return Collections.indexOfSubList(array, Arrays.stream(subArray).boxed().toList());
     }
     public static synchronized String convertBitmapToString(Bitmap image) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

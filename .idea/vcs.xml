@@ -5,6 +5,7 @@
     <mapping directory="$PROJECT_DIR$/app/src/main/cpp/src/libs/bergamot" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/app/src/main/cpp/src/libs/bergamot/3rd_party/marian-dev" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/app/src/main/cpp/src/libs/bergamot/3rd_party/ssplit-cpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/app/src/main/cpp/src/libs/protobuf-lite" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/app/src/main/cpp/src/libs/sentencepiece" vcs="Git" />
   </component>
   <component name="VcsProjectSettings">

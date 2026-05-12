@@ -93,7 +93,8 @@ public class TranslationFragment extends Fragment {
     private FloatingActionButton ttsInputButton;
     private FloatingActionButton ttsOutputButton;
     private ConstraintLayout outputContainer;
-    private TextView tatoebaText;
+    private TextView resultTypeText;
+    private TextView synonymsText;
     private CustomAnimator animator = new CustomAnimator();
     private Animator colorAnimator = null;
     private int activatedColor = R.color.primary;
@@ -102,9 +103,12 @@ public class TranslationFragment extends Fragment {
     private boolean isScreenReduced = false;
     private boolean isInputEmpty = true;
     private boolean isOutputEmpty = true;
-    private boolean isOutputTatoeba = false;
+    private boolean isOutputTypeVisible = false;
+    private boolean isSynonymsTextVisible = false;
+    private boolean isRestoringOutputText = false;
     ViewTreeObserver.OnGlobalLayoutListener layoutListener;
     private static final int REDUCED_GUI_THRESHOLD_DP = 550;
+    private static final int synonymsTopMargin = 4;
 
     //languageListDialog
     private LanguageListAdapter listView;
@@ -129,7 +133,9 @@ public class TranslationFragment extends Fragment {
     @Nullable
     private Animator animationOutput;
     @Nullable
-    private Animator animationTatoeba;
+    private Animator animationResultType;
+    @Nullable
+    private Animator animationSynonyms;
 
 
     @Override
@@ -170,7 +176,8 @@ public class TranslationFragment extends Fragment {
         ttsInputButton = view.findViewById(R.id.ttsButtonInput);
         ttsOutputButton = view.findViewById(R.id.ttsButtonOutput);
         outputContainer = view.findViewById(R.id.outputContainer);
-        tatoebaText = view.findViewById(R.id.tatoebaText);
+        resultTypeText = view.findViewById(R.id.resultTypeText);
+        synonymsText = view.findViewById(R.id.synonymsText);
         //we set the initial tag for the tts buttons
         ttsInputButton.setTag(R.drawable.sound_icon);
         ttsOutputButton.setTag(R.drawable.sound_icon);
@@ -215,19 +222,45 @@ public class TranslationFragment extends Fragment {
         conversationButtonSmall.setOnClickListener(conversationButtonListener);
         translateListener = new Translator.TranslateListener() {
             @Override
-            public void onTranslatedText(String textToTranslate, String text, long resultID, boolean isFinal, boolean isTatoeba, CustomLocale languageOfText) {
+            public void onTranslatedText(String textToTranslate, String text, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
                 outputText.setText(text);
                 if(isFinal){
-                    if(isTatoeba){
-                        isOutputTatoeba = true;
-                        if(animationTatoeba != null) {
-                            animationTatoeba.cancel();
+                    //eventually we show result type text
+                    if(resultType != ResultType.NORMAL){
+                        isOutputTypeVisible = true;
+                        if(animationResultType != null) {
+                            animationResultType.cancel();
                         }
-                        animationTatoeba = animator.animateViewAppearance(activity, tatoebaText, new CustomAnimator.Listener() {
+                        //todo: sostituire le stringhe con delle risorse e tradurle
+                        if(resultType == ResultType.DICTIONARY){
+                            resultTypeText.setText("Dictionary");
+                        }else if(resultType == ResultType.TATOEBA){
+                            resultTypeText.setText("Tatoeba");
+                        }
+                        animationResultType = animator.animateViewAppearance(activity, resultTypeText, new CustomAnimator.Listener() {
                             @Override
                             public void onAnimationEnd() {
                                 super.onAnimationEnd();
-                                animationTatoeba = null;
+                                animationResultType = null;
+                            }
+                        });
+                    }
+                    //eventually we show the synonyms of the translated word
+                    if(synonyms != null && synonyms.length > 0){
+                        isSynonymsTextVisible = true;
+                        if(animationSynonyms != null) {
+                            animationSynonyms.cancel();
+                        }
+                        StringBuilder t = new StringBuilder(synonyms[0]);
+                        for(int i=1; i<synonyms.length; i++){
+                            t.append(", ").append(synonyms[i]);
+                        }
+                        synonymsText.setText(t.toString());
+                        animationSynonyms = animator.animateSynonymsTextEnlargement(activity, synonymsText, synonymsTopMargin, new CustomAnimator.Listener() {
+                            @Override
+                            public void onAnimationEnd() {
+                                super.onAnimationEnd();
+                                animationSynonyms = null;
                             }
                         });
                     }
@@ -349,7 +382,7 @@ public class TranslationFragment extends Fragment {
                 }
                 if(isInputEmpty != s.toString().isEmpty()){  //the input editText transitioned from empty to not empty or vice versa
                     isInputEmpty = s.toString().isEmpty();
-                    if(animationInput != null){
+                    if(animationInput != null) {
                         animationInput.cancel();
                     }
                     if(!s.toString().isEmpty()) {
@@ -397,19 +430,37 @@ public class TranslationFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(isOutputTatoeba) {
-                    isOutputTatoeba = false;
-                    if (animationTatoeba != null) {
-                        animationTatoeba.cancel();
-                    }
-                    animationTatoeba = animator.animateViewDisappearance(activity, tatoebaText, new CustomAnimator.Listener() {
-                        @Override
-                        public void onAnimationEnd() {
-                            super.onAnimationEnd();
-                            animationTatoeba = null;
+                if(!isRestoringOutputText) {
+                    //we eventually make the result type disappear
+                    if (isOutputTypeVisible) {
+                        isOutputTypeVisible = false;
+                        if (animationResultType != null) {
+                            animationResultType.cancel();
                         }
-                    });
+                        animationResultType = animator.animateViewDisappearance(activity, resultTypeText, new CustomAnimator.Listener() {
+                            @Override
+                            public void onAnimationEnd() {
+                                super.onAnimationEnd();
+                                animationResultType = null;
+                            }
+                        });
+                    }
+                    //we eventually make the synonyms of the result disappear
+                    if (isSynonymsTextVisible) {
+                        isSynonymsTextVisible = false;
+                        if (animationSynonyms != null) {
+                            animationSynonyms.cancel();
+                        }
+                        animationSynonyms = animator.animateSynonymsTextReduction(activity, synonymsText, synonymsTopMargin, new CustomAnimator.Listener() {
+                            @Override
+                            public void onAnimationEnd() {
+                                super.onAnimationEnd();
+                                animationSynonyms = null;
+                            }
+                        });
+                    }
                 }
+                //if the output text is empty we make it disappear, if it is not we eventually make it appear
                 if(isOutputEmpty != s.toString().isEmpty()){  //the output editText transitioned from empty to not empty or vice versa
                     isOutputEmpty = s.toString().isEmpty();
                     if(animationOutput != null) {
@@ -433,6 +484,7 @@ public class TranslationFragment extends Fragment {
                         });
                     }
                 }
+                isRestoringOutputText = false;
             }
         };
         outputText.addTextChangedListener(outputTextListener);
@@ -442,6 +494,7 @@ public class TranslationFragment extends Fragment {
             inputText.setText(lastInputText.getMessage().getText());
         }
         if(lastOutputText != null){
+            isRestoringOutputText = true;
             outputText.setText(lastOutputText.getMessage().getText());
         }
         //we attach the translate listener

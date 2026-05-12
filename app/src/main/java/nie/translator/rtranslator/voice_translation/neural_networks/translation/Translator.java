@@ -41,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.text.Normalizer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +66,7 @@ import nie.translator.rtranslator.databases.tatoeba.LinksData;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.FileTools;
+import nie.translator.rtranslator.tools.TextTools;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.nn.CacheContainerNative;
@@ -94,7 +94,12 @@ public class Translator extends NeuralNetworkApi {
     private OrtSession embedSession;
     private final Map<String, String> nllbLanguagesCodes = new HashMap<>();
     private final Map<String, HyLanguageInfo> hyLanguagesInfo = new HashMap<>();
-    private static final double EOS_PENALTY = 0.9;
+    private static final double EOS_PENALTY = 0.0;
+    private static final double WORD_REWARD = 0.5;  //When this is > 0 the LENGTH_ALPHA should be 0, deactivating length normalization, because this already do that job, but it can also generate positive scores, which will break classic length normalization
+    private static final float PATIENCE = 1.5F;
+    private static final float LENGTH_ALPHA = 0.0F;  //The length penalty strength for length normalization of beams probabilities in beam search, 0 means no length normalization, 1 is similar of division by length, higher value will favourite longer results
+    private static final double SIBLING_PENALTY = 0.2;
+    private static final float PARTIAL_RESULT_MARGIN = 0.2F;
     @Nullable
     private GuiMessage lastInputText;
     @Nullable
@@ -265,9 +270,12 @@ public class Translator extends NeuralNetworkApi {
                             embedAndLmHeadSession.close();
                         }
                         mainHandler.post(() -> listener.onSuccess());
-                    } else if (mode == MOZILLA) {
+                    } else if(mode == HY_MT) {
+                        decoderSession.close();
+                    } else if(mode == MOZILLA){
                         unloadAllMozillaResources(listener);
                     }
+                    onnxEnv.close();
                 } catch (OrtException e) {
                     e.printStackTrace();
                     mainHandler.post(() -> listener.onFailure(new int[]{ErrorCodes.ERROR_LOADING_MODEL},0));
@@ -323,7 +331,12 @@ public class Translator extends NeuralNetworkApi {
     }
 
     public abstract static class TranslateListener extends TranslatorListener {
-        public abstract void onTranslatedText(String textToTranslate, String TranslatedText, long resultID, boolean isFinal, boolean isTatoeba, CustomLocale languageOfText);
+        public static enum ResultType {
+            NORMAL,
+            TATOEBA,
+            DICTIONARY
+        }
+        public abstract void onTranslatedText(String textToTranslate, String TranslatedText, @Nullable String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText);
     }
 
     public void translateMessage(final ConversationMessage conversationMessageToTranslate, final CustomLocale languageOutput, int beamSize, final TranslateMessageListener responseListener) {  // what the thread does
@@ -353,7 +366,7 @@ public class Translator extends NeuralNetworkApi {
                     public void onSuccess() {
                         performTextTranslation(text, languageInput, data.languageOutput, data.beamSize, false, new TranslateListener() {
                             @Override
-                            public void onTranslatedText(String textToTranslate, String text, long resultID, boolean isFinal, boolean isTatoeba, CustomLocale languageOfText) {
+                            public void onTranslatedText(String textToTranslate, String text, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
                                 data.conversationMessageToTranslate.getPayload().setText(text);
                                 data.conversationMessageToTranslate.getPayload().setLanguage(data.languageOutput);
                                 mainHandler.post(() -> data.responseListener.onTranslatedMessage(data.conversationMessageToTranslate, resultID, isFinal));
@@ -640,6 +653,21 @@ public class Translator extends NeuralNetworkApi {
         }).start();
     }
 
+    public void loadAllTranslationDictionariesResources(GeneralListener listener){
+        new Thread(() -> {
+            synchronized (langResourcesLock) {
+                try {
+                    //execution of the resources unloading
+                    languageResourcesManager.loadAllTranslationDictionariesResources();
+                    if(listener != null) listener.onSuccess();
+                } catch (Exception e) {
+                    Log.e("resources", e.getMessage());
+                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
+                }
+            }
+        }).start();
+    }
+
     public void unloadAllMozillaResources(GeneralListener listener){
         new Thread(() -> {
             synchronized (langResourcesLock) {
@@ -654,6 +682,13 @@ public class Translator extends NeuralNetworkApi {
         synchronized (langResourcesLock) {
             //execution of the resources unloading
             languageResourcesManager.unloadAllTatoebaResources();
+        }
+    }
+
+    public void unloadAllTranslationDictionariesResources(){
+        synchronized (langResourcesLock) {
+            //execution of the resources unloading
+            languageResourcesManager.unloadAllTranslationDictionariesResources();
         }
     }
 
@@ -705,9 +740,9 @@ public class Translator extends NeuralNetworkApi {
         callbacks.remove(callback);
     }
 
-    private void notifyResult(String textToTranslate, String text, long resultID, boolean isFinal, boolean isTatoeba, CustomLocale languageOfText) {
+    private void notifyResult(String textToTranslate, String text, @Nullable String[] synonyms, long resultID, boolean isFinal, TranslateListener.ResultType resultType, CustomLocale languageOfText) {
         for (int i = 0; i < callbacks.size(); i++) {
-            callbacks.get(i).onTranslatedText(textToTranslate, text, resultID, isFinal, isTatoeba, languageOfText);
+            callbacks.get(i).onTranslatedText(textToTranslate, text, synonyms, resultID, isFinal, resultType, languageOfText);
         }
     }
 
@@ -725,7 +760,9 @@ public class Translator extends NeuralNetworkApi {
             if(saveResults) {
                 lastInputText = new GuiMessage(new Message(global, textToTranslate), false, true);
             }
-            boolean tatoebaResult = false;
+            boolean isTatoebaResult = false;  //will be true and remain true is one of the splits of the text is translated by tatoeba
+            boolean isDictionaryResult = false;  //will be true and remain true only if all the splits of the text are translated by a dictionary
+            String[] synonyms = null;
 
             if(mode != MOZILLA){
                 int maxLength = 200;
@@ -768,15 +805,33 @@ public class Translator extends NeuralNetworkApi {
                 final String[] joinedStringOutput = {""};
                 for (int i = 0; i < textSplit.size(); i++) {
                     String finalSplitResult = null;
-                    if(global.isUseTatoeba()){
-                        finalSplitResult = performTatoebaTranslation(textSplit.get(i), inputLanguage, outputLanguage);
+                    if(global.isUseTranslationDictionaries()) {
+                        String[] dictionaryResult = performDictionaryTranslation(textSplit.get(i), inputLanguage, outputLanguage);
+                        if(dictionaryResult != null && dictionaryResult.length > 0) {
+                            finalSplitResult = dictionaryResult[0];
+                            if(textSplit.size() == 1 && dictionaryResult.length > 1){
+                                synonyms = new String[dictionaryResult.length-1];
+                                System.arraycopy(dictionaryResult, 1, synonyms, 0, dictionaryResult.length - 1);
+                            }
+                        }
                     }
+                    if(finalSplitResult == null) {
+                        isDictionaryResult = false;  //if this split is not translated by a dictionary we set isDictionaryResult to false
+                        if (global.isUseTatoeba()) {
+                            finalSplitResult = performTatoebaTranslation(textSplit.get(i), inputLanguage, outputLanguage);
+                        }
 
-                    if(finalSplitResult == null){
-                        //we execute translation of the current split using Neural Network
-                        finalSplitResult = performNNTextTranslation(textSplit.get(i), joinedStringOutput, inputLanguage, outputLanguage, beamSize, saveResults, responseListener);
+                        if (finalSplitResult == null) {
+                            //we execute translation of the current split using Neural Network
+                            finalSplitResult = performNNTextTranslation(textSplit.get(i), joinedStringOutput, inputLanguage, outputLanguage, beamSize, saveResults, responseListener);
+                        } else {
+                            isTatoebaResult = true;
+                        }
                     }else{
-                        tatoebaResult = true;
+                        //we set isDictionary only if all the previous splits has been translated by the dictionary or if this is the first split
+                        if(i==0 || isDictionaryResult){
+                            isDictionaryResult = true;
+                        }
                     }
                     // join the split result with the previous results
                     if (joinedStringOutput[0].equals("")) {
@@ -791,15 +846,29 @@ public class Translator extends NeuralNetworkApi {
                 android.util.Log.i("performance", "Detokenization done in: " + (System.currentTimeMillis() - time) + "ms");
             }else{
                 //perform text translation using mozilla models
-                if (global.isUseTatoeba()) {
-                    finalResult = performTatoebaTranslation(textToTranslate, inputLanguage, outputLanguage);
-                }
-                synchronized (langResourcesLock) {
-                    if (finalResult == null) {
-                        finalResult = BergamotTranslator.translateMultiple(new String[]{textToTranslate}, inputLanguage, outputLanguage)[0];
-                    }else{
-                        tatoebaResult = true;
+                if(global.isUseTranslationDictionaries()) {
+                    String[] dictionaryResult = performDictionaryTranslation(textToTranslate, inputLanguage, outputLanguage);
+                    if(dictionaryResult != null && dictionaryResult.length > 0) {
+                        finalResult = dictionaryResult[0];
+                        if(dictionaryResult.length > 1){
+                            synonyms = new String[dictionaryResult.length-1];
+                            System.arraycopy(dictionaryResult, 1, synonyms, 0, dictionaryResult.length - 1);
+                        }
                     }
+                }
+                if(finalResult == null) {
+                    if (global.isUseTatoeba()) {
+                        finalResult = performTatoebaTranslation(textToTranslate, inputLanguage, outputLanguage);
+                    }
+                    synchronized (langResourcesLock) {
+                        if (finalResult == null) {
+                            finalResult = BergamotTranslator.translateMultiple(new String[]{textToTranslate}, inputLanguage, outputLanguage)[0];
+                        } else {
+                            isTatoebaResult = true;
+                        }
+                    }
+                }else{
+                    isDictionaryResult = true;
                 }
             }
             android.util.Log.i("performance", "TRANSLATION DONE IN: " + (System.currentTimeMillis() - initTime) + "ms");
@@ -808,11 +877,19 @@ public class Translator extends NeuralNetworkApi {
             }
             final long currentResultIDCopy = currentResultID;  //we do a copy because otherwise the currentResultID is incremented before notifying the message (due to the notification being executed in the mainThread)
             String finalResultConst = finalResult;
-            boolean finalTatoebaResult = tatoebaResult;
-            if (responseListener != null) {
-                mainHandler.post(() -> responseListener.onTranslatedText(textToTranslate, finalResultConst, currentResultIDCopy, true, finalTatoebaResult, outputLanguage));
+            TranslateListener.ResultType resultType;
+            if(isDictionaryResult){
+                resultType = TranslateListener.ResultType.DICTIONARY;
+            } else if(isTatoebaResult) {
+                resultType = TranslateListener.ResultType.TATOEBA;
             } else {
-                mainHandler.post(() -> notifyResult(textToTranslate, finalResultConst, currentResultIDCopy, true, finalTatoebaResult, outputLanguage));
+                resultType = TranslateListener.ResultType.NORMAL;
+            }
+            String[] finalSynonyms = synonyms;
+            if (responseListener != null) {
+                mainHandler.post(() -> responseListener.onTranslatedText(textToTranslate, finalResultConst, finalSynonyms, currentResultIDCopy, true, resultType, outputLanguage));
+            } else {
+                mainHandler.post(() -> notifyResult(textToTranslate, finalResultConst, finalSynonyms, currentResultIDCopy, true, resultType, outputLanguage));
             }
             currentResultID++;
         } catch (Exception e) {
@@ -829,7 +906,7 @@ public class Translator extends NeuralNetworkApi {
     private String performTatoebaTranslation(String text, CustomLocale inputLanguage, CustomLocale outputLanguage){
         synchronized (langResourcesLock) {
             LinksData.DataMap linksContainer = languageResourcesManager.getTatoebaLinks().getOrDefault(inputLanguage.getISO3Language() + "-" + outputLanguage.getISO3Language(), null);
-            String normalizedText = normalizeText(text);
+            String normalizedText = TextTools.normalizeText(text);
             String hash = Tools.shake256Hex(normalizedText, 8);
             if (linksContainer != null) {
                 long initTime = System.currentTimeMillis();
@@ -845,7 +922,7 @@ public class Translator extends NeuralNetworkApi {
                     }
                     String[] srcSentences = languageResourcesManager.getTatoebaDb().getSentences(srcIds);
                     for (int j = 0; j < srcSentences.length; j++) {
-                        if (normalizedText.equalsIgnoreCase(normalizeText(srcSentences[j]))) {
+                        if (normalizedText.equalsIgnoreCase(TextTools.normalizeText(srcSentences[j]))) {
                             String textResult = languageResourcesManager.getTatoebaDb().getSentence(tgtIds[j]);
                             //mainHandler.post(() -> Toast.makeText(global, "Tatoeba sentence found: " + textResult, Toast.LENGTH_SHORT).show());
                             android.util.Log.i("status_tatoeba", "Tatoeba sentence found: " + textResult);
@@ -863,12 +940,19 @@ public class Translator extends NeuralNetworkApi {
         return null;
     }
 
-    private String performNNTextTranslation(final String textToTranslate, String[] joinedStringOutput, final CustomLocale inputLanguage, final CustomLocale outputLanguage, int beamSize, boolean saveResults, @Nullable final TranslateListener responseListener) throws Exception {
-        ArrayList<Integer>[] completeBeamOutput = new ArrayList[beamSize];  //contains the "beamSize" strings produced by the decoder
-        for (int j = 0; j < beamSize; j++) {
-            completeBeamOutput[j] = new ArrayList<Integer>();
+    @Nullable
+    private String[] performDictionaryTranslation(String text, CustomLocale inputLanguage, CustomLocale outputLanguage){
+        synchronized (langResourcesLock){
+            try {
+                return DictionaryTranslator.translateWord(text, inputLanguage, outputLanguage);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
         }
-        double[] beamsOutputsProbabilities = new double[beamSize];  //contains for each of the "beamSize" strings produced by the decoder its overall probability
+    }
+
+    private String performNNTextTranslation(final String textToTranslate, String[] joinedStringOutput, final CustomLocale inputLanguage, final CustomLocale outputLanguage, int beamSize, boolean saveResults, @Nullable final TranslateListener responseListener) throws Exception {
         //tokenization
         long time = System.currentTimeMillis();
         TokenizerResult input = null;
@@ -893,7 +977,7 @@ public class Translator extends NeuralNetworkApi {
         //decoder execution
         TranslateListener translateListener = new TranslateListener() {
             @Override
-            public void onTranslatedText(String textToTranslate, String text, long resultID, boolean isFinal, boolean isTatoeba, CustomLocale languageOfText) {
+            public void onTranslatedText(String textToTranslate, String text, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
                 //we return the partial results
                 String outputText;
                 if (joinedStringOutput[0].equals("")) {
@@ -906,9 +990,9 @@ public class Translator extends NeuralNetworkApi {
                 }
                 final long currentResultIDCopy = currentResultID;  //we do a copy because otherwise the currentResultID is incremented before notifying the message (due to the notification being executed in the mainThread)
                 if (responseListener != null) {
-                    mainHandler.post(() -> responseListener.onTranslatedText(textToTranslate, outputText, currentResultIDCopy, false, isTatoeba, outputLanguage));
+                    mainHandler.post(() -> responseListener.onTranslatedText(textToTranslate, outputText, synonyms, currentResultIDCopy, false, resultType, outputLanguage));
                 } else {
-                    mainHandler.post(() -> notifyResult(textToTranslate, outputText, currentResultIDCopy, false, isTatoeba, outputLanguage));
+                    mainHandler.post(() -> notifyResult(textToTranslate, outputText, synonyms, currentResultIDCopy, false, resultType, outputLanguage));
                 }
             }
 
@@ -922,24 +1006,18 @@ public class Translator extends NeuralNetworkApi {
                 }
             }
         };
-        if (beamSize > 1) {  //beam search
-            executeCacheDecoder(textToTranslate, input, encoderResult, completeBeamOutput, beamsOutputsProbabilities, inputLanguage, outputLanguage, beamSize, translateListener);
-        } else if (beamSize == 1) {  //greedy search (with kv cache)
-            executeCacheDecoder(textToTranslate, input, encoderResult, completeBeamOutput, null, inputLanguage, outputLanguage, 1, translateListener);
-        }
-        //we convert the ids of completeBeamOutputs into a string and return it
-        if(encoderResult != null) encoderResult.close();
         int[] completeOutputArray;
-        if ((mode == MADLAD_CACHE || mode == NLLB_CACHE) && beamSize > 1) {
-            int indexMax = 0;
-            for (int j = 0; j < beamSize; j++) {
-                indexMax = Utils.getIndexOfLargest(beamsOutputsProbabilities);
-            }
-            completeOutputArray = completeBeamOutput[indexMax].stream().mapToInt(k -> k).toArray();
-        } else {
-            completeOutputArray = completeBeamOutput[0].stream().mapToInt(k -> k).toArray();  //convert completeBeamOutput in an array of int
+        if (beamSize > 1) {  //beam search
+            completeOutputArray = executeCacheDecoder(textToTranslate, input, encoderResult, inputLanguage, outputLanguage, beamSize, translateListener);
+        } else {  //greedy search (with kv cache)
+            completeOutputArray = executeCacheDecoder(textToTranslate, input, encoderResult, inputLanguage, outputLanguage, 1, translateListener);
         }
-        return tokenizer.decode(completeOutputArray);
+        if(encoderResult != null) encoderResult.close();
+        if(completeOutputArray != null) {
+            return tokenizer.decode(completeOutputArray);
+        }else{
+            return "";
+        }
     }
 
     @Nullable
@@ -948,10 +1026,10 @@ public class Translator extends NeuralNetworkApi {
             OnnxTensor inputIDsTensor = TensorUtils.convertIntArrayToTensor(onnxEnv, inputIDs);
             OnnxTensor attentionMaskTensor = TensorUtils.convertIntArrayToTensor(onnxEnv, attentionMask);
             Map<String,OnnxTensor> input = new HashMap<String,OnnxTensor>();
+            Map<String,OnnxTensor> embedInput = new HashMap<String,OnnxTensor>();
             OrtSession.Result embedResult = null;
             if(mode == NLLB_CACHE) {
                 //we do the embedding separately and then we pass the result to the encoder
-                Map<String,OnnxTensor> embedInput = new HashMap<String,OnnxTensor>();
                 embedInput.put("input_ids", inputIDsTensor);
                 embedInput.put("pre_logits", TensorUtils.createFloatTensorWithSingleValue(onnxEnv, 0, new long[]{EMPTY_BATCH_SIZE, 1, 1024}));
                 embedInput.put("use_lm_head", TensorUtils.convertBooleanToTensor(onnxEnv, false));
@@ -964,7 +1042,6 @@ public class Translator extends NeuralNetworkApi {
                 input.put("embed_matrix", (OnnxTensor) embedResult.get(0));
             }else if(mode == MADLAD_CACHE) {
                 //we do the embedding separately and then we pass the result to the encoder
-                Map<String,OnnxTensor> embedInput = new HashMap<String,OnnxTensor>();
                 embedInput.put("input_ids", inputIDsTensor);
                 ArraySet<String> requestedOutputs = new ArraySet<>();
                 requestedOutputs.add("embed_matrix");
@@ -982,7 +1059,13 @@ public class Translator extends NeuralNetworkApi {
                 embedResult.close();
             }
             Optional<OnnxValue> output = result.get("last_hidden_state");
-            //Object value = output.get().getValue();   //utile solo per il debug
+
+            //release memory
+            inputIDsTensor.close();
+            attentionMaskTensor.close();
+            embedInput.forEach((s, onnxTensor) -> onnxTensor.close());
+            input.forEach((s, onnxTensor) -> onnxTensor.close());
+
             return (OnnxTensor) output.get();
         } catch (OrtException e) {
             e.printStackTrace();
@@ -990,7 +1073,8 @@ public class Translator extends NeuralNetworkApi {
         }
     }
 
-    public void executeCacheDecoder(String textToTranslate, TokenizerResult input, @Nullable OnnxTensor encoderResult, ArrayList<Integer>[] completeBeamOutput, @Nullable double[] beamsOutputsProbabilities, final CustomLocale inputLanguage, final CustomLocale outputLanguage, int beamSize, @Nullable final TranslateListener responseListener) {
+    @Nullable
+    public int[] executeCacheDecoder(String textToTranslate, TokenizerResult input, @Nullable OnnxTensor encoderResult, final CustomLocale inputLanguage, final CustomLocale outputLanguage, int beamSize, @Nullable final TranslateListener responseListener) {
         int eos;
         if(mode == HY_MT){
             eos = tokenizer.PieceToID("<｜hy_place▁holder▁no▁2｜>");
@@ -1018,6 +1102,16 @@ public class Translator extends NeuralNetworkApi {
             nHeads = 4;  //nHeads in this case refers only to the number of heads used in kvCache, the real number of heads are 16, but this model uses group query attention, with a group size of 4
         }
         int initialPromptLength = tokenize(" ", inputLanguage, outputLanguage, false).getInputIDs().length;
+        NNResult lastPartialResult = null;
+
+        ArrayList<Integer>[] completeBeamOutput = new ArrayList[beamSize];  //contains the "beamSize" strings produced by the decoder
+        for (int j = 0; j < beamSize; j++) {
+            completeBeamOutput[j] = new ArrayList<Integer>();
+        }
+        double[] beamsOutputsProbabilities = new double[beamSize];  //contains for each of the "beamSize" strings produced by the decoder its overall probability
+        int patienceLength = Math.round(PATIENCE*beamSize);
+        ArrayList<int[]> finishedBeamSentences = new ArrayList<>(patienceLength);  //contains the "PATIENCE*beamSize" sentences finished by the decoder
+        ArrayList<Double> finishedBeamSentencesProbabilities = new ArrayList<>(patienceLength);  //contains for each of the "PATIENCE*beamSize" sentences finished by the decoder its overall probability
 
         try {
             long initialTime;
@@ -1068,7 +1162,10 @@ public class Translator extends NeuralNetworkApi {
             OnnxTensor emptyInputIds = TensorUtils.createInt64TensorWithSingleValue(onnxEnv, 0, new long[]{EMPTY_BATCH_SIZE, 2});
             OnnxTensor emptyInputIdsBatch = TensorUtils.createInt64TensorWithSingleValue(onnxEnv, 0, new long[]{beamSize, 2});
 
-            while(max[0] != eos){   //max[0] should always contain the ultimate value generated from the text with highest probability (to be verified)
+            boolean stop = false;
+            boolean earlyStop = false;
+
+            while(!stop && !earlyStop){
                 initialTime = System.currentTimeMillis();
                 time = System.currentTimeMillis();
 
@@ -1098,6 +1195,7 @@ public class Translator extends NeuralNetworkApi {
                     decoderInput.put("embed_matrix", (OnnxTensor) embedResult.get(0));
                 }
                 decoderInput.put("input_ids", inputIDsTensor);
+                OnnxTensor decoderPastTensor = null;
                 if(j == 1){  //if it is the first iteration
                     //we run the decoder with a batch_size = 1
                     if(mode != HY_MT) {
@@ -1106,11 +1204,11 @@ public class Translator extends NeuralNetworkApi {
                         decoderInput.put("attention_mask", attentionMaskTensor);
                     }
                     long[] shape = {1, nHeads, 0, hiddenSizeAttention};
-                    OnnxTensor decoderPastTensor = TensorUtils.createFloatTensorWithSingleValue(onnxEnv,0, shape);
+                    decoderPastTensor = TensorUtils.createFloatTensorWithSingleValue(onnxEnv,0, shape);
                     for (int i = 0; i < nLayers; i++) {
                         decoderInput.put("past_key_values." + i + (mode != HY_MT ? ".decoder" : "") + ".key", decoderPastTensor);
                         decoderInput.put("past_key_values." + i + (mode != HY_MT ? ".decoder" : "") + ".value", decoderPastTensor);
-                        if(mode != HY_MT){
+                        if(mode != HY_MT) {
                             decoderInput.put("past_key_values." + i + ".encoder.key", (OnnxTensor) initResult.get("present." + i + ".encoder.key").get());
                             decoderInput.put("past_key_values." + i + ".encoder.value", (OnnxTensor) initResult.get("present." + i + ".encoder.value").get());
                         }
@@ -1141,6 +1239,8 @@ public class Translator extends NeuralNetworkApi {
 
                 //decoder execution (with cache)
                 result = decoderSession.run(decoderInput);
+
+                if(decoderPastTensor != null) decoderPastTensor.close();
                 android.util.Log.i("performance", "execution of"+j+"th word done in: " + (System.currentTimeMillis()-time) + "ms");
                 time = System.currentTimeMillis();
 
@@ -1169,13 +1269,15 @@ public class Translator extends NeuralNetworkApi {
                 //we take the logits and the larger "beamSize" values
                 logits = (float[][][]) decoderOutput.getValue();
                 if(j == 1) {  //if we are at the first iteration
-                    if(beamSize > 1) {
-                        //based on the logits, we initialize max, completeBeamOutput and beamsOutputsProbabilities
-                        initBeamSearchData(logits, beamSize, max, completeBeamOutput, beamsOutputsProbabilities);
-                    }else{
-                        int seqLen = logits[0].length;
-                        max[0] = Utils.getIndexOfLargest(logits[0][seqLen-1]);
-                        completeBeamOutput[0].add(max[0]);
+                    if(mode != NLLB && mode != NLLB_CACHE) {
+                        if (beamSize > 1) {
+                            //based on the logits, we initialize max, completeBeamOutput and beamsOutputsProbabilities
+                            initBeamSearchData(logits, beamSize, max, completeBeamOutput, beamsOutputsProbabilities);
+                        } else {
+                            int seqLen = logits[0].length;
+                            max[0] = Utils.getIndexOfLargest(logits[0][seqLen - 1]);
+                            completeBeamOutput[0].add(max[0]);
+                        }
                     }
 
                     //we prepare the inputs of the next iteration
@@ -1186,74 +1288,188 @@ public class Translator extends NeuralNetworkApi {
                     }else {
                         input_ids = max;
                     }
+                    if(inputIDsTensor != null) inputIDsTensor.close();
                     inputIDsTensor = TensorUtils.createIntTensor(onnxEnv, input_ids, new long[]{beamSize,1});
                     //we convert the cache making it have a batch_size=beamSize ("beamSize" copies of the same cache)
                     result = batchDecoderKvCache(result, decoderOutput, nLayers, beamSize, true);
 
                 }else{
-                    if(beamSize > 1) {
-                        //based on the logits we update beam search data
-                        int[] maxProbabilities = new int[beamSize];
-                        int sequenceLength = mode == HY_MT ? attentionMask.length : j;
-                        cacheContainer = updateBeamSearchData(logits, beamSize, eos, result, sequenceLength, nLayers, nHeads, hiddenSizeAttention, cacheContainer, maxProbabilities, beamMax, max, completeBeamOutput, beamsOutputsProbabilities);
-                    }else{
-                        int seqLen = logits[0].length;
-                        max[0] = Utils.getIndexOfLargest(logits[0][seqLen-1]);
-                        completeBeamOutput[0].add(max[0]);
+                    if((mode == NLLB || mode == NLLB_CACHE) && j==2) {
+                        if (beamSize > 1) {
+                            //based on the logits, we initialize max, completeBeamOutput and beamsOutputsProbabilities
+                            initBeamSearchData(logits, beamSize, max, completeBeamOutput, beamsOutputsProbabilities);
+                        } else {
+                            int seqLen = logits[0].length;
+                            max[0] = Utils.getIndexOfLargest(logits[0][seqLen - 1]);
+                            completeBeamOutput[0].add(max[0]);
+                        }
+                    }else {
+                        if (beamSize > 1) {
+                            //based on the logits we update beam search data
+                            int[] maxProbabilities = new int[beamSize];
+                            int sequenceLength = mode == HY_MT ? attentionMask.length : j;
+                            cacheContainer = updateBeamSearchData(logits, beamSize, eos, result, sequenceLength, nLayers, nHeads, hiddenSizeAttention, cacheContainer, maxProbabilities, beamMax, max, completeBeamOutput, beamsOutputsProbabilities, finishedBeamSentences, finishedBeamSentencesProbabilities);
+                        } else {
+                            int seqLen = logits[0].length;
+                            max[0] = Utils.getIndexOfLargest(logits[0][seqLen - 1]);
+                            completeBeamOutput[0].add(max[0]);
+                        }
                     }
 
                     //we prepare the inputs of the next iteration
                     input_ids = max;
+                    if(inputIDsTensor != null) inputIDsTensor.close();
                     inputIDsTensor = TensorUtils.createIntTensor(onnxEnv, input_ids, new long[]{beamSize,1});
                 }
                 if(mode == HY_MT) {  //todo: make this part more optimized (measure and increase the speed and efficiency)
-                    //we increment the attentionMask size of 1 for the nex iteration
+                    //we increment the attentionMask size of 1 for the next iteration
                     attentionMask = new int[attentionMask.length + 1];
                     Arrays.fill(attentionMask, 1);
                     if(beamSize > 1) {
+                        if(attentionMaskTensorBatched != null) attentionMaskTensorBatched.close();
                         attentionMaskTensorBatched = batchEncoderAttentionMask(attentionMask, beamSize, true);
                     }else{
+                        if(attentionMaskTensor != null) attentionMaskTensor.close();
                         attentionMaskTensor = TensorUtils.convertIntArrayToTensor(onnxEnv, attentionMask);
                     }
                 }
                 android.util.Log.i("performance", "post-execution of" + j + "th word done in: " + (System.currentTimeMillis() - time) + "ms");
                 android.util.Log.i("performance", "Generation of" + j + "th word done in: " + (System.currentTimeMillis() - initialTime) + "ms");
                 // we return the partial result with the highest probability
-                int indexMax = 0;
+                int indexMaxActive = 0;
+                int indexMaxFinished = 0;
+                boolean maxSentenceFinished = false;
+                double maxActiveNormalizedScore = 0;
                 if(beamSize > 1) {
-                    for (int i = 0; i < beamSize; i++) {
-                        indexMax = Utils.getIndexOfLargest(beamsOutputsProbabilities);
+                    indexMaxActive = Utils.getIndexOfLargest(beamsOutputsProbabilities);
+                    maxActiveNormalizedScore = normalizeScoreByLength(beamsOutputsProbabilities[indexMaxActive], completeBeamOutput[indexMaxActive].size());
+                    if(!finishedBeamSentencesProbabilities.isEmpty()) {
+                        indexMaxFinished = Utils.getIndexOfLargest(finishedBeamSentencesProbabilities);
+                        if (finishedBeamSentencesProbabilities.get(indexMaxFinished) > maxActiveNormalizedScore) {  //todo: add an eventual margin
+                            maxSentenceFinished = true;
+                        }
                     }
                 }
-                int[] outputIDs = completeBeamOutput[indexMax].stream().mapToInt(k -> k).toArray();
-                String partialResult = tokenizer.decode(outputIDs);
+
+                int[] outputIDs = completeBeamOutput[indexMaxActive].stream().mapToInt(k -> k).toArray();
+                String partialResult;
+                double partialResultScore = -Double.MAX_VALUE;
+                int[] partialResultIds;
+                if(beamSize > 1) {
+                    // if the beam search is active, to avoid too many back and forth changes in the partial results, we will prefer to show the continuation of the previous partial result (if present in the results)
+                    // unless the new partial result has a much higher score (previous score + PARTIAL_RESULT_MARGIN)
+                    boolean surpassedLastScoreMargin = false;
+                    if(maxSentenceFinished){
+                        surpassedLastScoreMargin = lastPartialResult == null || finishedBeamSentencesProbabilities.get(indexMaxFinished) > lastPartialResult.score + PARTIAL_RESULT_MARGIN;
+                    }else{
+                        surpassedLastScoreMargin = lastPartialResult == null || maxActiveNormalizedScore > lastPartialResult.score + PARTIAL_RESULT_MARGIN;
+                    }
+
+                    if (lastPartialResult != null && !surpassedLastScoreMargin) {
+                        // we search if there still is a continuation of the lastPartialResult sentence in the active or finished results
+                        int activeIndex = -1;
+                        int finishedIndex = -1;
+                        for(int i=0; i<completeBeamOutput.length; i++){
+                            if(Tools.findArray(completeBeamOutput[i], lastPartialResult.ids) != -1){
+                                activeIndex = i;
+                            }
+                        }
+                        for(int i=0; i<finishedBeamSentences.size(); i++){
+                            if(Tools.findArray(finishedBeamSentences.get(i), lastPartialResult.ids) != -1){
+                                finishedIndex = i;
+                            }
+                        }
+                        if(finishedIndex != -1 && activeIndex != -1){
+                            //if the last partial result is in both finished and active sentence we return the one with the highest scores
+                            if(finishedBeamSentencesProbabilities.get(finishedIndex) > normalizeScoreByLength(beamsOutputsProbabilities[activeIndex], completeBeamOutput[activeIndex].size())){
+                                partialResultIds = finishedBeamSentences.get(finishedIndex);
+                                partialResultScore = finishedBeamSentencesProbabilities.get(finishedIndex);
+                            }else{
+                                partialResultIds = completeBeamOutput[activeIndex].stream().mapToInt(k -> k).toArray();
+                                partialResultScore = normalizeScoreByLength(beamsOutputsProbabilities[activeIndex], completeBeamOutput[activeIndex].size());
+                            }
+                        }else if(finishedIndex != -1) {
+                            partialResultIds = finishedBeamSentences.get(finishedIndex);
+                            partialResultScore = finishedBeamSentencesProbabilities.get(finishedIndex);
+                        }else if(activeIndex != -1) {
+                            partialResultIds = completeBeamOutput[activeIndex].stream().mapToInt(k -> k).toArray();
+                            partialResultScore = normalizeScoreByLength(beamsOutputsProbabilities[activeIndex], completeBeamOutput[activeIndex].size());
+                        }else{
+                            //if the last partial result is not in finished or active sentence we return the partial result with top scores regardless of the last one
+                            if(maxSentenceFinished) {
+                                partialResultIds = finishedBeamSentences.get(indexMaxFinished);
+                                partialResultScore = finishedBeamSentencesProbabilities.get(indexMaxFinished);
+                            }else{
+                                partialResultIds = outputIDs;
+                                partialResultScore = maxActiveNormalizedScore;
+                            }
+                        }
+                    } else {
+                        if(maxSentenceFinished) {
+                            partialResultIds = finishedBeamSentences.get(indexMaxFinished);
+                            partialResultScore = finishedBeamSentencesProbabilities.get(indexMaxFinished);
+
+                        }else{
+                            partialResultIds = outputIDs;
+                            partialResultScore = maxActiveNormalizedScore;
+                        }
+                    }
+                    if(lastPartialResult == null) {
+                        lastPartialResult = new NNResult();
+                    }
+                    lastPartialResult.ids = partialResultIds;
+                    lastPartialResult.score = partialResultScore;
+                    partialResult = tokenizer.decode(partialResultIds);
+                    lastPartialResult.text = partialResult;
+                }else{
+                    // if beam search is not active we return the only partial result normally
+                    partialResult = tokenizer.decode(outputIDs);
+                }
                 if(responseListener != null) {
-                    responseListener.onTranslatedText(textToTranslate, partialResult, currentResultID, false, false, outputLanguage);
+                    responseListener.onTranslatedText(textToTranslate, partialResult, null, currentResultID, false, TranslateListener.ResultType.NORMAL, outputLanguage);
                 }else {
-                    notifyResult(textToTranslate, partialResult, currentResultID, false, false, outputLanguage);
+                    notifyResult(textToTranslate, partialResult, null, currentResultID, false, TranslateListener.ResultType.NORMAL, outputLanguage);
                 }
                 j++;
+                if(beamSize > 1){
+                    android.util.Log.i("result ", "Finished sentences:");
+                    for (int i=0; i<finishedBeamSentences.size(); i++){
+                        android.util.Log.i("result "+i, tokenizer.decode(finishedBeamSentences.get(i))+"  Score: "+finishedBeamSentencesProbabilities.get(i));
+                    }
+                    android.util.Log.i("result ", "Active Batches:");
+                }
                 for(int i=0; i<beamSize; i++){
                     partialResults[i] = tokenizer.decode(completeBeamOutput[i].stream().mapToInt(k -> k).toArray());
-                    android.util.Log.i("result "+i, partialResults[i]);
+                    android.util.Log.i("result "+i, partialResults[i]+"  Score: "+beamsOutputsProbabilities[i]);
+                }
+
+                if(lmHeadResult != null) lmHeadResult.close();
+
+                //stopping conditions
+                if(beamSize == 1){
+                    stop = max[0] == eos;
+                }else{
+                    if(finishedBeamSentences.size() >= patienceLength){
+                        stop = true;
+                    }
                 }
 
                 //early stop if the decoder is generating in loop
                 if(input.getInputIDs().length - initialPromptLength > 30){  //if the input is long
                     if(j > 3*input.getInputIDs().length) {
-                        break;
+                        earlyStop = true;
                     }
                 }else if(input.getInputIDs().length - initialPromptLength > 20){  //if the input is medium length
                     if(j > 4*input.getInputIDs().length){
-                        break;
+                        earlyStop = true;
                     }
                 }else if(input.getInputIDs().length - initialPromptLength > 10){  //if the input is short
                     if(j > 5*input.getInputIDs().length){
-                        break;
+                        earlyStop = true;
                     }
-                }else if(input.getInputIDs().length - initialPromptLength > 5){  //if the input is very short
+                }else {  //if the input is very short (<= 10 tokens)
                     if(j > 8*input.getInputIDs().length){
-                        break;
+                        earlyStop = true;
                     }
                 }
             }
@@ -1263,6 +1479,38 @@ public class Translator extends NeuralNetworkApi {
             if(cacheContainer != null) cacheContainer.close();
             if(attentionMaskTensorBatched != null) attentionMaskTensorBatched.close();
             if(initResultBatched != null) initResultBatched.close();
+            if(emptyInputIds != null) emptyInputIds.close();
+            if(emptyInputIdsBatch != null) emptyInputIdsBatch.close();
+            if(emptyPreLogits != null) emptyPreLogits.close();
+            if(emptyPreLogitsBatch != null) emptyPreLogitsBatch.close();
+
+            //selection of the best final result
+            if(beamSize == 1){
+                return completeBeamOutput[0].stream().mapToInt(k -> k).toArray();
+            } else {
+                if(!finishedBeamSentencesProbabilities.isEmpty()) {
+                    //length normalization
+                    /*for (int i = 0; i < finishedBeamSentences.size(); i++) {
+                        double probability = finishedBeamSentencesProbabilities.get(i);
+                        int length = finishedBeamSentences.get(i).length;
+                        finishedBeamSentencesProbabilities.set(i, normalizeScoreByLength(probability, length));
+                    }*/
+                    int indexMaxFinished = Utils.getIndexOfLargest(finishedBeamSentencesProbabilities);
+                    if(indexMaxFinished != -1){
+                        return finishedBeamSentences.get(indexMaxFinished);
+                    }else {
+                        return null;
+                    }
+                }else{
+                    //in this case we had an early stopping and 0 finished sentences, so we return just the uncompleted active sentence with the best score
+                    int indexMaxActive = Utils.getIndexOfLargest(beamsOutputsProbabilities);
+                    if(indexMaxActive != -1){
+                        return completeBeamOutput[indexMaxActive].stream().mapToInt(k -> k).toArray();
+                    }else{
+                        return null;
+                    }
+                }
+            }
 
         } catch (OrtException | InvocationTargetException | NoSuchMethodException |
                  IllegalAccessException | InstantiationException e) {
@@ -1272,6 +1520,28 @@ public class Translator extends NeuralNetworkApi {
             }else{
                 mainHandler.post(() -> notifyError(new int[]{ErrorCodes.ERROR_EXECUTING_MODEL}, 0));
             }
+        }
+        return null;
+    }
+
+    /**
+     * Applies the Wu et al. (2016) length penalty dynamically without precomputation.
+     *
+     * @param logProb The raw, unnormalized log-probability of the sequence
+     * @param length  The current length of the sequence
+     * @return The normalized score
+     */
+    public static double normalizeScoreByLength(double logProb, int length) {
+        if(LENGTH_ALPHA != 0) {
+            // Math optimization: (5 + length)^alpha / (5 + 1)^alpha == ((5 + length) / 6.0)^alpha
+            // This eliminates one expensive Math.pow() call completely.
+            double base = (5.0 + length) / 6.0;
+            // Calculate the actual length penalty
+            double penalty = Math.pow(base, LENGTH_ALPHA);
+            // Return the normalized log probability
+            return logProb / penalty;
+        }else{
+            return logProb;
         }
     }
 
@@ -1305,34 +1575,6 @@ public class Translator extends NeuralNetworkApi {
         // collapse whitespace
         correctedText = correctedText.replaceAll("\\s+", " ");
         return correctedText;
-    }
-
-    //used to normalize text before comparison
-    public static String normalizeText(String input) {
-        if (input == null) return null;
-
-        // Unicode NFC normalization
-        String text = Normalizer.normalize(input, Normalizer.Form.NFC);
-
-        // Standardize punctuation
-        text = text
-                .replace("“", "\"")
-                .replace("”", "\"")
-                .replace("‘", "'")
-                .replace("’", "'")
-                .replace("–", "-")
-                .replace("—", "-");
-
-        // Trim
-        text = text.trim();
-
-        // Collapse whitespace
-        text = text.replaceAll("\\s+", " ");
-
-        // Case normalization
-        text = text.toLowerCase(Locale.ROOT);
-
-        return text;
     }
 
 
@@ -1437,7 +1679,8 @@ public class Translator extends NeuralNetworkApi {
 
     private CacheContainerNative updateBeamSearchData(
             float [][][] logits, int beamSize, int eos, OrtSession.Result decoderResult, int sequenceLength, int nLayers, int nHeads, int hiddenSize,
-            CacheContainerNative cacheContainer, int[] maxProbabilities, int[][] beamMax, int[] max, ArrayList<Integer>[] completeBeamOutput, double[] beamsOutputsProbabilities
+            CacheContainerNative cacheContainer, int[] maxProbabilities, int[][] beamMax, int[] max, ArrayList<Integer>[] completeBeamOutput, double[] beamsOutputsProbabilities,
+            ArrayList<int[]> finishedBeamSentences, ArrayList<Double> finishedBeamSentencesProbabilities
     ){
         //for each of the "beamSize" decoder outputs, the "beamSize" words with the highest probability are inserted into beamMax
         for(int k=0; k < beamSize; k++) {
@@ -1459,22 +1702,47 @@ public class Translator extends NeuralNetworkApi {
             for (int i = 0; i < beamSize; i++) {
                 float maxLogit = logits[k][seqLen-1][beamMax[k][i]];
                 beamsOutputsProbabilitiesTemp[(k*beamSize)+i] = beamsOutputsProbabilities[k] + maxLogit - logSumExp;
-                if(beamMax[k][i] == eos){
-                    beamsOutputsProbabilitiesTemp[(k*beamSize)+i] = beamsOutputsProbabilitiesTemp[(k*beamSize)+i]/EOS_PENALTY;
+                if(beamMax[k][i] == eos) {
+                    beamsOutputsProbabilitiesTemp[(k*beamSize)+i] = beamsOutputsProbabilitiesTemp[(k*beamSize)+i] - EOS_PENALTY;
+                }else{
+                    beamsOutputsProbabilitiesTemp[(k*beamSize)+i] = beamsOutputsProbabilitiesTemp[(k*beamSize)+i] + WORD_REWARD;
                 }
             }
         }
         android.util.Log.i("performance", "softmax done in: " + (System.currentTimeMillis()-timeSoftmax) + "ms");
         // Now we save in maxProbabilities the indices of the "beamSize" words generated by the decoder that have the
-        // highest overall probability with their respective output sentences and then we will use them as the next inputs
+        // highest overall probability with their respective output sentences and then we will use them as the next inputs.
+        // Plus, we also check if one of these sentences is finished (ends with eos), if so we don't insert its index in maxProbabilities,
+        // but the sentence will be inserted in finishedBeamSentences and its probability in finishedBeamSentencesProbabilities
         ArrayList<Integer> indexesToAvoid = new ArrayList<>();
         for(int i=0; i<beamSize; i++){
-            maxProbabilities[i] = Utils.getIndexOfLargest(beamsOutputsProbabilitiesTemp, indexesToAvoid);
-            indexesToAvoid.add(maxProbabilities[i]);
+            int largestIndex = Utils.getIndexOfLargest(beamsOutputsProbabilitiesTemp, indexesToAvoid);
+            indexesToAvoid.add(largestIndex);
+            // we apply sibling penalty to the remaining sentences
+            int token = beamMax[largestIndex/beamSize][largestIndex%beamSize];
+            for(int j=0; j<beamsOutputsProbabilitiesTemp.length; j++){
+                if(!indexesToAvoid.contains(j)){
+                    if(beamMax[j/beamSize][j%beamSize] == token){
+                        beamsOutputsProbabilitiesTemp[j] = beamsOutputsProbabilitiesTemp[j] - SIBLING_PENALTY;
+                    }
+                }
+            }
+            // we eventually save a finished sentence, or we insert the index in maxProbabilities
+            if(beamMax[largestIndex/beamSize][largestIndex%beamSize] == eos) {
+                Integer[] sentence = new Integer[completeBeamOutput[largestIndex/beamSize].size()+1];
+                completeBeamOutput[largestIndex/beamSize].toArray(sentence);
+                sentence[sentence.length-1] = beamMax[largestIndex/beamSize][largestIndex%beamSize];
+                finishedBeamSentences.add(Arrays.stream(sentence).mapToInt(Integer::intValue).toArray());
+                double score = normalizeScoreByLength(beamsOutputsProbabilitiesTemp[largestIndex], sentence.length);
+                finishedBeamSentencesProbabilities.add(score);
+                i--; //this way we don't skip this cell of maxProbabilities and we will fill it with the next best unfinished sentence
+            } else {
+                maxProbabilities[i] = largestIndex;
+            }
         }
         // we update the probabilities of the "beamSize" output strings in beamsOutputsProbabilities,
         // and add the "beamSize" words with higher probability (each to its own output string) to completeBeamOutput
-        ArrayList<Integer>[]  oldCompleteBeamOutput = completeBeamOutput.clone();
+        ArrayList<Integer>[] oldCompleteBeamOutput = completeBeamOutput.clone();
         for (int i = 0; i < beamSize; i++) {
             beamsOutputsProbabilities[i] = beamsOutputsProbabilitiesTemp[maxProbabilities[i]];
             completeBeamOutput[i] = (ArrayList<Integer>) oldCompleteBeamOutput[maxProbabilities[i]/beamSize].clone();
@@ -1484,7 +1752,7 @@ public class Translator extends NeuralNetworkApi {
         long timeCache = System.currentTimeMillis();
         CacheContainerNative oldCache = cacheContainer;
         cacheContainer = new CacheContainerNative(onnxEnv, decoderResult, nLayers, beamSize, nHeads, sequenceLength, hiddenSize, mode);
-        if(oldCache != null){
+        if(oldCache != null) {
             oldCache.close();
         }
         android.util.Log.i("performance", "cache creation done in: " + (System.currentTimeMillis()-timeCache) + "ms");
@@ -1633,7 +1901,7 @@ public class Translator extends NeuralNetworkApi {
         return languages;
     }
 
-    public static class HyLanguageInfo{
+    public static class HyLanguageInfo {
         public String enName;
         public String zhName;
 
@@ -1652,6 +1920,14 @@ public class Translator extends NeuralNetworkApi {
             this.links = links;
             this.modes = modes;
         }
+    }
+
+    public static class NNResult {
+        public String text = null;
+        public int[] ids = null;
+        public double score = -Double.MAX_VALUE;
+        public int index = -1;
+        public boolean isFinished = false;
     }
 
     private static abstract class TranslatorListener {

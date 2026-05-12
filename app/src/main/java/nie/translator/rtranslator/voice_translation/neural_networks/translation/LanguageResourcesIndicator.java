@@ -15,7 +15,7 @@ public class LanguageResourcesIndicator {
     public enum ResourceType {
         MOZILLA,
         TATOEBA,
-        DICTIONARY
+        TRANSLATION_DICTIONARY
     }
     public CustomLocale[] textTranslationResources = new CustomLocale[2];
     public CustomLocale[] walkieTalkieResources = new CustomLocale[2];

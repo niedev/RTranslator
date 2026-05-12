@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,8 +34,10 @@ public class LanguageResourcesManager {
         this.global = global;
         this.modelMode = modelMode;
         String tatoebaDbPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Tatoeba/tatoeba.db";
+        String translationDictionariesDbPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/TranslationDictionaries/translation_dict_ordered.db";
         tatoebaDb = new TatoebaDbWrapper(tatoebaDbPath);
         BergamotTranslator.initializeService();
+        DictionaryTranslator.initializeService(translationDictionariesDbPath);
         loadLanguageResources(firstTextLanguage, secondTextLanguage, Global.RTranslatorMode.TEXT_TRANSLATION_MODE);
         loadLanguageResources(firstLanguage, secondLanguage, Global.RTranslatorMode.WALKIE_TALKIE_MODE);
     }
@@ -68,6 +71,7 @@ public class LanguageResourcesManager {
         for (CustomLocale resource : currentModeResources) {
             if (resource != null && !resource.equals(srcLang) && !resource.equals(tgtLang) && !languageResourcesIndicator.isResourceContainedInOtherModes(resource, rtranslatorMode)) {
                 BergamotTranslator.unloadModelFromCache(resource);
+                DictionaryTranslator.unloadDictionary(resource);
             }
         }
         if (currentModeResources[0] != null &&
@@ -104,6 +108,7 @@ public class LanguageResourcesManager {
         if(resource != null && !resource.equals(srcLang)){
             if(!languageResourcesIndicator.isSrcResourceContainedInOtherPeers(resource, peer) && !languageResourcesIndicator.isResourceContainedInOtherModes(resource, Global.RTranslatorMode.CONVERSATION_MODE)){
                 BergamotTranslator.unloadModelFromCache(resource);
+                DictionaryTranslator.unloadDictionary(resource);
             }
         }
         if (resource != null &&
@@ -131,6 +136,7 @@ public class LanguageResourcesManager {
         if(resource != null && !resource.equals(tgtLang)){
             if(!languageResourcesIndicator.isResourceContainedInOtherModes(resource, Global.RTranslatorMode.CONVERSATION_MODE)){
                 BergamotTranslator.unloadModelFromCache(resource);
+                DictionaryTranslator.unloadDictionary(resource);
             }
         }
         for(CustomLocale srcResource: languageResourcesIndicator.conversationSrcResources.values()) {
@@ -164,6 +170,7 @@ public class LanguageResourcesManager {
         if(resource != null){
             if(!languageResourcesIndicator.isSrcResourceContainedInOtherPeers(resource, peer) && !languageResourcesIndicator.isResourceContainedInOtherModes(resource, Global.RTranslatorMode.CONVERSATION_MODE)){
                 BergamotTranslator.unloadModelFromCache(resource);
+                DictionaryTranslator.unloadDictionary(resource);
             }
         }
         if (resource != null &&
@@ -182,6 +189,7 @@ public class LanguageResourcesManager {
         for(CustomLocale srcResource : conversationSrcResources.values()){
             if(srcResource != null && !languageResourcesIndicator.isResourceContainedInOtherModes(srcResource, Global.RTranslatorMode.CONVERSATION_MODE)){
                 BergamotTranslator.unloadModelFromCache(srcResource);
+                DictionaryTranslator.unloadDictionary(srcResource);
             }
         }
         for(CustomLocale srcResource: languageResourcesIndicator.conversationSrcResources.values()) {
@@ -191,9 +199,10 @@ public class LanguageResourcesManager {
             }
         }
         // unload of the mozilla models of conversationTgtResource (all tatoeba resources have already been removed in the loop above)
-        CustomLocale model = languageResourcesIndicator.conversationTgtResource;
-        if(model != null && !languageResourcesIndicator.isResourceContainedInOtherModes(model, Global.RTranslatorMode.CONVERSATION_MODE)){
-            BergamotTranslator.unloadModelFromCache(model);
+        CustomLocale resource = languageResourcesIndicator.conversationTgtResource;
+        if(resource != null && !languageResourcesIndicator.isResourceContainedInOtherModes(resource, Global.RTranslatorMode.CONVERSATION_MODE)){
+            BergamotTranslator.unloadModelFromCache(resource);
+            DictionaryTranslator.unloadDictionary(resource);
         }
         //we update the indicator to reflect the new models status
         languageResourcesIndicator.conversationTgtResource = null;
@@ -201,7 +210,7 @@ public class LanguageResourcesManager {
     }
 
     public void loadAllMozillaResources() throws Exception {
-        if(!languageResourcesIndicator.isResourceTypeLoaded(LanguageResourcesIndicator.ResourceType.TATOEBA)) {
+        if(!languageResourcesIndicator.isResourceTypeLoaded(LanguageResourcesIndicator.ResourceType.MOZILLA)) {
             for (CustomLocale resource : languageResourcesIndicator.getAllUniqueResources()) {
                 BergamotTranslator.loadModelIntoCache(global, resource);
             }
@@ -225,10 +234,20 @@ public class LanguageResourcesManager {
         }
     }
 
-    public void unloadAllMozillaResources(){
-        for (CustomLocale resource : languageResourcesIndicator.getAllUniqueResources()) {
-            BergamotTranslator.unloadModelFromCache(resource);
+    public void loadAllTranslationDictionariesResources(){
+        if(!languageResourcesIndicator.isResourceTypeLoaded(LanguageResourcesIndicator.ResourceType.TRANSLATION_DICTIONARY)) {
+            for (CustomLocale resource : languageResourcesIndicator.getAllUniqueResources()) {
+                DictionaryTranslator.loadDictionary(resource);
+            }
+            languageResourcesIndicator.setResourceTypeLoadStatus(LanguageResourcesIndicator.ResourceType.TRANSLATION_DICTIONARY, true);
         }
+    }
+
+    public void unloadAllMozillaResources(){
+        /*for (CustomLocale resource : languageResourcesIndicator.getAllUniqueResources()) {
+            BergamotTranslator.unloadModelFromCache(resource);
+        }*/
+        BergamotTranslator.cleanup();
         languageResourcesIndicator.setResourceTypeLoadStatus(LanguageResourcesIndicator.ResourceType.MOZILLA, false);
     }
 
@@ -243,6 +262,11 @@ public class LanguageResourcesManager {
         languageResourcesIndicator.updatePeer(oldPeer, newPeer);
     }
 
+    public void unloadAllTranslationDictionariesResources(){
+        DictionaryTranslator.cleanup();
+        languageResourcesIndicator.setResourceTypeLoadStatus(LanguageResourcesIndicator.ResourceType.TRANSLATION_DICTIONARY, false);
+    }
+
     private void performLoadLanguageResources(@NonNull CustomLocale srcLang, @NonNull CustomLocale tgtLang, Global.RTranslatorMode rtranslatorMode) throws Exception {
         Log.d("language_resources", "Language loaded: "+srcLang.getLanguage());
         if(modelMode == MOZILLA){
@@ -253,6 +277,16 @@ public class LanguageResourcesManager {
             }
             if (!tgtLang.getLanguage().equals("en") && (initialLoad || !allUniqueResources.contains(tgtLang))) {
                 BergamotTranslator.loadModelIntoCache(global, tgtLang);
+            }
+        }
+        if(global.isUseTranslationDictionaries()){
+            ArrayList<CustomLocale> allUniqueResources = languageResourcesIndicator.getAllUniqueResources();
+            boolean initialLoad = languageResourcesIndicator.isResourceTypeLoaded(rtranslatorMode, LanguageResourcesIndicator.ResourceType.TRANSLATION_DICTIONARY);
+            if (!srcLang.getISO3Language().equals("eng") && (initialLoad || !allUniqueResources.contains(srcLang))) {
+                DictionaryTranslator.loadDictionary(srcLang);
+            }
+            if (!tgtLang.getISO3Language().equals("eng") && (initialLoad || !allUniqueResources.contains(tgtLang))) {
+                DictionaryTranslator.loadDictionary(tgtLang);
             }
         }
         if(global.isUseTatoeba()){
