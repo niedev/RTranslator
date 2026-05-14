@@ -27,12 +27,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.collection.ArraySet;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.mlkit.nl.languageid.LanguageIdentification;
-import com.google.mlkit.nl.languageid.LanguageIdentificationOptions;
-import com.google.mlkit.nl.languageid.LanguageIdentifier;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -92,6 +86,7 @@ public class Translator extends NeuralNetworkApi {
     private OrtSession cacheInitSession;
     private OrtSession embedAndLmHeadSession;
     private OrtSession embedSession;
+    private LanguageDetector languageDetector;
     private final Map<String, String> nllbLanguagesCodes = new HashMap<>();
     private final Map<String, HyLanguageInfo> hyLanguagesInfo = new HashMap<>();
     private static final double EOS_PENALTY = 0.0;
@@ -181,10 +176,15 @@ public class Translator extends NeuralNetworkApi {
         final Thread t = new Thread("textTranslation") {
             public void run() {
                 onnxEnv = OrtEnvironment.getEnvironment();
-                //we transfer the vocab file from the assets to the internal memory (because the tokenizer can open vocab only via a path to internal or external memory)
+                //we eventually transfer the vocab file from the assets to the internal memory (because the tokenizer can open vocab only via a path to internal or external memory)
                 File outFile = new File(global.getFilesDir(), "sentencepiece_bpe.model");
                 if(!outFile.exists()) {
                     FileTools.copyAssetToInternalMemory(global, "sentencepiece_bpe.model");
+                }
+                //we eventually transfer the fasttext model file from the assets to the internal memory (because the fasttext djl lib can open model only via a path to internal or external memory)
+                File outFileFastText = new File(global.getFilesDir(), "fasttext.ftz");
+                if(!outFileFastText.exists()) {
+                    FileTools.copyAssetToInternalMemory(global, "fasttext.ftz");
                 }
 
                 CustomLocale firstTextLanguage = global.getFirstTextLanguage(true);
@@ -196,6 +196,9 @@ public class Translator extends NeuralNetworkApi {
                     if(!restart){
                         languageResourcesManager = new LanguageResourcesManager(global, mode, firstTextLanguage, secondTextLanguage, firstLanguage, secondLanguage);
                     }
+
+                    languageDetector = new LanguageDetector();
+                    languageDetector.initialize(global);
 
                     if(mode == MADLAD || mode == MADLAD_CACHE) {
                         tokenizer = new Tokenizer(finalVocabPath, Tokenizer.MADLAD);
@@ -462,31 +465,19 @@ public class Translator extends NeuralNetworkApi {
         if(forceResult){
             confidenceThreshold = 0.01F;
         }
-        LanguageIdentifier languageIdentifier = LanguageIdentification.getClient(new LanguageIdentificationOptions.Builder().setConfidenceThreshold(confidenceThreshold).build());
-        languageIdentifier.identifyLanguage(result.getText())
-                .addOnSuccessListener(
-                        new OnSuccessListener<String>() {
-                            @Override
-                            public void onSuccess(@Nullable String languageCode) {
-                                if (languageCode == null || languageCode.equals("und")) {
-                                    responseListener.onFailure(new int[ErrorCodes.LANGUAGE_UNKNOWN], 0);
-                                    Log.i("language detection", "Can't identify language.");
-                                } else {
-                                    result.setLanguage(new CustomLocale(languageCode));
-                                    responseListener.onDetectedText(result);
-                                    Log.i("language detection", "Language: " + languageCode);
-                                }
-                            }
-                        })
-                .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // Model couldn’t be loaded or other internal error.
-                                e.printStackTrace();
-                                responseListener.onFailure(new int[ErrorCodes.ERROR_LOADING_MODEL], 0);
-                            }
-                        });
+        this.languageDetector.detectLanguage(result.getText(), confidenceThreshold, new LanguageDetector.DetectLanguageListener() {
+            @Override
+            public void onSuccess(String languageCode) {
+                if (languageCode == null || languageCode.equals("und")) {
+                    responseListener.onFailure(new int[ErrorCodes.LANGUAGE_UNKNOWN], 0);
+                    Log.i("language detection", "Can't identify language.");
+                } else {
+                    result.setLanguage(new CustomLocale(languageCode));
+                    responseListener.onDetectedText(result);
+                    Log.i("language detection", "Language: " + languageCode);
+                }
+            }
+        });
     }
 
     public void detectLanguage(final NeuralNetworkApiResult firstResult, final NeuralNetworkApiResult secondResult, boolean forceResult, final DetectMultiLanguageListener responseListener) {
@@ -494,32 +485,20 @@ public class Translator extends NeuralNetworkApi {
         if(forceResult){
             confidenceThreshold = 0.01F;
         }
-        LanguageIdentifier languageIdentifier = LanguageIdentification.getClient(new LanguageIdentificationOptions.Builder().setConfidenceThreshold(confidenceThreshold).build());
-        languageIdentifier.identifyLanguage(firstResult.getText())
-                .addOnSuccessListener(
-                        new OnSuccessListener<String>() {
-                            @Override
-                            public void onSuccess(@Nullable String languageCode) {
-                                boolean firstResultFailed = false;
-                                if (languageCode == null || languageCode.equals("und")) {
-                                    firstResultFailed = true;
-                                    Log.i("language detection", "Can't identify language.");
-                                } else {
-                                    firstResult.setLanguage(new CustomLocale(languageCode));
-                                    Log.i("language detection", "Language: " + languageCode);
-                                }
-                                detectSecondLanguage(firstResult, secondResult, forceResult, firstResultFailed, responseListener);
-                            }
-                        })
-                .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // Model couldn’t be loaded or other internal error.
-                                e.printStackTrace();
-                                detectSecondLanguage(firstResult, secondResult, forceResult, true, responseListener);
-                            }
-                        });
+        this.languageDetector.detectLanguage(firstResult.getText(), confidenceThreshold, new LanguageDetector.DetectLanguageListener() {
+            @Override
+            public void onSuccess(String languageCode) {
+                boolean firstResultFailed = false;
+                if (languageCode == null || languageCode.equals("und")) {
+                    firstResultFailed = true;
+                    Log.i("language detection", "Can't identify language.");
+                } else {
+                    firstResult.setLanguage(new CustomLocale(languageCode));
+                    Log.i("language detection", "Language: " + languageCode);
+                }
+                detectSecondLanguage(firstResult, secondResult, forceResult, firstResultFailed, responseListener);
+            }
+        });
     }
 
     private void detectSecondLanguage(final NeuralNetworkApiResult firstResult, final NeuralNetworkApiResult secondResult, boolean forceResult, boolean firstResultFailed, final DetectMultiLanguageListener responseListener){
@@ -527,40 +506,27 @@ public class Translator extends NeuralNetworkApi {
         if(forceResult){
             confidenceThreshold = 0.01F;
         }
-        LanguageIdentifier languageIdentifier = LanguageIdentification.getClient(
-                new LanguageIdentificationOptions.Builder().setConfidenceThreshold(confidenceThreshold).build());
-        languageIdentifier.identifyLanguage(secondResult.getText())
-                .addOnSuccessListener(new OnSuccessListener<String>() {
-                    @Override
-                    public void onSuccess(String languageCode) {
-                        if (languageCode == null || languageCode.equals("und")) {  //detection of second result failed
-                            Log.i("language detection", "Can't identify language.");
-                            if (firstResultFailed) {  //detection of first result failed
-                                responseListener.onFailure(new int[]{ErrorCodes.BOTH_RESULTS_FAIL}, 0);
-                            }else{   //detection of first result success
-                                responseListener.onDetectedText(firstResult, secondResult, ErrorCodes.SECOND_RESULT_FAIL);
-                            }
-                        }else{  //detection of second result success
-                            Log.i("language detection", "Language: " + languageCode);
-                            secondResult.setLanguage(new CustomLocale(languageCode));
-                            if (firstResultFailed) {  //detection of first result failed
-                                responseListener.onDetectedText(firstResult, secondResult, ErrorCodes.FIRST_RESULT_FAIL);
-                            }else{    //detection of first result success
-                                responseListener.onDetectedText(firstResult, secondResult, ErrorCodes.BOTH_RESULTS_SUCCESS);
-                            }
-                        }
+        this.languageDetector.detectLanguage(secondResult.getText(), confidenceThreshold, new LanguageDetector.DetectLanguageListener() {
+            @Override
+            public void onSuccess(String languageCode) {
+                if (languageCode == null || languageCode.equals("und")) {  //detection of second result failed
+                    Log.i("language detection", "Can't identify language.");
+                    if (firstResultFailed) {  //detection of first result failed
+                        responseListener.onFailure(new int[]{ErrorCodes.BOTH_RESULTS_FAIL}, 0);
+                    }else{   //detection of first result success
+                        responseListener.onDetectedText(firstResult, secondResult, ErrorCodes.SECOND_RESULT_FAIL);
                     }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {  //detection of second result failed
-                        if (firstResultFailed) {  //detection of first result failed
-                            responseListener.onFailure(new int[]{ErrorCodes.BOTH_RESULTS_FAIL}, 0);
-                        }else{
-                            responseListener.onDetectedText(firstResult, secondResult, ErrorCodes.SECOND_RESULT_FAIL);
-                        }
+                }else{  //detection of second result success
+                    Log.i("language detection", "Language: " + languageCode);
+                    secondResult.setLanguage(new CustomLocale(languageCode));
+                    if (firstResultFailed) {  //detection of first result failed
+                        responseListener.onDetectedText(firstResult, secondResult, ErrorCodes.FIRST_RESULT_FAIL);
+                    }else{    //detection of first result success
+                        responseListener.onDetectedText(firstResult, secondResult, ErrorCodes.BOTH_RESULTS_SUCCESS);
                     }
-                });
+                }
+            }
+        });
     }
 
     public abstract static class DetectLanguageListener extends TranslatorListener {
