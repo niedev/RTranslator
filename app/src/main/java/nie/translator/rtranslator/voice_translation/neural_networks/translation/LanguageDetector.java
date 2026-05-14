@@ -7,15 +7,8 @@ import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 import ai.djl.ModelException;
-import ai.djl.inference.Predictor;
-import ai.djl.modality.Classifications;
-import ai.djl.repository.zoo.Criteria;
-import ai.djl.repository.zoo.ZooModel;
-import ai.djl.translate.TranslateException;
-import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApiResult;
 
 public class LanguageDetector {
     // Load the C++ library
@@ -26,9 +19,6 @@ public class LanguageDetector {
 
     private static final String TAG = "LanguageDetector";
     private static final String MODEL_FILE_NAME = "fasttext.ftz";
-
-    private ZooModel<String, Classifications> model;
-    private Predictor<String, Classifications> predictor;
 
     private long nativePtr = 0;
     private Context context;
@@ -57,7 +47,7 @@ public class LanguageDetector {
                         Log.e(TAG, "Model not initialized.");
                         listener.onSuccess("und");
                     }
-                    listener.onSuccess(predictLanguage(nativePtr, text));
+                    listener.onSuccess(predictLanguage(nativePtr, text, confidenceThreshold));
 
                 } catch (Exception e) {
                     e.printStackTrace();

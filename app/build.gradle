@@ -129,8 +129,6 @@ dependencies {
     implementation "ai.djl.android:core:0.33.0"
     implementation "ai.djl.huggingface:tokenizers:0.33.0"
     implementation "ai.djl.android:tokenizer-native:0.33.0"
-    // DJL fasttext wrapper
-    implementation 'ai.djl.fasttext:fasttext-engine:0.33.0'
     //protobuf
     implementation "com.google.protobuf:protobuf-javalite:4.33.5"
     // bouncycastle crypto lib
@@ -146,8 +144,6 @@ dependencies {
     //ONNX Runtime
     implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.23.2'  //latest.release
     implementation 'com.microsoft.onnxruntime:onnxruntime-extensions-android:0.13.0'   //latest.release
-    //Ml-Kit
-    //implementation 'com.google.mlkit:language-id:17.0.5'
     //JWS parser
     implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '5.1'
     implementation files('libs/sqlite4java-android-release.aar')
