@@ -72,6 +72,7 @@ import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetwor
 
 
 public class Translator extends NeuralNetworkApi {
+    public static final boolean LOG = true;
     public static final int NLLB = 0;
     public static final int NLLB_CACHE = 6;
     public static final int MADLAD = 3;
@@ -198,7 +199,7 @@ public class Translator extends NeuralNetworkApi {
                     }
 
                     languageDetector = new LanguageDetector();
-                    languageDetector.initialize(global);
+                    languageDetector.initialize(global, languageResourcesManager);
 
                     if(mode == MADLAD || mode == MADLAD_CACHE) {
                         tokenizer = new Tokenizer(finalVocabPath, Tokenizer.MADLAD);
@@ -460,12 +461,12 @@ public class Translator extends NeuralNetworkApi {
         return translating;
     }
 
-    public void detectLanguage(final NeuralNetworkApiResult result, boolean forceResult, final DetectLanguageListener responseListener) {
+    public void detectLanguage(final NeuralNetworkApiResult result, boolean forceResult, CustomLocale[] languages, final DetectLanguageListener responseListener) {
         float confidenceThreshold = 0.5F;
         if(forceResult){
             confidenceThreshold = 0.01F;
         }
-        this.languageDetector.detectLanguage(result.getText(), confidenceThreshold, new LanguageDetector.DetectLanguageListener() {
+        this.languageDetector.detectLanguage(result.getText(), confidenceThreshold, languages, new LanguageDetector.DetectLanguageListener() {
             @Override
             public void onSuccess(String languageCode) {
                 if (languageCode == null || languageCode.equals("und")) {
@@ -480,12 +481,12 @@ public class Translator extends NeuralNetworkApi {
         });
     }
 
-    public void detectLanguage(final NeuralNetworkApiResult firstResult, final NeuralNetworkApiResult secondResult, boolean forceResult, final DetectMultiLanguageListener responseListener) {
+    public void detectLanguage(final NeuralNetworkApiResult firstResult, final NeuralNetworkApiResult secondResult, boolean forceResult, CustomLocale[] languages, final DetectMultiLanguageListener responseListener) {
         float confidenceThreshold = 0.5F;
         if(forceResult){
             confidenceThreshold = 0.01F;
         }
-        this.languageDetector.detectLanguage(firstResult.getText(), confidenceThreshold, new LanguageDetector.DetectLanguageListener() {
+        this.languageDetector.detectLanguage(firstResult.getText(), confidenceThreshold, languages, new LanguageDetector.DetectLanguageListener() {
             @Override
             public void onSuccess(String languageCode) {
                 boolean firstResultFailed = false;
@@ -496,17 +497,17 @@ public class Translator extends NeuralNetworkApi {
                     firstResult.setLanguage(new CustomLocale(languageCode));
                     Log.i("language detection", "Language: " + languageCode);
                 }
-                detectSecondLanguage(firstResult, secondResult, forceResult, firstResultFailed, responseListener);
+                detectSecondLanguage(firstResult, secondResult, forceResult, firstResultFailed, languages, responseListener);
             }
         });
     }
 
-    private void detectSecondLanguage(final NeuralNetworkApiResult firstResult, final NeuralNetworkApiResult secondResult, boolean forceResult, boolean firstResultFailed, final DetectMultiLanguageListener responseListener){
+    private void detectSecondLanguage(final NeuralNetworkApiResult firstResult, final NeuralNetworkApiResult secondResult, boolean forceResult, boolean firstResultFailed, CustomLocale[] languages, final DetectMultiLanguageListener responseListener){
         float confidenceThreshold = 0.5F;
         if(forceResult){
             confidenceThreshold = 0.01F;
         }
-        this.languageDetector.detectLanguage(secondResult.getText(), confidenceThreshold, new LanguageDetector.DetectLanguageListener() {
+        this.languageDetector.detectLanguage(secondResult.getText(), confidenceThreshold, languages, new LanguageDetector.DetectLanguageListener() {
             @Override
             public void onSuccess(String languageCode) {
                 if (languageCode == null || languageCode.equals("und")) {  //detection of second result failed
@@ -1397,16 +1398,18 @@ public class Translator extends NeuralNetworkApi {
                     notifyResult(textToTranslate, partialResult, null, currentResultID, false, TranslateListener.ResultType.NORMAL, outputLanguage);
                 }
                 j++;
-                if(beamSize > 1){
-                    android.util.Log.i("result ", "Finished sentences:");
-                    for (int i=0; i<finishedBeamSentences.size(); i++){
-                        android.util.Log.i("result "+i, tokenizer.decode(finishedBeamSentences.get(i))+"  Score: "+finishedBeamSentencesProbabilities.get(i));
+                if(LOG) {
+                    if (beamSize > 1) {
+                        android.util.Log.i("result ", "Finished sentences:");
+                        for (int i = 0; i < finishedBeamSentences.size(); i++) {
+                            android.util.Log.i("result " + i, tokenizer.decode(finishedBeamSentences.get(i)) + "  Score: " + finishedBeamSentencesProbabilities.get(i));
+                        }
+                        android.util.Log.i("result ", "Active Batches:");
                     }
-                    android.util.Log.i("result ", "Active Batches:");
-                }
-                for(int i=0; i<beamSize; i++){
-                    partialResults[i] = tokenizer.decode(completeBeamOutput[i].stream().mapToInt(k -> k).toArray());
-                    android.util.Log.i("result "+i, partialResults[i]+"  Score: "+beamsOutputsProbabilities[i]);
+                    for (int i = 0; i < beamSize; i++) {
+                        partialResults[i] = tokenizer.decode(completeBeamOutput[i].stream().mapToInt(k -> k).toArray());
+                        android.util.Log.i("result " + i, partialResults[i] + "  Score: " + beamsOutputsProbabilities[i]);
+                    }
                 }
 
                 if(lmHeadResult != null) lmHeadResult.close();

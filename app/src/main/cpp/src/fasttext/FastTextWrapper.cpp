@@ -17,6 +17,7 @@
 #include <jni.h>
 #include <string>
 #include <sstream>
+#include <android/log.h>
 #include "libs/fastText/src/fasttext.h"
 
 extern "C" JNIEXPORT jlong JNICALL
@@ -50,6 +51,8 @@ Java_nie_translator_rtranslator_voice_1translation_neural_1networks_translation_
 
     if (!predictions.empty()) {
         std::string label = predictions[0].second;
+        auto score = predictions[0].first;
+        __android_log_print(ANDROID_LOG_DEFAULT, "language detection", "score: %f", score);
         // fastText returns labels like "__label__en". We strip the prefix.
         std::string prefix = "__label__";
         if (label.find(prefix) == 0) {

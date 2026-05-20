@@ -1,5 +1,7 @@
 package nie.translator.rtranslator.voice_translation.neural_networks.translation;
 
+import androidx.annotation.Nullable;
+
 import java.util.Objects;
 
 import nie.translator.rtranslator.tools.CustomLocale;
@@ -27,14 +29,27 @@ public class DictionaryTranslator {
         unloadDictionaryNative(convertToMacroLanguage(lang).getISO3Language());
     }
 
+    @Nullable
     public static String[] translateWord(String word, CustomLocale srcLang, CustomLocale tgtLang){
+        long time = System.currentTimeMillis();
         String normalizedWord = TextTools.normalizeText(word);
         srcLang = convertToMacroLanguage(srcLang);
         tgtLang = convertToMacroLanguage(tgtLang);
         String[] result = translateWordNative(normalizedWord, srcLang.getISO3Language(), tgtLang.getISO3Language());
-        for(int i=0; i<result.length; i++){
-            result[i] = TextTools.capitalizeFirstLetter(result[i], tgtLang);
+        if(result != null) {
+            for (int i = 0; i < result.length; i++) {
+                result[i] = TextTools.capitalizeFirstLetter(result[i], tgtLang);
+            }
         }
+        android.util.Log.i("dict_performance", "dictionary translation done in: " + (System.currentTimeMillis()-time) + "ms");
+        return result;
+    }
+
+    public static boolean containsWord(String word, CustomLocale lang){
+        long time = System.currentTimeMillis();
+        lang = convertToMacroLanguage(lang);
+        boolean result = containsWordNative(word, lang.getISO3Language());
+        android.util.Log.i("dict_performance", "dictionary search done in: " + (System.currentTimeMillis()-time) + "ms");
         return result;
     }
 
@@ -93,7 +108,10 @@ public class DictionaryTranslator {
 
     private static native void unloadDictionaryNative(String lang);
 
+    @Nullable
     private static native String[] translateWordNative(String word, String srcLang, String tgtLang);
+
+    private static native boolean containsWordNative(String word, String lang);
 
     private static native void cleanupNative();
 }

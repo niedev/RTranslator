@@ -13,5 +13,6 @@ add_library(
 )
 
 # Link standard Android logging
-find_library(log-lib log)
-target_link_libraries(fasttext-lib ${log-lib})
+target_link_libraries(fasttext-lib
+        android
+        log)

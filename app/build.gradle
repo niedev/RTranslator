@@ -133,6 +133,8 @@ dependencies {
     implementation "com.google.protobuf:protobuf-javalite:4.33.5"
     // bouncycastle crypto lib
     implementation "org.bouncycastle:bcprov-jdk15to18:1.83"
+    //lingua
+    implementation "com.github.pemistahl:lingua:1.2.2"
 
     //implementation 'androidx.core:core-ktx:1.10.0'
     implementation 'androidx.work:work-runtime:2.7.1'

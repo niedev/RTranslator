@@ -115,7 +115,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
                                     //we stop speech recognition
                                     stopVoiceRecorder();
                                     notifyMicDeactivated();   // we notify the client
-                                    translator.detectLanguage(new NeuralNetworkApiResult(text), true, new Translator.DetectLanguageListener() {
+                                    translator.detectLanguage(new NeuralNetworkApiResult(text), true, new CustomLocale[]{firstLanguage, secondLanguage}, new Translator.DetectLanguageListener() {
                                         @Override
                                         public void onDetectedText(final NeuralNetworkApiResult result) {
                                             // here the result returns with the same language as the text sent from the Fragment editText
@@ -410,7 +410,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
     }
 
     private void compareResults(NeuralNetworkApiResult firstResult, NeuralNetworkApiResult secondResult) {
-        translator.detectLanguage(firstResult, secondResult, false, new Translator.DetectMultiLanguageListener() {
+        translator.detectLanguage(firstResult, secondResult, false, new CustomLocale[]{firstLanguage, secondLanguage}, new Translator.DetectMultiLanguageListener() {
             @Override
             public void onDetectedText(NeuralNetworkApiResult firstResult, NeuralNetworkApiResult secondResult, int message) {
                 if (message == ErrorCodes.BOTH_RESULTS_SUCCESS){  // if both results languages were found

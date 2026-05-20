@@ -10,10 +10,18 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.github.pemistahl.lingua.api.IsoCode639_3;
+import com.github.pemistahl.lingua.api.Language;
+import com.github.pemistahl.lingua.api.LanguageDetector;
+import com.github.pemistahl.lingua.api.LanguageDetectorBuilder;
+
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.bluetooth.Peer;
@@ -28,6 +36,8 @@ public class LanguageResourcesManager {
     private final LanguageResourcesIndicator languageResourcesIndicator = new LanguageResourcesIndicator();
     private final TatoebaDbWrapper tatoebaDb;
     private final Map<String, LinksData.DataMap> tatoebaLinks = new HashMap<>();
+    @Nullable
+    private LanguageDetector linguaLanguageDetector;
     private int modelMode;
 
     public LanguageResourcesManager(@NonNull Global global, int modelMode, CustomLocale firstTextLanguage, CustomLocale secondTextLanguage, CustomLocale firstLanguage, CustomLocale secondLanguage) throws Exception {
@@ -40,6 +50,8 @@ public class LanguageResourcesManager {
         DictionaryTranslator.initializeService(translationDictionariesDbPath);
         loadLanguageResources(firstTextLanguage, secondTextLanguage, Global.RTranslatorMode.TEXT_TRANSLATION_MODE);
         loadLanguageResources(firstLanguage, secondLanguage, Global.RTranslatorMode.WALKIE_TALKIE_MODE);
+        //we load the deu translation dictionary because it will be used for the LID for the english language (I chose to use the deu dict because it is by far the biggest)
+        DictionaryTranslator.loadDictionary(new CustomLocale("deu"));
     }
 
     public void setModelMode(int modelMode) {  //todo: eliminarlo se non servirà (in base a come gestiremo il cambio di mode)
@@ -52,6 +64,36 @@ public class LanguageResourcesManager {
 
     public TatoebaDbWrapper getTatoebaDb() {
         return tatoebaDb;
+    }
+
+    public String detectLanguageWithLingua(String text){
+        if (linguaLanguageDetector == null || text == null || text.trim().isEmpty()) {
+            return "und";
+        }
+
+        try {
+            long time = System.currentTimeMillis();
+            Language detectedLanguage = linguaLanguageDetector.detectLanguageOf(text);
+            android.util.Log.i("lid_performance", "Lingua language identification done in: " + (System.currentTimeMillis()-time) + "ms");
+
+            // Intercept cases where Lingua cannot confidently identify the language
+            if (detectedLanguage == Language.UNKNOWN || detectedLanguage.getIsoCode639_3() == IsoCode639_3.NONE) {
+                return "und";
+            }
+
+            // getIsoCode639_3() yields an enum constant (e.g. ENG, FRA)
+            // We read its string name and drop it to lowercase to match the "und" standard format
+            return detectedLanguage.getIsoCode639_3().name().toLowerCase(Locale.ROOT);
+
+        } catch (Exception e) {
+            // Fallback safety barrier against unexpected platform/string parsing hiccups
+            return "und";
+        }
+    }
+
+    @Nullable
+    public LanguageDetector getLinguaLanguageDetector(){
+        return linguaLanguageDetector;
     }
 
     public void loadLanguageResources(@NonNull CustomLocale srcLang, @NonNull CustomLocale tgtLang, Global.RTranslatorMode rtranslatorMode) throws Exception {
@@ -263,12 +305,25 @@ public class LanguageResourcesManager {
     }
 
     public void unloadAllTranslationDictionariesResources(){
-        DictionaryTranslator.cleanup();
+        //we unload all the dicts resources, except for the ones used by WalkieTalkie mode, where the dicts must be kept in memory for the LID
+        for (CustomLocale resource : languageResourcesIndicator.getAllUniqueResources()) {
+            boolean found = false;
+            for(CustomLocale walkieTalkieRes : languageResourcesIndicator.walkieTalkieResources){
+                if(walkieTalkieRes.equalsLanguage(resource)){
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                DictionaryTranslator.unloadDictionary(resource);
+            }
+        }
         languageResourcesIndicator.setResourceTypeLoadStatus(LanguageResourcesIndicator.ResourceType.TRANSLATION_DICTIONARY, false);
     }
 
     private void performLoadLanguageResources(@NonNull CustomLocale srcLang, @NonNull CustomLocale tgtLang, Global.RTranslatorMode rtranslatorMode) throws Exception {
         Log.d("language_resources", "Language loaded: "+srcLang.getLanguage());
+        long time = System.currentTimeMillis();
         if(modelMode == MOZILLA){
             ArrayList<CustomLocale> allUniqueResources = languageResourcesIndicator.getAllUniqueResources();
             boolean initialLoad = languageResourcesIndicator.isResourceTypeLoaded(rtranslatorMode, LanguageResourcesIndicator.ResourceType.MOZILLA);
@@ -279,7 +334,7 @@ public class LanguageResourcesManager {
                 BergamotTranslator.loadModelIntoCache(global, tgtLang);
             }
         }
-        if(global.isUseTranslationDictionaries()){
+        if(global.isUseTranslationDictionaries() || rtranslatorMode == Global.RTranslatorMode.WALKIE_TALKIE_MODE){  // WalkieTalkie mode must always have dicts loaded for LID
             ArrayList<CustomLocale> allUniqueResources = languageResourcesIndicator.getAllUniqueResources();
             boolean initialLoad = languageResourcesIndicator.isResourceTypeLoaded(rtranslatorMode, LanguageResourcesIndicator.ResourceType.TRANSLATION_DICTIONARY);
             if (!srcLang.getISO3Language().equals("eng") && (initialLoad || !allUniqueResources.contains(srcLang))) {
@@ -301,5 +356,43 @@ public class LanguageResourcesManager {
                 );
             }
         }
+        //load of lingua resources for language detection in walkieTalkie mode
+        if(rtranslatorMode == Global.RTranslatorMode.WALKIE_TALKIE_MODE) {
+            if(linguaLanguageDetector != null) linguaLanguageDetector.unloadLanguageModels();
+            linguaLanguageDetector = buildDetectorFromLocales(new CustomLocale[]{srcLang, tgtLang});
+        }
+        Log.d("performance_resources", "Resources loaded in: "+(System.currentTimeMillis()-time));
+    }
+
+    private static LanguageDetector buildDetectorFromLocales(CustomLocale[] locales) {
+        List<IsoCode639_3> linguaIsoCodes = new ArrayList<>();
+
+        // Map and filter valid 3-letter enum mappings
+        for (CustomLocale locale : locales) {
+            try {
+                // Explicitly fetching the 3-letter ISO code string
+                String upperCaseLanguage = locale.getISO3Language().toUpperCase(Locale.ROOT);
+                IsoCode639_3 code = IsoCode639_3.valueOf(upperCaseLanguage);
+
+                // Prevent duplicate entries in our config list
+                if (!linguaIsoCodes.contains(code)) {
+                    linguaIsoCodes.add(code);
+                }
+            } catch (MissingResourceException | IllegalArgumentException e) {
+                // MissingResourceException: thrown if Java/Android lacks a 3-letter map for the locale
+                // IllegalArgumentException: thrown if the code isn't supported by Lingua
+                // Both are skipped safely to prevent runtime crashes
+            }
+        }
+
+        // Validate constraint (Lingua requires at least 2 languages to build)
+        if (linguaIsoCodes.size() >= 2) {
+            IsoCode639_3[] codesArray = linguaIsoCodes.toArray(new IsoCode639_3[0]);
+            return LanguageDetectorBuilder
+                    .fromIsoCodes639_3(codesArray)
+                    .build();
+        }
+
+        return null; // Fallback if an adequate language pool couldn't be formed
     }
 }
