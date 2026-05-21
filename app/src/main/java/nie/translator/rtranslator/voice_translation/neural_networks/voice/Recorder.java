@@ -31,6 +31,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.konovalov.vad.silero.VadSilero;
+
 import java.util.Arrays;
 
 import nie.translator.rtranslator.Global;
@@ -90,9 +92,10 @@ public class Recorder {
     private AudioDeviceInfo connectedBleHeadset = null;
     private AudioDeviceCallback audioDeviceCallback;
     AudioManager audioManager;
+    private VadSilero vad;
 
 
-    public Recorder(Global global, boolean useBluetoothHeadset, @NonNull Callback callback, @Nullable ConversationService.BluetoothHeadsetCallback bluetoothHeadsetCallback) {
+    public Recorder(Global global, boolean useBluetoothHeadset, @NonNull Callback callback, @Nullable ConversationService.BluetoothHeadsetCallback bluetoothHeadsetCallback, VadSilero vad) {
         this.useBluetoothHeadset = useBluetoothHeadset;
         this.global = global;
         headIndex = 0;
@@ -102,6 +105,7 @@ public class Recorder {
         global.getPrevVoiceDuration();
         mCallback = callback;
         mCallback.setRecorder(this);
+        this.vad = vad;
 
         // Try to create a new recording session.
         mAudioRecord = createAudioRecord();
