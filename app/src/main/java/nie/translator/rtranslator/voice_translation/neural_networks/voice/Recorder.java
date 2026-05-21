@@ -35,6 +35,7 @@ import androidx.annotation.Nullable;
 
 import com.konovalov.vad.silero.VadSilero;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import nie.translator.rtranslator.Global;
@@ -60,6 +61,7 @@ public class Recorder {
     public static final int[] SAMPLE_RATE_CANDIDATES = new int[]{16000};
     private static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
     private static int ENCODING;
+    private static int VAD_FRAME_SIZE = 512;
     public static final int MAX_AMPLITUDE_THRESHOLD = 15000;
     public static final int DEFAULT_AMPLITUDE_THRESHOLD = 2000; //original: 1500
     public static final int MIN_AMPLITUDE_THRESHOLD = 400;
@@ -76,8 +78,8 @@ public class Recorder {
     private final AudioRecord mAudioRecord;
     private Thread mThread;
     private int mPrevBufferMaxSize;   //the size of the mPrevBuffer (It depends on the settings of the app (prevVoiceDuration))
-    private float[] mBuffer;
-    private short[] mBufferShort;
+    private float[] mBuffer;  //PCM FLOAT data, used for Speech recognition and volume level notification
+    private short[] mBufferShort;  //PCM 16bit data, used for VAD
     private int readSize;   //must be smaller than mBuffer.length or the circular mBuffer array will not work
     private int headIndex;
     private int tailIndex;
@@ -274,7 +276,8 @@ public class Recorder {
             AudioRecord audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, CHANNEL, ENCODING, minSizeInBytes);   //the option MIC produce better result than the option VOICE_RECOGNITION
             //audioRecord.setPreferredDevice()
             if (audioRecord.getState() == AudioRecord.STATE_INITIALIZED) {
-                readSize = (minSizeInBytes/4)*2;
+                int minReadSize = (minSizeInBytes/4)*2;
+                readSize = (int) (VAD_FRAME_SIZE * Math.ceil((float) minReadSize / VAD_FRAME_SIZE));  //readSize will be the closed multiple of VAD_FRAME_SIZE that is > minReadSize
                 mBuffer = new float[((MAX_SPEECH_LENGTH_MILLIS+1000)/1000)*sampleRate];  //the buffer size will be larger (by one second) than the audio data of duration MAX_SPEECH_LENGTH_MILLIS
                 mBufferShort = new short[((MAX_SPEECH_LENGTH_MILLIS+1000)/1000)*sampleRate];
                 return audioRecord;
@@ -340,13 +343,13 @@ public class Recorder {
                     int oldTailIndex = tailIndex;
                     boolean jumped;
                     if (tailIndex + readSize < mBuffer.length) {
-                        size = readAudio(mBuffer, tailIndex, readSize);
+                        size = readAudio(tailIndex, readSize);
                         tailIndex = tailIndex + size;
                         jumped = false;
                     } else {
-                        size = readAudio(mBuffer, tailIndex, mBuffer.length - tailIndex);
+                        size = readAudio(tailIndex, mBuffer.length - tailIndex);
                         tailIndex = 0;
-                        int size2 = readAudio(mBuffer, tailIndex, readSize - size);
+                        int size2 = readAudio(tailIndex, readSize - size);
                         tailIndex = size2;
                         size = size + size2;
                         jumped = true;
@@ -358,7 +361,7 @@ public class Recorder {
                     notifyVolumeLevel(mBuffer, oldTailIndex, tailIndex);
                     //we do the rest of voice processing
                     final long now = System.currentTimeMillis();
-                    if (isHearingVoice(mBuffer, oldTailIndex, tailIndex)) {
+                    if (isHearingVoice(mBufferShort, oldTailIndex, tailIndex)) {
                         if (mLastVoiceHeardMillis == Long.MAX_VALUE) {    // use Long's maximum limit to indicate that we have no voice
                             mVoiceStartedMillis = now;
                             if(!Thread.currentThread().isInterrupted()) {
@@ -407,13 +410,20 @@ public class Recorder {
         }
     }
 
-    private int readAudio(float[] audioData, int offset, int size){
+    private int readAudio(int offset, int size){
         if(ENCODING == AudioFormat.ENCODING_PCM_FLOAT){
-            return mAudioRecord.read(audioData, offset, size, AudioRecord.READ_BLOCKING);
+            int outputSize = mAudioRecord.read(mBuffer, offset, size, AudioRecord.READ_BLOCKING);
+            // Using the values just read in mBuffer we convert the values to mBufferShort in the ENCODING_PCM_16BIT format (used for VAD)
+            // To do this, we iterate the section just wrote of mBuffer, convert each value from ENCODING_PCM_FLOAT to ENCODING_PCM_16BIT and insert these values in the corresponding section of mBufferShort.
+            for(int i=offset; i<offset+size; i++){
+                //The range with ENCODING_PCM_16BIT is [-32768, 32767], while with ENCODING_PCM_FLOAT it is [-1, 1], so we convert accordingly
+                mBufferShort[i] = (short) (mBuffer[i] * 32768);
+            }
+            return outputSize;
         }else{  //ENCODING == AudioFormat.ENCODING_PCM_16BIT
             int outputSize = mAudioRecord.read(mBufferShort, offset, size, AudioRecord.READ_BLOCKING);
-            // Using the values just read in mBufferShort we convert the values to mBuffer in the ENCODING_PCM_FLOAT format
-            // Tod od this we iterate the section just wrote of mBufferShort, convert each value from ENCODING_PCM_16BIT to ENCODING_PCM_FLOAT and insert these value in the corresponding section of mBuffer.
+            // Using the values just read in mBufferShort we convert the values to mBuffer in the ENCODING_PCM_FLOAT format (used for Speech recognition)
+            // Tod do this we iterate the section just wrote of mBufferShort, convert each value from ENCODING_PCM_16BIT to ENCODING_PCM_FLOAT and insert these value in the corresponding section of mBuffer.
             for(int i=offset; i<offset+size; i++){
                 //The range with ENCODING_PCM_16BIT is [-32768, 32767], while with ENCODING_PCM_FLOAT it is [-1, 1], so we convert accordingly
                 mBuffer[i] = (float) mBufferShort[i] / 32768;
@@ -422,25 +432,47 @@ public class Recorder {
         }
     }
 
-    private boolean isHearingVoice(byte[] buffer, int size) {   //old method to measure threshold (not used)
-        for (int i = 0; i < size - 1; i += 2) {
-            // The buffer has LINEAR16 (2 bytes) in little endian.
-            // Therefore, to take the integer value at position i, we convert the (i+1)-th byte into an integer (positive),
-            // shift it to the left by 8 bits and add to it the absolute integer value of the i-th byte
-            int s = buffer[i + 1];
-            if (s < 0) s *= -1;
-            s <<= 8;
-            s += Math.abs(buffer[i]);
-            //if the value is grater than the threshold the method returns true
-            int amplitudeThreshold = global.getAmplitudeThreshold();
-            if (s > amplitudeThreshold) {
-                return true;
+    private boolean isHearingVoice(short[] buffer, int begin, int end) {
+        if(!isManualMode) {
+            // We iterate circularly the buffer from the begin index to the end index, dividing the data into chunks with the correct length for the VAD.
+            int count = begin;
+            ArrayList<short[]> chunks = new ArrayList<>();
+            chunks.add(new short[VAD_FRAME_SIZE]);
+            int chunkCount = 0;
+            while (count != end) {
+                if(chunkCount >= VAD_FRAME_SIZE){
+                    chunks.add(new short[VAD_FRAME_SIZE]);
+                    chunkCount = 0;
+                }
+                chunks.get(chunks.size()-1)[chunkCount] = buffer[count];
+                chunkCount++;
+                if (count < buffer.length - 1) {
+                    count++;
+                } else {
+                    count = 0;
+                }
             }
+            // we execute the VAD for every chunk, and if one of them is recognized as voice the method returns true
+            int numberOfThreshold = 1;
+            for (short[] chunk : chunks) {
+                if(chunk.length == VAD_FRAME_SIZE && vad.isSpeech(chunk)) {
+                    numberOfThreshold--;
+                }
+                if (numberOfThreshold == 0) {
+                    break;
+                }
+            }
+            if (numberOfThreshold == 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }else{
+            return true;  //in this way if we are in manual mode the recording will run until we call end()
         }
-        return false;
     }
 
-    private boolean isHearingVoice(float[] buffer, int begin, int end) {
+    private boolean isHearingVoice(float[] buffer, int begin, int end) {  //old method to measure threshold (not used)
         if(!isManualMode) {
             // We iterate circularly the mBuffer from the begin index to the end index, and if one of the values exceed the threshold the method returns true.
             // Also The range with the old ENCODING_PCM_16BIT was [-32768, 32767], while now with the new ENCODING_PCM_FLOAT it is [-1, 1],
