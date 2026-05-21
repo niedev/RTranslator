@@ -26,7 +26,9 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -57,7 +59,7 @@ public class Recorder {
     private boolean isManualMode = false;
     public static final int[] SAMPLE_RATE_CANDIDATES = new int[]{16000};
     private static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
-    private static final int ENCODING = AudioFormat.ENCODING_PCM_FLOAT;   //original: AudioFormat.ENCODING_PCM_16BIT
+    private static int ENCODING;
     public static final int MAX_AMPLITUDE_THRESHOLD = 15000;
     public static final int DEFAULT_AMPLITUDE_THRESHOLD = 2000; //original: 1500
     public static final int MIN_AMPLITUDE_THRESHOLD = 400;
@@ -75,6 +77,7 @@ public class Recorder {
     private Thread mThread;
     private int mPrevBufferMaxSize;   //the size of the mPrevBuffer (It depends on the settings of the app (prevVoiceDuration))
     private float[] mBuffer;
+    private short[] mBufferShort;
     private int readSize;   //must be smaller than mBuffer.length or the circular mBuffer array will not work
     private int headIndex;
     private int tailIndex;
@@ -106,6 +109,13 @@ public class Recorder {
         mCallback = callback;
         mCallback.setRecorder(this);
         this.vad = vad;
+
+        // set the encoding
+        if(Build.MANUFACTURER.equalsIgnoreCase("vivo")){
+            ENCODING = AudioFormat.ENCODING_PCM_16BIT;   //this is to avoid a bug where on Vivo phones the audio recording wouldn't work
+        }else{
+            ENCODING = AudioFormat.ENCODING_PCM_FLOAT;
+        }
 
         // Try to create a new recording session.
         mAudioRecord = createAudioRecord();
@@ -266,6 +276,7 @@ public class Recorder {
             if (audioRecord.getState() == AudioRecord.STATE_INITIALIZED) {
                 readSize = (minSizeInBytes/4)*2;
                 mBuffer = new float[((MAX_SPEECH_LENGTH_MILLIS+1000)/1000)*sampleRate];  //the buffer size will be larger (by one second) than the audio data of duration MAX_SPEECH_LENGTH_MILLIS
+                mBufferShort = new short[((MAX_SPEECH_LENGTH_MILLIS+1000)/1000)*sampleRate];
                 return audioRecord;
             } else {
                 audioRecord.release();
@@ -329,13 +340,13 @@ public class Recorder {
                     int oldTailIndex = tailIndex;
                     boolean jumped;
                     if (tailIndex + readSize < mBuffer.length) {
-                        size = mAudioRecord.read(mBuffer, tailIndex, readSize, AudioRecord.READ_BLOCKING);
+                        size = readAudio(mBuffer, tailIndex, readSize);
                         tailIndex = tailIndex + size;
                         jumped = false;
                     } else {
-                        size = mAudioRecord.read(mBuffer, tailIndex, mBuffer.length - tailIndex, AudioRecord.READ_BLOCKING);
+                        size = readAudio(mBuffer, tailIndex, mBuffer.length - tailIndex);
                         tailIndex = 0;
-                        int size2 = mAudioRecord.read(mBuffer, tailIndex, readSize - size, AudioRecord.READ_BLOCKING);
+                        int size2 = readAudio(mBuffer, tailIndex, readSize - size);
                         tailIndex = size2;
                         size = size + size2;
                         jumped = true;
@@ -393,6 +404,21 @@ public class Recorder {
             return end - begin;
         }else{    //(begin > end)
             return (mBuffer.length-begin) + end;
+        }
+    }
+
+    private int readAudio(float[] audioData, int offset, int size){
+        if(ENCODING == AudioFormat.ENCODING_PCM_FLOAT){
+            return mAudioRecord.read(audioData, offset, size, AudioRecord.READ_BLOCKING);
+        }else{  //ENCODING == AudioFormat.ENCODING_PCM_16BIT
+            int outputSize = mAudioRecord.read(mBufferShort, offset, size, AudioRecord.READ_BLOCKING);
+            // Using the values just read in mBufferShort we convert the values to mBuffer in the ENCODING_PCM_FLOAT format
+            // Tod od this we iterate the section just wrote of mBufferShort, convert each value from ENCODING_PCM_16BIT to ENCODING_PCM_FLOAT and insert these value in the corresponding section of mBuffer.
+            for(int i=offset; i<offset+size; i++){
+                //The range with ENCODING_PCM_16BIT is [-32768, 32767], while with ENCODING_PCM_FLOAT it is [-1, 1], so we convert accordingly
+                mBuffer[i] = (float) mBufferShort[i] / 32768;
+            }
+            return outputSize;
         }
     }
 
