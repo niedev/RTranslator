@@ -63,7 +63,8 @@ public class LanguageDetector {
                         return;
                     }
                     String normalizedText = TextTools.normalizeTextForLid(text);
-                    if (TextTools.countWords(normalizedText) < MIN_WORDS) {
+                    int wordsCount = TextTools.countWords(normalizedText);
+                    if (wordsCount < MIN_WORDS) {
                         if(TextTools.countWords(normalizedText) == 1){
                             //we use specialWordsLanguages mapping
                             String langCode = identifySpecialWordLanguage(normalizedText);
@@ -91,10 +92,14 @@ public class LanguageDetector {
                         }
                     }
                     //we use FastText for detection
-                    long time = System.currentTimeMillis();
-                    String langCode = predictLanguage(nativePtr, text, confidenceThreshold);
-                    android.util.Log.i("lid_performance", "FastText language identification done in: " + (System.currentTimeMillis()-time) + "ms");
-                    listener.onSuccess(langCode);
+                    if(wordsCount <= 1) {
+                        long time = System.currentTimeMillis();
+                        String langCode = predictLanguage(nativePtr, text, confidenceThreshold);
+                        android.util.Log.i("lid_performance", "FastText language identification done in: " + (System.currentTimeMillis() - time) + "ms");
+                        listener.onSuccess(langCode);
+                        return;
+                    }
+                    listener.onSuccess("und");
 
                 } catch (Exception e) {
                     e.printStackTrace();

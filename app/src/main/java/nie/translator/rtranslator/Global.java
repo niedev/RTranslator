@@ -36,6 +36,11 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.downloader.PRDownloader;
 import com.downloader.PRDownloaderConfig;
+import com.konovalov.vad.silero.Vad;
+import com.konovalov.vad.silero.VadSilero;
+import com.konovalov.vad.silero.config.FrameSize;
+import com.konovalov.vad.silero.config.Mode;
+import com.konovalov.vad.silero.config.SampleRate;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -57,6 +62,7 @@ import nie.translator.rtranslator.voice_translation.neural_networks.voice.Record
 
 public class Global extends Application implements DefaultLifecycleObserver {
     public static final boolean ONLY_TEXT_TRANSLATION_MODE = false;
+
     public enum RTranslatorMode {
         TEXT_TRANSLATION_MODE,
         WALKIE_TALKIE_MODE,
@@ -88,6 +94,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     private final Object lock = new Object();
     private boolean useTatoeba;
     private boolean useTranslationDictionaries;
+    private VadSilero vad;
 
     @Override
     public void onCreate() {
@@ -118,6 +125,14 @@ public class Global extends Application implements DefaultLifecycleObserver {
 
     public void initializeSpeechRecognizer(NeuralNetworkApi.InitListener initListener){
         if(speechRecognizer == null) {
+            vad = Vad.builder()
+                    .setContext(this)
+                    .setSampleRate(SampleRate.SAMPLE_RATE_16K)
+                    .setFrameSize(FrameSize.FRAME_SIZE_512)
+                    .setMode(Mode.NORMAL)
+                    .setSilenceDurationMs(300)
+                    .setSpeechDurationMs(50)
+                    .build();
             speechRecognizer = new Recognizer(this, true, initListener);
         }else{
             initListener.onInitializationFinished();
@@ -128,6 +143,10 @@ public class Global extends Application implements DefaultLifecycleObserver {
         if(bluetoothCommunicator == null){
             bluetoothCommunicator = new ConversationBluetoothCommunicator(this, getName(), BluetoothCommunicator.STRATEGY_P2P_WITH_RECONNECTION);
         }
+    }
+
+    public VadSilero getVad() {
+        return vad;
     }
 
     public void restartTranslator(Translator.GeneralListener listener){

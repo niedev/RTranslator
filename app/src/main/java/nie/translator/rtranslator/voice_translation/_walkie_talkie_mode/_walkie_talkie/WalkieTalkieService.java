@@ -380,7 +380,8 @@ public class WalkieTalkieService extends VoiceTranslationService {
     public void initializeVoiceRecorder(){
         if (Tools.hasPermissions(this, REQUIRED_PERMISSIONS)) {
             //voice recorder initialization
-            super.mVoiceRecorder = new Recorder((Global) getApplication(), false, mVoiceCallback, null);
+            Global global = (Global) getApplication();
+            super.mVoiceRecorder = new Recorder(global, false, mVoiceCallback, null, global.getVad());
         }
     }
 
