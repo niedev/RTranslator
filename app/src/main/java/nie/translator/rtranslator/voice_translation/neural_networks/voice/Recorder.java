@@ -63,7 +63,7 @@ public class Recorder {
     private static int ENCODING;
     private static int VAD_FRAME_SIZE = 512;
     public static final int MAX_AMPLITUDE_THRESHOLD = 15000;
-    public static final int DEFAULT_AMPLITUDE_THRESHOLD = 2000; //original: 1500
+    public static final int DEFAULT_AMPLITUDE_THRESHOLD = 1500; //old: 2000
     public static final int MIN_AMPLITUDE_THRESHOLD = 400;
     public static final int MAX_SPEECH_TIMEOUT_MILLIS = 5000;
     public static final int DEFAULT_SPEECH_TIMEOUT_MILLIS = 1300; //original: 2000
@@ -435,17 +435,27 @@ public class Recorder {
     private boolean isHearingVoice(short[] buffer, int begin, int end) {
         if(!isManualMode) {
             // We iterate circularly the buffer from the begin index to the end index, dividing the data into chunks with the correct length for the VAD.
+            // We also check if the volume level surpasses the threshold
+            int numberOfThreshold = 15;
             int count = begin;
             ArrayList<short[]> chunks = new ArrayList<>();
             chunks.add(new short[VAD_FRAME_SIZE]);
             int chunkCount = 0;
             while (count != end) {
+                // fill the chunks
                 if(chunkCount >= VAD_FRAME_SIZE){
                     chunks.add(new short[VAD_FRAME_SIZE]);
                     chunkCount = 0;
                 }
                 chunks.get(chunks.size()-1)[chunkCount] = buffer[count];
                 chunkCount++;
+                int amplitudeThreshold = global.getAmplitudeThreshold();
+                // check the volume level
+                int s = Math.abs(buffer[count]);
+                if (s > amplitudeThreshold) {
+                    numberOfThreshold--;
+                }
+                // increment the counter
                 if (count < buffer.length - 1) {
                     count++;
                 } else {
@@ -453,16 +463,14 @@ public class Recorder {
                 }
             }
             // we execute the VAD for every chunk, and if one of them is recognized as voice the method returns true
-            int numberOfThreshold = 1;
+            boolean isVoice = false;
             for (short[] chunk : chunks) {
                 if(chunk.length == VAD_FRAME_SIZE && vad.isSpeech(chunk)) {
-                    numberOfThreshold--;
-                }
-                if (numberOfThreshold == 0) {
+                    isVoice = true;
                     break;
                 }
             }
-            if (numberOfThreshold == 0) {
+            if (numberOfThreshold <= 0 && isVoice) {
                 return true;
             } else {
                 return false;
@@ -472,7 +480,7 @@ public class Recorder {
         }
     }
 
-    private boolean isHearingVoice(float[] buffer, int begin, int end) {  //old method to measure threshold (not used)
+    private boolean isVolumeLevelHigh(float[] buffer, int begin, int end) {   //old method to measure threshold (not used)
         if(!isManualMode) {
             // We iterate circularly the mBuffer from the begin index to the end index, and if one of the values exceed the threshold the method returns true.
             // Also The range with the old ENCODING_PCM_16BIT was [-32768, 32767], while now with the new ENCODING_PCM_FLOAT it is [-1, 1],
