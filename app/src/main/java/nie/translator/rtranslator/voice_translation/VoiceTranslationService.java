@@ -56,7 +56,10 @@ public abstract class VoiceTranslationService extends GeneralService {
     public static final int STOP_SOUND = 3;
     public static final int SET_EDIT_TEXT_OPEN = 7;
     public static final int RECEIVE_TEXT = 4;
+    public static final int SPEAK_TEXT = 18;
+    public static final int STOP_SPEAKING_TEXT = 19;
     // callbacks
+    public static final int ON_TTS_DONE = 21;
     public static final int ON_ATTRIBUTES = 5;
     public static final int ON_VOICE_STARTED = 0;
     public static final int ON_VOICE_ENDED = 1;
@@ -148,6 +151,7 @@ public abstract class VoiceTranslationService extends GeneralService {
                         }, 500);  //4000
                     }
                 }
+                notifyTTSDone(s);
             }
 
             @Override
@@ -257,6 +261,10 @@ public abstract class VoiceTranslationService extends GeneralService {
     // tts
 
     public synchronized void speak(String result, CustomLocale language) {
+        speak(result, language, null);
+    }
+
+    public synchronized void speak(String result, CustomLocale language, String id) {
         synchronized (mLock) {
             if (tts != null && tts.isActive() && !isAudioMute) {
                 utterancesCurrentlySpeaking++;
@@ -264,11 +272,14 @@ public abstract class VoiceTranslationService extends GeneralService {
                     stopVoiceRecorder();
                     notifyMicDeactivated();   // we notify the client
                 }
+                if (id == null) {
+                    id = String.valueOf(System.currentTimeMillis());
+                }
                 if (tts.getVoice() != null && language.equals(new CustomLocale(tts.getVoice().getLocale()))) {
-                    tts.speak(result, TextToSpeech.QUEUE_ADD, null, "c01");
+                    tts.speak(result, TextToSpeech.QUEUE_ADD, null, id);
                 } else {
                     tts.setLanguage(language,this);
-                    tts.speak(result, TextToSpeech.QUEUE_ADD, null, "c01");
+                    tts.speak(result, TextToSpeech.QUEUE_ADD, null, id);
                 }
             }
         }
@@ -427,6 +438,19 @@ public abstract class VoiceTranslationService extends GeneralService {
                 case SET_EDIT_TEXT_OPEN:
                     isEditTextOpen = data.getBoolean("value");
                     return true;
+                case SPEAK_TEXT:
+                    speak(data.getString("text"), nie.translator.rtranslator.tools.CustomLocale.getInstance(data.getString("languageCode")), data.getString("utteranceId"));
+                    return true;
+                case STOP_SPEAKING_TEXT:
+                    if (tts != null) {
+                        tts.stop();
+                        // Force reset audio listening state
+                        if (utterancesCurrentlySpeaking > 0) {
+                             utterancesCurrentlySpeaking = 0;
+                             ttsListener.onDone(""); 
+                        }
+                    }
+                    return true;
                 case GET_ATTRIBUTES:
                     Bundle bundle = new Bundle();
                     bundle.putInt("callback", ON_ATTRIBUTES);
@@ -517,6 +541,14 @@ public abstract class VoiceTranslationService extends GeneralService {
     }
 
     // connection with clients
+    protected void notifyTTSDone(String utteranceId) {
+        Bundle bundle = new Bundle();
+        bundle.clear();
+        bundle.putInt("callback", ON_TTS_DONE);
+        bundle.putString("utteranceId", utteranceId);
+        super.notifyToClient(bundle);
+    }
+
     public static abstract class VoiceTranslationServiceCommunicator extends ServiceCommunicator {
         private ArrayList<VoiceTranslationServiceCallback> clientCallbacks = new ArrayList<>();
         private ArrayList<AttributesListener> attributesListeners = new ArrayList<>();
@@ -572,6 +604,13 @@ public abstract class VoiceTranslationService extends GeneralService {
                     case ON_MIC_DEACTIVATED: {
                         for (int i = 0; i < clientCallbacks.size(); i++){
                             clientCallbacks.get(i).onMicDeactivated();
+                        }
+                        return true;
+                    }
+                    case ON_TTS_DONE: {
+                        String utteranceId = data.getString("utteranceId");
+                        for (int i = 0; i < clientCallbacks.size(); i++) {
+                            clientCallbacks.get(i).onTTSDone(utteranceId);
                         }
                         return true;
                     }
@@ -667,6 +706,21 @@ public abstract class VoiceTranslationService extends GeneralService {
             super.sendToService(bundle);
         }
 
+        public void speakText(String text, String languageCode, String utteranceId) {
+            Bundle bundle = new Bundle();
+            bundle.putInt("command", SPEAK_TEXT);
+            bundle.putString("text", text);
+            bundle.putString("languageCode", languageCode);
+            bundle.putString("utteranceId", utteranceId);
+            super.sendToService(bundle);
+        }
+
+        public void stopSpeakingText() {
+            Bundle bundle = new Bundle();
+            bundle.putInt("command", STOP_SPEAKING_TEXT);
+            super.sendToService(bundle);
+        }
+
         public void addCallback(ServiceCallback callback) {
             clientCallbacks.add((VoiceTranslationServiceCallback) callback);
         }
@@ -682,6 +736,9 @@ public abstract class VoiceTranslationService extends GeneralService {
         }
 
         public void onVoiceEnded() {
+        }
+
+        public void onTTSDone(String utteranceId) {
         }
 
         public void onVolumeLevel(float volumeLevel) {

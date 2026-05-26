@@ -58,6 +58,10 @@ public class ImageActivity extends Activity {
             public void onFirstItemAdded() {
                 mRecyclerView.setVisibility(View.VISIBLE);
             }
+            @Override
+            public void onPlayAudio(GuiMessage message, android.widget.ImageView icon) {
+                // Do nothing for ImageActivity
+            }
         });
         mRecyclerView.setAdapter(mAdapter);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);

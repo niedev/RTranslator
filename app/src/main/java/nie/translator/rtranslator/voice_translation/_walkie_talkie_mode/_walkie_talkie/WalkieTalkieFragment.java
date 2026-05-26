@@ -83,6 +83,10 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
     //connection
     protected WalkieTalkieService.WalkieTalkieServiceCommunicator walkieTalkieServiceCommunicator;
     protected VoiceTranslationService.VoiceTranslationServiceCallback walkieTalkieServiceCallback;
+    
+    // tts UI states
+    private android.widget.ImageView currentPlayingIcon = null;
+    private String currentPlayingUtteranceId = null;
 
     //languageListDialog
     private LanguageListAdapter listView;
@@ -372,6 +376,42 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                         description.setVisibility(View.GONE);
                         mRecyclerView.setVisibility(View.VISIBLE);
                     }
+
+                    @Override
+                    public void onPlayAudio(final GuiMessage message, final android.widget.ImageView icon) {
+                        if (icon.getTag() != null && ((int) icon.getTag()) == R.drawable.stop_icon) {
+                            walkieTalkieServiceCommunicator.stopSpeakingText();
+                            icon.setImageResource(R.drawable.sound_icon);
+                            icon.setTag(R.drawable.sound_icon);
+                            currentPlayingIcon = null;
+                            currentPlayingUtteranceId = null;
+                            return;
+                        }
+
+                        if (currentPlayingIcon != null) {
+                            currentPlayingIcon.setImageResource(R.drawable.sound_icon);
+                            currentPlayingIcon.setTag(R.drawable.sound_icon);
+                            walkieTalkieServiceCommunicator.stopSpeakingText();
+                        }
+
+                        icon.setImageResource(R.drawable.stop_icon);
+                        icon.setTag(R.drawable.stop_icon);
+                        currentPlayingIcon = icon;
+                        
+                        final String textToSpeak = message.getMessage().getText();
+                        final String utteranceId = String.valueOf(System.currentTimeMillis());
+                        currentPlayingUtteranceId = utteranceId;
+
+                        global.getFirstAndSecondLanguages(true, new Global.GetTwoLocaleListener() {
+                            @Override
+                            public void onSuccess(nie.translator.rtranslator.tools.CustomLocale language1, nie.translator.rtranslator.tools.CustomLocale language2) {
+                                String localeCode = message.isMine() ? language2.getCode() : language1.getCode();
+                                walkieTalkieServiceCommunicator.speakText(textToSpeak, localeCode, utteranceId);
+                            }
+                            @Override
+                            public void onFailure(int[] reasons, long value) {}
+                        });
+                    }
                 });
                 mRecyclerView.setAdapter(mAdapter);
                 // restore microphone and sound status
@@ -648,6 +688,19 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
 
 
     public class WalkieTalkieServiceCallback extends VoiceTranslationService.VoiceTranslationServiceCallback {
+        @Override
+        public void onTTSDone(String utteranceId) {
+            super.onTTSDone(utteranceId);
+            if (utteranceId != null && utteranceId.equals(currentPlayingUtteranceId)) {
+                if (currentPlayingIcon != null) {
+                    currentPlayingIcon.setImageResource(R.drawable.sound_icon);
+                    currentPlayingIcon.setTag(R.drawable.sound_icon);
+                    currentPlayingIcon = null;
+                }
+                currentPlayingUtteranceId = null;
+            }
+        }
+
         @Override
         public void onVoiceStarted(int mode) {
             super.onVoiceStarted(mode);

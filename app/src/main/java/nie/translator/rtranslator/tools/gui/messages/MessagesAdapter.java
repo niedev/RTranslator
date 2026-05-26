@@ -72,7 +72,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof MessageHolder) {
-            GuiMessage message = mResults.get(position);
+            final GuiMessage message = mResults.get(position);
             if (holder instanceof ReceivedHolder && message.getMessage().getSender() != null) {
                 ((ReceivedHolder) holder).text.setVisibility(View.GONE);
                 ((ReceivedHolder) holder).containerSender.setVisibility(View.VISIBLE);
@@ -82,6 +82,24 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ((MessageHolder) holder).setText(message.getMessage().getTextToTranslate(), message.getMessage().getText());
             Log.d("recyclerview", "RecyclerView bind text");
             //holder.itemView.requestLayout();
+            
+            // Bind audio playback listener
+            View.OnClickListener playListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (callback != null && v instanceof android.widget.ImageView) {
+                        callback.onPlayAudio(message, (android.widget.ImageView) v);
+                    }
+                }
+            };
+            View ttsBtnSend = holder.itemView.findViewById(R.id.tts_button);
+            if(ttsBtnSend != null) ttsBtnSend.setOnClickListener(playListener);
+
+            View ttsBtnRecv = holder.itemView.findViewById(R.id.tts_button_content);
+            if(ttsBtnRecv != null) ttsBtnRecv.setOnClickListener(playListener);
+
+            View ttsBtnRecv2 = holder.itemView.findViewById(R.id.tts_button_content2);
+            if(ttsBtnRecv2 != null) ttsBtnRecv2.setOnClickListener(playListener);
         }
     }
 
@@ -218,5 +236,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public interface Callback {
         void onFirstItemAdded();
+        void onPlayAudio(GuiMessage message, android.widget.ImageView icon);
     }
 }
