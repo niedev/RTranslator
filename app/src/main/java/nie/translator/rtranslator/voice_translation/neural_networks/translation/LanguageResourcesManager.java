@@ -125,13 +125,16 @@ public class LanguageResourcesManager {
         //we load all the resources of the new languages that are not already loaded
         performLoadLanguageResources(srcLang, tgtLang, rtranslatorMode);
         //we update the indicator to reflect the new resources status
-        currentModeResources[0] = !srcLang.getLanguage().equals("en") ? srcLang : null;
-        currentModeResources[1] = !tgtLang.getLanguage().equals("en") ? tgtLang : null;
+        currentModeResources[0] = srcLang;
+        currentModeResources[1] = tgtLang;
         if(modelMode == MOZILLA) {
             languageResourcesIndicator.setResourceTypeLoadStatus(rtranslatorMode, LanguageResourcesIndicator.ResourceType.MOZILLA, true);
         }
         if(global.isUseTatoeba()){
             languageResourcesIndicator.setResourceTypeLoadStatus(rtranslatorMode, LanguageResourcesIndicator.ResourceType.TATOEBA, true);
+        }
+        if(global.isUseTranslationDictionaries()){
+            languageResourcesIndicator.setResourceTypeLoadStatus(rtranslatorMode, LanguageResourcesIndicator.ResourceType.TRANSLATION_DICTIONARY, true);
         }
     }
 
@@ -325,30 +328,24 @@ public class LanguageResourcesManager {
         Log.d("language_resources", "Language loaded: "+srcLang.getLanguage());
         long time = System.currentTimeMillis();
         if(modelMode == MOZILLA){
-            ArrayList<CustomLocale> allUniqueResources = languageResourcesIndicator.getAllUniqueResources();
-            boolean initialLoad = languageResourcesIndicator.isResourceTypeLoaded(rtranslatorMode, LanguageResourcesIndicator.ResourceType.MOZILLA);
-            if (!srcLang.getLanguage().equals("en") && (initialLoad || !allUniqueResources.contains(srcLang))) {
+            if (!srcLang.getLanguage().equals("en")) {
                 BergamotTranslator.loadModelIntoCache(global, srcLang);
             }
-            if (!tgtLang.getLanguage().equals("en") && (initialLoad || !allUniqueResources.contains(tgtLang))) {
+            if (!tgtLang.getLanguage().equals("en")) {
                 BergamotTranslator.loadModelIntoCache(global, tgtLang);
             }
         }
         if(global.isUseTranslationDictionaries() || rtranslatorMode == Global.RTranslatorMode.WALKIE_TALKIE_MODE){  // WalkieTalkie mode must always have dicts loaded for LID
-            ArrayList<CustomLocale> allUniqueResources = languageResourcesIndicator.getAllUniqueResources();
-            boolean initialLoad = languageResourcesIndicator.isResourceTypeLoaded(rtranslatorMode, LanguageResourcesIndicator.ResourceType.TRANSLATION_DICTIONARY);
-            if (!srcLang.getISO3Language().equals("eng") && (initialLoad || !allUniqueResources.contains(srcLang))) {
+            if (!srcLang.getISO3Language().equals("eng")) {
                 DictionaryTranslator.loadDictionary(srcLang);
             }
-            if (!tgtLang.getISO3Language().equals("eng") && (initialLoad || !allUniqueResources.contains(tgtLang))) {
+            if (!tgtLang.getISO3Language().equals("eng")) {
                 DictionaryTranslator.loadDictionary(tgtLang);
             }
         }
         if(global.isUseTatoeba()){
-            ArrayList<String> allUniqueResourcePais = languageResourcesIndicator.getAllUniqueResourcePairs();
-            boolean initialLoad = languageResourcesIndicator.isResourceTypeLoaded(rtranslatorMode, LanguageResourcesIndicator.ResourceType.TATOEBA);
             String langPairCode = srcLang.getISO3Language() + "-" + tgtLang.getISO3Language();
-            if(initialLoad || !allUniqueResourcePais.contains(langPairCode)){
+            if(!tatoebaLinks.containsKey(langPairCode)){
                 LinksData.DataMap links = tatoebaDb.getLinkData(srcLang.getISO3Language(), tgtLang.getISO3Language());
                 tatoebaLinks.put(
                         langPairCode,

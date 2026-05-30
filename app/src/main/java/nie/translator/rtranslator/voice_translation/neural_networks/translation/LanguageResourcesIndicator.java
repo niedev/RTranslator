@@ -157,27 +157,6 @@ public class LanguageResourcesIndicator {
         return false;
     }
 
-    public boolean isResourceTypeLoaded(Global.RTranslatorMode rtranslatorMode, ResourceType resourceType){
-        switch (rtranslatorMode){
-            case TEXT_TRANSLATION_MODE:
-                if(textTranslationResourcesLoaded.contains(resourceType)){
-                    return true;
-                }
-                break;
-            case WALKIE_TALKIE_MODE:
-                if(walkieTalkieResourcesLoaded.contains(resourceType)){
-                    return true;
-                }
-                break;
-            case CONVERSATION_MODE:
-                if(conversationResourcesLoaded.contains(resourceType)){
-                    return true;
-                }
-                break;
-        }
-        return false;
-    }
-
     public boolean isResourceTypeLoaded(ResourceType resourceType){
         return textTranslationResourcesLoaded.contains(resourceType) || walkieTalkieResourcesLoaded.contains(resourceType) || conversationResourcesLoaded.contains(resourceType);
     }
