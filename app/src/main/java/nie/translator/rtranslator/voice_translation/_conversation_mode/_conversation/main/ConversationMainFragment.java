@@ -287,10 +287,10 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
     public void restoreAttributesFromService() {
         conversationServiceCommunicator.getAttributes(new VoiceTranslationService.AttributesListener() {
             @Override
-            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, int listeningMic) {
+            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic) {
                 container.setVisibility(View.VISIBLE);
                 // initialization with service values
-                mAdapter = new MessagesAdapter(messages, global, new MessagesAdapter.Callback() {
+                mAdapter = new MessagesAdapter(messages, global, -1, new MessagesAdapter.Callback() {
                     @Override
                     public void onFirstItemAdded() {
                         description.setVisibility(View.GONE);
@@ -298,8 +298,8 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                     }
 
                     @Override
-                    public void onPlayAudio(final GuiMessage message, final android.widget.ImageView icon) {
-                        if (icon.getTag() != null && ((int) icon.getTag()) == R.drawable.stop_icon) {
+                    public void onTTSButtonClick(final GuiMessage message, final boolean play) {
+                        /*if (icon.getTag() != null && ((int) icon.getTag()) == R.drawable.stop_icon) {
                             conversationServiceCommunicator.stopSpeakingText();
                             icon.setImageResource(R.drawable.sound_icon);
                             icon.setTag(R.drawable.sound_icon);
@@ -322,15 +322,8 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                         final String utteranceId = String.valueOf(System.currentTimeMillis());
                         currentPlayingUtteranceId = utteranceId;
 
-                        global.getFirstAndSecondLanguages(true, new nie.translator.rtranslator.Global.GetTwoLocaleListener() {
-                            @Override
-                            public void onSuccess(nie.translator.rtranslator.tools.CustomLocale language1, nie.translator.rtranslator.tools.CustomLocale language2) {
-                                String localeCode = message.isMine() ? language2.getCode() : language1.getCode();
-                                conversationServiceCommunicator.speakText(textToSpeak, localeCode, utteranceId);
-                            }
-                            @Override
-                            public void onFailure(int[] reasons, long value) {}
-                        });
+                        String localeCode = message.isMine() ? global.getSecondLanguage(true).getCode() : global.getFirstLanguage(true).getCode();
+                        conversationServiceCommunicator.speakText(textToSpeak, localeCode, utteranceId);*/
                     }
                 });
                 mRecyclerView.setAdapter(mAdapter);

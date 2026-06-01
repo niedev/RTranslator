@@ -103,7 +103,7 @@ public class Translator extends NeuralNetworkApi {
     private long currentResultID = 0;
     private ArrayList<TranslateListener> callbacks = new ArrayList<>();
     private android.os.Handler mainHandler;   // handler that can be used to post to the main thread
-    private ArrayDeque<DataContainer> dataToTranslate = new ArrayDeque<>();
+    private final ArrayDeque<DataContainer> dataToTranslate = new ArrayDeque<>();
     private final Object lock = new Object();
     private final Object langResourcesLock = new Object();
     private final int EMPTY_BATCH_SIZE = 1;

@@ -61,13 +61,15 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tool:text="Original text to be translated"/>
             <LinearLayout
+                android:id="@+id/no_sender_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                tool:visibility="gone">
                 <TextView
                     android:id="@+id/text_content"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="16dp"
@@ -83,8 +85,7 @@
                     app:layout_constraintHorizontal_bias="0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    tool:text="Ciao, come stai?"
-                    tool:visibility="gone"/>
+                    tool:text="Ciao, come stai?" />
                 <ImageView
                     android:id="@+id/tts_button_content"
                     android:layout_width="24dp"
@@ -95,7 +96,7 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:clickable="true"
                     android:focusable="true"
-                    app:tint="@color/primary"/>
+                    app:tint="@color/primary" />
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/sender_container"
@@ -126,7 +127,7 @@
                     tool:text="Alice" />
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical">

@@ -41,6 +41,7 @@ import nie.translator.rtranslator.voice_translation.neural_networks.voice.Record
 
 
 public class WalkieTalkieService extends VoiceTranslationService {
+    private static final int TIME_BEFORE_REACTIVATING_TTS_AFTER_VOICE_END = 500;
     //properties
     public static final int SPEECH_BEAM_SIZE = 1;
     public static final int TRANSLATOR_BEAM_SIZE = 1;
@@ -206,6 +207,10 @@ public class WalkieTalkieService extends VoiceTranslationService {
             @Override
             public void onVoiceStart() {
                 super.onVoiceStart();
+                if(ttsEngine != null){
+                    mainTTSHandler.removeCallbacksAndMessages(null);  //cancel an eventual delayed resume command
+                    ttsEngine.pause();
+                }
                 // we notify the client
                 WalkieTalkieService.super.notifyVoiceStart();
             }
@@ -214,24 +219,18 @@ public class WalkieTalkieService extends VoiceTranslationService {
             public void onVoice(@NonNull float[] data, int size) {
                 super.onVoice(data,size);
                 if(manualRecognizingFirstLanguage){
-                    notifyMicDeactivated();   // we notify the client
                     // we start the speech recognition in only the first language
                     speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode());
 
                 } else if (manualRecognizingSecondLanguage) {
-                    notifyMicDeactivated();   // we notify the client
                     // we start the speech recognition in only the second language
                     speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, secondLanguage.getCode());
 
                 }else if(manualRecognizingAutoLanguage){
-                    notifyMicDeactivated();   // we notify the client
                     // we start the speech recognition in both languages
                     speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode(), secondLanguage.getCode());
 
                 }else if(isMicAutomatic) {
-                    //we stop speech recognition
-                    stopVoiceRecorder();
-                    notifyMicDeactivated();   // we notify the client
                     // we start the speech recognition in both languages
                     speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode(), secondLanguage.getCode());
                 }
@@ -242,6 +241,13 @@ public class WalkieTalkieService extends VoiceTranslationService {
                 super.onVoiceEnd();
                 // we notify the client
                 WalkieTalkieService.super.notifyVoiceEnd();
+                // we resume tts after a delay, in case the user has not done speaking
+                mainTTSHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(ttsEngine != null) ttsEngine.resume();
+                    }
+                }, TIME_BEFORE_REACTIVATING_TTS_AFTER_VOICE_END);
             }
 
             @Override
@@ -293,15 +299,15 @@ public class WalkieTalkieService extends VoiceTranslationService {
                 ((Global) getApplication()).getTTSLanguages(true, new Global.GetLocalesListListener() {
                     @Override
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
-                        if(isFinal && CustomLocale.containsLanguage(ttsLanguages, languageOfText)) { // check if the text can be speak
-                            speak(text, languageOfText);
-                        }
                         GuiMessage message = new GuiMessage(new Message(textToTranslate, WalkieTalkieService.this, text), resultID, true, isFinal);
+                        if(isFinal && CustomLocale.containsLanguage(ttsLanguages, languageOfText)) { // check if the text can be speak
+                            speak(message, languageOfText);
+                        }
                         WalkieTalkieService.super.notifyMessage(message);
                         // we save every new message in the exchanged messages so that the fragment can restore them
                         WalkieTalkieService.super.addOrUpdateMessage(message);
                         //if the tts is not active we restart the mic here
-                        if(isFinal && (tts == null || !CustomLocale.containsLanguage(ttsLanguages, languageOfText) || !tts.isActive() || isAudioMute)){
+                        if(isFinal && (ttsEngine == null || !CustomLocale.containsLanguage(ttsLanguages, languageOfText) || !ttsEngine.isActive() || isAudioMute)){
                             startVoiceRecorder();
                             notifyMicActivated();
                         }
@@ -324,7 +330,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
             public void onFailure(int[] reasons, long value) {
                 WalkieTalkieService.super.notifyError(reasons,value);
                 //if the tts is not active we restart the mic here
-                if(tts == null || !tts.isActive() || isAudioMute){
+                if(ttsEngine == null || !ttsEngine.isActive() || isAudioMute){
                     startVoiceRecorder();
                     notifyMicActivated();
                 }
@@ -336,15 +342,15 @@ public class WalkieTalkieService extends VoiceTranslationService {
                 ((Global) getApplication()).getTTSLanguages(true, new Global.GetLocalesListListener() {
                     @Override
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
-                        if(isFinal && CustomLocale.containsLanguage(ttsLanguages, languageOfText)) { // check if the text can be speak
-                            speak(text, languageOfText);
-                        }
                         GuiMessage message = new GuiMessage(new Message(textToTranslate, WalkieTalkieService.this, text), resultID, false, isFinal);
+                        if(isFinal && CustomLocale.containsLanguage(ttsLanguages, languageOfText)) { // check if the text can be speak
+                            speak(message, languageOfText);
+                        }
                         WalkieTalkieService.super.notifyMessage(message);
                         // we save every new message in the exchanged messages so that the fragment can restore them
                         WalkieTalkieService.super.addOrUpdateMessage(message);
                         //if the tts is not active we restart the mic here
-                        if(isFinal && (tts == null || !CustomLocale.containsLanguage(ttsLanguages, languageOfText) || !tts.isActive() || isAudioMute)){
+                        if(isFinal && (ttsEngine == null || !CustomLocale.containsLanguage(ttsLanguages, languageOfText) || !ttsEngine.isActive() || isAudioMute)){
                             startVoiceRecorder();
                             notifyMicActivated();
                         }
@@ -367,7 +373,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
             public void onFailure(int[] reasons, long value) {
                 WalkieTalkieService.super.notifyError(reasons,value);
                 //if the tts is not active we restart the mic here
-                if(tts == null || !tts.isActive() || isAudioMute){
+                if(ttsEngine == null || !ttsEngine.isActive() || isAudioMute){
                     startVoiceRecorder();
                     notifyMicActivated();
                 }
@@ -404,26 +410,28 @@ public class WalkieTalkieService extends VoiceTranslationService {
 
     @Override
     public void onDestroy() {
+        Log.i("walkieTalkie", "WalkieTalkie service destroyed");
         //disconnect speechRecognizerCallback
         speechRecognizer.removeMultiCallback(speechRecognizerCallback);
         speechRecognizer.removeCallback(speechRecognizerSingleCallback);
+        // Stop recognizer
+        speechRecognizer.stop();
         super.onDestroy();
     }
 
     private void compareResults(NeuralNetworkApiResult firstResult, NeuralNetworkApiResult secondResult) {
+        if(isMetaText(firstResult.getText()) && !isMetaText(secondResult.getText())){
+            translate(secondResult.getText(), secondLanguage, firstLanguage, TRANSLATOR_BEAM_SIZE, false, secondResultTranslateListener);
+            return;
+        }
+        if(isMetaText(secondResult.getText()) && !isMetaText(firstResult.getText())){
+            translate(firstResult.getText(), firstLanguage, secondLanguage, TRANSLATOR_BEAM_SIZE, false, firstResultTranslateListener);
+            return;
+        }
         translator.detectLanguage(firstResult, secondResult, false, new CustomLocale[]{firstLanguage, secondLanguage}, new Translator.DetectMultiLanguageListener() {
             @Override
             public void onDetectedText(NeuralNetworkApiResult firstResult, NeuralNetworkApiResult secondResult, int message) {
                 if (message == ErrorCodes.BOTH_RESULTS_SUCCESS){  // if both results languages were found
-                    if(firstResult.getText().equals(Recognizer.UNDEFINED_TEXT) && !secondResult.getText().equals(Recognizer.UNDEFINED_TEXT)){
-                        translate(secondResult.getText(), secondLanguage, firstLanguage, TRANSLATOR_BEAM_SIZE, false, secondResultTranslateListener);
-                        return;
-                    }
-                    if(secondResult.getText().equals(Recognizer.UNDEFINED_TEXT) && !firstResult.getText().equals(Recognizer.UNDEFINED_TEXT)){
-                        translate(firstResult.getText(), firstLanguage, secondLanguage, TRANSLATOR_BEAM_SIZE, false, firstResultTranslateListener);
-                        return;
-                    }
-
                     if (firstResult.getLanguage().equalsLanguage(firstLanguage)) {
                         if (secondResult.getLanguage().equalsLanguage(secondLanguage)) {  // if both have recognized their respective language
                             compareResultsConfidence(firstResult, secondResult);
@@ -432,6 +440,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
                         }
                     } else {
                         if (secondResult.getLanguage().equalsLanguage(secondLanguage)) {  // if only the second result language is recognized
+
                             translate(secondResult.getText(), secondLanguage, firstLanguage, TRANSLATOR_BEAM_SIZE, false, secondResultTranslateListener);
                         } else {  // if neither of them recognized his language but another (or none)
                             compareResultsConfidence(firstResult, secondResult);
@@ -456,6 +465,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
         if(!isMetaText(textToTranslate)) {
             translator.translate(textToTranslate, languageInput, languageOutput, beamSize, saveResults, responseListener);
         }else{
+            Log.i("walkieTalkie", "skipped translation of: "+textToTranslate+" because it is meta text");
             //we restart the mic here
             startVoiceRecorder();
             notifyMicActivated();

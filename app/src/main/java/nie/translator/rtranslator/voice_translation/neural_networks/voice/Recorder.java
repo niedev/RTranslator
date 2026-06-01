@@ -567,6 +567,7 @@ public class Recorder {
             }
 
             //Log.d("volume", "volume capped: " + average);
+            Log.d("volume", "volume: " + average);
 
             mCallback.onVolumeLevel(average);
         }

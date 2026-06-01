@@ -609,6 +609,10 @@ public class Recognizer extends NeuralNetworkApi {
         return languages;
     }
 
+    public void stop(){
+        dataToRecognize.clear();
+    }
+
     public void destroy() {
         //eventually if in the future I decide to load Whisper only for WalkieTalkie and Conversation then all the resources will be released here
     }

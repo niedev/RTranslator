@@ -161,11 +161,11 @@ public class ConversationService extends VoiceTranslationService {
                         global.getTTSLanguages(true, new Global.GetLocalesListListener() {
                             @Override
                             public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
+                                GuiMessage guiMessage = new GuiMessage(message, messageID, false, isFinal);
                                 if(isFinal && CustomLocale.containsLanguage(ttsLanguages, conversationMessage.getPayload().getLanguage())) { // check if the language can be speak
-                                    speak(conversationMessage.getPayload().getText(), conversationMessage.getPayload().getLanguage());
+                                    speak(guiMessage, conversationMessage.getPayload().getLanguage());
                                 }
                                 message.setText(conversationMessage.getPayload().getText());   // updating the text with the new translated text (and without the language code)
-                                GuiMessage guiMessage = new GuiMessage(message, messageID, false, isFinal);
                                 notifyMessage(guiMessage);
                                 // we save every new message in the exchanged messages so that the fragment can restore them
                                 addOrUpdateMessage(guiMessage);
@@ -287,6 +287,7 @@ public class ConversationService extends VoiceTranslationService {
         // Stop SpeechRecognizer
         //mVoiceRecognizer.destroy();
         mVoiceRecognizer.removeCallback(mVoiceRecognizerCallback);
+        mVoiceRecognizer.stop();
         mVoiceRecognizer = null;
         //stop Bluetooth helper
         //mBluetoothHelper.stop();

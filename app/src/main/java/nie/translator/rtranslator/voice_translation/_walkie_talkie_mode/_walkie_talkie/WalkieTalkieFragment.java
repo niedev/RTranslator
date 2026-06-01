@@ -83,10 +83,6 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
     //connection
     protected WalkieTalkieService.WalkieTalkieServiceCommunicator walkieTalkieServiceCommunicator;
     protected VoiceTranslationService.VoiceTranslationServiceCallback walkieTalkieServiceCallback;
-    
-    // tts UI states
-    private android.widget.ImageView currentPlayingIcon = null;
-    private String currentPlayingUtteranceId = null;
 
     //languageListDialog
     private LanguageListAdapter listView;
@@ -367,10 +363,10 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
     public void restoreAttributesFromService() {
         walkieTalkieServiceCommunicator.getAttributes(new VoiceTranslationService.AttributesListener() {
             @Override
-            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, int listeningMic) {
+            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic) {
                 // initialization with service values
                 //container.setVisibility(View.VISIBLE);
-                mAdapter = new MessagesAdapter(messages, global, new MessagesAdapter.Callback() {
+                mAdapter = new MessagesAdapter(messages, global, speakingUtteranceId, new MessagesAdapter.Callback() {
                     @Override
                     public void onFirstItemAdded() {
                         description.setVisibility(View.GONE);
@@ -378,39 +374,15 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                     }
 
                     @Override
-                    public void onPlayAudio(final GuiMessage message, final android.widget.ImageView icon) {
-                        if (icon.getTag() != null && ((int) icon.getTag()) == R.drawable.stop_icon) {
-                            walkieTalkieServiceCommunicator.stopSpeakingText();
-                            icon.setImageResource(R.drawable.sound_icon);
-                            icon.setTag(R.drawable.sound_icon);
-                            currentPlayingIcon = null;
-                            currentPlayingUtteranceId = null;
-                            return;
-                        }
-
-                        if (currentPlayingIcon != null) {
-                            currentPlayingIcon.setImageResource(R.drawable.sound_icon);
-                            currentPlayingIcon.setTag(R.drawable.sound_icon);
+                    public void onTTSButtonClick(final GuiMessage message, final boolean play) {
+                        if(play){
+                            final String textToSpeak = message.getMessage().getText();
+                            final String utteranceId = String.valueOf(message.getMessageID());
+                            String localeCode = message.isMine() ? global.getSecondLanguage(true).getCode() : global.getFirstLanguage(true).getCode();
+                            walkieTalkieServiceCommunicator.speakText(textToSpeak, localeCode, utteranceId);
+                        }else{
                             walkieTalkieServiceCommunicator.stopSpeakingText();
                         }
-
-                        icon.setImageResource(R.drawable.stop_icon);
-                        icon.setTag(R.drawable.stop_icon);
-                        currentPlayingIcon = icon;
-                        
-                        final String textToSpeak = message.getMessage().getText();
-                        final String utteranceId = String.valueOf(System.currentTimeMillis());
-                        currentPlayingUtteranceId = utteranceId;
-
-                        global.getFirstAndSecondLanguages(true, new Global.GetTwoLocaleListener() {
-                            @Override
-                            public void onSuccess(nie.translator.rtranslator.tools.CustomLocale language1, nie.translator.rtranslator.tools.CustomLocale language2) {
-                                String localeCode = message.isMine() ? language2.getCode() : language1.getCode();
-                                walkieTalkieServiceCommunicator.speakText(textToSpeak, localeCode, utteranceId);
-                            }
-                            @Override
-                            public void onFailure(int[] reasons, long value) {}
-                        });
                     }
                 });
                 mRecyclerView.setAdapter(mAdapter);
@@ -689,15 +661,19 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
 
     public class WalkieTalkieServiceCallback extends VoiceTranslationService.VoiceTranslationServiceCallback {
         @Override
+        public void onTTSStarted(String utteranceId) {
+            super.onTTSStarted(utteranceId);
+            if(utteranceId != null) {
+                long id = Long.parseLong(utteranceId);
+                mAdapter.setPlayingMessageID(id);
+            }
+        }
+
+        @Override
         public void onTTSDone(String utteranceId) {
             super.onTTSDone(utteranceId);
-            if (utteranceId != null && utteranceId.equals(currentPlayingUtteranceId)) {
-                if (currentPlayingIcon != null) {
-                    currentPlayingIcon.setImageResource(R.drawable.sound_icon);
-                    currentPlayingIcon.setTag(R.drawable.sound_icon);
-                    currentPlayingIcon = null;
-                }
-                currentPlayingUtteranceId = null;
+            if (utteranceId != null) {
+                mAdapter.setPlayingMessageID(-1);
             }
         }
 
