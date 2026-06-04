@@ -119,7 +119,7 @@
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="@+id/toolbarWalkieTalkie"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/sound_icon" />
+            app:srcCompat="@drawable/sound_auto_icon" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout

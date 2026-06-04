@@ -294,7 +294,7 @@
                         android:layout_marginBottom="12dp"
                         android:background="@null"
                         android:padding="8dp"
-                        android:src="@drawable/sound_icon"
+                        android:src="@drawable/sound_auto_icon"
                         android:tint="@color/gray"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
