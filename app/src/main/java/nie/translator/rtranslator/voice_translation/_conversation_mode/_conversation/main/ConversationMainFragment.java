@@ -69,10 +69,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
     //connection
     protected VoiceTranslationService.VoiceTranslationServiceCommunicator conversationServiceCommunicator;
     protected VoiceTranslationService.VoiceTranslationServiceCallback conversationServiceCallback;
-    
-    // tts UI states
-    private android.widget.ImageView currentPlayingIcon = null;
-    private String currentPlayingUtteranceId = null;
+
 
     public ConversationMainFragment() {
         //an empty constructor is always needed for fragments
@@ -290,7 +287,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
             public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic) {
                 container.setVisibility(View.VISIBLE);
                 // initialization with service values
-                mAdapter = new MessagesAdapter(messages, global, -1, new MessagesAdapter.Callback() {
+                mAdapter = new MessagesAdapter(messages, global, speakingUtteranceId, new MessagesAdapter.Callback() {
                     @Override
                     public void onFirstItemAdded() {
                         description.setVisibility(View.GONE);
@@ -299,31 +296,14 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
 
                     @Override
                     public void onTTSButtonClick(final GuiMessage message, final boolean play) {
-                        /*if (icon.getTag() != null && ((int) icon.getTag()) == R.drawable.stop_icon) {
-                            conversationServiceCommunicator.stopSpeakingText();
-                            icon.setImageResource(R.drawable.sound_icon);
-                            icon.setTag(R.drawable.sound_icon);
-                            currentPlayingIcon = null;
-                            currentPlayingUtteranceId = null;
-                            return;
-                        }
-
-                        if (currentPlayingIcon != null) {
-                            currentPlayingIcon.setImageResource(R.drawable.sound_icon);
-                            currentPlayingIcon.setTag(R.drawable.sound_icon);
+                        if(play){
+                            final String textToSpeak = message.getMessage().getText();
+                            final String utteranceId = String.valueOf(message.getMessageID());
+                            String localeCode = global.getLanguage(true).getCode();
+                            conversationServiceCommunicator.speakText(textToSpeak, localeCode, utteranceId);
+                        }else{
                             conversationServiceCommunicator.stopSpeakingText();
                         }
-
-                        icon.setImageResource(R.drawable.stop_icon);
-                        icon.setTag(R.drawable.stop_icon);
-                        currentPlayingIcon = icon;
-
-                        final String textToSpeak = message.getMessage().getText();
-                        final String utteranceId = String.valueOf(System.currentTimeMillis());
-                        currentPlayingUtteranceId = utteranceId;
-
-                        String localeCode = message.isMine() ? global.getSecondLanguage(true).getCode() : global.getFirstLanguage(true).getCode();
-                        conversationServiceCommunicator.speakText(textToSpeak, localeCode, utteranceId);*/
                     }
                 });
                 mRecyclerView.setAdapter(mAdapter);
@@ -469,15 +449,19 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
 
     public class ConversationServiceCallback extends VoiceTranslationService.VoiceTranslationServiceCallback {
         @Override
+        public void onTTSStarted(String utteranceId) {
+            super.onTTSStarted(utteranceId);
+            if(utteranceId != null) {
+                long id = Long.parseLong(utteranceId);
+                mAdapter.setPlayingMessageID(id);
+            }
+        }
+
+        @Override
         public void onTTSDone(String utteranceId) {
             super.onTTSDone(utteranceId);
-            if (utteranceId != null && utteranceId.equals(currentPlayingUtteranceId)) {
-                if (currentPlayingIcon != null) {
-                    currentPlayingIcon.setImageResource(R.drawable.sound_icon);
-                    currentPlayingIcon.setTag(R.drawable.sound_icon);
-                    currentPlayingIcon = null;
-                }
-                currentPlayingUtteranceId = null;
+            if (utteranceId != null) {
+                mAdapter.setPlayingMessageID(-1);
             }
         }
 
@@ -576,6 +560,4 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
             }
         }
     }
-
-
 }

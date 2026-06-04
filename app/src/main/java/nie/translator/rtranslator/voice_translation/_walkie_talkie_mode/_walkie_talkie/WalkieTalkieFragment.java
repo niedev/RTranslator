@@ -478,7 +478,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         if (cause == DeactivableButton.DEACTIVATED) {
             sound.deactivate(DeactivableButton.DEACTIVATED);
         } else {
-            sound.activate(false);  // to activate the button sound which otherwise remains deactivated and when clicked it shows the message "wait for initialisation"
+            sound.activate(false);  // to activate the button sound which otherwise remains deactivated and when clicked it shows the message "wait for initialization"
         }
     }
 

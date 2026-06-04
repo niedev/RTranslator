@@ -107,7 +107,6 @@ public abstract class VoiceTranslationService extends GeneralService {
     protected boolean isMicMute = false;
     protected boolean isAudioMute = false;
     protected boolean isEditTextOpen = false;
-    protected int utterancesCurrentlySpeaking = 0;
     protected final Object mLock = new Object();
     protected boolean isMicActivated = true;
     protected boolean isMicAutomatic = true;
@@ -262,8 +261,7 @@ public abstract class VoiceTranslationService extends GeneralService {
     // tts
     public synchronized void speak(GuiMessage message, CustomLocale language) {
         synchronized (mLock) {
-            if (ttsEngine != null && ttsEngine.isActive() && !isAudioMute) {
-                utterancesCurrentlySpeaking++;
+            if (ttsEngine != null && ttsEngine.isActive()) {
                 ttsEngine.speak(message, language);
             }
         }
@@ -402,21 +400,6 @@ public abstract class VoiceTranslationService extends GeneralService {
                         }
                     }
                     stopVoiceRecorder();
-                    return true;
-                case START_SOUND:
-                    isAudioMute = false;
-                    if (ttsEngine != null && !ttsEngine.isActive()) {
-                        initializeTTS();
-                    }
-                    return true;
-                case STOP_SOUND:
-                    isAudioMute = true;
-                    if (utterancesCurrentlySpeaking > 0) {
-                        utterancesCurrentlySpeaking = 0;
-                        if(ttsEngine != null) {
-                            ttsEngine.stop();
-                        }
-                    }
                     return true;
                 case SET_EDIT_TEXT_OPEN:
                     isEditTextOpen = data.getBoolean("value");

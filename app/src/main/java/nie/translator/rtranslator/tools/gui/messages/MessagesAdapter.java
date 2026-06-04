@@ -236,8 +236,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         @Override
         public void setText(String originalTextToBeTranslated, String text) {
+            if(originalTextToBeTranslated != null && !originalTextToBeTranslated.isEmpty()){
+                this.originalTextToBeTranslated.setText(originalTextToBeTranslated);
+            }else{
+                this.originalTextToBeTranslated.setVisibility(View.GONE);
+            }
             this.textSender.setText(text);
-            this.originalTextToBeTranslated.setText(originalTextToBeTranslated);
             this.text.setText(text);
         }
 
@@ -256,8 +260,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }else{
                 ttsButton.setImageResource(R.drawable.sound_icon);
                 ttsButton.setTag(R.drawable.sound_icon);
-                ttsButton2.setImageResource(R.drawable.stop_icon);
-                ttsButton2.setTag(R.drawable.stop_icon);
+                ttsButton2.setImageResource(R.drawable.sound_icon);
+                ttsButton2.setTag(R.drawable.sound_icon);
             }
         }
     }
@@ -282,7 +286,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         @Override
         public void setText(String originalTextToBeTranslated, String text) {
-            this.originalTextToBeTranslated.setText(originalTextToBeTranslated);
+            if(originalTextToBeTranslated != null && !originalTextToBeTranslated.isEmpty()){
+                this.originalTextToBeTranslated.setText(originalTextToBeTranslated);
+            }else{
+                this.originalTextToBeTranslated.setVisibility(View.GONE);
+            }
             this.text.setText(text);
         }
 

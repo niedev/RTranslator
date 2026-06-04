@@ -16,7 +16,9 @@
 
 package nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -32,6 +34,7 @@ import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationService;
 import nie.translator.rtranslator.bluetooth.Message;
 import nie.translator.rtranslator.bluetooth.Peer;
+import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApiResult;
 import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
 import nie.translator.rtranslator.voice_translation.neural_networks.voice.Recognizer;
@@ -79,6 +82,8 @@ public class WalkieTalkieService extends VoiceTranslationService {
         super.onCreate();
         translator = ((Global) getApplication()).getTranslator();
         speechRecognizer = ((Global) getApplication()).getSpeechRecognizer();
+        SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+        isAudioMute = !sharedPreferences.getBoolean("walkieTalkieAutoTTS", true);
         clientHandler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(@NonNull android.os.Message message) {
@@ -86,6 +91,22 @@ public class WalkieTalkieService extends VoiceTranslationService {
                 if (command != -1) {
                     if (!WalkieTalkieService.super.executeCommand(command, message.getData())) {
                         switch (command) {
+                            case START_SOUND: {
+                                isAudioMute = false;
+                                SharedPreferences sharedPreferences = WalkieTalkieService.this.getSharedPreferences("default", Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putBoolean("walkieTalkieAutoTTS", true);
+                                editor.apply();
+                                break;
+                            }
+                            case STOP_SOUND: {
+                                isAudioMute = true;
+                                SharedPreferences sharedPreferences = WalkieTalkieService.this.getSharedPreferences("default", Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putBoolean("walkieTalkieAutoTTS", false);
+                                editor.apply();
+                                break;
+                            }
                             case CHANGE_FIRST_LANGUAGE:
                                 CustomLocale newFirstLanguage = (CustomLocale) message.getData().getSerializable("language");
                                 if (!firstLanguage.equals(newFirstLanguage)) {
@@ -300,7 +321,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
                     @Override
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
                         GuiMessage message = new GuiMessage(new Message(textToTranslate, WalkieTalkieService.this, text), resultID, true, isFinal);
-                        if(isFinal && CustomLocale.containsLanguage(ttsLanguages, languageOfText)) { // check if the text can be speak
+                        if(isFinal && CustomLocale.containsLanguage(ttsLanguages, languageOfText) && !isAudioMute) { // check if the text can be spoken
                             speak(message, languageOfText);
                         }
                         WalkieTalkieService.super.notifyMessage(message);
@@ -343,7 +364,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
                     @Override
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
                         GuiMessage message = new GuiMessage(new Message(textToTranslate, WalkieTalkieService.this, text), resultID, false, isFinal);
-                        if(isFinal && CustomLocale.containsLanguage(ttsLanguages, languageOfText)) { // check if the text can be speak
+                        if(isFinal && CustomLocale.containsLanguage(ttsLanguages, languageOfText) && !isAudioMute) { // check if the text can be spoken
                             speak(message, languageOfText);
                         }
                         WalkieTalkieService.super.notifyMessage(message);
