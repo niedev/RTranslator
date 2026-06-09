@@ -46,4 +46,7 @@ public class ErrorCodes {
     public static final int SECOND_RESULT_FAIL = 17;
     public static final int BOTH_RESULTS_FAIL = 18;
     public static final int BOTH_RESULTS_SUCCESS = 19;
+
+    //permissions
+    public static final int NO_PERMISSIONS = -10;
 }

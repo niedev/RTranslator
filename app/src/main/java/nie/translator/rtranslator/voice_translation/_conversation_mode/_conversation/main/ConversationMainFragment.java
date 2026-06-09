@@ -408,8 +408,9 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
 
     /**
      * Handles user acceptance (or denial) of our permission request.
+     * //todo: old method, remove in the future
      */
-    @CallSuper
+    /*@CallSuper
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -430,7 +431,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
         if (!microphone.isMute() && microphone.getActivationStatus() == DeactivableButton.ACTIVATED) {
             startMicrophone(false);
         }
-    }
+    }*/
 
     @Override
     public void onStop() {
@@ -546,12 +547,12 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                         sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
                         //activity.showGoogleTTSErrorDialog();
                         break;
-                    case VoiceTranslationService.MISSING_MIC_PERMISSION: {
+                    /*case ErrorCodes.MISSING_MIC_PERMISSION: {
                         if(getContext() != null) {
                             requestPermissions(VoiceTranslationService.REQUIRED_PERMISSIONS, VoiceTranslationService.REQUEST_CODE_REQUIRED_PERMISSIONS);
                         }
                         break;
-                    }
+                    }*/
                     default: {
                         activity.onError(aReason, value);
                         break;

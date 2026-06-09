@@ -16,6 +16,7 @@
 
 package nie.translator.rtranslator;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.app.Application;
 import android.app.NotificationChannel;
@@ -62,6 +63,15 @@ import nie.translator.rtranslator.voice_translation.neural_networks.voice.Record
 
 public class Global extends Application implements DefaultLifecycleObserver {
     public static final boolean ONLY_TEXT_TRANSLATION_MODE = false;
+
+    public static final int REQUEST_CODE_PERMISSIONS_PAIRING = 2;
+    public static String[] REQUIRED_PERMISSIONS_PAIRING;
+    public static final int REQUEST_CODE_PERMISSIONS_CONVERSATION = 3;
+    public static final int REQUEST_CODE_PERMISSIONS_WALKIETALKIE = 4;
+    public static final String[] REQUIRED_PERMISSIONS_VOICE = new String[]{
+            Manifest.permission.RECORD_AUDIO,
+    };
+
 
     public enum RTranslatorMode {
         TEXT_TRANSLATION_MODE,
@@ -111,6 +121,20 @@ public class Global extends Application implements DefaultLifecycleObserver {
         SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
         useTatoeba = sharedPreferences.getBoolean("useTatoeba", false);
         useTranslationDictionaries = sharedPreferences.getBoolean("useTranslationDictionaries", false);
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+            REQUIRED_PERMISSIONS_PAIRING = new String[]{
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+            };
+        }else{
+            REQUIRED_PERMISSIONS_PAIRING = new String[]{
+                    Manifest.permission.BLUETOOTH_ADVERTISE,
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_CONNECT
+            };
+        }
     }
 
     public void initializeTranslator(Translator.GeneralListener initListener){

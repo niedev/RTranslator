@@ -43,6 +43,7 @@ import java.util.Date;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.settings.SettingsActivity;
+import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.FileLog;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.RequestDialog;
@@ -345,7 +346,7 @@ public class PairingFragment extends PairingToolbarFragment {
         activateInputs();
         disappearLoading(true, null);
         // if you don't have permission to search, require them and activate search from here (instead of inside onResume)
-        if (!Tools.hasPermissions(activity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
+        if (!Tools.hasPermissions(activity, Global.REQUIRED_PERMISSIONS_PAIRING)) {
             startSearch();
         }
     }
@@ -366,7 +367,7 @@ public class PairingFragment extends PairingToolbarFragment {
 
         activity.addCallback(communicatorCallback);
         // if you have permission to search it is activated from here
-        if (Tools.hasPermissions(activity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
+        if (Tools.hasPermissions(activity, Global.REQUIRED_PERMISSIONS_PAIRING)) {
             startSearch();
         }
     }
@@ -416,9 +417,9 @@ public class PairingFragment extends PairingToolbarFragment {
                 noDevices.setVisibility(View.GONE);
                 discoveryDescription.setVisibility(View.GONE);
                 noBluetoothLe.setVisibility(View.VISIBLE);
-            } else if (result != VoiceTranslationActivity.NO_PERMISSIONS && result != BluetoothCommunicator.ALREADY_STARTED) {
+            } else if (result != ErrorCodes.NO_PERMISSIONS && result != BluetoothCommunicator.ALREADY_STARTED) {
                 //Toast.makeText(activity, getResources().getString(R.string.error_starting_search), Toast.LENGTH_SHORT).show();
-                Log.i("bluetooth", "Error is starting search, trying again in 2 seconds...");
+                Log.i("bluetooth", "Error in starting search, trying again in 2 seconds...");
                 mainHandler.postDelayed(() -> startSearch(), 2000);
             }
         }

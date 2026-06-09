@@ -103,7 +103,7 @@
         <service android:name="nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService"
             android:foregroundServiceType="microphone"/>
         <service android:name="nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieService"
-            android:foregroundServiceType="microphone"/>
+            android:foregroundServiceType="dataSync|microphone"/>
         <service android:name="nie.translator.rtranslator.GeneralService" />
         <service android:name=".downloader2.DownloaderService"
             android:foregroundServiceType="dataSync" />

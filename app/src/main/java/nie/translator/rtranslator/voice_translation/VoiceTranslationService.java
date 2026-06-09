@@ -21,6 +21,8 @@ import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,8 +34,11 @@ import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+
 import java.util.ArrayList;
 import nie.translator.rtranslator.GeneralService;
+import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.bluetooth.Message;
 import nie.translator.rtranslator.bluetooth.tools.Timer;
 import nie.translator.rtranslator.tools.CustomLocale;
@@ -77,12 +82,6 @@ public abstract class VoiceTranslationService extends GeneralService {
     public static final int ON_CONNECTED_BLUETOOTH_HEADSET = 15;
     public static final int ON_DISCONNECTED_BLUETOOTH_HEADSET = 16;
     public static final int ON_STOPPED = 6;
-
-    // permissions
-    public static final int REQUEST_CODE_REQUIRED_PERMISSIONS = 3;
-    public static final String[] REQUIRED_PERMISSIONS = new String[]{
-            Manifest.permission.RECORD_AUDIO,
-    };
 
     // errors
     public static final int MISSING_MIC_PERMISSION = 400;
@@ -183,7 +182,17 @@ public abstract class VoiceTranslationService extends GeneralService {
         if (notification == null) {
             notification = intent.getParcelableExtra("notification");
         }
-        if (notification != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            int serviceType;
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            } else {
+                serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
+            }
+            if (notification != null) {
+                startForeground(11, notification, serviceType);
+            }
+        }else{
             startForeground(11, notification);
         }
         return super.onStartCommand(intent, flags, startId);
@@ -215,7 +224,7 @@ public abstract class VoiceTranslationService extends GeneralService {
 
     public void startVoiceRecorder() {
         Log.i("recorder", "recorder started");
-        if (!Tools.hasPermissions(this, REQUIRED_PERMISSIONS)) {
+        if (!Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_VOICE)) {
             notifyError(new int[]{MISSING_MIC_PERMISSION}, -1);
         } else if(isMicAutomatic){
             if(mVoiceRecorder == null){

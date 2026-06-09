@@ -42,7 +42,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import java.util.ArrayList;
-import nie.translator.rtranslator.Global;
+
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.CustomLocale;
@@ -59,7 +59,6 @@ import nie.translator.rtranslator.tools.services_communication.ServiceCommunicat
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicatorListener;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationFragment;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationService;
-import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
 
 
 public class WalkieTalkieFragment extends VoiceTranslationFragment {
@@ -115,8 +114,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         super.onViewCreated(view, savedInstanceState);
         constraintLayout = view.findViewById(R.id.container);
         container = view.findViewById(R.id.walkie_talkie_main_container);
-        firstLanguageSelector = view.findViewById(R.id.firstLanguageSelector);
-        secondLanguageSelector = view.findViewById(R.id.secondLanguageSelector);
+        firstLanguageSelector = view.findViewById(R.id.cancelButtonLayout);
+        secondLanguageSelector = view.findViewById(R.id.continueButtonLayout);
         exitButton = view.findViewById(R.id.exitButton);
         sound = view.findViewById(R.id.soundButton);
         microphone = view.findViewById(R.id.buttonMic);
@@ -600,7 +599,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // save firstLanguage selected
         global.setFirstLanguage(language, null);
         // change language displayed
-        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.firstLanguageName)).setText(language.getDisplayNameWithoutTTS(), true);
+        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.cancelButtonText)).setText(language.getDisplayNameWithoutTTS(), true);
         leftMicLanguage.setText(language.getDisplayNameWithoutTTS(), true);
     }
 
@@ -610,7 +609,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // save secondLanguage selected
         global.setSecondLanguage(language, null);
         // change language displayed
-        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.secondLanguageName)).setText(language.getDisplayNameWithoutTTS(), true);
+        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.continueButtonText)).setText(language.getDisplayNameWithoutTTS(), true);
         rightMicLanguage.setText(language.getDisplayNameWithoutTTS(), true);
     }
 
@@ -633,8 +632,9 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
 
     /**
      * Handles user acceptance (or denial) of our permission request.
+     * //todo: old method, remove in the future
      */
-    @CallSuper
+    /*@CallSuper
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -655,7 +655,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         if (!microphone.isMute() && microphone.getActivationStatus() == DeactivableButton.ACTIVATED) {
             startMicrophone(false);
         }
-    }
+    }*/
 
 
 
@@ -784,12 +784,12 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                         sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
                         //activity.showGoogleTTSErrorDialog();
                         break;
-                    case VoiceTranslationService.MISSING_MIC_PERMISSION: {
+                    /*case ErrorCodes.MISSING_MIC_PERMISSION: {
                         if(getContext() != null) {
                             requestPermissions(VoiceTranslationService.REQUIRED_PERMISSIONS, VoiceTranslationService.REQUEST_CODE_REQUIRED_PERMISSIONS);
                         }
                         break;
-                    }
+                    }*/
                     default: {
                         activity.onError(aReason, value);
                         break;

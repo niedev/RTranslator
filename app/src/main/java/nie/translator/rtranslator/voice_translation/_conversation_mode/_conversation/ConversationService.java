@@ -268,7 +268,7 @@ public class ConversationService extends VoiceTranslationService {
     }
 
     public void initializeVoiceRecorder() {
-        if (Tools.hasPermissions(this, REQUIRED_PERMISSIONS)) {
+        if (Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_VOICE)) {
             //voice recorder initialization
             super.mVoiceRecorder = new Recorder((Global) getApplication(), true, mVoiceCallback, new BluetoothHeadsetCallback(), global.getVad());
         }
