@@ -27,6 +27,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ public class LoadingActivity extends GeneralActivity {
     protected void onCreate(Bundle savedInstanceState) {
         String previousActivity = getIntent().getStringExtra("activity");
         SplashScreen splashScreen = null;
-        if(previousActivity == null || !previousActivity.equals("download")) {  //if this activity is called by the DownloadFragment we don't use the splash screen
+        if(previousActivity == null) {  //if this activity is called by another activity (instead of on launch), we don't use the splash screen
             // Handle the splash screen transition (it must remain before the super.onCreate() call).
             splashScreen = SplashScreen.installSplashScreen(this);
         }
@@ -104,6 +105,7 @@ public class LoadingActivity extends GeneralActivity {
     }
 
     private void initializeApp(boolean ignoreTTSError) {
+        Log.i("app", "App initialization");
         global.getLanguagesAndCheckTTS(false, ignoreTTSError, new Global.GetLocalesListListener() {
             @Override
             public void onSuccess(ArrayList<CustomLocale> result) {
@@ -113,6 +115,7 @@ public class LoadingActivity extends GeneralActivity {
                         NeuralNetworkApi.InitListener speechRecognizerInitListener = new NeuralNetworkApi.InitListener() {
                             @Override
                             public void onInitializationFinished() {
+                                global.setModelsLoaded(true);
                                 if (isVisible) {
                                     startVoiceTranslationActivity();
                                 }

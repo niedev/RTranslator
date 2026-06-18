@@ -40,8 +40,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
+import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.ErrorCodes;
+import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.ButtonKeyboard;
 import nie.translator.rtranslator.tools.gui.ButtonMic;
 import nie.translator.rtranslator.tools.gui.ButtonSound;
@@ -50,6 +52,7 @@ import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.gui.messages.MessagesAdapter;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicator;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicatorListener;
+import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationFragment;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationService;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
@@ -214,7 +217,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                     conversationServiceCommunicator.setEditTextOpen(false);
                     microphone.deleteEditText(activity, ConversationMainFragment.this, keyboard, editText, micPlaceHolder);
                 } else {
-                    Toast.makeText(activity, R.string.error_missing_mic_permissions, Toast.LENGTH_SHORT).show();
+                    activity.showPermissionDialog(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
                 }
             }
         });
@@ -333,14 +336,18 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                     conversationServiceCallback.onBluetoothHeadsetDisconnected();
                 }
 
-                if(isMicActivated){
-                    if (!microphone.isMute() && !isEditTextOpen) {
-                        activateInputs(true);
+                if(!Tools.hasPermissions(activity, Global.REQUIRED_PERMISSIONS_VOICE)){
+                    deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_MIC_PERMISSION);
+                } else {
+                    if (isMicActivated) {
+                        if (!microphone.isMute() && !isEditTextOpen) {
+                            activateInputs(true);
+                        } else {
+                            activateInputs(false);
+                        }
                     } else {
-                        activateInputs(false);
+                        deactivateInputs(DeactivableButton.DEACTIVATED);
                     }
-                }else{
-                    deactivateInputs(DeactivableButton.DEACTIVATED);
                 }
             }
         });

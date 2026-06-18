@@ -33,6 +33,8 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -43,6 +45,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import java.util.ArrayList;
 
+import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.CustomLocale;
@@ -57,6 +60,7 @@ import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.gui.messages.MessagesAdapter;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicator;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicatorListener;
+import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationFragment;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationService;
 
@@ -144,7 +148,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         final View.OnClickListener micMissingClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(activity, R.string.error_missing_mic_permissions, Toast.LENGTH_SHORT).show();
+                activity.showPermissionDialog(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
             }
         };
         Toolbar toolbar = activity.findViewById(R.id.toolbarWalkieTalkie);
@@ -429,14 +433,18 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                     sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
                 }
 
-                if(isMicActivated){
-                    if (!microphone.isMute()) {
-                        activateInputs(true);
+                if(!Tools.hasPermissions(activity, Global.REQUIRED_PERMISSIONS_VOICE)){
+                    deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_MIC_PERMISSION);
+                } else {
+                    if (isMicActivated) {
+                        if (!microphone.isMute()) {
+                            activateInputs(true);
+                        } else {
+                            activateInputs(false);
+                        }
                     } else {
-                        activateInputs(false);
+                        deactivateInputs(DeactivableButton.DEACTIVATED);
                     }
-                }else{
-                    deactivateInputs(DeactivableButton.DEACTIVATED);
                 }
             }
         });

@@ -137,7 +137,7 @@ public class PairingFragment extends PairingToolbarFragment {
                 super.onConnectionSuccess(peer);
                 connectingPeer = null;
                 resetConnectionTimer();
-                activity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
+                activity.setFragment(VoiceTranslationActivity.CONVERSATION_FRAGMENT, true);
             }
 
             @Override

@@ -480,7 +480,7 @@ public class PeersInfoFragment extends Fragment {
                                     public void onClick(DialogInterface dialog, int which) {
                                         activity.disconnect(peer);
                                         if (activity.getConnectedPeersList().size() == 0 && global.getBluetoothCommunicator() != null) {
-                                            activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT);
+                                            activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT, true);
                                         }else{
                                             activity.setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
                                         }

@@ -414,6 +414,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        int startType = super.onStartCommand(intent, flags, startId);
         final CustomLocale finalFirstLanguage = this.firstLanguage;
         final CustomLocale finalSecondLanguage = this.secondLanguage;
 
@@ -426,7 +427,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
             speechRecognizer.addMultiCallback(speechRecognizerCallback);
             speechRecognizer.addCallback(speechRecognizerSingleCallback);
         }
-        return super.onStartCommand(intent, flags, startId);
+        return startType;
     }
 
     @Override

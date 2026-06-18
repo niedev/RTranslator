@@ -72,7 +72,6 @@ public class Global extends Application implements DefaultLifecycleObserver {
             Manifest.permission.RECORD_AUDIO,
     };
 
-
     public enum RTranslatorMode {
         TEXT_TRANSLATION_MODE,
         WALKIE_TALKIE_MODE,
@@ -105,6 +104,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     private boolean useTatoeba;
     private boolean useTranslationDictionaries;
     private VadSilero vad;
+    private boolean modelsLoaded = false;
 
     @Override
     public void onCreate() {
@@ -203,6 +203,14 @@ public class Global extends Application implements DefaultLifecycleObserver {
                 bluetoothCommunicator = new ConversationBluetoothCommunicator(Global.this, getName(), BluetoothCommunicator.STRATEGY_P2P_WITH_RECONNECTION);
             }
         });
+    }
+
+    public boolean areModelsLoaded() {
+        return modelsLoaded;
+    }
+
+    public void setModelsLoaded(boolean areModelsLoaded) {
+        this.modelsLoaded = areModelsLoaded;
     }
 
     public void getLanguagesAndCheckTTS(final boolean recycleResult, boolean ignoreTTSError, final GetLocalesListListener responseListener) {

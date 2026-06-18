@@ -179,6 +179,11 @@ public abstract class VoiceTranslationService extends GeneralService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if(intent == null){  //this means that the process has been restarted automatically by Android
+            stopForeground(STOP_FOREGROUND_REMOVE);
+            stopSelf(startId);
+            return super.onStartCommand(null, flags, startId);
+        }
         if (notification == null) {
             notification = intent.getParcelableExtra("notification");
         }

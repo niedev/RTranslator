@@ -16,7 +16,6 @@
 
 package nie.translator.rtranslator.voice_translation;
 
-import android.Manifest;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -25,11 +24,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,6 +47,9 @@ import androidx.core.app.TaskStackBuilder;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 import nie.translator.rtranslator.GeneralActivity;
@@ -86,7 +86,6 @@ public class VoiceTranslationActivity extends GeneralActivity {
     public static final int DEFAULT_FRAGMENT = TRANSLATION_FRAGMENT;
     //objects
     private Global global;
-    private Fragment fragment;
     private CoordinatorLayout fragmentContainer;
     private int currentFragment = -1;
     private boolean startingPairing = false;   //used to start Pairing Mode after bluetooth permissions are granted
@@ -139,7 +138,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
         super.onStart();
         // when we return to the app's gui based on the service that was saved in the last closure we choose which fragment to start
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
-        setFragment(sharedPreferences.getInt("fragment", DEFAULT_FRAGMENT));
+        int fragment = sharedPreferences.getInt("fragment", DEFAULT_FRAGMENT);
+        setFragment(fragment, fragment == WALKIE_TALKIE_FRAGMENT || fragment == PAIRING_FRAGMENT);
         if(getResources() != null) {
             config = getResources().getConfiguration();
         }
@@ -165,14 +165,18 @@ public class VoiceTranslationActivity extends GeneralActivity {
     }
 
     public void setFragment(int fragmentName) {
+        setFragment(fragmentName, false);
+    }
+
+    public void setFragment(int fragmentName, boolean requestPermission) {
         switch (fragmentName) {
             case PAIRING_FRAGMENT: {
                 // possible stop of the Conversation and WalkieTalkie Service
                 stopConversationService();
                 stopWalkieTalkieService();
                 // possible setting of the fragment
-                if (getCurrentFragment() != PAIRING_FRAGMENT) {
-                    if (Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_PAIRING)) {
+                if (getCurrentFragmentId() != PAIRING_FRAGMENT) {
+                    if (Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_PAIRING) || !requestPermission) {
                         global.initializeBluetoothCommunicator();
                         if(global.getBluetoothCommunicator() != null && global.getBluetoothCommunicator().isBluetoothLeSupported()){
                             PairingFragment paringFragment = new PairingFragment();
@@ -198,7 +202,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
             }
             case CONVERSATION_FRAGMENT: {
                 // possible setting of the fragment
-                if (getCurrentFragment() != CONVERSATION_FRAGMENT && global.getBluetoothCommunicator() != null) {
+                if (getCurrentFragmentId() != CONVERSATION_FRAGMENT && global.getBluetoothCommunicator() != null) {
                     ConversationFragment conversationFragment = new ConversationFragment();
                     Bundle bundle = new Bundle();
                     bundle.putBoolean("firstStart", true);
@@ -210,7 +214,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                     currentFragment = CONVERSATION_FRAGMENT;
                     saveFragment();
                     // eventual permission request
-                    if (Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_VOICE)) {
+                    if (!Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_VOICE) && requestPermission) {
                         showPermissionDialog(CONVERSATION_FRAGMENT);
                     }
                     //fragment= conversationFragment;
@@ -221,8 +225,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
             }
             case WALKIE_TALKIE_FRAGMENT: {
                 // possible setting of the fragment
-                if (getCurrentFragment() != WALKIE_TALKIE_FRAGMENT) {
-                    if (Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_VOICE)) {
+                if (getCurrentFragmentId() != WALKIE_TALKIE_FRAGMENT) {
+                    if (Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_VOICE) || !requestPermission) {
                         WalkieTalkieFragment walkieTalkieFragment = new WalkieTalkieFragment();
                         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                         Bundle bundle = new Bundle();
@@ -245,7 +249,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 stopConversationService();
                 stopWalkieTalkieService();
                 // possible setting of the fragment
-                if (getCurrentFragment() != TRANSLATION_FRAGMENT) {
+                if (getCurrentFragmentId() != TRANSLATION_FRAGMENT) {
                     TranslationFragment translationFragment = new TranslationFragment();
                     FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                     Bundle bundle = new Bundle();
@@ -270,13 +274,13 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 //save fragment
                 SharedPreferences sharedPreferences = VoiceTranslationActivity.this.getSharedPreferences("default", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putInt("fragment", getCurrentFragment());
+                editor.putInt("fragment", getCurrentFragmentId());
                 editor.apply();
             }
         }.start();
     }
 
-    public int getCurrentFragment() {
+    public int getCurrentFragmentId() {
         if (currentFragment != -1) {
             return currentFragment;
         } else {
@@ -297,6 +301,10 @@ public class VoiceTranslationActivity extends GeneralActivity {
             }
         }
         return -1;
+    }
+
+    public Fragment getCurrentFragment() {
+        return getSupportFragmentManager().findFragmentById(R.id.fragment_container);
     }
 
     @Override
@@ -382,22 +390,23 @@ public class VoiceTranslationActivity extends GeneralActivity {
     }
 
 
-    private void showPermissionDialog(int mode){
+    public void showPermissionDialog(int mode){
         final View editDialogLayout = this.getLayoutInflater().inflate(R.layout.dialog_permission, null);
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MyThemeOverlay_MaterialComponents_MaterialAlertDialog);
         builder.setCancelable(true);
-        //builder.setTitle("");
 
         AlertDialog dialog = builder.create();
-        if (dialog.getWindow() != null) {
-            // Requests the window to have no title
-            dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-            // Removes the default system background and padding
-            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
-        }
         dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(this, 16), 0, 0);
         dialog.show();
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if(currentFragment == -1){
+                    setFragment(DEFAULT_FRAGMENT);
+                }
+            }
+        });
 
         ImageView icon = editDialogLayout.findViewById(R.id.dialogIcon);
         TextView text = editDialogLayout.findViewById(R.id.textView);
@@ -466,12 +475,17 @@ public class VoiceTranslationActivity extends GeneralActivity {
             return;
         }
 
+        Fragment fragment = getCurrentFragment();
+
         if(requestCode == Global.REQUEST_CODE_PERMISSIONS_PAIRING){
             for (int grantResult : grantResults) {
                 if (grantResult == PackageManager.PERMISSION_DENIED) {
                     //notifyMissingSearchPermission();
                     Toast.makeText(global, R.string.error_missing_location_permissions, Toast.LENGTH_LONG).show();
                     startingPairing = false;
+                    if(currentFragment == -1){
+                        setFragment(DEFAULT_FRAGMENT);
+                    }
                     return;
                 }
             }
@@ -486,10 +500,16 @@ public class VoiceTranslationActivity extends GeneralActivity {
         if(requestCode == Global.REQUEST_CODE_PERMISSIONS_WALKIETALKIE){
             for (int grantResult : grantResults) {
                 if (grantResult == PackageManager.PERMISSION_DENIED) {
+                    if(fragment instanceof VoiceTranslationFragment) ((VoiceTranslationFragment) fragment).onMicPermissionResult(false);
                     //todo: convert the string to resource and translate it
                     Toast.makeText(global, "It is not possible to use the WalkieTalkie mode without microphone permission, go to the settings to grant it, or reinstall the app", Toast.LENGTH_LONG).show();
                     startingWalkieTalkie = false;
+                    if(currentFragment == -1){
+                        setFragment(DEFAULT_FRAGMENT);
+                    }
                     return;
+                }else{
+                    if(fragment instanceof VoiceTranslationFragment) ((VoiceTranslationFragment) fragment).onMicPermissionResult(true);
                 }
             }
             //mic permission is granted
@@ -500,11 +520,21 @@ public class VoiceTranslationActivity extends GeneralActivity {
         }
 
         if(requestCode == Global.REQUEST_CODE_PERMISSIONS_CONVERSATION){
+            ConversationMainFragment conversationFragment = null;
+            if(fragment instanceof ConversationFragment){
+                Fragment f = ((ConversationFragment) fragment).getCurrentFragment();
+                if(f instanceof ConversationMainFragment){
+                    conversationFragment = (ConversationMainFragment) f;
+                }
+            }
             for (int grantResult : grantResults) {
                 if (grantResult == PackageManager.PERMISSION_DENIED) {
+                    if(conversationFragment != null) conversationFragment.onMicPermissionResult(false);
                     //todo: convert the string to resource and translate it
                     Toast.makeText(global, R.string.error_missing_mic_permissions, Toast.LENGTH_LONG).show();
                     return;
+                }else{
+                    if(conversationFragment != null) conversationFragment.onMicPermissionResult(true);
                 }
             }
             //mic permission is granted
@@ -574,7 +604,6 @@ public class VoiceTranslationActivity extends GeneralActivity {
         }
         startService(intent);
         if(responseListener != null) responseListener.onSuccess();
-
     }
 
     public void startWalkieTalkieService(Notification notification, final Global.ResponseListener responseListener) {

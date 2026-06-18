@@ -17,34 +17,25 @@
 package nie.translator.rtranslator.voice_translation;
 
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.CallSuper;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.ArrayList;
+
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.ErrorCodes;
-import nie.translator.rtranslator.tools.gui.ButtonKeyboard;
-import nie.translator.rtranslator.tools.gui.ButtonMic;
-import nie.translator.rtranslator.tools.gui.ButtonSound;
 import nie.translator.rtranslator.tools.gui.DeactivableButton;
 import nie.translator.rtranslator.tools.gui.MicrophoneComunicable;
-import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.gui.messages.MessagesAdapter;
 
 public abstract class VoiceTranslationFragment extends Fragment implements MicrophoneComunicable {
@@ -109,7 +100,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         super.onStop();
         deactivateInputs(DeactivableButton.DEACTIVATED);
         //isChangingConfigurations is true when the screen rotates or in general we recreate the activity for some other changes
-        if (activity.getCurrentFragment() != VoiceTranslationActivity.DEFAULT_FRAGMENT && activity.getCurrentFragment() != VoiceTranslationActivity.PAIRING_FRAGMENT && !activity.isChangingConfigurations()) {
+        if (activity.getCurrentFragmentId() != VoiceTranslationActivity.DEFAULT_FRAGMENT && activity.getCurrentFragmentId() != VoiceTranslationActivity.PAIRING_FRAGMENT && !activity.isChangingConfigurations()) {
             Toast.makeText(activity, getResources().getString(R.string.toast_working_background), Toast.LENGTH_SHORT).show();
         }
     }
@@ -154,6 +145,12 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     activity.onError(aReason, value);
                     break;
             }
+        }
+    }
+
+    public void onMicPermissionResult(boolean granted) {
+        if(granted){
+            activateInputs(true);
         }
     }
 }

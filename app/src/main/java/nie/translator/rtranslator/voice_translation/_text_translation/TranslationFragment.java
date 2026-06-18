@@ -200,7 +200,7 @@ public class TranslationFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if(!Global.ONLY_TEXT_TRANSLATION_MODE) {
-                    activity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
+                    activity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT, true);
                 }else{
                     Toast.makeText(global, "'Only text translation mode' is active", Toast.LENGTH_SHORT).show();
                 }
@@ -210,7 +210,7 @@ public class TranslationFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if(!Global.ONLY_TEXT_TRANSLATION_MODE) {
-                    activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT);
+                    activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT, true);
                 }else{
                     Toast.makeText(global, "'Only text translation mode' is active", Toast.LENGTH_SHORT).show();
                 }

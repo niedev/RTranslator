@@ -78,4 +78,14 @@
         <item name="cornerSizeBottomRight">0dp</item>
         <item name="cornerSizeBottomLeft">0dp</item>
     </style>
+
+    <style name="MyThemeOverlay.MaterialComponents.MaterialAlertDialog" parent="@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.RTranslator.Dialog.Rounded</item>
+        <item name="colorSurface">@color/primary_very_lite</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.RTranslator.Dialog.Rounded" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
+    </style>
 </resources>

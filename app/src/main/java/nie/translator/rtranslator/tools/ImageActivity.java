@@ -1,7 +1,5 @@
 package nie.translator.rtranslator.tools;
 
-//This activity is used only to create the images of the conversation mode in the readme
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -21,6 +19,8 @@ import nie.translator.rtranslator.bluetooth.Message;
 import nie.translator.rtranslator.bluetooth.Peer;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.gui.messages.MessagesAdapter;
+
+//This activity is used only to create the images of the conversation mode in the readme
 
 public class ImageActivity extends Activity {
     protected MessagesAdapter mAdapter;
