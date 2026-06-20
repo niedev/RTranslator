@@ -59,13 +59,24 @@ public class DownloadReceiver extends BroadcastReceiver {
 
                                     @Override
                                     public void onError(int[] reasons, long value) {
-                                        SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
-                                        SharedPreferences.Editor editor;
-                                        //we save in the preferences that this download has failed (in this case we save it because because otherwise the downloader would return STATUS_SUCCESSFUL)
-                                        editor = sharedPreferences.edit();
-                                        editor.putLong("currentDownloadId", -3);
-                                        editor.apply();
-                                        notifyDownloadFailed(context);
+                                        //if there is a fallback URL, try that before reporting failure
+                                        String fallbackUrl = DownloadFragment.getFallbackUrl(urlIndex);
+                                        if (fallbackUrl != null) {
+                                            File corruptedFile = new File(downloadedModelPath);
+                                            corruptedFile.delete();
+                                            long fallbackDownloadId = downloader.downloadModel(fallbackUrl, DownloadFragment.DOWNLOAD_NAMES[urlIndex]);
+                                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                                            editor.putLong("currentDownloadId", fallbackDownloadId);
+                                            editor.apply();
+                                        } else {
+                                            SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
+                                            SharedPreferences.Editor editor;
+                                            //we save in the preferences that this download has failed (in this case we save it because because otherwise the downloader would return STATUS_SUCCESSFUL)
+                                            editor = sharedPreferences.edit();
+                                            editor.putLong("currentDownloadId", -3);
+                                            editor.apply();
+                                            notifyDownloadFailed(context);
+                                        }
                                     }
                                 });
                             }
@@ -219,7 +230,7 @@ public class DownloadReceiver extends BroadcastReceiver {
                 public void onError(int[] reasons, long value) {
                     boolean result = nextDownloadInternalFile.delete();
                     //we start the next download
-                    long newDownloadId = downloader.downloadModel(DownloadFragment.DOWNLOAD_URLS[urlIndex + 1], DownloadFragment.DOWNLOAD_NAMES[urlIndex + 1]);
+                    long newDownloadId = downloader.downloadModel(DownloadFragment.getPrimaryUrl(urlIndex + 1), DownloadFragment.DOWNLOAD_NAMES[urlIndex + 1]);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putLong("currentDownloadId", newDownloadId);
                     editor.apply();
@@ -227,7 +238,7 @@ public class DownloadReceiver extends BroadcastReceiver {
             });
         }else{
             //we start the next download
-            long newDownloadId = downloader.downloadModel(DownloadFragment.DOWNLOAD_URLS[urlIndex + 1], DownloadFragment.DOWNLOAD_NAMES[urlIndex + 1]);
+            long newDownloadId = downloader.downloadModel(DownloadFragment.getPrimaryUrl(urlIndex + 1), DownloadFragment.DOWNLOAD_NAMES[urlIndex + 1]);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putLong("currentDownloadId", newDownloadId);
             editor.apply();

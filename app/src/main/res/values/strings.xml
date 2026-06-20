@@ -161,4 +161,11 @@
     <string name="walkietalkie_mode" >WalkieTalkie</string>
     <string name="walkietalkie_mode_running" >WalkieTalkie mode is running...</string>
 
+    <string name="manual_download">Download manually</string>
+    <string name="manual_download_title">Manual download</string>
+    <string name="manual_download_instructions">If the download is too slow, you can download the model files manually from a browser using the links below, then place them in the app\'s folder and tap "Check files":</string>
+    <string name="manual_download_path">Place files in:\n%1$s</string>
+    <string name="manual_download_copy">Copy to clipboard</string>
+    <string name="manual_download_check">Check files</string>
+
 </resources>

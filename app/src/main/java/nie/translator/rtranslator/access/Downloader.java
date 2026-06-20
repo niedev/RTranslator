@@ -78,14 +78,13 @@ public class Downloader{
     public int findDownloadUrlIndex(long downloadId){
         String url = getUrlFromDownload(downloadId);
         if (url != null) {
-            int urlIndex = -1;
             for (int i = 0; i < DownloadFragment.DOWNLOAD_URLS.length; i++) {
-                if (DownloadFragment.DOWNLOAD_URLS[i].equals(url)) {
-                    urlIndex = i;
-                    break;
+                for (int j = 0; j < DownloadFragment.DOWNLOAD_URLS[i].length; j++) {
+                    if (DownloadFragment.DOWNLOAD_URLS[i][j].equals(url)) {
+                        return i;
+                    }
                 }
             }
-            return urlIndex;
         }
         return -1;
     }

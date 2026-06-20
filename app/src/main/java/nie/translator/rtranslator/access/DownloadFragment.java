@@ -16,7 +16,10 @@
 
 package nie.translator.rtranslator.access;
 
+import android.app.AlertDialog;
 import android.app.DownloadManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -46,18 +49,32 @@ import nie.translator.rtranslator.tools.FileTools;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
 
 public class DownloadFragment extends Fragment {
-    public static final String[] DOWNLOAD_URLS = {
-            "https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_cache_initializer.onnx",
-            "https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_decoder.onnx",
-            "https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_embed_and_lm_head.onnx",
-            "https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_encoder.onnx",
-            "https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_cache_initializer.onnx",
-            "https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_cache_initializer_batch.onnx",
-            "https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_decoder.onnx",
-            "https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_detokenizer.onnx",
-            "https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_encoder.onnx",
-            "https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_initializer.onnx"
+    // Each model can have multiple mirror URLs (index 0 = primary, 1+ = fallbacks).
+    // To add a HuggingFace mirror: append the HF URL to the desired model's array.
+    public static final String[][] DOWNLOAD_URLS = {
+            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_cache_initializer.onnx"},
+            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_decoder.onnx"},
+            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_embed_and_lm_head.onnx"},
+            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_encoder.onnx"},
+            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_cache_initializer.onnx"},
+            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_cache_initializer_batch.onnx"},
+            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_decoder.onnx"},
+            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_detokenizer.onnx"},
+            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_encoder.onnx"},
+            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_initializer.onnx"}
     };
+
+    public static String getPrimaryUrl(int index) {
+        return DOWNLOAD_URLS[index][0];
+    }
+
+    public static String getFallbackUrl(int index) {
+        if (DOWNLOAD_URLS[index].length > 1) {
+            return DOWNLOAD_URLS[index][1];
+        }
+        return null;
+    }
+
     public static final String[] DOWNLOAD_NAMES = {
             "NLLB_cache_initializer.onnx",
             "NLLB_decoder.onnx",
@@ -98,6 +115,7 @@ public class DownloadFragment extends Fragment {
     private LinearProgressIndicator progressBar;
     private TextView progressDescriptionText;
     private TextView progressNumbersText;
+    private TextView manualDownloadText;
 
     public DownloadFragment() {
         // Required empty public constructor
@@ -127,6 +145,8 @@ public class DownloadFragment extends Fragment {
         pauseButton = view.findViewById(R.id.pauseButton);
         pauseButton.setTag("iconCancel");
         progressNumbersText = view.findViewById(R.id.progress_numbers);
+        manualDownloadText = view.findViewById(R.id.manualDownloadText);
+        manualDownloadText.setOnClickListener(v -> showManualDownloadDialog());
     }
 
     @Override
@@ -383,7 +403,7 @@ public class DownloadFragment extends Fragment {
         if(urlIndex >= 0){
             if(downloader.getRunningDownloadStatus() != DownloadManager.STATUS_RUNNING) {
                 //we restart the download
-                long downloadId = downloader.downloadModel(DOWNLOAD_URLS[urlIndex], DOWNLOAD_NAMES[urlIndex]);
+                long downloadId = downloader.downloadModel(getPrimaryUrl(urlIndex), DOWNLOAD_NAMES[urlIndex]);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putLong("currentDownloadId", downloadId);
                 editor.apply();
@@ -401,14 +421,14 @@ public class DownloadFragment extends Fragment {
                 }
                 if(nameIndex != -1 && (nameIndex+1) < DOWNLOAD_URLS.length) {
                     //we restart the download
-                    long downloadId = downloader.downloadModel(DOWNLOAD_URLS[nameIndex+1], DOWNLOAD_NAMES[nameIndex+1]);
+                    long downloadId = downloader.downloadModel(getPrimaryUrl(nameIndex+1), DOWNLOAD_NAMES[nameIndex+1]);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putLong("currentDownloadId", downloadId);
                     editor.apply();
                 }
             }else{
                 //we restart the first download
-                long downloadId = downloader.downloadModel(DOWNLOAD_URLS[0], DOWNLOAD_NAMES[0]);
+                long downloadId = downloader.downloadModel(getPrimaryUrl(0), DOWNLOAD_NAMES[0]);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putLong("currentDownloadId", downloadId);
                 editor.apply();
@@ -464,6 +484,34 @@ public class DownloadFragment extends Fragment {
                 });
             }
         }
+    }
+
+    private void showManualDownloadDialog(){
+        StringBuilder message = new StringBuilder();
+        message.append(getString(R.string.manual_download_instructions)).append("\n\n");
+        for (int i = 0; i < DOWNLOAD_NAMES.length; i++) {
+            message.append(DOWNLOAD_NAMES[i]).append("\n");
+            for (int j = 0; j < DOWNLOAD_URLS[i].length; j++) {
+                message.append("  ").append(DOWNLOAD_URLS[i][j]).append("\n");
+            }
+            message.append("\n");
+        }
+        message.append(getString(R.string.manual_download_path, global.getFilesDir().getPath()));
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.manual_download_title)
+                .setMessage(message.toString())
+                .setPositiveButton(R.string.manual_download_copy, (dialog, which) -> {
+                    ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("models", message.toString());
+                    clipboard.setPrimaryClip(clip);
+                })
+                .setNeutralButton(R.string.manual_download_check, (dialog, which) -> {
+                    // Trigger integrity check for all existing files
+                    new Thread(() -> DownloadReceiver.internalCheckAndStartNextDownload(global, downloader, -1)).start();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void startRTranslator(){
