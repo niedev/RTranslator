@@ -207,11 +207,24 @@ public class DownloadFragment extends Fragment {
                             if(downloadErrorText.getVisibility() == View.GONE && transferErrorText.getVisibility() == View.GONE && retryButton.getVisibility() == View.GONE && getContext() != null) {
                                 boolean error = checkDownloadOrTransferErrors(false); //we check and show eventual errors in the download or transfer of the models
                                 if (!error) {
-                                    //we update the Gui according to the downloads status
+                                    //we compute progress in background thread (avoids DownloadManager query on main thread)
+                                    int progress = downloader.getDownloadProgress(progressBar.getMax());
+                                    //we compute the total size for the numbers display
+                                    float totalSize = 0;
+                                    for (int i = 0; i < DownloadFragment.DOWNLOAD_SIZES.length; i++) {
+                                        totalSize = totalSize + DownloadFragment.DOWNLOAD_SIZES[i];
+                                    }
+                                    totalSize = totalSize / 1000000;   //convert from Kb to Gb
+
                                     mainHandler.post(() -> {
                                         if(getContext() != null) {
-                                            updateProgress();
-                                            //we update the progressDescriptionText
+                                            //update progressbar with pre-computed value
+                                            progressBar.setProgress(progress, true);
+                                            //update progress numbers
+                                            float downloadedGb = progress * totalSize / progressBar.getMax();
+                                            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+                                            progressNumbersText.setText(decimalFormat.format(downloadedGb) + " / " + decimalFormat.format(totalSize) + " GB");
+                                            //update the progressDescriptionText
                                             SharedPreferences sharedPreferences = global.getSharedPreferences("default", Context.MODE_PRIVATE);
                                             if(NeuralNetworkApi.isVerifying){
                                                 String lastDownloadSuccess = sharedPreferences.getString("lastDownloadSuccess", "");
@@ -261,7 +274,8 @@ public class DownloadFragment extends Fragment {
                             Thread.sleep(INTERVAL_TIME_FOR_GUI_UPDATES_MS);
 
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            Thread.currentThread().interrupt();
+                            break;
                         }
                     }
                 }

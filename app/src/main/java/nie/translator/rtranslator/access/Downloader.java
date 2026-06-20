@@ -52,11 +52,16 @@ public class Downloader{
     @Nullable
     public String getUrlFromDownload(long downloadId){
         Cursor result = query(downloadId);
-        int index = result.getColumnIndex(DownloadManager.COLUMN_URI);
-        if(index > 0 && result.moveToFirst() && result.getCount() > 0) {
-            return result.getString(index);
-        }else{
-            return null;
+        try {
+            if (result == null) return null;
+            int index = result.getColumnIndex(DownloadManager.COLUMN_URI);
+            if(index > 0 && result.moveToFirst() && result.getCount() > 0) {
+                return result.getString(index);
+            }else{
+                return null;
+            }
+        } finally {
+            if (result != null) result.close();
         }
     }
 
@@ -65,9 +70,14 @@ public class Downloader{
         long downloadId = sharedPreferences.getLong("currentDownloadId", -1);
         if(downloadId >= 0) {
             Cursor result = query(downloadId);
-            int index = result.getColumnIndex(DownloadManager.COLUMN_STATUS);
-            if (index > 0 && result.moveToFirst() && result.getCount() > 0) {
-                return result.getInt(index);
+            try {
+                if (result == null) return -1;
+                int index = result.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                if (index > 0 && result.moveToFirst() && result.getCount() > 0) {
+                    return result.getInt(index);
+                }
+            } finally {
+                if (result != null) result.close();
             }
         }else if(downloadId == -3){
             return DownloadManager.STATUS_FAILED;
@@ -120,15 +130,18 @@ public class Downloader{
         int currentProgress = 0;
         if(downloadId >= 0) {
             int index = findDownloadUrlIndex(downloadId);
-            if(index != -1 && index != lastDownloadSuccessIndex) {   //we check that the current download is different from the last success download (if they are the same that means that the next download is not started yet)
+            if(index != -1 && index != lastDownloadSuccessIndex) {
                 Cursor result = query(downloadId);
-                int indexBytesDownloaded = result.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
-                //int indexBytesTotal = result.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
-                if (indexBytesDownloaded > 0 && /*indexBytesTotal>0 &&*/ result.moveToFirst() && result.getCount() > 0) {
-                    int bytesDownloaded = result.getInt(indexBytesDownloaded);
-                    //int bytesTotal = result.getInt(indexBytesTotal);
-                    int kbDownloaded = bytesDownloaded / 1000;
-                    currentProgress = (kbDownloaded * max) / totalSize;       //kbDownloaded : totalSize = x : max   (where x is currentProgress)
+                try {
+                    if (result == null) return baseProgress;
+                    int indexBytesDownloaded = result.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
+                    if (indexBytesDownloaded > 0 && result.moveToFirst() && result.getCount() > 0) {
+                        int bytesDownloaded = result.getInt(indexBytesDownloaded);
+                        int kbDownloaded = bytesDownloaded / 1000;
+                        currentProgress = (kbDownloaded * max) / totalSize;
+                    }
+                } finally {
+                    if (result != null) result.close();
                 }
             }
         }

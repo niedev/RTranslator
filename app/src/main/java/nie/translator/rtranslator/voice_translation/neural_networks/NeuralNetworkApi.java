@@ -30,7 +30,7 @@ import nie.translator.rtranslator.tools.ErrorCodes;
 public class NeuralNetworkApi {
     protected Global global;
     private ArrayList<Thread> pendingThreads= new ArrayList<>();
-    public static boolean isVerifying = false;
+    public static volatile boolean isVerifying = false;
 
     protected void addPendingThread(Thread thread){
         pendingThreads.add(thread);

@@ -155,8 +155,7 @@ public class Translator extends NeuralNetworkApi {
                     encoderOptions.close();
                     cacheInitOptions.close();
 
-                    //mainHandler.post(() -> initListener.onInitializationFinished());
-                    initListener.onInitializationFinished();
+                    mainHandler.post(() -> initListener.onInitializationFinished());
 
                 } catch (OrtException e) {
                     e.printStackTrace();
