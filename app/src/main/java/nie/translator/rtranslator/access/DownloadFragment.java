@@ -49,19 +49,26 @@ import nie.translator.rtranslator.tools.FileTools;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
 
 public class DownloadFragment extends Fragment {
-    // Each model can have multiple mirror URLs (index 0 = primary, 1+ = fallbacks).
-    // To add a HuggingFace mirror: append the HF URL to the desired model's array.
+    // Each model array: index 0 = primary (GitHub), 1+ = fallbacks (proxies/mirrors).
+    // To add a HuggingFace mirror, add the URL to the desired model's array in makeMirrors().
+    private static final String GITHUB_BASE = "https://github.com/niedev/RTranslator/releases/download/2.0.0/";
+    private static final String PROXY_BASE = "https://gh-proxy.org/https://github.com/niedev/RTranslator/releases/download/2.0.0/";
+
+    private static String[] makeMirrors(String filename) {
+        return new String[]{GITHUB_BASE + filename, PROXY_BASE + filename};
+    }
+
     public static final String[][] DOWNLOAD_URLS = {
-            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_cache_initializer.onnx"},
-            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_decoder.onnx"},
-            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_embed_and_lm_head.onnx"},
-            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/NLLB_encoder.onnx"},
-            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_cache_initializer.onnx"},
-            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_cache_initializer_batch.onnx"},
-            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_decoder.onnx"},
-            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_detokenizer.onnx"},
-            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_encoder.onnx"},
-            {"https://github.com/niedev/RTranslator/releases/download/2.0.0/Whisper_initializer.onnx"}
+            makeMirrors("NLLB_cache_initializer.onnx"),
+            makeMirrors("NLLB_decoder.onnx"),
+            makeMirrors("NLLB_embed_and_lm_head.onnx"),
+            makeMirrors("NLLB_encoder.onnx"),
+            makeMirrors("Whisper_cache_initializer.onnx"),
+            makeMirrors("Whisper_cache_initializer_batch.onnx"),
+            makeMirrors("Whisper_decoder.onnx"),
+            makeMirrors("Whisper_detokenizer.onnx"),
+            makeMirrors("Whisper_encoder.onnx"),
+            makeMirrors("Whisper_initializer.onnx")
     };
 
     public static String getPrimaryUrl(int index) {
