@@ -17,12 +17,11 @@
 package nie.translator.rtranslator.access;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.icu.text.DecimalFormat;
 import android.os.Bundle;
 import android.os.Looper;
+import android.telecom.Call;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,23 +34,22 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
-import java.io.File;
+import java.util.ArrayList;
 
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.LoadingActivity;
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
 import nie.translator.rtranslator.downloader2.DownloadInfo;
 import nie.translator.rtranslator.downloader2.DownloadInfoExtended;
 import nie.translator.rtranslator.downloader2.DownloadManager;
 import nie.translator.rtranslator.downloader2.Downloader2;
-import nie.translator.rtranslator.tools.FileTools;
-import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
 
 public class DownloadFragment2 extends Fragment {
     @Nullable
     public static String downloadFolder;
     @Nullable
-    public static DownloadInfo[] DOWNLOAD_INFOS;
+    public static DownloadInfoExtended[] DOWNLOAD_INFOS;
     private static final long INTERVAL_TIME_FOR_GUI_UPDATES_MS = 100;  //500
     private AccessActivity activity;
     private Global global;
@@ -105,83 +103,95 @@ public class DownloadFragment2 extends Fragment {
         global = (Global) activity.getApplication();
         downloadFolder = global.getFilesDir().getAbsolutePath();
         String baseUrl = "https://github.com/niedev/RTranslator/releases/download/2.0.0/";
-        DOWNLOAD_INFOS = new DownloadInfo[]{
-                new DownloadInfo(
+        DOWNLOAD_INFOS = new DownloadInfoExtended[]{
+                new DownloadInfoExtended(
                         "NLLB_cache_initializer.onnx",
                         baseUrl + "NLLB_cache_initializer.onnx",
                         downloadFolder,
                         24000,
-                        true
+                        true,
+                        false
                 ),
-                new DownloadInfo(
+                new DownloadInfoExtended(
                         "NLLB_decoder.onnx",
                         baseUrl + "NLLB_decoder.onnx",
                         downloadFolder,
                         171000,
-                        true
+                        true,
+                        false
                 ),
-                new DownloadInfo(
+                new DownloadInfoExtended(
                         "NLLB_embed_and_lm_head.onnx",
                         baseUrl + "NLLB_embed_and_lm_head.onnx",
                         downloadFolder,
                         500000,
-                        true
+                        true,
+                        false
                 ),
-                new DownloadInfo(
+                new DownloadInfoExtended(
                         "NLLB_encoder.onnx",
                         baseUrl + "NLLB_encoder.onnx",
                         downloadFolder,
                         254000,
-                        true
+                        true,
+                        false
                 ),
-                new DownloadInfo(
+                new DownloadInfoExtended(
                         "Whisper_cache_initializer.onnx",
                         baseUrl + "Whisper_cache_initializer.onnx",
                         downloadFolder,
                         14000,
-                        true
+                        true,
+                        false
                 ),
-                new DownloadInfo(
+                new DownloadInfoExtended(
                         "Whisper_cache_initializer_batch.onnx",
                         baseUrl + "Whisper_cache_initializer_batch.onnx",
                         downloadFolder,
                         14000,
-                        true
+                        true,
+                        false
                 ),
-                new DownloadInfo(
+                new DownloadInfoExtended(
                         "Whisper_decoder.onnx",
                         baseUrl + "Whisper_decoder.onnx",
                         downloadFolder,
                         173000,
-                        true
+                        true,
+                        false
                 ),
-                new DownloadInfo(
+                new DownloadInfoExtended(
                         "Whisper_detokenizer.onnx",
                         baseUrl + "Whisper_detokenizer.onnx",
                         downloadFolder,
                         461,
-                        true
+                        true,
+                        false
                 ),
-                new DownloadInfo(
+                new DownloadInfoExtended(
                         "Whisper_encoder.onnx",
                         baseUrl + "Whisper_encoder.onnx",
                         downloadFolder,
                         88000,
-                        true
+                        true,
+                        false
                 ),
-                new DownloadInfo(
+                new DownloadInfoExtended(
                         "Whisper_initializer.onnx",
                         baseUrl + "Whisper_initializer.onnx",
                         downloadFolder,
                         69,
-                        true
+                        true,
+                        false
                 ),
 
 
         };
+
         mainHandler = new android.os.Handler(Looper.getMainLooper());
-        downloader = new DownloadManager(global, DOWNLOAD_INFOS);
-        downloader.startDownloads();
+        downloader = new DownloadManager(global);
+        downloader.startService();
+        //downloader.startAllDownloads();
         retryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -198,7 +208,7 @@ public class DownloadFragment2 extends Fragment {
             public void onClick(View v) {
                 if(pauseButton.getTag().equals("iconCancel")){
                     //we pause the download
-                    boolean success = downloader.stopDownload();
+                    boolean success = downloader.stopAllDownloads();
                     if(success) {
                         //we change the icon and tag
                         pauseButton.setImageResource(R.drawable.play_icon);
@@ -206,7 +216,7 @@ public class DownloadFragment2 extends Fragment {
                         pauseButton.setTag("iconPlay");
                     }
                 }else{
-                    downloader.startDownloads();
+                    downloader.startAllDownloads();
                     //we change the icon and tag
                     pauseButton.setImageResource(R.drawable.cancel_icon);
                     //pauseButton.setImageDrawable(global.getResources().getDrawable(R.drawable.cancel_icon, null));
@@ -232,22 +242,46 @@ public class DownloadFragment2 extends Fragment {
                 storageWarningText.setVisibility(View.VISIBLE);
             }
 
-            Downloader2.Callback callback = new Downloader2.Callback() {
+            final DownloadManager.Callback callback = new DownloadManager.Callback() {
+                public void onServiceConnected(){
+                    ArrayList<DownloadGroupInfo> downloadStatus = downloader.getDownloadsStatus();
+                    // we eventually start the download if it is the first time
+                    if(downloadStatus == null || !downloadStatus.contains(DOWNLOAD_INFOS)) downloader.startDownload(new DownloadGroupInfo(DOWNLOAD_INFOS));
+                    // we change the GUI based on current download status
+                    if(downloadStatus != null){
+                        int index = downloadStatus.indexOf(DOWNLOAD_INFOS);
+                        if(index != -1) {
+                            if (downloadStatus.get(index).isAllDownloadCompleted()) {
+                                this.onAllCompleted(downloadStatus.get(index));
+                            } else {
+                                DownloadInfoExtended runningDownload = downloadStatus.get(index).getRunningDownload();
+                                if (runningDownload != null) {
+                                    if (runningDownload.getCurrentError() != -1) {
+                                        this.onError(downloadStatus.get(index), runningDownload, runningDownload.getCurrentError());
+                                    } else {
+                                        this.onProgress(downloadStatus.get(index), runningDownload, downloadStatus.get(index).getCurrentProgress(), runningDownload.getCurrentProgress(), runningDownload.isUnzipping(), runningDownload.isTestingIntegrity());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 @Override
-                public void onAllDownloadComplete() {
+                public void onAllCompleted(DownloadGroupInfo downloadGroup) {
                     startRTranslator();
                 }
 
                 @Override
-                public void onDownloadComplete(DownloadInfo downloadInfo) {
+                public void onCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download) {
                     //for now we do nothing here
                 }
 
                 @SuppressLint("SetTextI18n")
                 @Override
-                public void onProgress(DownloadInfo downloadInfo, int progress, boolean testingIntegrity) {
+                public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean testingIntegrity, boolean unzipping) {
                     //update of progress bar
-                    int progressNormalized = progress * progressBar.getMax() / 100;
+                    int progressNormalized = totalProgress * progressBar.getMax() / 100;
                     progressBar.setProgress(progressNormalized, true);
                     //we update the progressNumbersText
                     double totalSize = 0;
@@ -255,36 +289,22 @@ public class DownloadFragment2 extends Fragment {
                         totalSize = totalSize + info.getSize();
                     }
                     totalSize = totalSize/1000000;   //we convert from Kb to Gb
-                    float downloadedGb = (float) (progress*totalSize/100);    //progress : 100 = x : totalSize   (where x is downloadedGb)
+                    float downloadedGb = (float) (totalProgress*totalSize/100);    //progress : 100 = x : totalSize   (where x is downloadedGb)
                     DecimalFormat decimalFormat = new DecimalFormat("#.##");
                     progressNumbersText.setText(decimalFormat.format(downloadedGb)+" / "+decimalFormat.format(totalSize)+" GB");
                     //update of the progress description
                     if(testingIntegrity){
-                        progressDescriptionText.setText(getString(R.string.description_integrity_check, downloadInfo.getName()));
+                        progressDescriptionText.setText(getString(R.string.description_integrity_check, download.getName()));
                     }else{
-                        progressDescriptionText.setText(getString(R.string.description_download, downloadInfo.getName()));
+                        progressDescriptionText.setText(getString(R.string.description_download, download.getName()));
                     }
                 }
 
                 @Override
-                public void onError(DownloadInfo downloadInfo, int reason) {
+                public void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
                     showDownloadError();
                 }
             };
-
-            //we change the GUI based on current download status
-            DownloadInfoExtended downloadStatus = downloader.getRunningDownloadStatus();
-            if(downloadStatus != null){
-                if(downloadStatus.isAllDownloadCompleted()){
-                    callback.onAllDownloadComplete();
-                }else{
-                    if(downloadStatus.getCurrentError() != null){
-                        callback.onError(downloadStatus.getCurrentError().downloadInfo, downloadStatus.getCurrentError().reason);
-                    }else{
-                        callback.onProgress(downloadStatus, downloadStatus.getCurrentProgress(), downloadStatus.isTestingIntegrity());
-                    }
-                }
-            }
 
             downloader.subscribe(callback);
         }
@@ -311,7 +331,7 @@ public class DownloadFragment2 extends Fragment {
     }
 
     private void retryCurrentDownload(){
-        downloader.startDownloads();
+        downloader.startAllDownloads();
     }
 
     private void startRTranslator(){

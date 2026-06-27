@@ -1,11 +1,16 @@
 package nie.translator.rtranslator.downloader2;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.os.Binder;
 
 import androidx.annotation.Nullable;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,14 +21,7 @@ public class DownloaderService extends Service {
     public static final String DOWNLOAD_INFOS = "nie.translator.rtranslator.downloader2.DOWNLOAD_INFOS";
     private final ArrayList<Downloader2> downloaders = new ArrayList<>();
     private final IBinder binder = new LocalBinder();
-    private ArrayList<ClientCallback> clients = new ArrayList<>();
-
-    public interface ClientCallback {
-        void onProgress(Downloader2 download, DownloadInfo downloadInfo, int progress, boolean testingIntegrity);
-        void onCompleted(Downloader2 download, DownloadInfo downloadInfo);
-        void onAllCompleted(Downloader2 download);
-        void onError(Downloader2 download, DownloadInfo downloadInfo, int reason);
-    }
+    private ArrayList<Downloader2.ClientCallback> clients = new ArrayList<>();
 
     public class LocalBinder extends Binder {
         DownloaderService getService() {
@@ -41,63 +39,17 @@ public class DownloaderService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        /*
-          Here we check if one of the downloadInfos passed is already in one of the downloads, in that
-          case we don't start any of the downloads passed (we take for grated that the downloadInfos
-          are not overlapped between different downloads), otherwise we add and start a new download with
-          all the download infos.
-         */
-        if (intent != null && intent.hasExtra(DOWNLOAD_INFOS)) {
-            ArrayList<DownloadInfo> downloadInfosToStart = intent.getParcelableArrayListExtra(DOWNLOAD_INFOS);
-            if (downloadInfosToStart != null) {
-                boolean alreadyDownloading = false;
-                for (DownloadInfo infoToStart : downloadInfosToStart) {
-                    synchronized (downloaders) {
-                        outerloop:
-                        for (Downloader2 existingDownloader : downloaders) {
-                            for(DownloadInfo downloadInfo : existingDownloader.getDownloadInfos()) {
-                                if (Objects.equals(downloadInfo.getUrl(), infoToStart.getUrl())) {
-                                    alreadyDownloading = true;
-                                    break outerloop;
-                                }
-                            }
-                        }
+        SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        if(!downloadsStatusString.isEmpty()){
+            //we eventually restore the state of all the unfinished downloads and resume their download
+            Gson gson = new Gson();
+            ArrayList<DownloadGroupInfo> downloadGroupInfos = gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>(){}.getType());
+            if(downloadGroupInfos != null){
+                for(DownloadGroupInfo groupInfo: downloadGroupInfos){
+                    if(!groupInfo.isAllDownloadCompleted()){
+                        startDownload(groupInfo);
                     }
-                }
-
-                if (!alreadyDownloading) {
-                    final AtomicReference<Downloader2> newDownloaderRef = new AtomicReference<>();
-                    final Downloader2 newDownloader = new Downloader2(downloadInfosToStart.toArray(new DownloadInfo[0]), this, new Downloader2.Callback() {
-                        @Override
-                        public void onAllDownloadComplete() {
-                            notifyAllCompleted(newDownloaderRef.get());
-                            synchronized (downloaders) {
-                                downloaders.remove(newDownloaderRef.get());
-                            }
-                        }
-
-                        @Override
-                        public void onDownloadComplete(DownloadInfo downloadInfo) {
-                            notifyCompleted(newDownloaderRef.get(), downloadInfo);
-                        }
-
-                        @Override
-                        public void onProgress(DownloadInfo download, int progress, boolean testingIntegrity) {
-                            notifyProgress(newDownloaderRef.get(), download, progress, testingIntegrity);
-                        }
-                        @Override
-                        public void onError(DownloadInfo downloadInfo, int reason) {
-                            notifyError(newDownloaderRef.get(), downloadInfo, reason);
-                            synchronized (downloaders) {
-                                downloaders.remove(newDownloaderRef.get());
-                            }
-                        }
-                    });
-                    newDownloaderRef.set(newDownloader);
-                    synchronized (downloaders) {
-                        downloaders.add(newDownloader);
-                    }
-                    newDownloader.startDownloads();
                 }
             }
         }
@@ -109,13 +61,13 @@ public class DownloaderService extends Service {
         return binder;
     }
 
-    public void registerClient(ClientCallback client) {
+    public void registerClient(Downloader2.ClientCallback client) {
         if (!clients.contains(client)) {
             clients.add(client);
         }
     }
 
-    public void unregisterClient(ClientCallback client) {
+    public void unregisterClient(Downloader2.ClientCallback client) {
         clients.remove(client);
     }
 
@@ -123,50 +75,192 @@ public class DownloaderService extends Service {
         return downloaders;
     }
 
-    public void pauseDownload(Downloader2 download) {
+    public void startAllDownloads(){
+        for (DownloadGroupInfo download: getDownloadsStatus()){
+            startDownload(download);
+        }
+    }
+
+    public void startDownload(DownloadGroupInfo download) {
+        int index = downloaders.indexOf(download);
+        if(index == -1) {
+            final AtomicReference<Downloader2> newDownloaderRef = new AtomicReference<>();
+            final Downloader2 newDownloader = new Downloader2(download, this, new Downloader2.ClientCallback() {
+                @Override
+                public void onAllCompleted(DownloadGroupInfo downloadGroup) {
+                    updateDownloadGroupInfoPreference(downloadGroup);
+                    notifyAllCompleted(downloadGroup);
+                    synchronized (downloaders) {
+                        downloaders.remove(newDownloaderRef.get());
+                    }
+                }
+
+                @Override
+                public void onUnzippingCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download) {
+                    updateDownloadGroupInfoPreference(downloadGroup);
+                }
+
+                @Override
+                public void onIntegrityTestCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download) {
+                    updateDownloadGroupInfoPreference(downloadGroup);
+                }
+
+                @Override
+                public void onCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download) {
+                    updateDownloadGroupInfoPreference(downloadGroup);
+                    notifyCompleted(downloadGroup, download);
+                }
+
+                @Override
+                public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
+                    notifyProgress(downloadGroup, download, totalProgress, progress, unzipping, testingIntegrity);
+                }
+
+                @Override
+                public void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
+                    notifyError(downloadGroup, download, reason);
+                    synchronized (downloaders) {
+                        downloaders.remove(newDownloaderRef.get());
+                    }
+                }
+            });
+            newDownloaderRef.set(newDownloader);
+            synchronized (downloaders) {
+                downloaders.add(newDownloader);
+                index = downloaders.size()-1;
+            }
+            addDownloadGroupInfoPreference(download);
+        }
+        downloaders.get(index).startDownloads();
+    }
+
+    public void pauseAllDownloads(){
+        for (DownloadGroupInfo download: getDownloadsStatus()){
+            pauseDownload(download);
+        }
+    }
+
+    public void pauseDownload(DownloadGroupInfo download) {
         synchronized (downloaders) {
-            if (downloaders.contains(download)) {
-                download.pauseDownloads();
+            int index = downloaders.indexOf(download);
+            if (index != -1) {
+                downloaders.get(index).pauseDownloads();
             }
         }
     }
 
-    @Nullable
-    public DownloadInfoExtended getRunningDownloadStatus(Downloader2 download) {
+    public void cancelAllDownloads(){
+        for (DownloadGroupInfo download: getDownloadsStatus()){
+            cancelDownload(download);
+        }
+    }
+
+    public void cancelDownload(DownloadGroupInfo download) {
         synchronized (downloaders) {
-            if (downloaders.contains(download)) {
-                return download.getRunningDownloadStatus();
+            int index = downloaders.indexOf(download);
+            if (index != -1) {
+                downloaders.get(index).cancelDownloads();
+                deleteDownloadGroupInfoPreference(download);
+                synchronized (downloaders) {
+                    downloaders.remove(index);
+                }
             }
-            return null;
+        }
+    }
+
+    public ArrayList<DownloadGroupInfo> getDownloadsStatus() {
+        synchronized (downloaders) {
+            ArrayList<DownloadGroupInfo> downloadGroupInfos = new ArrayList<>();
+            for(Downloader2 downloader : downloaders){
+                downloadGroupInfos.add(downloader.getDownloadGroupInfo());
+            }
+            return downloadGroupInfos;
+        }
+    }
+
+    private void updateDownloadGroupInfoPreference(DownloadGroupInfo downloadGroup){
+        SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        ArrayList<DownloadGroupInfo> downloadGroupInfos = null;
+        if(!downloadsStatusString.isEmpty()) {
+            Gson gson = new Gson();
+            downloadGroupInfos = gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
+            int index = downloadGroupInfos.indexOf(downloadGroup);
+            if(index != -1) {
+                downloadGroupInfos.set(index, downloadGroup);
+                String newDownloadsStatusString = gson.toJson(downloadGroupInfos);
+                SharedPreferences.Editor editor;
+                editor = sharedPreferences.edit();
+                editor.putString("downloadsStatus", newDownloadsStatusString);
+                editor.apply();
+            }
+        }
+    }
+
+    private void addDownloadGroupInfoPreference(DownloadGroupInfo downloadGroup){
+        SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        ArrayList<DownloadGroupInfo> downloadGroupInfos = null;
+        if(!downloadsStatusString.isEmpty()) {
+            Gson gson = new Gson();
+            downloadGroupInfos = gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
+            int index = downloadGroupInfos.indexOf(downloadGroup);
+            if(index == -1) {
+                downloadGroupInfos.add(downloadGroup);
+                String newDownloadsStatusString = gson.toJson(downloadGroupInfos);
+                SharedPreferences.Editor editor;
+                editor = sharedPreferences.edit();
+                editor.putString("downloadsStatus", newDownloadsStatusString);
+                editor.apply();
+            }
+        }
+    }
+
+    private void deleteDownloadGroupInfoPreference(DownloadGroupInfo downloadGroup){
+        SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        ArrayList<DownloadGroupInfo> downloadGroupInfos = null;
+        if(!downloadsStatusString.isEmpty()) {
+            Gson gson = new Gson();
+            downloadGroupInfos = gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
+            int index = downloadGroupInfos.indexOf(downloadGroup);
+            if(index != -1) {
+                downloadGroupInfos.remove(index);
+                String newDownloadsStatusString = gson.toJson(downloadGroupInfos);
+                SharedPreferences.Editor editor;
+                editor = sharedPreferences.edit();
+                editor.putString("downloadsStatus", newDownloadsStatusString);
+                editor.apply();
+            }
         }
     }
 
     // Implementation of Downloader2.Callback methods
     // These methods will be called by individual Downloader2 instances
 
-    public void notifyProgress(Downloader2 download, DownloadInfo downloadInfo, int progress, boolean testingIntegrity) {
-        for (ClientCallback client : new ArrayList<>(clients)) { // Iterate over a copy to avoid ConcurrentModificationException
-            client.onProgress(download, downloadInfo, progress, testingIntegrity);
+    public void notifyProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean testingIntegrity, boolean unzipping) {
+        for (Downloader2.ClientCallback client : new ArrayList<>(clients)) { // Iterate over a copy to avoid ConcurrentModificationException
+            client.onProgress(downloadGroup, download, totalProgress, progress, testingIntegrity, unzipping);
         }
     }
 
-    public void notifyCompleted(Downloader2 download, DownloadInfo downloadInfo) {
-        for (ClientCallback client : new ArrayList<>(clients)) {
-            client.onCompleted(download, downloadInfo);
-        }
-        checkAndStopService();
-    }
-
-    public void notifyAllCompleted(Downloader2 download) {
-        for (ClientCallback client : new ArrayList<>(clients)) {
-            client.onAllCompleted(download);
+    public void notifyCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download) {
+        for (Downloader2.ClientCallback client : new ArrayList<>(clients)) {
+            client.onCompleted(downloadGroup, download);
         }
         checkAndStopService();
     }
 
-    public void notifyError(Downloader2 download, DownloadInfo downloadInfo, int reason) {
-        for (ClientCallback client : new ArrayList<>(clients)) {
-            client.onError(download, downloadInfo, reason);
+    public void notifyAllCompleted(DownloadGroupInfo downloadGroup) {
+        for (Downloader2.ClientCallback client : new ArrayList<>(clients)) {
+            client.onAllCompleted(downloadGroup);
+        }
+        checkAndStopService();
+    }
+
+    public void notifyError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
+        for (Downloader2.ClientCallback client : new ArrayList<>(clients)) {
+            client.onError(downloadGroup, download, reason);
         }
         checkAndStopService();
     }

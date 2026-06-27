@@ -12,58 +12,66 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
-
-import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
 
 public class DownloadManager implements ServiceConnection {
     private final Context context;
-    private final DownloadInfo[] downloadInfos;
     @Nullable
-    private Downloader2.Callback callback;
+    private Callback callback;
     @Nullable
     private DownloaderService downloaderService;
-    private final DownloaderService.ClientCallback serviceCallback;
+    private final Downloader2.ClientCallback serviceCallback;
     private boolean serviceStarted = false;
 
 
 
-    public DownloadManager(Context context, DownloadInfo[] downloadInfos) {
+    public DownloadManager(Context context) {
         this.context = context;
-        this.downloadInfos = downloadInfos;
-        this.serviceCallback = new DownloaderService.ClientCallback() {
+        this.serviceCallback = new Downloader2.ClientCallback() {
             @Override
-            public void onProgress(Downloader2 download, DownloadInfo downloadInfo, int progress, boolean testingIntegrity) {
-                if(callback != null && isThisDownload(download)){
-                    callback.onProgress(downloadInfo, progress, testingIntegrity);
+            public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
+                if(callback != null){
+                    callback.onProgress(downloadGroup, download, totalProgress, progress, unzipping, testingIntegrity);
                 }
             }
 
             @Override
-            public void onCompleted(Downloader2 download, DownloadInfo downloadInfo) {
-                if(callback != null && isThisDownload(download)){
-                    callback.onDownloadComplete(downloadInfo);
+            public void onCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download) {
+                if(callback != null){
+                    callback.onCompleted(downloadGroup, download);
                 }
             }
 
             @Override
-            public void onAllCompleted(Downloader2 download) {
-                if(callback != null && isThisDownload(download)){
-                    callback.onAllDownloadComplete();
+            public void onAllCompleted(DownloadGroupInfo downloadGroup) {
+                if(callback != null){
+                    callback.onAllCompleted(downloadGroup);
                 }
             }
 
             @Override
-            public void onError(Downloader2 download, DownloadInfo downloadInfo, int reason) {
-                if(callback != null && isThisDownload(download)){
-                    callback.onError(downloadInfo, reason);
+            public void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
+                if(callback != null){
+                    callback.onError(downloadGroup, download, reason);
                 }
             }
         };
     }
 
-    public void subscribe(@Nullable Downloader2.Callback callback) {
+    /**
+     * This method will start the download service and resume all the unfinished downloads
+     */
+    public void startService(){
+        final Intent intent = new Intent(context, DownloaderService.class);
+        //intent.putExtra("notification", notification);
+        context.startService(intent);
+        this.serviceStarted = true;
+        if (callback != null) {   //if we have previously called subscribe before starting the service we will bind here
+            boolean result = context.bindService(new Intent(context, DownloaderService.class), this, BIND_ABOVE_CLIENT);
+            Log.d("bind download", result ? "success" : "failed");
+        }
+    }
+
+    public void subscribe(@Nullable Callback callback) {
         if(this.callback == null) {
             this.callback = callback;
             if(serviceStarted) {  //if we have not started yet the service, we will bind after starting it, not now (this way the service will not stop when we unbind)
@@ -83,45 +91,41 @@ public class DownloadManager implements ServiceConnection {
         }
     }
 
-    public void startDownloads() {
-        if(!serviceStarted) {
-            final Intent intent = new Intent(context, DownloaderService.class);
-            //intent.putExtra("notification", notification);
-            intent.putParcelableArrayListExtra(DownloaderService.DOWNLOAD_INFOS, new ArrayList<>(Arrays.asList(downloadInfos)));
-            context.startService(intent);
-            this.serviceStarted = true;
-            if (callback != null) {   //if we have previously called subscribe before starting the service we will bind here
-                boolean result = context.bindService(new Intent(context, DownloaderService.class), this, BIND_ABOVE_CLIENT);
-                Log.d("bind download", result ? "success" : "failed");
-            }
-        }
-    }
-
-    public boolean stopDownload() {
-        if(serviceStarted) {
-            if (downloaderService != null) {
-                ArrayList<Downloader2> downloaders = downloaderService.getDownloaders();
-                for (Downloader2 download : downloaders) {
-                    if (isThisDownload(download)) {
-                        downloaderService.pauseDownload(download);
-                        serviceStarted = false;
-                        return true;
-                    }
-                }
-            }
+    public boolean startDownload(DownloadGroupInfo downloadGroup){
+        if(downloaderService != null) {
+            downloaderService.startDownload(downloadGroup);
+            return true;
         }
         return false;
     }
 
-    @Nullable
-    public DownloadInfoExtended getRunningDownloadStatus() {
+    public boolean stopDownload(DownloadGroupInfo downloadGroup){
+        if(downloaderService != null) {
+            downloaderService.pauseDownload(downloadGroup);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean startAllDownloads() {
+        if(downloaderService != null) {
+            downloaderService.startAllDownloads();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean stopAllDownloads() {
+        if(downloaderService != null) {
+            downloaderService.pauseAllDownloads();
+            return true;
+        }
+        return false;
+    }
+
+    public ArrayList<DownloadGroupInfo> getDownloadsStatus() {
         if (downloaderService != null) {
-            ArrayList<Downloader2> downloaders = downloaderService.getDownloaders();
-            for (Downloader2 download : downloaders) {
-                if (isThisDownload(download)) {
-                    return downloaderService.getRunningDownloadStatus(download);
-                }
-            }
+            return downloaderService.getDownloadsStatus();
         }
         return null;
     }
@@ -130,6 +134,7 @@ public class DownloadManager implements ServiceConnection {
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
         this.downloaderService = ((DownloaderService.LocalBinder) iBinder).getService();
         downloaderService.registerClient(serviceCallback);
+        if(callback != null) callback.onServiceConnected();
     }
 
     @Override
@@ -137,9 +142,7 @@ public class DownloadManager implements ServiceConnection {
         this.downloaderService = null;
     }
 
-    private boolean isThisDownload(Downloader2 download){
-        //we check if the download is the one started by this manager
-        //(based on how the downloaderService is implemented if one of the downloadInfos match they all match)
-        return Arrays.stream(download.getDownloadInfos()).anyMatch((item -> Objects.equals(item.getDestinationCompletePath(), downloadInfos[0].getDestinationCompletePath())));
+    public static abstract class Callback extends Downloader2.ClientCallback {
+        public abstract void onServiceConnected();
     }
 }
