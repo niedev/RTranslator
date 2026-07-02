@@ -190,7 +190,6 @@ public class DownloadFragment2 extends Fragment {
 
         mainHandler = new android.os.Handler(Looper.getMainLooper());
         downloader = new DownloadManager(global);
-        downloader.startService();
         //downloader.startAllDownloads();
         retryButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -230,6 +229,7 @@ public class DownloadFragment2 extends Fragment {
     public void onStart() {
         super.onStart();
         if(global != null && DOWNLOAD_INFOS != null) {
+            downloader.startService(); // we eventually start the service (if it is already started nothing will happen)
             //if the internal or external free memory are low, we show a warning
             double requiredSize = 0;
             for (DownloadInfo downloadInfo : DOWNLOAD_INFOS) {
@@ -246,7 +246,8 @@ public class DownloadFragment2 extends Fragment {
                 public void onServiceConnected(){
                     ArrayList<DownloadGroupInfo> downloadStatus = downloader.getDownloadsStatus();
                     // we eventually start the download if it is the first time
-                    if(downloadStatus == null || !downloadStatus.contains(DOWNLOAD_INFOS)) downloader.startDownload(new DownloadGroupInfo(DOWNLOAD_INFOS));
+                    DownloadGroupInfo downloadGroupInfo = new DownloadGroupInfo(DOWNLOAD_INFOS);
+                    if(downloadStatus == null || !downloadStatus.contains(downloadGroupInfo)) downloader.startDownload(downloadGroupInfo);
                     // we change the GUI based on current download status
                     if(downloadStatus != null){
                         int index = downloadStatus.indexOf(DOWNLOAD_INFOS);

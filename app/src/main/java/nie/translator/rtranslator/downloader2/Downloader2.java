@@ -2,7 +2,6 @@ package nie.translator.rtranslator.downloader2;
 
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import androidx.annotation.Nullable;
 
@@ -14,18 +13,30 @@ import com.downloader.OnProgressListener;
 import com.downloader.OnStartOrResumeListener;
 import com.downloader.PRDownloader;
 import com.downloader.Progress;
+import com.google.common.collect.Lists;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
 
 public class Downloader2 {
     public static final int GENERAL_ERROR = 1;
-    public static final int INTEGRITY_CHECK_FAILED = 2;
+    public static final int UNZIP_FAILED = 2;
+    public static final int INTEGRITY_CHECK_FAILED = 3;
     private Context context;
     private final DownloadGroupInfo downloadGroupInfo;
     private ClientCallback callback;
-    private int lastDownloadSuccessIndex;
+    private int lastDownloadSuccessIndex = -1;
     private boolean allCompleted = false;
 
     public Downloader2(DownloadGroupInfo downloadGroupInfo, Context context, ClientCallback callback) {
@@ -38,7 +49,31 @@ public class Downloader2 {
     public void startDownloads(){
         if(downloadGroupInfo.downloadsInfo.length > 0 && !downloadGroupInfo.isAllDownloadCompleted()) {
             if (downloadGroupInfo.getRunningDownloadIndex() == -1) {
-                startDownload(0);
+                // eventual resume of the download based on the previous ones that have been completed
+                // (or start from 0 if none of the previous ones are completed)
+                int startIndex = 0;
+                for(int i=0; i<downloadGroupInfo.downloadsInfo.length; i++){
+                    if(downloadGroupInfo.downloadsInfo[i].isAllCompleted()){
+                        startIndex++;
+                    }
+                }
+                DownloadInfoExtended startDownload = downloadGroupInfo.downloadsInfo[startIndex];
+                if(startIndex > 0) lastDownloadSuccessIndex = startIndex-1;
+                downloadGroupInfo.setRunningDownloadIndex(startIndex);
+                int percentageTotalProgress = calculateTotalProgress(lastDownloadSuccessIndex+1, 0);
+                if(!startDownload.isDownloadCompleted()){
+                    startDownload(startIndex);
+                }else {
+                    if (startDownload.shouldUnzip() && !startDownload.isUnzipped()) {
+                        unzipRunningDownloadAndTestIntegrity(percentageTotalProgress);
+                    } else {
+                        if (startDownload.shouldTestIntegrity() && !startDownload.isIntegrityTested()) {
+                            testRunningDownloadIntegrity(percentageTotalProgress);
+                        } else {
+                            startNextDownload();
+                        }
+                    }
+                }
             }else{
                 startDownload(downloadGroupInfo.getRunningDownloadIndex());
             }
@@ -46,7 +81,7 @@ public class Downloader2 {
     }
 
     public void pauseDownloads(){
-        // we cancel the current download (for now this is the best option, it is difficult (if not impossible) to pause without having access to the server)
+        // we cancel the current download (for now this is the best option, it is difficult, if not impossible, to pause without having access to the server)
         PRDownloader.cancel(downloadGroupInfo.downloadsInfo[downloadGroupInfo.getRunningDownloadIndex()].getDownloadId());
     }
 
@@ -103,7 +138,6 @@ public class Downloader2 {
                         if(runningDownloadIndex >= 0) {
                             downloadGroupInfo.downloadsInfo[runningDownloadIndex].setCurrentProgress(percentageProgress);
                         }
-                        downloadGroupInfo.downloadsInfo[runningDownloadIndex].setDownloadCompleted(true);
                         callback.onProgress(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex], percentageTotalProgress, percentageProgress, false, false);
                     }
                 })
@@ -117,28 +151,14 @@ public class Downloader2 {
                         downloadGroupInfo.downloadsInfo[runningDownloadIndex].setCurrentProgress(100);
                         downloadGroupInfo.downloadsInfo[runningDownloadIndex].setDownloadCompleted(true);
                         callback.onDownloadCompleted(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex]);
-                        if (finishedDownload.shouldTestIntegrity()) {
-                            callback.onProgress(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex], percentageTotalProgress, 100, false, true);
-                            NeuralNetworkApi.testModelIntegrity(finishedDownload.getDestinationCompletePath(), new NeuralNetworkApi.InitListener() {
-                                @Override
-                                public void onInitializationFinished() {
-                                    downloadGroupInfo.downloadsInfo[runningDownloadIndex].setIntegrityTested(true);
-                                    callback.onIntegrityTestCompleted(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex]);
-                                    startNextDownload();
-                                }
-
-                                @Override
-                                public void onError(int[] reasons, long value) {
-                                    int runningDownloadIndex = downloadGroupInfo.getRunningDownloadIndex();
-                                    if(runningDownloadIndex >= 0){
-                                        downloadGroupInfo.downloadsInfo[runningDownloadIndex].setCurrentError(INTEGRITY_CHECK_FAILED);
-                                    }
-                                    downloadGroupInfo.setRunningDownloadIndex(-1);
-                                    callback.onError(downloadGroupInfo, finishedDownload, INTEGRITY_CHECK_FAILED);
-                                }
-                            });
-                        }else{
-                            startNextDownload();
+                        if(finishedDownload.shouldUnzip()){
+                            unzipRunningDownloadAndTestIntegrity(percentageTotalProgress);
+                        }else {
+                            if (finishedDownload.shouldTestIntegrity()) {
+                                testRunningDownloadIntegrity(percentageTotalProgress);
+                            } else {
+                                startNextDownload();
+                            }
                         }
                     }
 
@@ -152,6 +172,52 @@ public class Downloader2 {
                     }
                 });
         downloadGroupInfo.downloadsInfo[index].setDownloadId(downloadId);
+    }
+
+    private void unzipRunningDownloadAndTestIntegrity(int percentageTotalProgress){
+        int runningDownloadIndex = downloadGroupInfo.getRunningDownloadIndex();
+        DownloadInfo finishedDownload = downloadGroupInfo.downloadsInfo[runningDownloadIndex];
+        callback.onProgress(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex], percentageTotalProgress, 100, true, false);
+        unpackZip(finishedDownload.destinationPath, finishedDownload.name, new Listener() {
+            @Override
+            public void onSuccess() {
+                downloadGroupInfo.downloadsInfo[runningDownloadIndex].setUnzipped(true);
+                if(finishedDownload.shouldTestIntegrity()) {
+                    testRunningDownloadIntegrity(percentageTotalProgress);
+                }else{
+                    startNextDownload();
+                }
+            }
+
+            @Override
+            public void onFailure() {
+                callback.onError(downloadGroupInfo, finishedDownload, UNZIP_FAILED);
+            }
+        });
+    }
+
+    private void testRunningDownloadIntegrity(int percentageTotalProgress) {
+        int runningDownloadIndex = downloadGroupInfo.getRunningDownloadIndex();
+        DownloadInfo finishedDownload = downloadGroupInfo.downloadsInfo[runningDownloadIndex];
+        callback.onProgress(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex], percentageTotalProgress, 100, false, true);
+        NeuralNetworkApi.testModelIntegrity(finishedDownload.getDestinationCompletePath(), new NeuralNetworkApi.InitListener() {
+            @Override
+            public void onInitializationFinished() {
+                downloadGroupInfo.downloadsInfo[runningDownloadIndex].setIntegrityTested(true);
+                callback.onIntegrityTestCompleted(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex]);
+                startNextDownload();
+            }
+
+            @Override
+            public void onError(int[] reasons, long value) {
+                int runningDownloadIndex = downloadGroupInfo.getRunningDownloadIndex();
+                if(runningDownloadIndex >= 0){
+                    downloadGroupInfo.downloadsInfo[runningDownloadIndex].setCurrentError(INTEGRITY_CHECK_FAILED);
+                }
+                downloadGroupInfo.setRunningDownloadIndex(-1);
+                callback.onError(downloadGroupInfo, finishedDownload, INTEGRITY_CHECK_FAILED);
+            }
+        });
     }
 
     private void startNextDownload(){
@@ -204,6 +270,73 @@ public class Downloader2 {
         return super.equals(obj);
     }
 
+    private void unpackZip(String path, String zipname, Listener listener) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                InputStream is;
+                ZipInputStream zis;
+                boolean success = true;
+                Path zipPath = Paths.get(path + zipname);
+                try {
+                    String filename;
+                    is = Files.newInputStream(zipPath);
+                    zis = new ZipInputStream(new BufferedInputStream(is));
+                    ZipEntry ze;
+                    byte[] buffer = new byte[1024];
+                    int count;
+
+                    while ((ze = zis.getNextEntry()) != null) {
+                        filename = ze.getName();
+
+                        // Need to create directories if not exists, or
+                        // it will generate an Exception...
+                        File destFile = new File(path + filename);
+                        if (ze.isDirectory()) {
+                            File fmd = new File(path + filename);
+                            fmd.mkdirs();
+                            zis.closeEntry();
+                            continue;
+                        }else if(destFile.getParentFile() != null){
+                            // in the case the zip file does not indicate its internal folders as entries but only the files with the internal folders as path,
+                            // in this way we create recursively all the missing folders in the file path
+                            destFile.getParentFile().mkdirs();
+                        }
+
+                        FileOutputStream fout = new FileOutputStream(path + filename);
+
+                        while ((count = zis.read(buffer)) != -1) {
+                            fout.write(buffer, 0, count);
+                        }
+
+                        fout.close();
+                        zis.closeEntry();
+                    }
+
+                    zis.close();
+                } catch(IOException e) {
+                    e.printStackTrace();
+                    success = false;
+                }
+
+                if(success){
+                    try {
+                        Files.delete(zipPath);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        success = false;
+                    }
+                }
+
+                if(success){
+                    if(listener != null) listener.onSuccess();
+                }else {
+                    if(listener != null) listener.onFailure();
+                }
+            }
+        }).start();
+    }
+
     /*public static abstract class Callback {
         public abstract void onAllDownloadComplete();
         public abstract void onDownloadComplete(DownloadInfo downloadInfo);
@@ -219,6 +352,11 @@ public class Downloader2 {
         public abstract void onCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download);
         public abstract void onAllCompleted(DownloadGroupInfo downloadGroup);
         public abstract void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason);
+    }
+
+    public abstract static class Listener {
+        public abstract void onSuccess();
+        public abstract void onFailure();
     }
 
     public static class DownloadError {

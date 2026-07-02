@@ -6,6 +6,9 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import javax.annotation.Nonnull;
 
 import nie.translator.rtranslator.bluetooth.Peer;
@@ -76,8 +79,6 @@ public class DownloadGroupInfo implements Parcelable{
         return false;
     }
 
-
-
     //parcel implementation
     public static final Parcelable.Creator<DownloadGroupInfo> CREATOR = new Parcelable.Creator<DownloadGroupInfo>() {
         @Override
@@ -93,6 +94,7 @@ public class DownloadGroupInfo implements Parcelable{
 
     private DownloadGroupInfo(Parcel in) {
         downloadsInfo = (DownloadInfoExtended[]) in.readParcelableArray(DownloadInfoExtended.class.getClassLoader());
+        runningDownloadIndex = in.readInt();
         currentProgress = in.readInt();
         allDownloadCompleted = in.readByte() != 0;
     }
@@ -105,6 +107,7 @@ public class DownloadGroupInfo implements Parcelable{
     @Override
     public void writeToParcel(@NonNull Parcel parcel, int i) {
         parcel.writeParcelableArray(downloadsInfo, 0);
+        parcel.writeInt(runningDownloadIndex);
         parcel.writeInt(currentProgress);
         parcel.writeByte((byte) (allDownloadCompleted ? 1 : 0));
     }

@@ -720,8 +720,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                     .setSmallIcon(R.drawable.mic_icon)
                     .setOngoing(true)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setChannelId(channelID)
-                    .build();
+                    .setChannelId(channelID);
         } else {
             builder.setContentTitle(getString(R.string.title_fragment_walkie_talkie))
                     .setContentText(getString(R.string.walkietalkie_mode_running))
@@ -729,8 +728,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
                     .setSmallIcon(R.drawable.mic_icon)
                     .setOngoing(true)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setChannelId(channelID)
-                    .build();
+                    .setChannelId(channelID);
         }
         currentNotification = builder.build();
         return currentNotification;

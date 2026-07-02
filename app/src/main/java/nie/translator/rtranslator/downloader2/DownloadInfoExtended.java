@@ -65,6 +65,12 @@ public class DownloadInfoExtended extends DownloadInfo{
         this.integrityTested = integrityTested;
     }
 
+    public boolean isAllCompleted(){
+        boolean unzippingCompleted = !shouldUnzip || unzipped;
+        boolean testingCompleted = !shouldTestIntegrity || integrityTested;
+        return downloadCompleted && unzippingCompleted && testingCompleted;
+    }
+
 
 
     //parcel implementation
