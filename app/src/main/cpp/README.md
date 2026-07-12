@@ -145,7 +145,7 @@ On Ubuntu, the build tools can be installed with apt-get:
 
 Then, you can build and install command line tools as follows.
 ```
-% git clone https://github.com/google/sentencepiece.git 
+% git clone https://github.com/google/sentencepiece.git
 % cd sentencepiece
 % mkdir build
 % cd build
