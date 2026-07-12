@@ -20,7 +20,7 @@ The Conversation mode is the main feature of RTranslator. In this mode, you can 
 
 - The interlocutors' phone will translate the text received into his language.
 
-- The interlocutors' phone will convert the translated text into audio and will reproduce it from its speaker (or by the Bluetooth headset of the interlocutor if connected to his phone). 
+- The interlocutors' phone will convert the translated text into audio and will reproduce it from its speaker (or by the Bluetooth headset of the interlocutor if connected to his phone).
 
 All this in both directions.
 
