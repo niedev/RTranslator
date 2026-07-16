@@ -13,11 +13,9 @@ import com.downloader.OnProgressListener;
 import com.downloader.OnStartOrResumeListener;
 import com.downloader.PRDownloader;
 import com.downloader.Progress;
-import com.google.common.collect.Lists;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +39,7 @@ public class Downloader2 {
 
     public Downloader2(DownloadGroupInfo downloadGroupInfo, Context context, ClientCallback callback) {
         this.downloadGroupInfo = downloadGroupInfo;
-        this.downloadGroupInfo.setRunningDownloadIndex(-1);
+        //this.downloadGroupInfo.setRunningDownloadIndex(-1);
         this.context = context;
         this.callback = callback;
     }
@@ -51,12 +49,7 @@ public class Downloader2 {
             if (downloadGroupInfo.getRunningDownloadIndex() == -1) {
                 // eventual resume of the download based on the previous ones that have been completed
                 // (or start from 0 if none of the previous ones are completed)
-                int startIndex = 0;
-                for(int i=0; i<downloadGroupInfo.downloadsInfo.length; i++){
-                    if(downloadGroupInfo.downloadsInfo[i].isAllCompleted()){
-                        startIndex++;
-                    }
-                }
+                int startIndex = findFirstIncompletedDownload();
                 DownloadInfoExtended startDownload = downloadGroupInfo.downloadsInfo[startIndex];
                 if(startIndex > 0) lastDownloadSuccessIndex = startIndex-1;
                 downloadGroupInfo.setRunningDownloadIndex(startIndex);
@@ -81,8 +74,12 @@ public class Downloader2 {
     }
 
     public void pauseDownloads(){
-        // we cancel the current download (for now this is the best option, it is difficult, if not impossible, to pause without having access to the server)
-        PRDownloader.cancel(downloadGroupInfo.downloadsInfo[downloadGroupInfo.getRunningDownloadIndex()].getDownloadId());
+        int currentDownloadIndex = downloadGroupInfo.getRunningDownloadIndex();
+        if(currentDownloadIndex != -1) {
+            // we cancel the current download (for now this is the best option, it is difficult, if not impossible, to pause without having access to the server)
+            PRDownloader.cancel(downloadGroupInfo.downloadsInfo[currentDownloadIndex].getDownloadId());
+            downloadGroupInfo.setRunningDownloadIndex(-1);
+        }
     }
 
     public void cancelDownloads(){
@@ -90,12 +87,12 @@ public class Downloader2 {
         if(currentDownloadIndex != -1) {
             // we cancel the current download
             PRDownloader.cancel(downloadGroupInfo.downloadsInfo[currentDownloadIndex].getDownloadId());
-            // we delete the already downloaded files of this group of download
-            for (int i = 0; i <= currentDownloadIndex; i++){
-                File file = new File(downloadGroupInfo.downloadsInfo[currentDownloadIndex].getDestinationCompletePath());
-                if (file.exists()) {
-                    file.delete();
-                }
+        }
+        // we delete the already downloaded files of this group of download
+        for (int i = 0; i <= downloadGroupInfo.downloadsInfo.length; i++){
+            File file = new File(downloadGroupInfo.downloadsInfo[i].getDestinationCompletePath());
+            if (file.exists()) {
+                file.delete();
             }
         }
     }
@@ -268,6 +265,16 @@ public class Downloader2 {
             return downloadGroupInfo.equals(obj);
         }
         return super.equals(obj);
+    }
+
+    private int findFirstIncompletedDownload(){
+        int index = 0;
+        for(int i=0; i<downloadGroupInfo.downloadsInfo.length; i++){
+            if(downloadGroupInfo.downloadsInfo[i].isAllCompleted()){
+                index++;
+            }
+        }
+        return index;
     }
 
     private void unpackZip(String path, String zipname, Listener listener) {

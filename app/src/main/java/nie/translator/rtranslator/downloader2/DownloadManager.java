@@ -6,10 +6,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 
@@ -20,8 +24,8 @@ public class DownloadManager implements ServiceConnection {
     @Nullable
     private DownloaderService downloaderService;
     private final Downloader2.ClientCallback serviceCallback;
-    private boolean serviceStarted = false;
-
+    private ArrayList<DownloadGroupInfo> downloadsToStart = new ArrayList<>();
+    private boolean shouldStartAllDownloads = false;
 
 
     public DownloadManager(Context context) {
@@ -58,25 +62,14 @@ public class DownloadManager implements ServiceConnection {
     }
 
     /**
-     * This method will start the download service and resume all the unfinished downloads
+     * This method will start the download service (if there are downloads to resume) and resume all the unfinished downloads
      */
-    public void startService(){
-        final Intent intent = new Intent(context, DownloaderService.class);
-        //intent.putExtra("notification", notification);
-        context.startService(intent);
-        this.serviceStarted = true;
-        if (callback != null) {   //if we have previously called subscribe before starting the service we will bind here
-            boolean result = context.bindService(new Intent(context, DownloaderService.class), this, BIND_ABOVE_CLIENT);
-            Log.d("bind download", result ? "success" : "failed");
-        }
-    }
-
-    public void subscribe(@Nullable Callback callback) {
+    public void subscribeAndResumeDownload(@Nullable Callback callback) {
         if(this.callback == null) {
             this.callback = callback;
-            if(serviceStarted) {  //if we have not started yet the service, we will bind after starting it, not now (this way the service will not stop when we unbind)
-                boolean result = context.bindService(new Intent(context, DownloaderService.class), this, BIND_ABOVE_CLIENT);
-                Log.d("bind download", result ? "success" : "failed");
+            boolean shouldStartService = areDownloadsRunning(false);
+            if(shouldStartService) {
+                startAndBindService();
             }
         }
     }
@@ -91,12 +84,15 @@ public class DownloadManager implements ServiceConnection {
         }
     }
 
-    public boolean startDownload(DownloadGroupInfo downloadGroup){
-        if(downloaderService != null) {
+    public void startDownload(DownloadGroupInfo downloadGroup){
+        if(downloaderService == null && !downloadsToStart.contains(downloadGroup)){
+            downloadsToStart.add(downloadGroup);
+            if(!DownloaderService.running){
+                startAndBindService();
+            }
+        }else if(downloaderService != null) {
             downloaderService.startDownload(downloadGroup);
-            return true;
         }
-        return false;
     }
 
     public boolean stopDownload(DownloadGroupInfo downloadGroup){
@@ -107,8 +103,21 @@ public class DownloadManager implements ServiceConnection {
         return false;
     }
 
-    public boolean startAllDownloads() {
+    public boolean cancelDownload(DownloadGroupInfo downloadGroup){
         if(downloaderService != null) {
+            downloaderService.cancelDownload(downloadGroup);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean startAllDownloads() {
+        if(downloaderService == null && !shouldStartAllDownloads){
+            shouldStartAllDownloads = true;
+            if(!DownloaderService.running){
+                startAndBindService();
+            }
+        } else if(downloaderService != null) {
             downloaderService.startAllDownloads();
             return true;
         }
@@ -123,6 +132,14 @@ public class DownloadManager implements ServiceConnection {
         return false;
     }
 
+    public boolean cancelAllDownloads() {
+        if(downloaderService != null) {
+            downloaderService.cancelAllDownloads();
+            return true;
+        }
+        return false;
+    }
+
     public ArrayList<DownloadGroupInfo> getDownloadsStatus() {
         if (downloaderService != null) {
             return downloaderService.getDownloadsStatus();
@@ -130,11 +147,46 @@ public class DownloadManager implements ServiceConnection {
         return null;
     }
 
+    private void startAndBindService(){
+        // start the service
+        final Intent intent = new Intent(context, DownloaderService.class);
+        context.startService(intent);
+        //we bind to the service
+        boolean result = context.bindService(new Intent(context, DownloaderService.class), this, BIND_ABOVE_CLIENT);
+        Log.d("bind download", result ? "success" : "failed");
+    }
+
+    private boolean areDownloadsRunning(boolean includePaused){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        if (!downloadsStatusString.isEmpty()) {
+            //we check if there are unfinished downloads that are not paused (or also paused ones if includePaused is true)
+            Gson gson = new Gson();
+            ArrayList<DownloadGroupInfo> downloadGroupInfos = gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
+            if (downloadGroupInfos != null) {
+                for (DownloadGroupInfo groupInfo : downloadGroupInfos) {
+                    if (!groupInfo.isAllDownloadCompleted() && (includePaused || groupInfo.getRunningDownloadIndex() != -1)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
         this.downloaderService = ((DownloaderService.LocalBinder) iBinder).getService();
         downloaderService.registerClient(serviceCallback);
         if(callback != null) callback.onServiceConnected();
+        for(DownloadGroupInfo downloadGroup: downloadsToStart) {
+            downloaderService.startDownload(downloadGroup);
+        }
+        downloadsToStart.clear();
+        if(shouldStartAllDownloads){
+            downloaderService.startAllDownloads();
+            shouldStartAllDownloads = false;
+        }
     }
 
     @Override

@@ -33,7 +33,7 @@ public class DownloaderService extends Service {
     private long lastSummaryUpdateTime = 0;
     private final java.util.Map<Integer, Integer> lastChildProgresses = new java.util.HashMap<>();
     private final java.util.Map<Integer, Long> lastChildUpdateTimes = new java.util.HashMap<>();
-    private boolean started = false;
+    public static boolean running = false;
 
     public class LocalBinder extends Binder {
         DownloaderService getService() {
@@ -52,7 +52,7 @@ public class DownloaderService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("download", "download service started");
-        if(started) {
+        if(!running) {
             // Initialize the notification system
             notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             summaryBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
@@ -85,7 +85,7 @@ public class DownloaderService extends Service {
                 }
             }
         }
-        started = true;
+        running = true;
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -397,6 +397,7 @@ public class DownloaderService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        running = false;
         synchronized (downloaders) {
             downloaders.clear();
         }

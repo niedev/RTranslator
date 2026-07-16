@@ -124,6 +124,7 @@ dependencies {
     implementation "androidx.preference:preference:1.1.0-alpha02"  //prima era 1.1.0-alpha02
     implementation "androidx.core:core-splashscreen:1.0.1"
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+    implementation "com.github.worker8:RadioGroupPlus:1.0.1"
     //Download library
     implementation 'com.github.amitshekhariitbhu:PRDownloader:1.0.2'
     // DJL HuggingFace tokenizers wrapper

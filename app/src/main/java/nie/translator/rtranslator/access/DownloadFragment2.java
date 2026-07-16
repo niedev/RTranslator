@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.icu.text.DecimalFormat;
 import android.os.Bundle;
 import android.os.Looper;
-import android.telecom.Call;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +42,6 @@ import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
 import nie.translator.rtranslator.downloader2.DownloadInfo;
 import nie.translator.rtranslator.downloader2.DownloadInfoExtended;
 import nie.translator.rtranslator.downloader2.DownloadManager;
-import nie.translator.rtranslator.downloader2.Downloader2;
 
 public class DownloadFragment2 extends Fragment {
     @Nullable
@@ -229,7 +227,6 @@ public class DownloadFragment2 extends Fragment {
     public void onStart() {
         super.onStart();
         if(global != null && DOWNLOAD_INFOS != null) {
-            downloader.startService(); // we eventually start the service (if it is already started nothing will happen)
             //if the internal or external free memory are low, we show a warning
             double requiredSize = 0;
             for (DownloadInfo downloadInfo : DOWNLOAD_INFOS) {
@@ -263,6 +260,7 @@ public class DownloadFragment2 extends Fragment {
                                         this.onProgress(downloadStatus.get(index), runningDownload, downloadStatus.get(index).getCurrentProgress(), runningDownload.getCurrentProgress(), runningDownload.isUnzipping(), runningDownload.isTestingIntegrity());
                                     }
                                 }
+                                //todo: manage the case where a download is paused
                             }
                         }
                     }
@@ -307,7 +305,7 @@ public class DownloadFragment2 extends Fragment {
                 }
             };
 
-            downloader.subscribe(callback);
+            downloader.subscribeAndResumeDownload(callback);
         }
     }
 
