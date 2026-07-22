@@ -1,8 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    * Copyright 2016 Luca Martino.
+    *
+    * Licensed under the Apache License, Version 2.0 (the "License");
+    * you may not use this file except in compliance with the License.
+    * You may obtain a copyFile of the License at
+    *
+    * http://www.apache.org/licenses/LICENSE-2.0
+    *
+    * Unless required by applicable law or agreed to in writing, software
+    * distributed under the License is distributed on an "AS IS" BASIS,
+    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    * See the License for the specific language governing permissions and
+    * limitations under the License.
+    *-->
+
 <languages>
     <language>
-        <code>abt</code>
+        <code>ar</code>
     </language>
     <language>
-        <code>ace</code>
+        <code>bg</code>
     </language>
+    <language>
+        <code>bn</code>
+    </language>
+    <language>
+        <code>ca</code>
+    </language>
+    <language>
+        <code>cs</code>
+    </language>
+    <language>
+        <code>da</code>
+    </language>
+    <language>
+        <code>de</code>
+    </language>
+    <language>
+        <code>el</code>
+    </language>
+    <language>
+        <code>es</code>
+    </language>
+    <language>
+        <code>et</code>
+    </language>
+    <language>
+        <code>eu</code>
+    </language>
+    <language>
+        <code>fa</code>
+    </language>
+    <language>
+        <code>fi</code>
+    </language>
+    <language>
+        <code>fr</code>
+    </language>
+    <language>
+        <code>gl</code>
+    </language>
+    <language>
+        <code>gu</code>
+    </language>
+    <language>
+        <code>he</code>
+    </language>
+    <language>
+        <code>hi</code>
+    </language>
+    <language>
+        <code>hu</code>
+    </language>
+    <language>
+        <code>id</code>
+    </language>
+    <language>
+        <code>is</code>
+    </language>
+    <language>
+        <code>it</code>
+    </language>
+    <language>
+        <code>ja</code>
+    </language>
+    <language>
+        <code>kn</code>
+    </language>
+    <language>
+        <code>ko</code>
+    </language>
+    <language>
+        <code>lt</code>
+    </language>
+    <language>
+        <code>lv</code>
+    </language>
+    <language>
+        <code>ml</code>
+    </language>
+    <language>
+        <code>ms</code>
+    </language>
+    <language>
+        <code>nb</code>
+    </language>
+    <language>
+        <code>nl</code>
+    </language>
+    <language>
+        <code>no</code>
+    </language>
+    <language>
+        <code>pl</code>
+    </language>
+    <language>
+        <code>pt</code>
+    </language>
+    <language>
+        <code>ro</code>
+    </language>
+    <language>
+        <code>ru</code>
+    </language>
+    <language>
+        <code>sk</code>
+    </language>
+    <language>
+        <code>sl</code>
+    </language>
+    <language>
+        <code>sv</code>
+    </language>
+    <language>
+        <code>ta</code>
+    </language>
+    <language>
+        <code>te</code>
+    </language>
+    <language>
+        <code>th</code>
+    </language>
+    <language>
+        <code>tr</code>
+    </language>
+    <language>
+        <code>uk</code>
+    </language>
+    <language>
+        <code>vi</code>
+    </language>
+    <language>
+        <code>zh</code>
+    </language>
+    <!--<language>
+        <code>zh_hant</code>
+    </language> todo: make traditional chinese model work -->
 </languages>

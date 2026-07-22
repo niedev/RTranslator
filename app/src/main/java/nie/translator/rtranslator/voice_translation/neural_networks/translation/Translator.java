@@ -1837,32 +1837,28 @@ public class Translator extends NeuralNetworkApi {
         boolean qualityLow = sharedPreferences.getBoolean("languagesNNQualityLow", false);
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         try {
-            if(mode != MOZILLA) {
-                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-                Document document = null;
-                if (mode == MADLAD || mode == MADLAD_CACHE) {
-                    if (!qualityLow) {
-                        document = documentBuilder.parse(context.getResources().openRawResource(R.raw.madlad_supported_launguages));
-                    }else{
-                        document = documentBuilder.parse(context.getResources().openRawResource(R.raw.madlad_supported_launguages_all));
-                    }
-                } else if (mode == NLLB || mode == NLLB_CACHE) {
-                    if (!qualityLow) {
-                        document = documentBuilder.parse(context.getResources().openRawResource(R.raw.nllb_supported_languages));
-                    } else {
-                        document = documentBuilder.parse(context.getResources().openRawResource(R.raw.nllb_supported_languages_all));
-                    }
-                }else if (mode == HY_MT) {
-                    document = documentBuilder.parse(context.getResources().openRawResource(R.raw.hy_mt_supported_languages));
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            Document document = null;
+            if (mode == MADLAD || mode == MADLAD_CACHE) {
+                if (!qualityLow) {
+                    document = documentBuilder.parse(context.getResources().openRawResource(R.raw.madlad_supported_launguages));
+                }else{
+                    document = documentBuilder.parse(context.getResources().openRawResource(R.raw.madlad_supported_launguages_all));
                 }
-                NodeList list = document.getElementsByTagName("code");
-                for (int i = 0; i < list.getLength(); i++) {
-                    languages.add(CustomLocale.getInstance(list.item(i).getTextContent()));
+            } else if (mode == NLLB || mode == NLLB_CACHE) {
+                if (!qualityLow) {
+                    document = documentBuilder.parse(context.getResources().openRawResource(R.raw.nllb_supported_languages));
+                } else {
+                    document = documentBuilder.parse(context.getResources().openRawResource(R.raw.nllb_supported_languages_all));
                 }
-            }else{
-                for(String lang: mozillaLanguages){
-                    languages.add(new CustomLocale(lang));
-                }
+            }else if (mode == HY_MT) {
+                document = documentBuilder.parse(context.getResources().openRawResource(R.raw.hy_mt_supported_languages));
+            }else if (mode == MOZILLA) {
+                document = documentBuilder.parse(context.getResources().openRawResource(R.raw.mozilla_supported_languages));
+            }
+            NodeList list = document.getElementsByTagName("code");
+            for (int i = 0; i < list.getLength(); i++) {
+                languages.add(CustomLocale.getInstance(list.item(i).getTextContent()));
             }
         } catch (IOException | SAXException | ParserConfigurationException e) {
             e.printStackTrace();
