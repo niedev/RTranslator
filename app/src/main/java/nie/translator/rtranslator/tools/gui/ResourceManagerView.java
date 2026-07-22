@@ -91,7 +91,12 @@ public class ResourceManagerView extends ConstraintLayout {
                 titleResource.setText(a.getString(R.styleable.ResourceManagerView_modelTitle));
             }
             if (a.hasValue(R.styleable.ResourceManagerView_modelDescription)) {
-                descriptionResource.setText(a.getString(R.styleable.ResourceManagerView_modelDescription));
+                String descriptionText = a.getString(R.styleable.ResourceManagerView_modelDescription);
+                if(descriptionText != null && !descriptionText.isEmpty()){
+                    descriptionResource.setText(descriptionText);
+                }else{
+                    descriptionResource.setVisibility(GONE);
+                }
             }
             if (a.hasValue(R.styleable.ResourceManagerView_modelSize)) {
                 float sizeInMB = a.getInt(R.styleable.ResourceManagerView_modelSize, 0);
@@ -101,6 +106,12 @@ public class ResourceManagerView extends ConstraintLayout {
                 }else{
                     DecimalFormat df = new DecimalFormat("0");
                     textResource.setText(df.format(sizeInMB) + " MB");
+                }
+            }
+            if (a.hasValue(R.styleable.ResourceManagerView_state)) {
+                int stateIndex = a.getInt(R.styleable.ResourceManagerView_state, 0);
+                if(stateIndex >= 0 && stateIndex < State.values().length) {
+                    setState(State.values()[stateIndex], false);
                 }
             }
 
@@ -239,7 +250,7 @@ public class ResourceManagerView extends ConstraintLayout {
             int buttonDeleteSize = ResourceManagerView.BUTTON_DELETE_SIZE_REDUCED_PX;
             ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) buttonDelete.getLayoutParams();
             layoutParams.width = buttonDeleteSize;
-            layoutParams.height = buttonDeleteSize;
+            //layoutParams.height = buttonDeleteSize;
             layoutParams.rightMargin = buttonDeleteRightMargin;
             buttonDelete.setLayoutParams(layoutParams);
             ConstraintLayout.LayoutParams layoutParams2 = (ConstraintLayout.LayoutParams) progressBarDownload.getLayoutParams();
@@ -251,7 +262,7 @@ public class ResourceManagerView extends ConstraintLayout {
             int buttonDeleteSize = Tools.convertDpToPixels(getContext(), ResourceManagerView.BUTTON_DELETE_SIZE);
             ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) buttonDelete.getLayoutParams();
             layoutParams.width = buttonDeleteSize;
-            layoutParams.height = buttonDeleteSize;
+            //layoutParams.height = buttonDeleteSize;
             layoutParams.rightMargin = buttonDeleteRightMargin;
             buttonDelete.setLayoutParams(layoutParams);
             ConstraintLayout.LayoutParams layoutParams2 = (ConstraintLayout.LayoutParams) progressBarDownload.getLayoutParams();

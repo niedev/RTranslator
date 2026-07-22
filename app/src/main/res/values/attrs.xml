@@ -4,6 +4,12 @@
         <attr name="modelTitle" format="string" />
         <attr name="modelDescription" format="string" />
         <attr name="modelSize" format="integer" />
+        <attr name="state" format="enum">
+            <enum name="empty" value="0" />
+            <enum name="paused" value="1" />
+            <enum name="downloading" value="2" />
+            <enum name="downloaded" value="3" />
+        </attr>
     </declare-styleable>
 
     <declare-styleable name="SegmentProgressBar">
