@@ -68,7 +68,8 @@ public class SettingsActivity extends GeneralActivity {
                 break;
             }
             case MODEL_MANAGER: {
-                ModelManagerFragmentOld modelManagerFragment = new ModelManagerFragmentOld();
+                //ModelManagerFragmentOld modelManagerFragment = new ModelManagerFragmentOld();
+                ModelManagerFragment modelManagerFragment = new ModelManagerFragment();
                 if (bundle != null) {
                     modelManagerFragment.setArguments(bundle);
                 }

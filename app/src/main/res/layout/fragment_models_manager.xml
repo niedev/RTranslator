@@ -10,7 +10,7 @@
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -18,11 +18,12 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="Translation Model"
                 android:fontFamily="sans-serif-medium"
                 android:textColor="@color/accent"
@@ -60,10 +61,11 @@
                             android:id="@+id/titleMozilla"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
                             android:layout_marginBottom="2dp"
                             android:text="Mozilla"
-                            android:textSize="18sp"
                             android:textColor="@color/very_very_dark_gray"
+                            android:textSize="18sp"
                             android:textStyle="bold"
                             app:layout_constraintBottom_toBottomOf="@+id/radioMozilla"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -75,6 +77,7 @@
                             android:id="@+id/descriptionMozilla"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
                             android:layout_marginTop="16dp"
                             android:layout_marginEnd="16dp"
                             android:layout_marginBottom="8dp"
@@ -97,7 +100,7 @@
                             app:layout_constraintHorizontal_bias="1.0"
                             app:layout_constraintStart_toEndOf="@+id/titleMozilla"
                             app:layout_constraintTop_toTopOf="@+id/titleMozilla"
-                            app:srcCompat="@drawable/right_arrow_icon"
+                            android:src="@drawable/right_arrow_icon"
                             app:tint="@color/dark_gray" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -126,13 +129,14 @@
                             android:id="@+id/modelHy"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
                             android:layout_marginEnd="16dp"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toEndOf="@+id/radioHY"
                             app:layout_constraintTop_toTopOf="parent"
                             app:modelDescription="Middleweight model, it has the best quality, comparable to Deepseek."
-                            app:modelSize="2GB"
+                            app:modelSize="1790"
                             app:modelTitle="HY-MT" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -157,13 +161,14 @@
                             android:id="@+id/modelMadlad"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
                             android:layout_marginEnd="16dp"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toEndOf="@+id/radioMadlad"
                             app:layout_constraintTop_toTopOf="parent"
                             app:modelDescription="Heavy model, it has a quality in between the Mozilla and HY-MT models but supports 400 languages."
-                            app:modelSize="3GB"
+                            app:modelSize="1380"
                             app:modelTitle="Madlad" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </LinearLayout>
@@ -172,18 +177,43 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <TextView
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="2"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="8dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
-                    android:layout_weight="2"
-                    android:textStyle="normal"
-                    android:textColor="@color/black"
-                    android:textSize="16sp"
-                    android:text="Use Mozilla for WalkieTalkie and Conversation modes" />
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:id="@+id/titleMozillaForVoice"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_weight="2"
+                        android:text="Use mozilla models for WalkieTalkie and Conversation modes to reduce latency in Real-Time translation modes."
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/textView2"
+                        app:layout_constraintVertical_bias="0.0" />
+
+                    <TextView
+                        android:id="@+id/textView2"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="Mozilla for Voice Translation Modes"
+                        android:textColor="@color/very_very_dark_gray"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.0" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchMozillaForVoiceModes"
                     android:layout_width="wrap_content"
@@ -196,6 +226,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="Translation Enhancements"
                 android:fontFamily="sans-serif-medium"
                 android:textColor="@color/accent"
@@ -210,7 +241,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     app:modelDescription="Tatoeba dataset that will be used to improve the translation of some sentences"
-                    app:modelSize="2GB"
+                    app:modelSize="596"
                     app:modelTitle="Tatoeba"
                     android:layout_weight="2"/>
                 <com.google.android.material.switchmaterial.SwitchMaterial
@@ -274,6 +305,146 @@
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="16dp"/>
             </LinearLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <nie.translator.rtranslator.tools.gui.SegmentProgressBar
+                    android:id="@+id/barRam"
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="32dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
+                    app:backgroundColor="@color/very_very_light_gray"
+                    app:cornerRadius="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    app:maxProgress="100"
+                    app:segmentColors="@array/model_manager_progress_colors"
+                    app:segmentProgresses="@array/model_manager_progress_values" />
+
+                <TextView
+                    android:id="@+id/textRam"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="RAM"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="@+id/barRam"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="@+id/barRam"
+                    app:layout_constraintTop_toBottomOf="@+id/barRam"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <TextView
+                    android:id="@+id/textRamUsage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="11"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/textRamUsage2"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toStartOf="@+id/barRam"
+                    app:layout_constraintTop_toBottomOf="@+id/barRam"
+                    app:layout_constraintVertical_bias="0.0" />
+                <TextView
+                    android:id="@+id/textRamUsage2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="/12 GB"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="@+id/barRam"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toStartOf="@+id/barRam"
+                    app:layout_constraintTop_toBottomOf="@+id/barRam"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <!-- Legend Container with Flow for wrapping elements -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="16dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textRam">
+
+                    <androidx.constraintlayout.helper.widget.Flow
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:constraint_referenced_ids="item1,item2,item3,item4"
+                        app:flow_horizontalBias="0.0"
+                        app:flow_horizontalGap="16dp"
+                        app:flow_horizontalStyle="packed"
+                        app:flow_verticalGap="12dp"
+                        app:flow_wrapMode="chain"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <!-- Item 1 -->
+                    <TextView
+                        android:id="@+id/item1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="@color/light_gray"
+                        android:gravity="center_vertical"
+                        android:text="System and other apps"
+                        android:drawableStart="@drawable/dot_icon" />
+
+                    <!-- Item 2 -->
+                    <TextView
+                        android:id="@+id/item2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="@color/blue"
+                        android:gravity="center_vertical"
+                        android:text="Speech Recognition Model"
+                        android:drawableStart="@drawable/dot_icon" />
+
+                    <!-- Item 3 -->
+                    <TextView
+                        android:id="@+id/item3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="@color/yellow"
+                        android:gravity="center_vertical"
+                        android:text="Translation Model"
+                        android:drawableStart="@drawable/dot_icon" />
+
+                    <!-- Item 5 -->
+                    <TextView
+                        android:id="@+id/item4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="@color/purple"
+                        android:gravity="center_vertical"
+                        android:text="Translation Enhancements"
+                        android:drawableStart="@drawable/dot_icon" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonApply"
                 android:layout_width="140dp"

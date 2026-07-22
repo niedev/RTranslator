@@ -52,7 +52,7 @@
             app:layout_constraintGuide_begin="54dp" />
 
         <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:id="@+id/progressBar"
+            android:id="@+id/barRam"
             android:layout_width="0dp"
             android:layout_height="22dp"
             android:layout_marginStart="48dp"
@@ -79,7 +79,7 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="24dp"
             android:gravity="center"
-            app:layout_constraintBottom_toTopOf="@+id/progressBar"
+            app:layout_constraintBottom_toTopOf="@+id/barRam"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"

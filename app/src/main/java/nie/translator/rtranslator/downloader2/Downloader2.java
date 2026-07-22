@@ -13,6 +13,7 @@ import com.downloader.OnProgressListener;
 import com.downloader.OnStartOrResumeListener;
 import com.downloader.PRDownloader;
 import com.downloader.Progress;
+import com.downloader.Status;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -35,7 +36,6 @@ public class Downloader2 {
     private final DownloadGroupInfo downloadGroupInfo;
     private ClientCallback callback;
     private int lastDownloadSuccessIndex = -1;
-    private boolean allCompleted = false;
 
     public Downloader2(DownloadGroupInfo downloadGroupInfo, Context context, ClientCallback callback) {
         this.downloadGroupInfo = downloadGroupInfo;
@@ -76,8 +76,7 @@ public class Downloader2 {
     public void pauseDownloads(){
         int currentDownloadIndex = downloadGroupInfo.getRunningDownloadIndex();
         if(currentDownloadIndex != -1) {
-            // we cancel the current download (for now this is the best option, it is difficult, if not impossible, to pause without having access to the server)
-            PRDownloader.cancel(downloadGroupInfo.downloadsInfo[currentDownloadIndex].getDownloadId());
+            PRDownloader.pause(downloadGroupInfo.downloadsInfo[currentDownloadIndex].getDownloadId());
             downloadGroupInfo.setRunningDownloadIndex(-1);
         }
     }
@@ -89,7 +88,7 @@ public class Downloader2 {
             PRDownloader.cancel(downloadGroupInfo.downloadsInfo[currentDownloadIndex].getDownloadId());
         }
         // we delete the already downloaded files of this group of download
-        for (int i = 0; i <= downloadGroupInfo.downloadsInfo.length; i++){
+        for (int i = 0; i < downloadGroupInfo.downloadsInfo.length; i++){
             File file = new File(downloadGroupInfo.downloadsInfo[i].getDestinationCompletePath());
             if (file.exists()) {
                 file.delete();
@@ -104,7 +103,15 @@ public class Downloader2 {
 
     private void startDownload(int index){
         downloadGroupInfo.setRunningDownloadIndex(index);
-        int downloadId = PRDownloader.download(downloadGroupInfo.downloadsInfo[index].getUrl(), downloadGroupInfo.downloadsInfo[index].getDestinationPath(), downloadGroupInfo.downloadsInfo[index].getName())
+        int downloadId = downloadGroupInfo.downloadsInfo[index].getDownloadId();
+        if(downloadId != -1){
+            if(PRDownloader.getStatus(downloadId) == Status.PAUSED){
+                PRDownloader.resume(downloadId);  //resume if the download was paused during this lifetime of the app
+                return;
+            }
+        }
+        //start the download from scratch or resume it after the app has been restarted
+        downloadId = PRDownloader.download(downloadGroupInfo.downloadsInfo[index].getUrl(), downloadGroupInfo.downloadsInfo[index].getDestinationPath(), downloadGroupInfo.downloadsInfo[index].getName())
                 .build()
                 .setOnStartOrResumeListener(new OnStartOrResumeListener() {
                     @Override
@@ -134,8 +141,8 @@ public class Downloader2 {
                         downloadGroupInfo.setCurrentProgress(percentageTotalProgress);
                         if(runningDownloadIndex >= 0) {
                             downloadGroupInfo.downloadsInfo[runningDownloadIndex].setCurrentProgress(percentageProgress);
+                            callback.onProgress(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex], percentageTotalProgress, percentageProgress, false, false);
                         }
-                        callback.onProgress(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex], percentageTotalProgress, percentageProgress, false, false);
                     }
                 })
                 .start(new OnDownloadListener() {
@@ -226,7 +233,7 @@ public class Downloader2 {
             startDownload(runningDownloadIndex+1);
         } else {
             //we notify the end of all downloads
-            allCompleted = true;
+            downloadGroupInfo.setAllDownloadCompleted(true);
             callback.onAllCompleted(downloadGroupInfo);
         }
     }
@@ -267,7 +274,7 @@ public class Downloader2 {
         return super.equals(obj);
     }
 
-    private int findFirstIncompletedDownload(){
+    public int findFirstIncompletedDownload(){
         int index = 0;
         for(int i=0; i<downloadGroupInfo.downloadsInfo.length; i++){
             if(downloadGroupInfo.downloadsInfo[i].isAllCompleted()){

@@ -87,7 +87,7 @@ public class DownloadFragment2 extends Fragment {
         downloadErrorText = view.findViewById(R.id.text_error_download);
         transferErrorText = view.findViewById(R.id.text_error_transfer);
         storageWarningText = view.findViewById(R.id.text_error_storage);
-        progressBar = view.findViewById(R.id.progressBar);
+        progressBar = view.findViewById(R.id.barRam);
         progressDescriptionText = view.findViewById(R.id.progress_description);
         pauseButton = view.findViewById(R.id.pauseButton);
         pauseButton.setTag("iconCancel");
@@ -205,7 +205,7 @@ public class DownloadFragment2 extends Fragment {
             public void onClick(View v) {
                 if(pauseButton.getTag().equals("iconCancel")){
                     //we pause the download
-                    boolean success = downloader.stopAllDownloads();
+                    boolean success = downloader.pauseAllDownloads();
                     if(success) {
                         //we change the icon and tag
                         pauseButton.setImageResource(R.drawable.play_icon);
@@ -242,9 +242,6 @@ public class DownloadFragment2 extends Fragment {
             final DownloadManager.Callback callback = new DownloadManager.Callback() {
                 public void onServiceConnected(){
                     ArrayList<DownloadGroupInfo> downloadStatus = downloader.getDownloadsStatus();
-                    // we eventually start the download if it is the first time
-                    DownloadGroupInfo downloadGroupInfo = new DownloadGroupInfo(DOWNLOAD_INFOS);
-                    if(downloadStatus == null || !downloadStatus.contains(downloadGroupInfo)) downloader.startDownload(downloadGroupInfo);
                     // we change the GUI based on current download status
                     if(downloadStatus != null){
                         int index = downloadStatus.indexOf(DOWNLOAD_INFOS);
@@ -306,6 +303,11 @@ public class DownloadFragment2 extends Fragment {
             };
 
             downloader.subscribeAndResumeDownload(callback);
+            ArrayList<DownloadGroupInfo> downloadStatus = downloader.getSavedDownloadStatus();
+            // we eventually start the download if it is the first time
+            DownloadGroupInfo downloadGroupInfo = new DownloadGroupInfo(DOWNLOAD_INFOS);
+            if(downloadStatus == null || !downloadStatus.contains(downloadGroupInfo)) downloader.startDownload(downloadGroupInfo);
+
         }
     }
 

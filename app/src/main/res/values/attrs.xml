@@ -3,6 +3,18 @@
     <declare-styleable name="ResourceManagerView">
         <attr name="modelTitle" format="string" />
         <attr name="modelDescription" format="string" />
-        <attr name="modelSize" format="" />
+        <attr name="modelSize" format="integer" />
+    </declare-styleable>
+
+    <declare-styleable name="SegmentProgressBar">
+        <attr name="backgroundColor" format="color" />
+        <attr name="cornerRadius" format="dimension" />
+        <attr name="maxProgress" format="float" />
+
+        <!-- Comma-separated hex colors (e.g., "#ffbfbf,#a2fab3,#6faffc") -->
+        <attr name="segmentColors" format="reference" />
+
+        <!-- Comma-separated progress values (e.g., "30,40,20") -->
+        <attr name="segmentProgresses" format="reference" />
     </declare-styleable>
 </resources>

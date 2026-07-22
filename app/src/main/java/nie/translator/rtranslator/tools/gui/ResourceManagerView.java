@@ -3,6 +3,8 @@ package nie.translator.rtranslator.tools.gui;
 import android.animation.Animator;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.icu.text.DecimalFormat;
+import android.icu.text.DecimalFormatSymbols;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +14,10 @@ import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import java.util.Locale;
+
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.animations.CustomAnimator;
 
 public class ResourceManagerView extends ConstraintLayout {
@@ -23,11 +28,14 @@ public class ResourceManagerView extends ConstraintLayout {
         DOWNLOADED
     };
 
-    public static int BUTTON_DELETE_LEFT_MARGIN = 16;
-    public static int BUTTON_DELETE_RIGHT_MARGIN = 16;
-    public static int BUTTON_DELETE_SIZE = 30;
+    public static final int BUTTON_DELETE_LEFT_MARGIN = 8;
+    public static final int BUTTON_DELETE_RIGHT_MARGIN = 16;
+    public static final int BUTTON_DELETE_SIZE = 24;
+    public static int BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX;
+    public static int BUTTON_DELETE_RIGHT_MARGIN_REDUCED_PX;
+    public static int BUTTON_DELETE_SIZE_REDUCED_PX;
 
-    private State state;
+    private State state = State.EMPTY;
     private TextView titleResource;
     private TextView descriptionResource;
     private TextView textResource;
@@ -69,6 +77,12 @@ public class ResourceManagerView extends ConstraintLayout {
         playIcon = findViewById(R.id.playImage);
         pauseIcon = findViewById(R.id.pauseImage);
 
+        //initialize buttonDelete reduced measures
+        ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) buttonDelete.getLayoutParams();
+        BUTTON_DELETE_SIZE_REDUCED_PX = layoutParams.width;
+        BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX = layoutParams.rightMargin;
+        BUTTON_DELETE_RIGHT_MARGIN_REDUCED_PX = layoutParams.leftMargin;
+
         // Apply custom XML attributes if provided
         if (attrs != null) {
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ResourceManagerView);
@@ -80,7 +94,14 @@ public class ResourceManagerView extends ConstraintLayout {
                 descriptionResource.setText(a.getString(R.styleable.ResourceManagerView_modelDescription));
             }
             if (a.hasValue(R.styleable.ResourceManagerView_modelSize)) {
-                textResource.setText(a.getString(R.styleable.ResourceManagerView_modelSize));
+                float sizeInMB = a.getInt(R.styleable.ResourceManagerView_modelSize, 0);
+                if(sizeInMB >= 1000){
+                    DecimalFormat df = new DecimalFormat("0.#", new DecimalFormatSymbols(Locale.US));
+                    textResource.setText(df.format(sizeInMB / 1000) + " GB");
+                }else{
+                    DecimalFormat df = new DecimalFormat("0");
+                    textResource.setText(df.format(sizeInMB) + " MB");
+                }
             }
 
             a.recycle();
@@ -136,14 +157,14 @@ public class ResourceManagerView extends ConstraintLayout {
                             }
                         });
                     }else if(oldState == State.PAUSED){
-                        pauseIcon.setVisibility(View.INVISIBLE);
-                        playIcon.setVisibility(View.VISIBLE);
+                        pauseIcon.setVisibility(View.VISIBLE);
+                        playIcon.setVisibility(View.INVISIBLE);
                     }
                     break;
                 case PAUSED:
                     if(oldState == State.DOWNLOADING){
-                        pauseIcon.setVisibility(View.VISIBLE);
-                        playIcon.setVisibility(View.INVISIBLE);
+                        pauseIcon.setVisibility(View.INVISIBLE);
+                        playIcon.setVisibility(View.VISIBLE);
                     }
                     break;
                 case EMPTY:
@@ -181,6 +202,7 @@ public class ResourceManagerView extends ConstraintLayout {
                     pauseIcon.setVisibility(VISIBLE);
                     playIcon.setVisibility(INVISIBLE);
                     buttonDelete.setVisibility(VISIBLE);
+                    setButtonDeleteSize(false);
                     break;
                 case PAUSED:
                     buttonDownload.setVisibility(INVISIBLE);
@@ -188,6 +210,7 @@ public class ResourceManagerView extends ConstraintLayout {
                     pauseIcon.setVisibility(INVISIBLE);
                     playIcon.setVisibility(VISIBLE);
                     buttonDelete.setVisibility(VISIBLE);
+                    setButtonDeleteSize(false);
                     break;
                 case EMPTY:
                     buttonDownload.setVisibility(VISIBLE);
@@ -195,6 +218,7 @@ public class ResourceManagerView extends ConstraintLayout {
                     pauseIcon.setVisibility(INVISIBLE);
                     playIcon.setVisibility(INVISIBLE);
                     buttonDelete.setVisibility(INVISIBLE);
+                    setButtonDeleteSize(true);
                     break;
                 case DOWNLOADED:
                     buttonDownload.setVisibility(INVISIBLE);
@@ -202,8 +226,37 @@ public class ResourceManagerView extends ConstraintLayout {
                     pauseIcon.setVisibility(INVISIBLE);
                     playIcon.setVisibility(INVISIBLE);
                     buttonDelete.setVisibility(VISIBLE);
+                    setButtonDeleteSize(false);
                     break;
             }
+        }
+    }
+
+    private void setButtonDeleteSize(boolean reduced){
+        if(reduced) {
+            int buttonDeleteLeftMargin = ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX;
+            int buttonDeleteRightMargin = ResourceManagerView.BUTTON_DELETE_RIGHT_MARGIN_REDUCED_PX;
+            int buttonDeleteSize = ResourceManagerView.BUTTON_DELETE_SIZE_REDUCED_PX;
+            ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) buttonDelete.getLayoutParams();
+            layoutParams.width = buttonDeleteSize;
+            layoutParams.height = buttonDeleteSize;
+            layoutParams.rightMargin = buttonDeleteRightMargin;
+            buttonDelete.setLayoutParams(layoutParams);
+            ConstraintLayout.LayoutParams layoutParams2 = (ConstraintLayout.LayoutParams) progressBarDownload.getLayoutParams();
+            layoutParams2.rightMargin = buttonDeleteLeftMargin;
+            progressBarDownload.setLayoutParams(layoutParams2);
+        }else{
+            int buttonDeleteLeftMargin = Tools.convertDpToPixels(getContext(), ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN);
+            int buttonDeleteRightMargin = Tools.convertDpToPixels(getContext(), ResourceManagerView.BUTTON_DELETE_RIGHT_MARGIN);
+            int buttonDeleteSize = Tools.convertDpToPixels(getContext(), ResourceManagerView.BUTTON_DELETE_SIZE);
+            ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) buttonDelete.getLayoutParams();
+            layoutParams.width = buttonDeleteSize;
+            layoutParams.height = buttonDeleteSize;
+            layoutParams.rightMargin = buttonDeleteRightMargin;
+            buttonDelete.setLayoutParams(layoutParams);
+            ConstraintLayout.LayoutParams layoutParams2 = (ConstraintLayout.LayoutParams) progressBarDownload.getLayoutParams();
+            layoutParams2.rightMargin = buttonDeleteLeftMargin;
+            progressBarDownload.setLayoutParams(layoutParams2);
         }
     }
 

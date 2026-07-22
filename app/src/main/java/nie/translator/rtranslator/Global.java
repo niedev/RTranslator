@@ -111,10 +111,6 @@ public class Global extends Application implements DefaultLifecycleObserver {
         super.onCreate();
         mainHandler = new Handler(Looper.getMainLooper());
         recentPeersDataManager = new RecentPeersDataManager(this);
-        PRDownloaderConfig config = PRDownloaderConfig.newBuilder()
-                .setDatabaseEnabled(false)
-                .build();
-        PRDownloader.initialize(getApplicationContext(), config);
         //initializeBluetoothCommunicator();
         getMicSensitivity();
         createNotificationChannel();
@@ -742,25 +738,59 @@ public class Global extends Application implements DefaultLifecycleObserver {
     /**
      * Returns the total RAM size of the device in MB
      */
-    public long getTotalRamSize(){
+    public int getTotalRamSize(){
         ActivityManager actManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
         actManager.getMemoryInfo(memInfo);
         long totalMemory = memInfo.totalMem / 1000000L;
         android.util.Log.i("memory", "Total memory: " + totalMemory);
-        return totalMemory;
+        return (int) totalMemory;
     }
 
     /**
      * Returns the available RAM size of the device in MB
      */
-    public long getAvailableRamSize(){
+    public int getAvailableRamSize(){
         ActivityManager actManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
         actManager.getMemoryInfo(memInfo);
-        long totalMemory = memInfo.availMem;
-        android.util.Log.i("memory", "Total memory: " + totalMemory);
-        return totalMemory / 1000000L;
+        long availableMemory = memInfo.availMem;
+        android.util.Log.i("memory", "Total memory: " + availableMemory);
+        return (int) (availableMemory / 1000000);
+    }
+
+    /**
+     * Returns (in MB) the absolute maximum native RAM allocatable by forcing the OS
+     * to kill all other killable processes.
+     */
+    public int getMaxAllocatableRAM() {
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        if (activityManager == null) return 0;
+
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        activityManager.getMemoryInfo(memoryInfo);
+
+        // Total physical RAM available to the OS (already excludes GPU-reserved RAM)
+        long totalRam = memoryInfo.totalMem;
+
+        // Android doesn't have an API that shows the max amount of RAM available for native allocations before a crash occurs,
+        // so the best way (also hinted here https://developer.android.com/games/optimize/memory-allocation#conservative-memory-budgets)
+        // is to use a percentage of the total RAM between 50% and 25% as a hard limit of native RAM usage for a single app.
+        double maxPercentage = 0.45;
+
+        // The absolute theoretical maximum you can allocate before the OS targets YOU
+        long maxAllocatable = (long) (totalRam - (totalRam*maxPercentage)) / 1000000L;
+
+        // Return the result, ensuring we don't return a negative number on heavily constrained devices
+        return (int) Math.max(0, maxAllocatable);
+    }
+
+    public int getRamThreshold(){
+        ActivityManager actManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
+        actManager.getMemoryInfo(memInfo);
+        long threshold = memInfo.threshold;
+        return (int) (threshold / 1000000);
     }
 
     /**

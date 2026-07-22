@@ -14,7 +14,8 @@ import javax.annotation.Nonnull;
 import nie.translator.rtranslator.bluetooth.Peer;
 
 public class DownloadGroupInfo implements Parcelable{
-    public DownloadInfoExtended[] downloadsInfo;
+    @NonNull
+    public final DownloadInfoExtended[] downloadsInfo;
     public int runningDownloadIndex = -1;
     private int currentProgress = -1;
     private boolean allDownloadCompleted = false;

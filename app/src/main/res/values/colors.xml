@@ -42,4 +42,7 @@
     <color name="red">#d50000</color>
     <color name="yellow">#ffd600</color>
     <color name="green">#00c853</color>
+    <color name="blue">#6faffc</color>
+    <color name="purple">#BA68C8</color>
+    <color name="orange">#FF7043</color>
 </resources>

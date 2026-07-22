@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colors array -->
+    <integer-array name="model_manager_progress_colors">
+        <item>@color/light_gray</item>
+        <item>@color/blue</item>
+        <item>@color/yellow</item>
+        <item>@color/purple</item>
+    </integer-array>
+
+    <!-- Progress values array -->
+    <string-array name="model_manager_progress_values">
+        <item>45</item>
+        <item>15</item>
+        <item>18</item>
+        <item>5</item>
+    </string-array>
+</resources>

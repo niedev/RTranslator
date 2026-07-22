@@ -21,7 +21,6 @@ import android.animation.AnimatorSet;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -957,6 +956,8 @@ public class CustomAnimator {
         return animatorSet;
     }
 
+
+
     public Animator animateResourceDownloadStart(final Context context, ImageView buttonDownload, ProgressBar progressBar, ImageView pauseIcon, ImageView buttonDelete, final Listener listener){
         int duration = context.getResources().getInteger(R.integer.durationStandard);
 
@@ -977,7 +978,7 @@ public class CustomAnimator {
         Animator animationPauseIconAlpha = createAnimatorAlpha(pauseIcon, pauseIcon.getAlpha(), 1, duration);
         Animator animationProgressBarAlpha = createAnimatorAlpha(progressBar, progressBar.getAlpha(), 1, duration);
         Animator animationButtonDeleteAlpha = createAnimatorAlpha(buttonDelete, buttonDelete.getAlpha(), 1, duration);
-        Animator animationButtonDeleteLeftMargin = createAnimatorLeftMargin(buttonDelete, buttonDeleteLeftMarginInit, buttonDeleteLeftMargin, duration);
+        Animator animationButtonDeleteLeftMargin = createAnimatorRightMargin(progressBar, buttonDeleteLeftMarginInit, buttonDeleteLeftMargin, duration);
         Animator animationButtonDeleteRightMargin = createAnimatorRightMargin(buttonDelete, buttonDeleteRightMarginInit, buttonDeleteRightMargin, duration);
         Animator animationButtonDeleteHeight = createAnimatorHeight(buttonDelete, buttonDelete.getHeight(), buttonDeleteSize, duration);
         Animator animationButtonDeleteWidth = createAnimatorWidth(buttonDelete, buttonDelete.getWidth(), buttonDeleteSize, duration);
@@ -1024,11 +1025,11 @@ public class CustomAnimator {
         int duration = context.getResources().getInteger(R.integer.durationStandard);
 
         ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) buttonDelete.getLayoutParams();
-        int buttonDeleteLeftMarginInit = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN);
-        int buttonDeleteRightMarginInit = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_RIGHT_MARGIN);
-        int buttonDeleteSize = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_SIZE);
-        int buttonDeleteLeftMargin = layoutParams.leftMargin;
-        int buttonDeleteRightMargin = layoutParams.rightMargin;
+        int buttonDeleteLeftMarginInit = layoutParams.leftMargin;
+        int buttonDeleteRightMarginInit = layoutParams.rightMargin;
+        int buttonDeleteSize = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_SIZE_REDUCED_PX);
+        int buttonDeleteLeftMargin = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX);
+        int buttonDeleteRightMargin = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_RIGHT_MARGIN_REDUCED_PX);
 
         progressBar.setClickable(false);
         buttonDelete.setClickable(false);
@@ -1036,11 +1037,11 @@ public class CustomAnimator {
 
         AnimatorSet animatorSet= new AnimatorSet();
 
-        Animator animationButtonDeleteAlpha = createAnimatorAlpha(buttonDownload, buttonDownload.getAlpha(), 1, duration);
+        Animator animationButtonDeleteAlpha = createAnimatorAlpha(buttonDownload, buttonDownload.getAlpha(), 0, duration);
         Animator animationPauseOrResumeIconAlpha = createAnimatorAlpha(pauseOrResumeIcon, pauseOrResumeIcon.getAlpha(), 0, duration);
         Animator animationProgressBarAlpha = createAnimatorAlpha(progressBar, progressBar.getAlpha(), 0, duration);
         Animator animationDownloadAlpha = createAnimatorAlpha(buttonDownload, buttonDownload.getAlpha(), 0, duration);
-        Animator animationButtonDeleteLeftMargin = createAnimatorLeftMargin(buttonDelete, buttonDeleteLeftMarginInit, buttonDeleteLeftMargin, duration);
+        Animator animationButtonDeleteLeftMargin = createAnimatorRightMargin(progressBar, buttonDeleteLeftMarginInit, buttonDeleteLeftMargin, duration);
         Animator animationButtonDeleteRightMargin = createAnimatorRightMargin(buttonDelete, buttonDeleteRightMarginInit, buttonDeleteRightMargin, duration);
         Animator animationButtonDeleteHeight = createAnimatorHeight(buttonDelete, buttonDelete.getHeight(), buttonDeleteSize, duration);
         Animator animationButtonDeleteWidth = createAnimatorWidth(buttonDelete, buttonDelete.getWidth(), buttonDeleteSize, duration);

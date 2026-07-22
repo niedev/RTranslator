@@ -67,7 +67,7 @@ public class DownloadManager implements ServiceConnection {
     public void subscribeAndResumeDownload(@Nullable Callback callback) {
         if(this.callback == null) {
             this.callback = callback;
-            boolean shouldStartService = areDownloadsRunning(false);
+            boolean shouldStartService = areDownloadsRunning(true);
             if(shouldStartService) {
                 startAndBindService();
             }
@@ -79,7 +79,10 @@ public class DownloadManager implements ServiceConnection {
             if (downloaderService != null) {
                 downloaderService.unregisterClient(serviceCallback);
             }
-            context.unbindService(this);
+            boolean shouldStopService = !areDownloadsRunning(false);
+            if(shouldStopService) {
+                stopAndUnbindService();
+            }
             this.callback = null;
         }
     }
@@ -95,7 +98,7 @@ public class DownloadManager implements ServiceConnection {
         }
     }
 
-    public boolean stopDownload(DownloadGroupInfo downloadGroup){
+    public boolean pauseDownload(DownloadGroupInfo downloadGroup){
         if(downloaderService != null) {
             downloaderService.pauseDownload(downloadGroup);
             return true;
@@ -124,7 +127,7 @@ public class DownloadManager implements ServiceConnection {
         return false;
     }
 
-    public boolean stopAllDownloads() {
+    public boolean pauseAllDownloads() {
         if(downloaderService != null) {
             downloaderService.pauseAllDownloads();
             return true;
@@ -156,6 +159,14 @@ public class DownloadManager implements ServiceConnection {
         Log.d("bind download", result ? "success" : "failed");
     }
 
+    private void stopAndUnbindService(){
+        //we unbind from the service
+        context.unbindService(this);
+        // stop the service
+        final Intent intent = new Intent(context, DownloaderService.class);
+        context.stopService(intent);
+    }
+
     private boolean areDownloadsRunning(boolean includePaused){
         SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
         String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
@@ -172,6 +183,17 @@ public class DownloadManager implements ServiceConnection {
             }
         }
         return false;
+    }
+
+    public ArrayList<DownloadGroupInfo> getSavedDownloadStatus(){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        if (!downloadsStatusString.isEmpty()) {
+            //we check if there are unfinished downloads that are not paused (or also paused ones if includePaused is true)
+            Gson gson = new Gson();
+            return gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
+        }
+        return new ArrayList<>();
     }
 
     @Override

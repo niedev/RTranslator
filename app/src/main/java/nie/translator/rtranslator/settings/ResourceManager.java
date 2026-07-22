@@ -1,7 +1,6 @@
 package nie.translator.rtranslator.settings;
 
 import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
-import nie.translator.rtranslator.downloader2.DownloadInfoExtended;
 import nie.translator.rtranslator.downloader2.DownloadManager;
 import nie.translator.rtranslator.tools.gui.ResourceManagerView;
 
@@ -24,7 +23,7 @@ public class ResourceManager {
             @Override
             public void onPauseClicked() {
                 view.setState(ResourceManagerView.State.PAUSED, true);
-                downloadManager.stopDownload(downloadInfo);
+                downloadManager.pauseDownload(downloadInfo);
             }
 
             @Override
