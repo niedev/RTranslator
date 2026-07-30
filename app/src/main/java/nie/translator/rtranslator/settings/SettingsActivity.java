@@ -30,6 +30,7 @@ import nie.translator.rtranslator.R;
 public class SettingsActivity extends GeneralActivity {
     public static final String SETTINGS_FRAGMENT = "startSettings";
     public static final String MODEL_MANAGER = "startModelManager";
+    public static final String MOZILLA_MANAGER = "startMozillaManager";
     private Fragment fragment;
 
     @Override
@@ -78,6 +79,19 @@ public class SettingsActivity extends GeneralActivity {
                 transaction.replace(R.id.fragment_settings_container, modelManagerFragment);
                 transaction.commit();
                 fragment = modelManagerFragment;
+                break;
+            }
+            case MOZILLA_MANAGER: {
+                MozillaManagerFragment mozillaManagerFragment = new MozillaManagerFragment();
+                if (bundle != null) {
+                    mozillaManagerFragment.setArguments(bundle);
+                }
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
+                transaction.replace(R.id.fragment_settings_container, mozillaManagerFragment);
+                transaction.commit();
+                fragment = mozillaManagerFragment;
+                break;
             }
         }
     }
@@ -110,8 +124,10 @@ public class SettingsActivity extends GeneralActivity {
                 }else {
                     super.onBackPressed();
                 }
-            }else if (fragment instanceof ModelManagerFragmentOld) {
+            }else if (fragment instanceof ModelManagerFragment) {
                 startFragment(SETTINGS_FRAGMENT, null);
+            }else if (fragment instanceof MozillaManagerFragment) {
+                startFragment(MODEL_MANAGER, null);
             }else{
                 super.onBackPressed();
             }

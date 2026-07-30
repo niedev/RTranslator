@@ -160,11 +160,13 @@ public class DownloadManager implements ServiceConnection {
     }
 
     private void stopAndUnbindService(){
-        //we unbind from the service
-        context.unbindService(this);
-        // stop the service
-        final Intent intent = new Intent(context, DownloaderService.class);
-        context.stopService(intent);
+        if (downloaderService != null) {
+            //we unbind from the service
+            context.unbindService(this);
+            // stop the service
+            final Intent intent = new Intent(context, DownloaderService.class);
+            context.stopService(intent);
+        }
     }
 
     private boolean areDownloadsRunning(boolean includePaused){

@@ -9,7 +9,7 @@ public class DownloadInfo implements Parcelable {
     protected final String name;
     protected final String url;
     protected final String destinationPath;  //destination folder (should not include the file name)
-    protected final long size;  //size in kb (they are not exact, because this is used only for show the progress)
+    protected final long size;  //size in kb (they are not exact, because this is used only to show the progress)
     protected int downloadId = -1;
     protected final boolean shouldTestIntegrity;
     protected final boolean shouldUnzip;

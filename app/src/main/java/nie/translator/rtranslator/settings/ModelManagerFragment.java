@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
@@ -56,6 +57,7 @@ public class ModelManagerFragment extends Fragment {
     private SwitchMaterial switchTranslationDict;
     private TextView textRamUsage;
     private TextView textRamUsage2;
+    private ImageView arrowMozilla;
 
 
     @Override
@@ -82,6 +84,7 @@ public class ModelManagerFragment extends Fragment {
         switchTranslationDict = view.findViewById(R.id.switchTranslationDict);
         textRamUsage = view.findViewById(R.id.textRamUsage);
         textRamUsage2 = view.findViewById(R.id.textRamUsage2);
+        arrowMozilla = view.findViewById(R.id.arrowMozilla);
     }
 
     @Override
@@ -157,6 +160,12 @@ public class ModelManagerFragment extends Fragment {
         updateTextRamUsage();
 
         // initialize GUI listeners
+        arrowMozilla.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                activity.startFragment(SettingsActivity.MOZILLA_MANAGER, null);
+            }
+        });
         radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             updateRamUsageTranslation();
         });

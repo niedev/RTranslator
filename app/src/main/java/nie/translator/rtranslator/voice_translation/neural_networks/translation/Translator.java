@@ -1866,6 +1866,23 @@ public class Translator extends NeuralNetworkApi {
         return languages;
     }
 
+    public static ArrayList<MozillaLanguageInfo> getMozillaLanguagesInfo(Context context){
+        ArrayList<MozillaLanguageInfo> languages = new ArrayList<>();
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        try {
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            Document document = documentBuilder.parse(context.getResources().openRawResource(R.raw.mozilla_supported_languages));
+            NodeList listCodes = document.getElementsByTagName("code");
+            NodeList listSizes = document.getElementsByTagName("size");
+            for (int i = 0; i < listCodes.getLength(); i++) {
+                languages.add(new MozillaLanguageInfo(CustomLocale.getInstance(listCodes.item(i).getTextContent()), Integer.parseInt(listSizes.item(i).getTextContent())));
+            }
+        } catch (IOException | SAXException | ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+        return languages;
+    }
+
     public static class HyLanguageInfo {
         public String enName;
         public String zhName;
@@ -1873,6 +1890,24 @@ public class Translator extends NeuralNetworkApi {
         public HyLanguageInfo(String enName, String zhName) {
             this.enName = enName;
             this.zhName = zhName;
+        }
+    }
+
+    public static class MozillaLanguageInfo {
+        public CustomLocale lang;
+        public int sizeKb;
+
+        public MozillaLanguageInfo(CustomLocale lang, int sizeKb) {
+            this.lang = lang;
+            this.sizeKb = sizeKb;
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if(obj instanceof CustomLocale){
+                return lang.equals(obj);
+            }
+            return super.equals(obj);
         }
     }
 

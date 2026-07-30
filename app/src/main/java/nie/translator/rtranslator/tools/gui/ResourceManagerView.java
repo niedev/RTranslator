@@ -9,10 +9,12 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.Locale;
 
@@ -34,12 +36,14 @@ public class ResourceManagerView extends ConstraintLayout {
     public static int BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX;
     public static int BUTTON_DELETE_RIGHT_MARGIN_REDUCED_PX;
     public static int BUTTON_DELETE_SIZE_REDUCED_PX;
+    public static int PROGRESS_BAR_SIZE_PX;
 
     private State state = State.EMPTY;
     private TextView titleResource;
     private TextView descriptionResource;
-    private TextView textResource;
-    private ProgressBar progressBarDownload;
+    private int modelSizeMb = 0;
+    private TextView textDownload;
+    private CircularProgressIndicator progressBarDownload;
     private ImageView buttonDelete;
     private ImageView buttonDownload;
     private ImageView playIcon;
@@ -70,7 +74,7 @@ public class ResourceManagerView extends ConstraintLayout {
         // Bind views
         titleResource = findViewById(R.id.titleResource);
         descriptionResource = findViewById(R.id.descriptionResource);
-        textResource = findViewById(R.id.textDownload);
+        textDownload = findViewById(R.id.textDownload);
         progressBarDownload = findViewById(R.id.progressBarDownload);
         buttonDownload = findViewById(R.id.buttonDownload);
         buttonDelete = findViewById(R.id.buttonDelete);
@@ -80,8 +84,9 @@ public class ResourceManagerView extends ConstraintLayout {
         //initialize buttonDelete reduced measures
         ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) buttonDelete.getLayoutParams();
         BUTTON_DELETE_SIZE_REDUCED_PX = layoutParams.width;
-        BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX = layoutParams.rightMargin;
-        BUTTON_DELETE_RIGHT_MARGIN_REDUCED_PX = layoutParams.leftMargin;
+        BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX = layoutParams.leftMargin;
+        BUTTON_DELETE_RIGHT_MARGIN_REDUCED_PX = layoutParams.rightMargin;
+        PROGRESS_BAR_SIZE_PX = progressBarDownload.getIndicatorSize();
 
         // Apply custom XML attributes if provided
         if (attrs != null) {
@@ -100,13 +105,7 @@ public class ResourceManagerView extends ConstraintLayout {
             }
             if (a.hasValue(R.styleable.ResourceManagerView_modelSize)) {
                 float sizeInMB = a.getInt(R.styleable.ResourceManagerView_modelSize, 0);
-                if(sizeInMB >= 1000){
-                    DecimalFormat df = new DecimalFormat("0.#", new DecimalFormatSymbols(Locale.US));
-                    textResource.setText(df.format(sizeInMB / 1000) + " GB");
-                }else{
-                    DecimalFormat df = new DecimalFormat("0");
-                    textResource.setText(df.format(sizeInMB) + " MB");
-                }
+                setModelSize(sizeInMB);
             }
             if (a.hasValue(R.styleable.ResourceManagerView_state)) {
                 int stateIndex = a.getInt(R.styleable.ResourceManagerView_state, 0);
@@ -156,6 +155,10 @@ public class ResourceManagerView extends ConstraintLayout {
         if(animation != null) {
             animation.cancel();
             animation = null;
+        }
+        if(state != State.DOWNLOADING && state != State.PAUSED){
+            //we delete the eventual text progress and restore the normal text that show the size of the model
+            setModelSize(modelSizeMb);
         }
         if(animate) {
             switch (state) {
@@ -213,7 +216,8 @@ public class ResourceManagerView extends ConstraintLayout {
                     pauseIcon.setVisibility(VISIBLE);
                     playIcon.setVisibility(INVISIBLE);
                     buttonDelete.setVisibility(VISIBLE);
-                    setButtonDeleteSize(false);
+                    setButtonDeleteSize(false, false);
+                    progressBarDownload.setIndicatorSize(PROGRESS_BAR_SIZE_PX);
                     break;
                 case PAUSED:
                     buttonDownload.setVisibility(INVISIBLE);
@@ -221,7 +225,8 @@ public class ResourceManagerView extends ConstraintLayout {
                     pauseIcon.setVisibility(INVISIBLE);
                     playIcon.setVisibility(VISIBLE);
                     buttonDelete.setVisibility(VISIBLE);
-                    setButtonDeleteSize(false);
+                    setButtonDeleteSize(false, false);
+                    progressBarDownload.setIndicatorSize(PROGRESS_BAR_SIZE_PX);
                     break;
                 case EMPTY:
                     buttonDownload.setVisibility(VISIBLE);
@@ -229,7 +234,8 @@ public class ResourceManagerView extends ConstraintLayout {
                     pauseIcon.setVisibility(INVISIBLE);
                     playIcon.setVisibility(INVISIBLE);
                     buttonDelete.setVisibility(INVISIBLE);
-                    setButtonDeleteSize(true);
+                    setButtonDeleteSize(true, true);
+                    progressBarDownload.setIndicatorSize(PROGRESS_BAR_SIZE_PX);
                     break;
                 case DOWNLOADED:
                     buttonDownload.setVisibility(INVISIBLE);
@@ -237,15 +243,53 @@ public class ResourceManagerView extends ConstraintLayout {
                     pauseIcon.setVisibility(INVISIBLE);
                     playIcon.setVisibility(INVISIBLE);
                     buttonDelete.setVisibility(VISIBLE);
-                    setButtonDeleteSize(false);
+                    setButtonDeleteSize(false, true);
+                    progressBarDownload.setIndicatorSize(1);
                     break;
             }
         }
     }
 
-    private void setButtonDeleteSize(boolean reduced){
+    public String getTitle() {
+        return titleResource.getText().toString();
+    }
+
+    public void setTitle(@Nullable String title) {
+        if(title != null) this.titleResource.setText(title);
+    }
+
+    public String getDescription() {
+        return descriptionResource.getText().toString();
+    }
+
+    public void setDescription(@Nullable String description) {
+        if(description != null && !description.isEmpty()) {
+            this.descriptionResource.setText(description);
+        }else{
+            this.descriptionResource.setVisibility(GONE);
+        }
+    }
+
+    public int getModelSizeMb() {
+        return modelSizeMb;
+    }
+
+    public void setModelSize(float modelSizeMb) {
+        if(modelSizeMb > 0) {
+            this.modelSizeMb = (int) modelSizeMb;
+            if(modelSizeMb >= 1000){
+                DecimalFormat df = new DecimalFormat("0.#", new DecimalFormatSymbols(Locale.US));
+                textDownload.setText(df.format(modelSizeMb / 1000) + " GB");
+            }else{
+                DecimalFormat df = new DecimalFormat("0");
+                textDownload.setText(df.format(modelSizeMb) + " MB");
+            }
+        }
+    }
+
+    private void setButtonDeleteSize(boolean reduced, boolean marginsReduced){
+        int buttonDeleteLeftMargin = marginsReduced ? ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX : Tools.convertDpToPixels(getContext(), ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN);
         if(reduced) {
-            int buttonDeleteLeftMargin = ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX;
             int buttonDeleteRightMargin = ResourceManagerView.BUTTON_DELETE_RIGHT_MARGIN_REDUCED_PX;
             int buttonDeleteSize = ResourceManagerView.BUTTON_DELETE_SIZE_REDUCED_PX;
             ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) buttonDelete.getLayoutParams();
@@ -257,7 +301,6 @@ public class ResourceManagerView extends ConstraintLayout {
             layoutParams2.rightMargin = buttonDeleteLeftMargin;
             progressBarDownload.setLayoutParams(layoutParams2);
         }else{
-            int buttonDeleteLeftMargin = Tools.convertDpToPixels(getContext(), ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN);
             int buttonDeleteRightMargin = Tools.convertDpToPixels(getContext(), ResourceManagerView.BUTTON_DELETE_RIGHT_MARGIN);
             int buttonDeleteSize = Tools.convertDpToPixels(getContext(), ResourceManagerView.BUTTON_DELETE_SIZE);
             ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) buttonDelete.getLayoutParams();
@@ -272,12 +315,31 @@ public class ResourceManagerView extends ConstraintLayout {
     }
 
     public void setDownloadProgress(int progress) {
-        progressBarDownload.setProgress(progress);
-        if (progress >= 100) {
+        if(progress > 0) {
+            // show the progress in the progress bar
+            progressBarDownload.setProgress(progress);
+            // show the numerical progress
+            if (modelSizeMb > 0) {
+                if (modelSizeMb >= 1000) {
+                    DecimalFormat df = new DecimalFormat("0.#", new DecimalFormatSymbols(Locale.US));
+                    int modelSizeGb = modelSizeMb / 1000;
+                    // even when the file downloaded is compressed (the size of the model is larger than the size downloaded),
+                    // we show the progress considering the percentage on the final uncompressed size, to make the compression transparent.
+                    int modelDownloadedGb = (progress * modelSizeGb) / 100;
+                    textDownload.setText(df.format(modelDownloadedGb) + "/" + df.format(modelSizeGb) + " GB");
+                } else {
+                    DecimalFormat df = new DecimalFormat("0");
+                    // even when the file downloaded is compressed (the size of the model is larger than the size downloaded),
+                    // we show the progress considering the percentage on the final uncompressed size, to make the compression transparent.
+                    int modelDownloadedMb = (progress * modelSizeMb) / 100;
+                    textDownload.setText(df.format(modelDownloadedMb) + "/" + df.format(modelSizeMb) + " GB");
+                }
+            }
+        }
+        /*if (progress >= 100) {
             progressBarDownload.setVisibility(View.INVISIBLE);
             buttonDownload.setVisibility(View.VISIBLE);
-            // Maybe change icon to a checkmark here
-        }
+        }*/
     }
 
     // --- Callback Interface (Similar to passing a function prop in React) ---

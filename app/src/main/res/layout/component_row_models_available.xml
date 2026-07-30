@@ -9,8 +9,8 @@
         android:id="@+id/titleAvailable"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="8dp"
         android:fontFamily="sans-serif-medium"
         android:text="Available"
         android:textColor="@color/accent"
@@ -21,18 +21,4 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
-    <ImageView
-        android:id="@+id/buttonDownloadAll"
-        android:layout_width="42dp"
-        android:layout_height="42dp"
-        android:layout_marginEnd="8dp"
-        android:padding="2dp"
-        android:src="@drawable/download_icon"
-        android:tint="@color/very_very_dark_gray"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="@+id/titleAvailable"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/titleAvailable" />
 </androidx.constraintlayout.widget.ConstraintLayout>

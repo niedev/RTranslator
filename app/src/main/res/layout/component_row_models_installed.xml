@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:fontFamily="sans-serif-medium"
         android:text="Installed"
         android:textColor="@color/accent"
@@ -20,18 +20,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/buttonDownload"
-        android:layout_width="42dp"
-        android:layout_height="42dp"
-        android:layout_marginEnd="8dp"
-        android:padding="8dp"
-        android:src="@drawable/delete_icon"
-        android:tint="@color/very_very_dark_gray"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="@+id/titleInstalled"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/titleInstalled" />
 </androidx.constraintlayout.widget.ConstraintLayout>

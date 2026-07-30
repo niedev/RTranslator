@@ -79,6 +79,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
     private ArrayList<CustomLocale> languages = new ArrayList<>();
     private ArrayList<CustomLocale> translatorLanguages = new ArrayList<>();
+    private ArrayList<Translator.MozillaLanguageInfo> mozillaLanguages = new ArrayList<>();
     private ArrayList<CustomLocale> ttsLanguages = new ArrayList<>();
     private CustomLocale language;
     private CustomLocale firstLanguage;
@@ -254,6 +255,16 @@ public class Global extends Application implements DefaultLifecycleObserver {
             }
             ArrayList<CustomLocale> languages = Translator.getSupportedLanguages(Global.this, mode);
             translatorLanguages = languages;
+            return languages;
+        }
+    }
+
+    public ArrayList<Translator.MozillaLanguageInfo> getMozillaLanguages(final boolean recycleResult) {
+        if (recycleResult && !mozillaLanguages.isEmpty()) {
+            return mozillaLanguages;
+        } else {
+            ArrayList<Translator.MozillaLanguageInfo> languages = Translator.getMozillaLanguagesInfo(this);
+            mozillaLanguages = languages;
             return languages;
         }
     }
