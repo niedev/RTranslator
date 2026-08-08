@@ -142,9 +142,9 @@ public class WalkieTalkieService extends VoiceTranslationService {
                                         public void onDetectedText(final NeuralNetworkApiResult result) {
                                             // here the result returns with the same language as the text sent from the Fragment editText
                                             if (result.getLanguage().equalsLanguage(firstLanguage)) {
-                                                translator.translate(result.getText(), firstLanguage, secondLanguage, TRANSLATOR_BEAM_SIZE, false, firstResultTranslateListener);
+                                                translator.translate(result.getText(), firstLanguage, secondLanguage, TRANSLATOR_BEAM_SIZE, false, Global.RTranslatorMode.WALKIE_TALKIE_MODE, firstResultTranslateListener);
                                             } else {
-                                                translator.translate(result.getText(), secondLanguage, firstLanguage, TRANSLATOR_BEAM_SIZE, false, secondResultTranslateListener);
+                                                translator.translate(result.getText(), secondLanguage, firstLanguage, TRANSLATOR_BEAM_SIZE, false, Global.RTranslatorMode.WALKIE_TALKIE_MODE, secondResultTranslateListener);
                                             }
                                         }
 
@@ -485,7 +485,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
 
     private void translate(final String textToTranslate, final CustomLocale languageInput, final CustomLocale languageOutput, int beamSize, boolean saveResults, final Translator.TranslateListener responseListener){
         if(!isMetaText(textToTranslate)) {
-            translator.translate(textToTranslate, languageInput, languageOutput, beamSize, saveResults, responseListener);
+            translator.translate(textToTranslate, languageInput, languageOutput, beamSize, saveResults, Global.RTranslatorMode.WALKIE_TALKIE_MODE, responseListener);
         }else{
             Log.i("walkieTalkie", "skipped translation of: "+textToTranslate+" because it is meta text");
             //we restart the mic here

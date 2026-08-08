@@ -20,15 +20,15 @@
 
         <ImageView
             android:id="@+id/dialogIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/mic"
-            app:tint="@color/primary_very_dark" />
+            android:src="@drawable/delete_icon"
+            android:tint="@color/primary_very_dark" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.card.MaterialCardView
@@ -57,7 +57,7 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="32dp"
-                android:text="To use WalkieTalkie mode, allow RTranslator to access your microphone."
+                android:text="Are you sure you want to delete this resource?"
                 app:layout_constraintBottom_toTopOf="@+id/okButtonCard"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -124,7 +124,7 @@
                         android:layout_marginEnd="16dp"
                         android:layout_marginBottom="11dp"
                         android:fontFamily="@font/nunito_sans_semibold"
-                        android:text="Cancel"
+                        android:text="No"
                         android:textAlignment="center"
                         android:textColor="@color/accent_white"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -167,7 +167,7 @@
                         android:layout_marginEnd="16dp"
                         android:layout_marginBottom="11dp"
                         android:fontFamily="@font/nunito_semibold"
-                        android:text="Continue"
+                        android:text="Yes"
                         android:textAlignment="center"
                         android:textColor="@color/accent_white"
                         app:layout_constraintBottom_toBottomOf="parent"

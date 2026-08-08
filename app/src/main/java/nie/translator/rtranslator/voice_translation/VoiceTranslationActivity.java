@@ -30,7 +30,6 @@ import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -410,7 +409,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
         ImageView icon = editDialogLayout.findViewById(R.id.dialogIcon);
         TextView text = editDialogLayout.findViewById(R.id.textView);
-        CardView continueButton = editDialogLayout.findViewById(R.id.continueButtonCard);
+        CardView continueButton = editDialogLayout.findViewById(R.id.okButtonCard);
         CardView cancelButton = editDialogLayout.findViewById(R.id.cancelButtonCard);
 
         //set icon

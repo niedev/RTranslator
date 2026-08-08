@@ -16,22 +16,21 @@
 
 package nie.translator.rtranslator;
 
+import static nie.translator.rtranslator.tools.DownloaderTools.checkMozillaModelsPresence;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
 import java.util.ArrayList;
 import nie.translator.rtranslator.access.AccessActivity;
+import nie.translator.rtranslator.downloader2.DownloadManager;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.ImageActivity;
@@ -106,6 +105,7 @@ public class LoadingActivity extends GeneralActivity {
 
     private void initializeApp(boolean ignoreTTSError) {
         Log.i("app", "App initialization");
+        adaptResourcesPreferencesToDownloads();
         global.getLanguagesAndCheckTTS(false, ignoreTTSError, new Global.GetLocalesListListener() {
             @Override
             public void onSuccess(ArrayList<CustomLocale> result) {
@@ -169,7 +169,63 @@ public class LoadingActivity extends GeneralActivity {
         startActivity(intent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
+    }
 
+    /**
+     * This method must be called before the app initialization (initializeApp()).
+     * In the case the user has deleted some resources in the ModelManagerFragment and then
+     * terminated the app before applying the settings (with the relative checks).
+     * When the app is restarted there can be some preferences that require some resources that
+     * have been deleted. This method will restore the correct settings to match the downloaded resource.
+     * <p>
+     * Note: When deleting the resource the user cannot cancel all the translation models downloaded,
+     * so this method can always change the preferences to make the app work (the app needs at least
+     * a downloaded translation model, and nothing else)
+     */
+    private void adaptResourcesPreferencesToDownloads(){
+        // eventual adaptation of translation model preference
+        DownloadManager downloadManager = new DownloadManager(this);
+        int translationMode = global.getTranslationMode();
+        ArrayList<Integer> availableModels = new ArrayList<>();
+        if(checkMozillaModelsPresence(downloadManager)){
+            availableModels.add(Translator.MOZILLA);
+        }
+        if(downloadManager.checkDownloadCompleted(global.getHyMtDownloadInfo())){
+            availableModels.add(Translator.HY_MT);
+        }
+        if(downloadManager.checkDownloadCompleted(global.getMadladDownloadInfo())){
+            availableModels.add(Translator.MADLAD_CACHE);
+        }
+        if(!availableModels.contains(translationMode)){
+            int newTranslationMode = -1;
+            if(availableModels.contains(Translator.MOZILLA)){
+                newTranslationMode = Translator.MOZILLA;
+            }else if(availableModels.contains(Translator.HY_MT)){
+                newTranslationMode = Translator.HY_MT;
+            }else if(availableModels.contains(Translator.MADLAD_CACHE)){
+                newTranslationMode = Translator.MADLAD_CACHE;
+            }
+            if(newTranslationMode != -1) {
+                final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putInt("selectedTranslationModel", newTranslationMode);
+                editor.apply();
+            }
+        }
+        // eventual adaptation of Mozilla for voice translation modes preference
+        if(!availableModels.contains(Translator.MOZILLA)){
+            final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("useMozillaForVoiceTranslation", false);
+            editor.apply();
+        }
+        // eventual adaptation of Tatoeba preference
+        if(!downloadManager.checkDownloadCompleted(global.getTatoebaDownloadInfo())){
+            final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("useTatoeba", false);
+            editor.apply();
+        }
     }
 
     private void notifyGoogleTTSErrorDialog() {

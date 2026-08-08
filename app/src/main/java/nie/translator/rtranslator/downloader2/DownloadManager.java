@@ -7,7 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -16,6 +18,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
+
+import nie.translator.rtranslator.tools.DownloaderTools;
 
 public class DownloadManager implements ServiceConnection {
     private final Context context;
@@ -26,37 +30,39 @@ public class DownloadManager implements ServiceConnection {
     private final Downloader2.ClientCallback serviceCallback;
     private ArrayList<DownloadGroupInfo> downloadsToStart = new ArrayList<>();
     private boolean shouldStartAllDownloads = false;
+    private Handler mainHandler;
 
 
     public DownloadManager(Context context) {
         this.context = context;
+        this.mainHandler = new android.os.Handler(Looper.getMainLooper());
         this.serviceCallback = new Downloader2.ClientCallback() {
             @Override
             public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
-                if(callback != null){
-                    callback.onProgress(downloadGroup, download, totalProgress, progress, unzipping, testingIntegrity);
-                }
+                mainHandler.post(() -> {
+                    if(callback != null) callback.onProgress(downloadGroup, download, totalProgress, progress, unzipping, testingIntegrity);
+                });
             }
 
             @Override
             public void onCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download) {
-                if(callback != null){
-                    callback.onCompleted(downloadGroup, download);
-                }
+                mainHandler.post(() -> {
+                    if(callback != null) callback.onCompleted(downloadGroup, download);
+                });
             }
 
             @Override
             public void onAllCompleted(DownloadGroupInfo downloadGroup) {
-                if(callback != null){
-                    callback.onAllCompleted(downloadGroup);
-                }
+                mainHandler.post(() -> {
+                    if(callback != null) callback.onAllCompleted(downloadGroup);
+                });
             }
 
             @Override
             public void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
-                if(callback != null){
-                    callback.onError(downloadGroup, download, reason);
-                }
+                mainHandler.post(() -> {
+                    if(callback != null) callback.onError(downloadGroup, download, reason);
+                });
             }
         };
     }
@@ -64,14 +70,16 @@ public class DownloadManager implements ServiceConnection {
     /**
      * This method will start the download service (if there are downloads to resume) and resume all the unfinished downloads
      */
-    public void subscribeAndResumeDownload(@Nullable Callback callback) {
+    public boolean subscribeAndResumeDownload(@Nullable Callback callback) {
         if(this.callback == null) {
             this.callback = callback;
             boolean shouldStartService = areDownloadsRunning(true);
             if(shouldStartService) {
                 startAndBindService();
+                return true;
             }
         }
+        return false;
     }
 
     public void unsubscribe() {
@@ -110,6 +118,15 @@ public class DownloadManager implements ServiceConnection {
         if(downloaderService != null) {
             downloaderService.cancelDownload(downloadGroup);
             return true;
+        }else{
+            ArrayList<DownloadGroupInfo> savedDownloadStatus = getSavedDownloadStatus();
+            int index = savedDownloadStatus.indexOf(downloadGroup);
+            if(index != -1) {
+                // we delete the already downloaded files of this group of download
+                DownloaderTools.deleteDownloadedFiles(savedDownloadStatus.get(index));
+                // we delete the download status from the preferences
+                DownloaderTools.deleteDownloadGroupInfoPreference(context, savedDownloadStatus.get(index));
+            }
         }
         return false;
     }
@@ -148,6 +165,19 @@ public class DownloadManager implements ServiceConnection {
             return downloaderService.getDownloadsStatus();
         }
         return null;
+    }
+
+    public boolean checkDownloadCompleted(DownloadGroupInfo downloadGroupInfo){
+        boolean found = false;
+        for(DownloadGroupInfo downloadGroupInfoItem : getSavedDownloadStatus()){
+            if(downloadGroupInfoItem.equals(downloadGroupInfo)){
+                if(downloadGroupInfoItem.isAllDownloadCompleted()){
+                    found = true;
+                }
+                break;
+            }
+        }
+        return found;
     }
 
     private void startAndBindService(){
@@ -202,7 +232,9 @@ public class DownloadManager implements ServiceConnection {
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
         this.downloaderService = ((DownloaderService.LocalBinder) iBinder).getService();
         downloaderService.registerClient(serviceCallback);
-        if(callback != null) callback.onServiceConnected();
+        mainHandler.post(() -> {
+            if(callback != null) callback.onServiceConnected();
+        });
         for(DownloadGroupInfo downloadGroup: downloadsToStart) {
             downloaderService.startDownload(downloadGroup);
         }

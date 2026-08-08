@@ -43,8 +43,14 @@ public class LanguageResourcesManager {
     public LanguageResourcesManager(@NonNull Global global, int modelMode, CustomLocale firstTextLanguage, CustomLocale secondTextLanguage, CustomLocale firstLanguage, CustomLocale secondLanguage) throws Exception {
         this.global = global;
         this.modelMode = modelMode;
-        String tatoebaDbPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Tatoeba/tatoeba.db";
-        String translationDictionariesDbPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/TranslationDictionaries/translation_dict_ordered.db";
+        String basePath;
+        if(Global.USE_EXTERNAL_MEMORY_FOR_RESOURCES){
+            basePath = Environment.getExternalStorageDirectory().getPath() + "/models";
+        }else{
+            basePath = global.getFilesDir().getPath();
+        }
+        String tatoebaDbPath = basePath + "/Translation/Tatoeba/tatoeba.db";
+        String translationDictionariesDbPath = basePath + "/Translation/TranslationDictionaries/translation_dict_ordered.db";
         tatoebaDb = new TatoebaDbWrapper(tatoebaDbPath);
         BergamotTranslator.initializeService();
         DictionaryTranslator.initializeService(translationDictionariesDbPath);
@@ -127,7 +133,7 @@ public class LanguageResourcesManager {
         //we update the indicator to reflect the new resources status
         currentModeResources[0] = srcLang;
         currentModeResources[1] = tgtLang;
-        if(modelMode == MOZILLA) {
+        if(isMozillaEnabled()) {
             languageResourcesIndicator.setResourceTypeLoadStatus(rtranslatorMode, LanguageResourcesIndicator.ResourceType.MOZILLA, true);
         }
         if(global.isUseTatoeba()){
@@ -167,7 +173,7 @@ public class LanguageResourcesManager {
         performLoadLanguageResources(srcLang, tgtLang, Global.RTranslatorMode.CONVERSATION_MODE);
         //we update the indicator to reflect the new models status
         languageResourcesIndicator.conversationSrcResources.put(peer.getUniqueName(), srcLang);
-        if(modelMode == MOZILLA) {
+        if(isMozillaEnabled()) {
             languageResourcesIndicator.setResourceTypeLoadStatus(Global.RTranslatorMode.CONVERSATION_MODE, LanguageResourcesIndicator.ResourceType.MOZILLA, true);
         }
         if(global.isUseTatoeba()){
@@ -199,7 +205,7 @@ public class LanguageResourcesManager {
         }
         //we update the indicator to reflect the new resources status
         languageResourcesIndicator.conversationTgtResource = tgtLang;
-        if(modelMode == MOZILLA) {
+        if(isMozillaEnabled()) {
             languageResourcesIndicator.setResourceTypeLoadStatus(Global.RTranslatorMode.CONVERSATION_MODE, LanguageResourcesIndicator.ResourceType.MOZILLA, true);
         }
         if(global.isUseTatoeba()){
@@ -327,7 +333,7 @@ public class LanguageResourcesManager {
     private void performLoadLanguageResources(@NonNull CustomLocale srcLang, @NonNull CustomLocale tgtLang, Global.RTranslatorMode rtranslatorMode) throws Exception {
         Log.d("language_resources", "Language loaded: "+srcLang.getLanguage());
         long time = System.currentTimeMillis();
-        if(modelMode == MOZILLA){
+        if(isMozillaEnabled()){
             if (!srcLang.getLanguage().equals("en")) {
                 BergamotTranslator.loadModelIntoCache(global, srcLang);
             }
@@ -391,5 +397,9 @@ public class LanguageResourcesManager {
         }
 
         return null; // Fallback if an adequate language pool couldn't be formed
+    }
+
+    private boolean isMozillaEnabled(){
+        return modelMode == MOZILLA || global.isUseMozillaForVoiceTranslation();
     }
 }

@@ -49,4 +49,7 @@ public class ErrorCodes {
 
     //permissions
     public static final int NO_PERMISSIONS = -10;
+
+    // model manager
+    public static final int NO_DOWNLOADED_RESOURCE = 110;
 }

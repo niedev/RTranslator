@@ -149,7 +149,7 @@
             android:layout_marginEnd="48dp"
             android:layout_marginBottom="16dp"
             android:backgroundTint="@android:color/transparent"
-            android:src="@drawable/cancel_icon"
+            android:src="@drawable/pause_icon"
             android:tint="@color/primary_dark"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

@@ -2,6 +2,9 @@ package nie.translator.rtranslator.downloader2;
 
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -26,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
 
 public class Downloader2 {
@@ -36,9 +40,11 @@ public class Downloader2 {
     private final DownloadGroupInfo downloadGroupInfo;
     private ClientCallback callback;
     private int lastDownloadSuccessIndex = -1;
+    private Handler mainHandler;
 
     public Downloader2(DownloadGroupInfo downloadGroupInfo, Context context, ClientCallback callback) {
         this.downloadGroupInfo = downloadGroupInfo;
+        this.mainHandler = new android.os.Handler(Looper.getMainLooper());
         //this.downloadGroupInfo.setRunningDownloadIndex(-1);
         this.context = context;
         this.callback = callback;
@@ -46,29 +52,25 @@ public class Downloader2 {
 
     public void startDownloads(){
         if(downloadGroupInfo.downloadsInfo.length > 0 && !downloadGroupInfo.isAllDownloadCompleted()) {
-            if (downloadGroupInfo.getRunningDownloadIndex() == -1) {
-                // eventual resume of the download based on the previous ones that have been completed
-                // (or start from 0 if none of the previous ones are completed)
-                int startIndex = findFirstIncompletedDownload();
-                DownloadInfoExtended startDownload = downloadGroupInfo.downloadsInfo[startIndex];
-                if(startIndex > 0) lastDownloadSuccessIndex = startIndex-1;
-                downloadGroupInfo.setRunningDownloadIndex(startIndex);
-                int percentageTotalProgress = calculateTotalProgress(lastDownloadSuccessIndex+1, 0);
-                if(!startDownload.isDownloadCompleted()){
-                    startDownload(startIndex);
-                }else {
-                    if (startDownload.shouldUnzip() && !startDownload.isUnzipped()) {
-                        unzipRunningDownloadAndTestIntegrity(percentageTotalProgress);
+            // eventual resume of the download based on the previous ones that have been completed
+            // (or start from 0 if none of the previous ones are completed)
+            int startIndex = downloadGroupInfo.getRunningDownloadIndex() != -1 ? downloadGroupInfo.getRunningDownloadIndex() : findFirstIncompletedDownload();
+            DownloadInfoExtended startDownload = downloadGroupInfo.downloadsInfo[startIndex];
+            if(startIndex > 0) lastDownloadSuccessIndex = startIndex-1;
+            downloadGroupInfo.setRunningDownloadIndex(startIndex);
+            int percentageTotalProgress = calculateTotalProgress(lastDownloadSuccessIndex+1, 0);
+            if(!startDownload.isDownloadCompleted()){
+                startDownload(startIndex);
+            }else {
+                if (startDownload.shouldUnzip() && !startDownload.isUnzipped()) {
+                    unzipRunningDownloadAndTestIntegrity(percentageTotalProgress);
+                } else {
+                    if (startDownload.shouldTestIntegrity() && !startDownload.isIntegrityTested()) {
+                        testRunningDownloadIntegrity(percentageTotalProgress, startDownload.getInternalFolder());
                     } else {
-                        if (startDownload.shouldTestIntegrity() && !startDownload.isIntegrityTested()) {
-                            testRunningDownloadIntegrity(percentageTotalProgress);
-                        } else {
-                            startNextDownload();
-                        }
+                        startNextDownload();
                     }
                 }
-            }else{
-                startDownload(downloadGroupInfo.getRunningDownloadIndex());
             }
         }
     }
@@ -88,12 +90,7 @@ public class Downloader2 {
             PRDownloader.cancel(downloadGroupInfo.downloadsInfo[currentDownloadIndex].getDownloadId());
         }
         // we delete the already downloaded files of this group of download
-        for (int i = 0; i < downloadGroupInfo.downloadsInfo.length; i++){
-            File file = new File(downloadGroupInfo.downloadsInfo[i].getDestinationCompletePath());
-            if (file.exists()) {
-                file.delete();
-            }
-        }
+        DownloaderTools.deleteDownloadedFiles(downloadGroupInfo);
     }
 
     public DownloadGroupInfo getDownloadGroupInfo() {
@@ -159,7 +156,7 @@ public class Downloader2 {
                             unzipRunningDownloadAndTestIntegrity(percentageTotalProgress);
                         }else {
                             if (finishedDownload.shouldTestIntegrity()) {
-                                testRunningDownloadIntegrity(percentageTotalProgress);
+                                testRunningDownloadIntegrity(percentageTotalProgress, null);
                             } else {
                                 startNextDownload();
                             }
@@ -168,6 +165,7 @@ public class Downloader2 {
 
                     @Override
                     public void onError(Error error) {
+                        Log.e("download error", (downloadGroupInfo.getRunningDownload() != null ? downloadGroupInfo.getRunningDownload().getName() : "") + "    " + error.toString());
                         int runningDownloadIndex = downloadGroupInfo.getRunningDownloadIndex();
                         DownloadInfo download = downloadGroupInfo.downloadsInfo[runningDownloadIndex];
                         downloadGroupInfo.downloadsInfo[runningDownloadIndex].setCurrentError(GENERAL_ERROR);
@@ -182,12 +180,13 @@ public class Downloader2 {
         int runningDownloadIndex = downloadGroupInfo.getRunningDownloadIndex();
         DownloadInfo finishedDownload = downloadGroupInfo.downloadsInfo[runningDownloadIndex];
         callback.onProgress(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex], percentageTotalProgress, 100, true, false);
-        unpackZip(finishedDownload.destinationPath, finishedDownload.name, new Listener() {
+        unpackZip(finishedDownload.destinationPath, finishedDownload.name, new UnpackListener() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(String topInternalFolder) {
                 downloadGroupInfo.downloadsInfo[runningDownloadIndex].setUnzipped(true);
+                downloadGroupInfo.downloadsInfo[runningDownloadIndex].setInternalFolder(topInternalFolder);
                 if(finishedDownload.shouldTestIntegrity()) {
-                    testRunningDownloadIntegrity(percentageTotalProgress);
+                    testRunningDownloadIntegrity(percentageTotalProgress, topInternalFolder);
                 }else{
                     startNextDownload();
                 }
@@ -200,11 +199,11 @@ public class Downloader2 {
         });
     }
 
-    private void testRunningDownloadIntegrity(int percentageTotalProgress) {
+    private void testRunningDownloadIntegrity(int percentageTotalProgress, @Nullable String internalFolder) {
         int runningDownloadIndex = downloadGroupInfo.getRunningDownloadIndex();
         DownloadInfo finishedDownload = downloadGroupInfo.downloadsInfo[runningDownloadIndex];
         callback.onProgress(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex], percentageTotalProgress, 100, false, true);
-        NeuralNetworkApi.testModelIntegrity(finishedDownload.getDestinationCompletePath(), new NeuralNetworkApi.InitListener() {
+        NeuralNetworkApi.InitListener listener = new NeuralNetworkApi.InitListener() {
             @Override
             public void onInitializationFinished() {
                 downloadGroupInfo.downloadsInfo[runningDownloadIndex].setIntegrityTested(true);
@@ -221,7 +220,20 @@ public class Downloader2 {
                 downloadGroupInfo.setRunningDownloadIndex(-1);
                 callback.onError(downloadGroupInfo, finishedDownload, INTEGRITY_CHECK_FAILED);
             }
-        });
+        };
+        if(internalFolder == null && !finishedDownload.shouldUnzip()) {  //it is null only when we downloaded a file, not a .zip folder
+            NeuralNetworkApi.testModelIntegrity(finishedDownload.getDestinationCompletePath(), listener);
+        }else if(internalFolder != null && finishedDownload.shouldUnzip){  //if it is not null it means that we should test the models inside the top folder of an extracted .zip file
+            String folderPath;
+            if(!internalFolder.isEmpty()){
+                folderPath = finishedDownload.getDestinationPath() + "/" + internalFolder + "/";
+            }else{
+                folderPath = finishedDownload.getDestinationPath();
+            }
+            NeuralNetworkApi.testFolderIntegrity(folderPath, listener);
+        }else{
+            listener.onError(new int[]{GENERAL_ERROR}, 0);
+        }
     }
 
     private void startNextDownload(){
@@ -275,16 +287,10 @@ public class Downloader2 {
     }
 
     public int findFirstIncompletedDownload(){
-        int index = 0;
-        for(int i=0; i<downloadGroupInfo.downloadsInfo.length; i++){
-            if(downloadGroupInfo.downloadsInfo[i].isAllCompleted()){
-                index++;
-            }
-        }
-        return index;
+        return DownloaderTools.findFirstIncompletedDownload(downloadGroupInfo);
     }
 
-    private void unpackZip(String path, String zipname, Listener listener) {
+    private void unpackZip(String path, String zipname, UnpackListener listener) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -292,60 +298,74 @@ public class Downloader2 {
                 ZipInputStream zis;
                 boolean success = true;
                 Path zipPath = Paths.get(path + zipname);
-                try {
-                    String filename;
-                    is = Files.newInputStream(zipPath);
-                    zis = new ZipInputStream(new BufferedInputStream(is));
-                    ZipEntry ze;
-                    byte[] buffer = new byte[1024];
-                    int count;
-
-                    while ((ze = zis.getNextEntry()) != null) {
-                        filename = ze.getName();
-
-                        // Need to create directories if not exists, or
-                        // it will generate an Exception...
-                        File destFile = new File(path + filename);
-                        if (ze.isDirectory()) {
-                            File fmd = new File(path + filename);
-                            fmd.mkdirs();
-                            zis.closeEntry();
-                            continue;
-                        }else if(destFile.getParentFile() != null){
-                            // in the case the zip file does not indicate its internal folders as entries but only the files with the internal folders as path,
-                            // in this way we create recursively all the missing folders in the file path
-                            destFile.getParentFile().mkdirs();
-                        }
-
-                        FileOutputStream fout = new FileOutputStream(path + filename);
-
-                        while ((count = zis.read(buffer)) != -1) {
-                            fout.write(buffer, 0, count);
-                        }
-
-                        fout.close();
-                        zis.closeEntry();
-                    }
-
-                    zis.close();
-                } catch(IOException e) {
-                    e.printStackTrace();
-                    success = false;
-                }
-
-                if(success){
+                String topFolder = null;
+                if(new File(zipPath.toString()).exists()) {  //if the zip file is not present, very likely it has been deleted after the unzip and there has been some error in updating the status, so we consider the unpack successful.
                     try {
-                        Files.delete(zipPath);
+                        String filename;
+                        is = Files.newInputStream(zipPath);
+                        zis = new ZipInputStream(new BufferedInputStream(is));
+                        ZipEntry ze;
+                        byte[] buffer = new byte[1024];
+                        int count;
+
+                        while ((ze = zis.getNextEntry()) != null) {
+                            filename = ze.getName();
+
+                            if (topFolder == null && filename.contains("/")) {
+                                topFolder = filename.substring(0, filename.indexOf("/"));
+                            }
+
+                            // Need to create directories if not exists, or
+                            // it will generate an Exception...
+                            File destFile = new File(path + filename);
+                            if (ze.isDirectory()) {
+                                File fmd = new File(path + filename);
+                                fmd.mkdirs();
+                                zis.closeEntry();
+                                continue;
+                            } else if (destFile.getParentFile() != null) {
+                                // in the case the zip file does not indicate its internal folders as entries but only the files with the internal folders as path,
+                                // in this way we create recursively all the missing folders in the file path
+                                destFile.getParentFile().mkdirs();
+                            }
+
+                            FileOutputStream fout = new FileOutputStream(path + filename);
+
+                            while ((count = zis.read(buffer)) != -1) {
+                                fout.write(buffer, 0, count);
+                            }
+
+                            fout.close();
+                            zis.closeEntry();
+                        }
+
+                        zis.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                         success = false;
                     }
+
+                    if (success) {
+                        try {
+                            Files.delete(zipPath);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            success = false;
+                        }
+                    }
                 }
 
+                if(topFolder == null) topFolder = "";
+
                 if(success){
-                    if(listener != null) listener.onSuccess();
+                    String finalTopFolder = topFolder;
+                    mainHandler.post(() -> {
+                        if(listener != null) listener.onSuccess(finalTopFolder);
+                    });
                 }else {
-                    if(listener != null) listener.onFailure();
+                    mainHandler.post(() -> {
+                        if(listener != null) listener.onFailure();
+                    });
                 }
             }
         }).start();
@@ -368,8 +388,8 @@ public class Downloader2 {
         public abstract void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason);
     }
 
-    public abstract static class Listener {
-        public abstract void onSuccess();
+    public abstract static class UnpackListener {
+        public abstract void onSuccess(String topInternalFolder);
         public abstract void onFailure();
     }
 

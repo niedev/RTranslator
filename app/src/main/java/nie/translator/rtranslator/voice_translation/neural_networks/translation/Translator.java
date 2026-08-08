@@ -109,15 +109,6 @@ public class Translator extends NeuralNetworkApi {
     private final int EMPTY_BATCH_SIZE = 1;
     private boolean translatingMessages = false;
     private boolean translating = false;
-    private static final String[] mozillaLanguages = new String[]{
-            "zh",
-            "it",
-            "fr",
-            "de",
-            "ko",
-            "ja",
-            "en"
-    };
     private LanguageResourcesManager languageResourcesManager;
 
 
@@ -146,27 +137,45 @@ public class Translator extends NeuralNetworkApi {
             embedAndLmHeadPath = global.getFilesDir().getPath() + "/NLLB_embed_and_lm_head.onnx";
             cacheInitializerPath = global.getFilesDir().getPath() + "/NLLB_cache_initializer.onnx";
             //4 bit
-            /*encoderPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/NLLB" + "/nllb_encoder_4bit.onnx";
-            decoderPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/NLLB" + "/nllb_decoder_4bit.onnx";
+            /*String basePath = Environment.getExternalStorageDirectory().getPath() + "/Translation/NLLB";
+            encoderPath = basePath + "/nllb_encoder_4bit.onnx";
+            decoderPath = basePath + "/nllb_decoder_4bit.onnx";
             vocabPath = global.getFilesDir().getPath() + "/sentencepiece_bpe.model";
-            embedAndLmHeadPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/NLLB" + "/nllb_embed_and_lm_head_4bit.onnx";
-            cacheInitializerPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/NLLB" + "/nllb_cache_initializer_4bit.onnx";*/
+            embedAndLmHeadPath = basePath + "/nllb_embed_and_lm_head_4bit.onnx";
+            cacheInitializerPath = basePath + "/nllb_cache_initializer_4bit.onnx";*/
         }else if(mode == MADLAD || mode == MADLAD_CACHE){  //madlad
-            //8 bit
-            encoderPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Madlad" + "/Int8WO/madlad_encoder_8bit.onnx";
-            decoderPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Madlad" + "/Int8WO/madlad_decoder_8bit.onnx";
-            vocabPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Madlad" + "/spiece.model";
-            embedAndLmHeadPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Madlad" + "/madlad_embed_8bit.onnx";
-            cacheInitializerPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Madlad" + "/Int8WO/madlad_cache_initializer_8bit.onnx";
-            //4 bit
-            /*encoderPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Madlad" + "/Int4_16/madlad_encoder_4bit.onnx";
-            decoderPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Madlad" + "/Int4_16/madlad_decoder_4bit.onnx";
-            vocabPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Madlad" + "/spiece.model";
-            embedAndLmHeadPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Madlad" + "/madlad_embed_8bit.onnx";
-            cacheInitializerPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/Madlad" + "/Int4_16/madlad_cache_initializer_4bit.onnx";*/
+            if(Global.USE_EXTERNAL_MEMORY_FOR_RESOURCES) {
+                String basePath = Environment.getExternalStorageDirectory().getPath() + "/models" + "/Translation/Madlad";
+                //8 bit
+                encoderPath =  basePath + "/Int8WO/madlad_encoder_8bit.onnx";
+                decoderPath = basePath + "/Int8WO/madlad_decoder_8bit.onnx";
+                vocabPath = basePath + "/spiece.model";
+                embedAndLmHeadPath = basePath + "/madlad_embed_8bit.onnx";
+                cacheInitializerPath = basePath + "/Int8WO/madlad_cache_initializer_8bit.onnx";
+                //4 bit
+                /*encoderPath = basePath + "/Int4_16/madlad_encoder_4bit.onnx";
+                decoderPath = basePath + "/Int4_16/madlad_decoder_4bit.onnx";
+                vocabPath = basePath + "/spiece.model";
+                embedAndLmHeadPath = basePath + "/madlad_embed_8bit.onnx";
+                cacheInitializerPath = basePath + "/Int4_16/madlad_cache_initializer_4bit.onnx";*/
+            }else{
+                String basePath = global.getFilesDir().getPath() + "/Translation/Madlad";
+                encoderPath = basePath + "/Int4Acc4/madlad_encoder_4bit.onnx";
+                decoderPath = basePath + "/Int4Acc4/madlad_decoder_4bit.onnx";
+                vocabPath = basePath + "/spiece.model";
+                embedAndLmHeadPath = basePath + "/madlad_embed_8bit.onnx";
+                cacheInitializerPath = basePath + "/Int4Acc4/madlad_cache_initializer_4bit.onnx";
+            }
         }else {  //hy-mt
-            decoderPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/HY-MT" + "/model_int8_final.onnx";
-            vocabPath = Environment.getExternalStorageDirectory().getPath() + "/models/Translation/HY-MT" + "/tokenizer.json";
+            if(Global.USE_EXTERNAL_MEMORY_FOR_RESOURCES) {
+                String basePath = Environment.getExternalStorageDirectory().getPath() + "/models" + "/Translation/HY-MT";
+                decoderPath = basePath + "/model_int8_final.onnx";
+                vocabPath = basePath + "/tokenizer.json";
+            }else{
+                String basePath = global.getFilesDir().getPath() + "/Translation/HY-MT";
+                decoderPath = basePath + "/model_int8_final.onnx";
+                vocabPath = basePath + "/tokenizer.json";
+            }
         }
 
         String finalDecoderPath = decoderPath;
@@ -209,9 +218,10 @@ public class Translator extends NeuralNetworkApi {
                         tokenizer = new Tokenizer(finalVocabPath, Tokenizer.HY_MT);
                     }
 
-                    if(mode == MOZILLA) {
+                    if(mode == MOZILLA || global.isUseMozillaForVoiceTranslation()) {
                         if(restart) languageResourcesManager.loadAllMozillaResources();
-                    }else{
+                    }
+                    if(mode != MOZILLA){
                         final OrtSession.SessionOptions.OptLevel optDefaultLevel = OrtSession.SessionOptions.OptLevel.EXTENDED_OPT;
                         boolean arena = true;
 
@@ -276,7 +286,8 @@ public class Translator extends NeuralNetworkApi {
                         mainHandler.post(() -> listener.onSuccess());
                     } else if(mode == HY_MT) {
                         decoderSession.close();
-                    } else if(mode == MOZILLA){
+                    }
+                    if(mode == MOZILLA || global.isUseMozillaForVoiceTranslation()){
                         unloadAllMozillaResources(listener);
                     }
                     onnxEnv.close();
@@ -314,21 +325,21 @@ public class Translator extends NeuralNetworkApi {
         });
     }
 
-    public void translate(final String textToTranslate, final CustomLocale languageInput, final CustomLocale languageOutput, int beamSize, boolean saveResults) {
+    public void translate(final String textToTranslate, final CustomLocale languageInput, final CustomLocale languageOutput, int beamSize, boolean saveResults, Global.RTranslatorMode rtranslatorMode) {
         final Thread t = new Thread("textTranslation") {
             public void run() {
                 translating = true;
-                performTextTranslation(textToTranslate, languageInput, languageOutput, beamSize, saveResults, null);
+                performTextTranslation(textToTranslate, languageInput, languageOutput, beamSize, saveResults, rtranslatorMode, null);
                 translating = false;
             }
         };
         t.start();
     }
 
-    public void translate(final String textToTranslate, final CustomLocale languageInput, final CustomLocale languageOutput, int beamSize, boolean saveResults, final TranslateListener responseListener) {
+    public void translate(final String textToTranslate, final CustomLocale languageInput, final CustomLocale languageOutput, int beamSize, boolean saveResults, Global.RTranslatorMode rtranslatorMode, final TranslateListener responseListener) {
         final Thread t = new Thread("textTranslation") {
             public void run() {
-                performTextTranslation(textToTranslate, languageInput, languageOutput, beamSize, saveResults, responseListener);
+                performTextTranslation(textToTranslate, languageInput, languageOutput, beamSize, saveResults, rtranslatorMode, responseListener);
             }
         };
         t.start();
@@ -368,7 +379,7 @@ public class Translator extends NeuralNetworkApi {
                 loadSrcLangResourcesForPeer(languageInput, sender, new GeneralListener() {
                     @Override
                     public void onSuccess() {
-                        performTextTranslation(text, languageInput, data.languageOutput, data.beamSize, false, new TranslateListener() {
+                        performTextTranslation(text, languageInput, data.languageOutput, data.beamSize, false, Global.RTranslatorMode.CONVERSATION_MODE, new TranslateListener() {
                             @Override
                             public void onTranslatedText(String textToTranslate, String text, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
                                 data.conversationMessageToTranslate.getPayload().setText(text);
@@ -719,7 +730,7 @@ public class Translator extends NeuralNetworkApi {
         }
     }
 
-    private void performTextTranslation(final String textToTranslate, final CustomLocale inputLanguage, final CustomLocale outputLanguage, int beamSize, boolean saveResults, @Nullable final TranslateListener responseListener) {
+    private void performTextTranslation(final String textToTranslate, final CustomLocale inputLanguage, final CustomLocale outputLanguage, int beamSize, boolean saveResults, Global.RTranslatorMode rtranslatorMode, @Nullable final TranslateListener responseListener) {
         try {
             long initTime = System.currentTimeMillis();
             String finalResult = null;
@@ -731,13 +742,18 @@ public class Translator extends NeuralNetworkApi {
             boolean isDictionaryResult = false;  //will be true and remain true only if all the splits of the text are translated by a dictionary
             String[] synonyms = null;
 
-            if(mode != MOZILLA){
+            int performMode = mode;
+            if(global.isUseMozillaForVoiceTranslation() && (rtranslatorMode == Global.RTranslatorMode.CONVERSATION_MODE || rtranslatorMode == Global.RTranslatorMode.WALKIE_TALKIE_MODE)){
+                performMode = MOZILLA;
+            }
+
+            if(performMode != MOZILLA){
                 int maxLength = 200;
-                if(mode == NLLB || mode == NLLB_CACHE){
+                if(performMode == NLLB || performMode == NLLB_CACHE){
                     maxLength = 200;
-                }else if(mode == MADLAD || mode == MADLAD_CACHE){
+                }else if(performMode == MADLAD || performMode == MADLAD_CACHE){
                     maxLength = 200;  //todo: research the best value for madlad
-                }else if(mode == HY_MT){
+                }else if(performMode == HY_MT){
                     maxLength = 5000;   //todo: research the best value for hy-mt
                 }
                 //we split the input text in sentences

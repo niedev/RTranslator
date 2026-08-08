@@ -81,7 +81,18 @@ public class MozillaLanguagesAdapter extends RecyclerView.Adapter<RecyclerView.V
             ModelHolder modelHolder = (ModelHolder) holder;
             ResourceManager resourceManager = (ResourceManager) item;
             modelHolder.setResourceManager(resourceManager);
-            resourceManager.setView((modelHolder.getView()));
+            resourceManager.setView(modelHolder.getView(), new ResourceManager.Listener() {
+                @Override
+                public void onResourceDeleted() {
+                    int indexInstalled = modelsInstalled.indexOf(item);
+                    if(indexInstalled != -1){
+                        // in this case we move the row from modelsInstalled to modelsAvailable
+                        ResourceManager resourceManager = modelsInstalled.remove(indexInstalled);
+                        int newIndex = modelsAvailable.addOrdered(resourceManager);
+                        notifyItemMoved(getCompleteIndex(ItemTypeExtended.ITEM_MODEL_INSTALLED, indexInstalled), getCompleteIndex(ItemTypeExtended.ITEM_MODEL_AVAILABLE, newIndex));
+                    }
+                }
+            });
         }
     }
 
@@ -121,7 +132,7 @@ public class MozillaLanguagesAdapter extends RecyclerView.Adapter<RecyclerView.V
                 return -1;
             }
         }
-        base = !modelsInstalled.isEmpty() ? modelsInstalled.size() : 0;
+        base = !modelsInstalled.isEmpty() ? modelsInstalled.size() + 1 : 0;
         if(itemType == ItemTypeExtended.HEADER_AVAILABLE){
             if(!modelsAvailable.isEmpty()){
                 return base;
@@ -153,7 +164,7 @@ public class MozillaLanguagesAdapter extends RecyclerView.Adapter<RecyclerView.V
             if (!modelsInstalled.isEmpty() && position == modelsInstalled.size() + 1) {
                 return new ComposedIndex(ItemTypeExtended.HEADER_AVAILABLE, 0);
             }
-            int offset = !modelsInstalled.isEmpty() ? position - (modelsInstalled.size() + 1) : position - 1;
+            int offset = !modelsInstalled.isEmpty() ? position - (modelsInstalled.size() + 2) : position - 1;
             if (offset < modelsAvailable.size()) {
                 return new ComposedIndex(ItemTypeExtended.ITEM_MODEL_AVAILABLE, offset);
             }
@@ -205,9 +216,10 @@ public class MozillaLanguagesAdapter extends RecyclerView.Adapter<RecyclerView.V
             modelsAvailable.get(indexAvailable).setState(state, animate);
             if(state == ResourceManagerView.State.DOWNLOADED){
                 // in this case we move the row from modelsAvailable to modelsInstalled
+                int oldCompleteIndex = getCompleteIndex(ItemTypeExtended.ITEM_MODEL_AVAILABLE, indexAvailable);
                 ResourceManager resourceManager = modelsAvailable.remove(indexAvailable);
                 int newIndex = modelsInstalled.addOrdered(resourceManager);
-                notifyItemMoved(getCompleteIndex(ItemTypeExtended.ITEM_MODEL_AVAILABLE, indexAvailable), getCompleteIndex(ItemTypeExtended.ITEM_MODEL_INSTALLED, newIndex));
+                notifyItemMoved(oldCompleteIndex, getCompleteIndex(ItemTypeExtended.ITEM_MODEL_INSTALLED, newIndex));
             }
         }
     }
@@ -230,7 +242,7 @@ public class MozillaLanguagesAdapter extends RecyclerView.Adapter<RecyclerView.V
         if(holder instanceof ModelHolder){
             ModelHolder modelHolder = (ModelHolder) holder;
             if(modelHolder.getResourceManager() != null) {
-                modelHolder.getResourceManager().setView(null);
+                modelHolder.getResourceManager().setView(null, null);
                 modelHolder.setResourceManager(null);
             }
         }

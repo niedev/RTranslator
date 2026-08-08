@@ -17,8 +17,11 @@ import com.downloader.PRDownloaderConfig;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
+
+import nie.translator.rtranslator.tools.DownloaderTools;
 
 public class DownloaderService extends Service {
     public static final String DOWNLOAD_INFOS = "nie.translator.rtranslator.downloader2.DOWNLOAD_INFOS";
@@ -57,7 +60,7 @@ public class DownloaderService extends Service {
         downloaderCallback = new Downloader2.ClientCallback() {
             @Override
             public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
-                if(downloadGroup.getRunningDownload() != null) updateDownloadProgress(downloaders.indexOf(downloadGroup), downloadGroup.getRunningDownload().name, totalProgress, downloadGroup.getRunningDownloadIndex() == -1);
+                if(downloadGroup.getRunningDownload() != null) updateDownloadProgress(downloaders.indexOf(downloadGroup), downloadGroup.getRunningDownload().name, totalProgress, downloadGroup.getRunningDownloadIndex() == -1, unzipping, testingIntegrity);
                 notifyProgress(downloadGroup, download, totalProgress, progress, unzipping, testingIntegrity);
             }
 
@@ -142,14 +145,12 @@ public class DownloaderService extends Service {
                             }else{
                                 // in this case the download is paused so we add it to the downloaders but without starting it (plus we create its notification)
                                 int index;
-                                synchronized (downloaders) {
-                                    downloaders.add(new Downloader2(groupInfo, this, downloaderCallback));
-                                    index = downloaders.size()-1;
-                                }
+                                downloaders.add(new Downloader2(groupInfo, this, downloaderCallback));
+                                index = downloaders.size()-1;
                                 int runningDownloadIndex = downloaders.get(index).findFirstIncompletedDownload();
                                 if(runningDownloadIndex != -1) {
                                     DownloadInfoExtended runningDownload = downloaders.get(index).getDownloadGroupInfo().downloadsInfo[runningDownloadIndex];
-                                    updateDownloadProgress(index, runningDownload.name, downloaders.get(index).getDownloadGroupInfo().getCurrentProgress(), true);
+                                    updateDownloadProgress(index, runningDownload.name, downloaders.get(index).getDownloadGroupInfo().getCurrentProgress(), true, runningDownload.isUnzipping(), runningDownload.isTestingIntegrity());
                                 }
                             }
                         }
@@ -190,10 +191,8 @@ public class DownloaderService extends Service {
         int index = downloaders.indexOf(download);
         if(index == -1) {
             final Downloader2 newDownloader = new Downloader2(download, this, downloaderCallback);
-            synchronized (downloaders) {
-                downloaders.add(newDownloader);
-                index = downloaders.size()-1;
-            }
+            downloaders.add(newDownloader);
+            index = downloaders.size()-1;
             addDownloadGroupInfoPreference(download);
         }
         downloaders.get(index).startDownloads();
@@ -206,14 +205,12 @@ public class DownloaderService extends Service {
     }
 
     public void pauseDownload(DownloadGroupInfo download) {
-        synchronized (downloaders) {
-            int index = downloaders.indexOf(download);
-            if (index != -1 && downloaders.get(index).getDownloadGroupInfo().getRunningDownloadIndex() != -1) {
-                DownloadGroupInfo downloadGroupInfo = downloaders.get(index).getDownloadGroupInfo();
-                DownloadInfoExtended runningDownload = downloadGroupInfo.getRunningDownload();
-                downloaders.get(index).pauseDownloads();
-                updateDownloadProgress(index, runningDownload.name, downloadGroupInfo.getCurrentProgress(), true);
-            }
+        int index = downloaders.indexOf(download);
+        if (index != -1 && downloaders.get(index).getDownloadGroupInfo().getRunningDownloadIndex() != -1) {
+            DownloadGroupInfo downloadGroupInfo = downloaders.get(index).getDownloadGroupInfo();
+            DownloadInfoExtended runningDownload = downloadGroupInfo.getRunningDownload();
+            downloaders.get(index).pauseDownloads();
+            updateDownloadProgress(index, runningDownload.name, downloadGroupInfo.getCurrentProgress(), true, runningDownload.isUnzipping(), runningDownload.isTestingIntegrity());
         }
     }
 
@@ -224,24 +221,25 @@ public class DownloaderService extends Service {
     }
 
     public void cancelDownload(DownloadGroupInfo download) {
-        synchronized (downloaders) {
-            int index = downloaders.indexOf(download);
-            if (index != -1) {
-                downloaders.get(index).cancelDownloads();
-                deleteDownloadGroupInfoPreference(download);
-                removeDownload(index);
-            }
+        int index = downloaders.indexOf(download);
+        if (index != -1) {
+            downloaders.get(index).cancelDownloads();
+            deleteDownloadGroupInfoPreference(download);
+            removeDownload(index);
+        }else{  //if the download is not currently running (usually when it is completed)
+            // we delete the already downloaded files of this group of download
+            DownloaderTools.deleteDownloadedFiles(download);
+            // we delete the download status from the preferences
+            deleteDownloadGroupInfoPreference(download);
         }
     }
 
     public ArrayList<DownloadGroupInfo> getDownloadsStatus() {
-        synchronized (downloaders) {
-            ArrayList<DownloadGroupInfo> downloadGroupInfos = new ArrayList<>();
-            for(Downloader2 downloader : downloaders){
-                downloadGroupInfos.add(downloader.getDownloadGroupInfo());
-            }
-            return downloadGroupInfos;
+        ArrayList<DownloadGroupInfo> downloadGroupInfos = new ArrayList<>();
+        for(Downloader2 downloader : downloaders){
+            downloadGroupInfos.add(downloader.getDownloadGroupInfo());
         }
+        return downloadGroupInfos;
     }
 
     private void updateDownloadGroupInfoPreference(DownloadGroupInfo downloadGroup){
@@ -286,25 +284,10 @@ public class DownloaderService extends Service {
     }
 
     private void deleteDownloadGroupInfoPreference(DownloadGroupInfo downloadGroup){
-        SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
-        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
-        ArrayList<DownloadGroupInfo> downloadGroupInfos = null;
-        if(!downloadsStatusString.isEmpty()) {
-            Gson gson = new Gson();
-            downloadGroupInfos = gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
-            int index = downloadGroupInfos.indexOf(downloadGroup);
-            if(index != -1) {
-                downloadGroupInfos.remove(index);
-                String newDownloadsStatusString = gson.toJson(downloadGroupInfos);
-                SharedPreferences.Editor editor;
-                editor = sharedPreferences.edit();
-                editor.putString("downloadsStatus", newDownloadsStatusString);
-                editor.apply();
-            }
-        }
+        DownloaderTools.deleteDownloadGroupInfoPreference(this, downloadGroup);
     }
 
-    public void updateDownloadProgress(int downloadIndex, String filename, int progress, boolean paused) {
+    public void updateDownloadProgress(int downloadIndex, String filename, int progress, boolean paused, boolean unzipping, boolean testingIntegrity) {
         int safeId = downloadIndex + 2000;  //Shift the index by an offset so it never equals 0 or conflicts with SUMMARY_ID
 
         long currentTime = System.currentTimeMillis();
@@ -320,6 +303,13 @@ public class DownloaderService extends Service {
         lastChildUpdateTimes.put(safeId, currentTime);
 
         String sortKey = String.format(java.util.Locale.US, "%04d", downloadIndex);
+        String contentText = progress + "%";   //todo: insert this text as a resource and translate it
+        if(unzipping){
+            contentText = "Unzipping...";
+        }
+        if(testingIntegrity){
+            contentText = "Testing integrity...";
+        }
 
         // Build and update the specific Child Notification
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
@@ -329,8 +319,8 @@ public class DownloaderService extends Service {
                 .setOnlyAlertOnce(true)                    // Prevents sound/vibration spam
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentTitle((paused ? "Paused: " : "") + filename)
-                .setContentText(progress + "%")
+                .setContentTitle((paused ? "Paused: " : "") + filename)  //todo: insert this text as a resource and translate it
+                .setContentText(contentText)
                 .setProgress(100, progress, false).build();
 
         notificationManager.notify(safeId, notification);
@@ -395,12 +385,12 @@ public class DownloaderService extends Service {
     }
 
     private void removeDownload(int index){
-        synchronized (downloaders) {
+        if (index >= 0) {
             downloaders.remove(index);
-        }
-        deleteDownloadNotification(index);
-        if(downloaders.isEmpty()){
-            stopSelf();
+            deleteDownloadNotification(index);
+            if (downloaders.isEmpty()) {
+                stopSelf();
+            }
         }
     }
 
@@ -438,9 +428,7 @@ public class DownloaderService extends Service {
     public void onDestroy() {
         super.onDestroy();
         running = false;
-        synchronized (downloaders) {
-            downloaders.clear();
-        }
+        downloaders.clear();
         clients.clear();
         PRDownloader.shutDown();
     }
@@ -453,9 +441,6 @@ public class DownloaderService extends Service {
     }
 
     private boolean areAllDownloadsFinished() {
-        synchronized (downloaders) {
-            if (downloaders.isEmpty()) return true; // No downloads, so all finished
-        }
-        return false;
+        return downloaders.isEmpty(); // No downloads, so all finished
     }
 }

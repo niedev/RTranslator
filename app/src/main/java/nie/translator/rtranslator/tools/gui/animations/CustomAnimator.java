@@ -996,14 +996,14 @@ public class CustomAnimator {
                 if (listener != null) {
                     listener.onAnimationStart();
                 }
-                progressBar.setVisibility(EditText.VISIBLE);
-                pauseIcon.setVisibility(EditText.VISIBLE);
-                buttonDelete.setVisibility(EditText.VISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
+                pauseIcon.setVisibility(View.VISIBLE);
+                buttonDelete.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onAnimationEnd(Animator animator) {
-                buttonDownload.setVisibility(EditText.INVISIBLE);
+                buttonDownload.setVisibility(View.INVISIBLE);
                 progressBar.setClickable(true);
                 buttonDelete.setClickable(true);
                 if (listener != null) {
@@ -1030,9 +1030,9 @@ public class CustomAnimator {
         ConstraintLayout.LayoutParams layoutParamsBar = (ConstraintLayout.LayoutParams) progressBar.getLayoutParams();
         int buttonDeleteLeftMarginInit = layoutParamsBar.rightMargin;
         int buttonDeleteRightMarginInit = layoutParams.rightMargin;
-        int buttonDeleteSize = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_SIZE_REDUCED_PX);
-        int buttonDeleteLeftMargin = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX);
-        int buttonDeleteRightMargin = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_RIGHT_MARGIN_REDUCED_PX);
+        int buttonDeleteSize = ResourceManagerView.BUTTON_DELETE_SIZE_REDUCED_PX;
+        int buttonDeleteLeftMargin = ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX;
+        int buttonDeleteRightMargin = ResourceManagerView.BUTTON_DELETE_RIGHT_MARGIN_REDUCED_PX;
 
         progressBar.setClickable(false);
         buttonDelete.setClickable(false);
@@ -1040,10 +1040,10 @@ public class CustomAnimator {
 
         AnimatorSet animatorSet= new AnimatorSet();
 
-        Animator animationButtonDeleteAlpha = createAnimatorAlpha(buttonDownload, buttonDownload.getAlpha(), 0, duration);
+        Animator animationButtonDeleteAlpha = createAnimatorAlpha(buttonDelete, buttonDelete.getAlpha(), 0, duration);
         Animator animationPauseOrResumeIconAlpha = createAnimatorAlpha(pauseOrResumeIcon, pauseOrResumeIcon.getAlpha(), 0, duration);
         Animator animationProgressBarAlpha = createAnimatorAlpha(progressBar, progressBar.getAlpha(), 0, duration);
-        Animator animationDownloadAlpha = createAnimatorAlpha(buttonDownload, buttonDownload.getAlpha(), 0, duration);
+        Animator animationDownloadAlpha = createAnimatorAlpha(buttonDownload, buttonDownload.getAlpha(), 1, duration);
         Animator animationButtonDeleteLeftMargin = createAnimatorRightMargin(progressBar, buttonDeleteLeftMarginInit, buttonDeleteLeftMargin, duration);
         Animator animationButtonDeleteRightMargin = createAnimatorRightMargin(buttonDelete, buttonDeleteRightMarginInit, buttonDeleteRightMargin, duration);
         Animator animationButtonDeleteHeight = createAnimatorHeight(buttonDelete, buttonDelete.getHeight(), buttonDeleteSize, duration);
@@ -1065,15 +1065,15 @@ public class CustomAnimator {
                 if (listener != null) {
                     listener.onAnimationStart();
                 }
-                progressBar.setVisibility(EditText.VISIBLE);
-                pauseOrResumeIcon.setVisibility(EditText.VISIBLE);
-                buttonDelete.setVisibility(EditText.VISIBLE);
+                buttonDownload.setVisibility(View.VISIBLE);
+                buttonDownload.setClickable(true);
             }
 
             @Override
             public void onAnimationEnd(Animator animator) {
-                buttonDownload.setVisibility(EditText.INVISIBLE);
-                buttonDownload.setClickable(true);
+                progressBar.setVisibility(View.INVISIBLE);
+                pauseOrResumeIcon.setVisibility(View.INVISIBLE);
+                buttonDelete.setVisibility(View.INVISIBLE);
                 if (listener != null) {
                     listener.onAnimationEnd();
                 }
@@ -1096,7 +1096,7 @@ public class CustomAnimator {
 
         ConstraintLayout.LayoutParams layoutParamsBar = (ConstraintLayout.LayoutParams) progressBar.getLayoutParams();
         int buttonDeleteLeftMarginInit = layoutParamsBar.rightMargin;
-        int buttonDeleteLeftMargin = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX);
+        int buttonDeleteLeftMargin = ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX;
 
         progressBar.setClickable(false);
         buttonDelete.setClickable(false);
@@ -1116,15 +1116,15 @@ public class CustomAnimator {
                 if (listener != null) {
                     listener.onAnimationStart();
                 }
-                progressBar.setVisibility(EditText.VISIBLE);
-                pauseOrResumeIcon.setVisibility(EditText.VISIBLE);
-                buttonDelete.setVisibility(EditText.VISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
+                pauseOrResumeIcon.setVisibility(View.VISIBLE);
+                buttonDelete.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onAnimationEnd(Animator animator) {
-                progressBar.setVisibility(EditText.INVISIBLE);
-                pauseOrResumeIcon.setVisibility(EditText.INVISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
+                pauseOrResumeIcon.setVisibility(View.INVISIBLE);
                 buttonDelete.setClickable(true);
                 if (listener != null) {
                     listener.onAnimationEnd();
@@ -1177,7 +1177,7 @@ public class CustomAnimator {
                 }
                 //change of buttonMic
                 buttonMic.setState(ButtonMic.STATE_RETURN);
-                editText.setVisibility(EditText.VISIBLE);
+                editText.setVisibility(View.VISIBLE);
             }
 
             @Override

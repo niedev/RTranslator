@@ -153,7 +153,7 @@ public class TranslationFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         firstLanguageSelector = view.findViewById(R.id.cancelButtonCard);
-        secondLanguageSelector = view.findViewById(R.id.continueButtonCard);
+        secondLanguageSelector = view.findViewById(R.id.okButtonCard);
         invertLanguagesButton = view.findViewById(R.id.invertLanguages);
         translateButton = view.findViewById(R.id.buttonTranslate);
         walkieTalkieButton = view.findViewById(R.id.buttonMicLeft);
@@ -289,7 +289,7 @@ public class TranslationFragment extends Fragment {
                     //we deactivate translate button
                     deactivateTranslationButton();  //todo: implement stop button instead of deactivation
                     //we start the translation
-                    global.getTranslator().translate(text, firstLanguage, secondLanguage, global.getBeamSize(), true);
+                    global.getTranslator().translate(text, firstLanguage, secondLanguage, global.getBeamSize(), true, Global.RTranslatorMode.TEXT_TRANSLATION_MODE);
                 }
             }
         });
@@ -867,7 +867,7 @@ public class TranslationFragment extends Fragment {
         reloadButton.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
 
-        final ArrayList<CustomLocale> languages = global.getTranslatorLanguages(true);
+        final ArrayList<CustomLocale> languages = global.getTranslatorLanguages(Global.RTranslatorMode.TEXT_TRANSLATION_MODE, true);
         progressBar.setVisibility(View.GONE);
         listViewGui.setVisibility(View.VISIBLE);
 
@@ -943,7 +943,7 @@ public class TranslationFragment extends Fragment {
 
     private void setDisplayedSecondLanguage(CustomLocale language){
         // change language displayed
-        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.continueButtonText)).setText(language.getDisplayNameWithoutTTS(), false);
+        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(language.getDisplayNameWithoutTTS(), false);
     }
 
     private void switchLanguages(){
@@ -956,7 +956,7 @@ public class TranslationFragment extends Fragment {
         });
         // change language displayed
         ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.cancelButtonText)).setText(global.getFirstTextLanguage(true).getDisplayNameWithoutTTS(), false);
-        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.continueButtonText)).setText(global.getSecondTextLanguage(true).getDisplayNameWithoutTTS(), false);
+        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(global.getSecondTextLanguage(true).getDisplayNameWithoutTTS(), false);
     }
 
     private void onFailureShowingList(int[] reasons, long value) {

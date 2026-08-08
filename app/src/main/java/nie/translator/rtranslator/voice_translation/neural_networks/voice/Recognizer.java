@@ -183,7 +183,6 @@ public class Recognizer extends NeuralNetworkApi {
         onnxEnv = OrtEnvironment.getEnvironment();
 
         String modelInitPath = global.getFilesDir().getPath() + "/Whisper_initializer.onnx";
-        String encoderPath = global.getFilesDir().getPath() + "/Whisper_encoder.onnx";
         String decoderPath = global.getFilesDir().getPath() + "/Whisper_decoder.onnx";
         String cacheInitPath = global.getFilesDir().getPath() + "/Whisper_cache_initializer.onnx";
         String cacheInitBatchPath = global.getFilesDir().getPath() + "/Whisper_cache_initializer_batch.onnx";
@@ -200,18 +199,7 @@ public class Recognizer extends NeuralNetworkApi {
                     initSessionOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
                     initSession = onnxEnv.createSession(modelInitPath, initSessionOptions);
 
-                    OrtSession.SessionOptions encoderSessionOptions = new OrtSession.SessionOptions();
-                    encoderSessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
-                    if(global.getTotalRamSize() <= 7000){
-                        encoderSessionOptions.setCPUArenaAllocator(false);
-                        encoderSessionOptions.setMemoryPatternOptimization(false);
-                    }else {
-                        encoderSessionOptions.setCPUArenaAllocator(true);
-                        encoderSessionOptions.setMemoryPatternOptimization(true);
-                    }
-                    encoderSessionOptions.setSymbolicDimensionValue("batch_size", 1);
-                    encoderSessionOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
-                    encoderSession = onnxEnv.createSession(encoderPath, encoderSessionOptions);
+                    initializeEncoderSession();
 
                     OrtSession.SessionOptions cacheSessionOptions = new OrtSession.SessionOptions();
                     cacheSessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
@@ -242,6 +230,27 @@ public class Recognizer extends NeuralNetworkApi {
                 }
             }
         }).start();
+    }
+
+    public void initializeEncoderSession() throws OrtException {
+        // release of encoder session in case of a restart
+        if(encoderSession != null){
+            encoderSession.close();
+        }
+        // encoder session initialization
+        String encoderPath = global.getFilesDir().getPath() + "/Whisper_encoder.onnx";
+        OrtSession.SessionOptions encoderSessionOptions = new OrtSession.SessionOptions();
+        encoderSessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
+        if(global.isWhisperReducedRam()){
+            encoderSessionOptions.setCPUArenaAllocator(false);
+            encoderSessionOptions.setMemoryPatternOptimization(false);
+        }else {
+            encoderSessionOptions.setCPUArenaAllocator(true);
+            encoderSessionOptions.setMemoryPatternOptimization(true);
+        }
+        encoderSessionOptions.setSymbolicDimensionValue("batch_size", 1);
+        encoderSessionOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
+        encoderSession = onnxEnv.createSession(encoderPath, encoderSessionOptions);
     }
 
     /**

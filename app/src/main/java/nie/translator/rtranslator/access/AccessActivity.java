@@ -29,9 +29,16 @@ import android.view.View;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+
+import java.util.ArrayList;
+
 import nie.translator.rtranslator.GeneralActivity;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.settings.ModelManagerFragment;
+import nie.translator.rtranslator.settings.MozillaManagerFragment;
 import nie.translator.rtranslator.tools.Tools;
 
 
@@ -39,6 +46,8 @@ public class AccessActivity extends GeneralActivity {
     public static final int USER_DATA_FRAGMENT = 0;
     public static final int NOTICE_FRAGMENT = 1;
     public static final int DOWNLOAD_FRAGMENT = 2;
+    public static final int MODEL_MANAGER = 3;
+    public static final int MOZILLA_MANAGER = 4;
     private Fragment fragment;
     public static String[] REQUIRED_PERMISSIONS;
     public static final int REQUEST_CODE_REQUIRED_PERMISSIONS = 4;
@@ -59,14 +68,22 @@ public class AccessActivity extends GeneralActivity {
             REQUIRED_PERMISSIONS = new String[0];
         }
 
+        Global global = (Global) getApplication();
         if (savedInstanceState != null) {
             //Restore the fragment's instance
             fragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment_inizialization");
         } else {
             final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
             String savedUserName = sharedPreferences.getString("name", "");
-            if(savedUserName.length()>0){  //means that the user has already inserted the info in UserDataFragment, so we can start directly the DownloadFragment
-                startFragment(DOWNLOAD_FRAGMENT, null);
+            if(savedUserName.length()>0){  //means that the user has already inserted the info in UserDataFragment, so we can start directly the DownloadFragment or the ModelManagerFragment
+                DownloadManager downloadManager = new DownloadManager(this);
+                ArrayList<DownloadGroupInfo> savedDownloadStatus = downloadManager.getSavedDownloadStatus();
+                int index = savedDownloadStatus.indexOf(global.getInitialDownloadInfo());
+                if(index != -1 && savedDownloadStatus.get(index).isAllDownloadCompleted()){  //means that the initial download is already completed, so we can start directly the ModelManagerFragment
+                    startFragment(MODEL_MANAGER, null);
+                }else{   //means that the initial download is not completed, so we must start the DownloadFragment
+                    startFragment(DOWNLOAD_FRAGMENT, null);
+                }
             }else{
                 startFragment(NOTICE_FRAGMENT, null);
             }
@@ -138,6 +155,30 @@ public class AccessActivity extends GeneralActivity {
                 fragment = downloadFragment;
                 break;
             }
+            case MODEL_MANAGER: {
+                ModelManagerFragment modelManagerFragment = new ModelManagerFragment();
+                if (bundle != null) {
+                    modelManagerFragment.setArguments(bundle);
+                }
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                transaction.replace(R.id.fragment_initialization_container, modelManagerFragment);
+                transaction.commit();
+                fragment = modelManagerFragment;
+                break;
+            }
+            case MOZILLA_MANAGER: {
+                MozillaManagerFragment mozillaManagerFragment = new MozillaManagerFragment();
+                if (bundle != null) {
+                    mozillaManagerFragment.setArguments(bundle);
+                }
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                transaction.replace(R.id.fragment_initialization_container, mozillaManagerFragment);
+                transaction.commit();
+                fragment = mozillaManagerFragment;
+                break;
+            }
         }
     }
 
@@ -159,7 +200,12 @@ public class AccessActivity extends GeneralActivity {
             startFragment(USER_DATA_FRAGMENT,null);
             return;
         }
-        super.onBackPressed();
+        if(fragment instanceof MozillaManagerFragment){
+            startFragment(MODEL_MANAGER, null);
+            return;
+        }
+        finishAndRemoveTask(); //todo: test if this closes the app when we are in the model manager fragment
+        //super.onBackPressed();
     }
 
     //todo: remove before the final release

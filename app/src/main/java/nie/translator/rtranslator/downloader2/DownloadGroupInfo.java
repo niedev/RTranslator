@@ -12,6 +12,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 import nie.translator.rtranslator.bluetooth.Peer;
+import nie.translator.rtranslator.settings.ResourceManager;
 
 public class DownloadGroupInfo implements Parcelable{
     @NonNull
@@ -63,6 +64,8 @@ public class DownloadGroupInfo implements Parcelable{
             downloadsInfoTarget = ((Downloader2) obj).getDownloadGroupInfo().downloadsInfo;
         } else if(obj instanceof DownloadGroupInfo){
             downloadsInfoTarget = ((DownloadGroupInfo) obj).downloadsInfo;
+        } else if(obj instanceof ResourceManager){
+            downloadsInfoTarget = ((ResourceManager) obj).getDownloadInfo().downloadsInfo;
         }
         //if downloadsInfoTarget contains the same downloads as downloadsInfo (order doesn't matter), we return true
         if(downloadsInfoTarget != null && downloadsInfo.length == downloadsInfoTarget.length){

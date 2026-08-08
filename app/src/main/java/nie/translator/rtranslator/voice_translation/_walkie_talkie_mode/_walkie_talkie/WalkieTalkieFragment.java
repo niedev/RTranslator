@@ -17,7 +17,6 @@
 package nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -33,9 +32,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -119,7 +115,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         constraintLayout = view.findViewById(R.id.container);
         container = view.findViewById(R.id.walkie_talkie_main_container);
         firstLanguageSelector = view.findViewById(R.id.cancelButtonLayout);
-        secondLanguageSelector = view.findViewById(R.id.continueButtonLayout);
+        secondLanguageSelector = view.findViewById(R.id.okButtonLayout);
         exitButton = view.findViewById(R.id.exitButton);
         sound = view.findViewById(R.id.soundButton);
         microphone = view.findViewById(R.id.buttonMic);
@@ -566,7 +562,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         reloadButton.setVisibility(View.GONE);
         //progressBar.setVisibility(View.VISIBLE);
 
-        final ArrayList<CustomLocale> languages = global.getLanguages(true);
+        final ArrayList<CustomLocale> languages = global.getLanguages(Global.RTranslatorMode.WALKIE_TALKIE_MODE, true);
         //progressBar.setVisibility(View.GONE);
         listViewGui.setVisibility(View.VISIBLE);
 
@@ -617,7 +613,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // save secondLanguage selected
         global.setSecondLanguage(language, null);
         // change language displayed
-        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.continueButtonText)).setText(language.getDisplayNameWithoutTTS(), true);
+        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(language.getDisplayNameWithoutTTS(), true);
         rightMicLanguage.setText(language.getDisplayNameWithoutTTS(), true);
     }
 

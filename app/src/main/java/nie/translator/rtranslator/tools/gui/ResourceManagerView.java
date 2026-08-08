@@ -319,20 +319,20 @@ public class ResourceManagerView extends ConstraintLayout {
             // show the progress in the progress bar
             progressBarDownload.setProgress(progress);
             // show the numerical progress
-            if (modelSizeMb > 0) {
+            if (modelSizeMb > 0 && (state == State.DOWNLOADING || state == State.PAUSED)) {
                 if (modelSizeMb >= 1000) {
                     DecimalFormat df = new DecimalFormat("0.#", new DecimalFormatSymbols(Locale.US));
-                    int modelSizeGb = modelSizeMb / 1000;
+                    float modelSizeGb = (float) modelSizeMb / 1000F;
                     // even when the file downloaded is compressed (the size of the model is larger than the size downloaded),
                     // we show the progress considering the percentage on the final uncompressed size, to make the compression transparent.
-                    int modelDownloadedGb = (progress * modelSizeGb) / 100;
+                    float modelDownloadedGb = (progress * modelSizeGb) / 100;
                     textDownload.setText(df.format(modelDownloadedGb) + "/" + df.format(modelSizeGb) + " GB");
                 } else {
                     DecimalFormat df = new DecimalFormat("0");
                     // even when the file downloaded is compressed (the size of the model is larger than the size downloaded),
                     // we show the progress considering the percentage on the final uncompressed size, to make the compression transparent.
-                    int modelDownloadedMb = (progress * modelSizeMb) / 100;
-                    textDownload.setText(df.format(modelDownloadedMb) + "/" + df.format(modelSizeMb) + " GB");
+                    float modelDownloadedMb = (float) (progress * modelSizeMb) / 100;
+                    textDownload.setText(df.format(modelDownloadedMb) + "/" + df.format(modelSizeMb) + " MB");
                 }
             }
         }

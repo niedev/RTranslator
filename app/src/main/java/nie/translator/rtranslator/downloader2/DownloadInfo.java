@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 public class DownloadInfo implements Parcelable {
     protected final String name;
     protected final String url;
+    @NonNull
     protected final String destinationPath;  //destination folder (should not include the file name)
     protected final long size;  //size in kb (they are not exact, because this is used only to show the progress)
     protected int downloadId = -1;
@@ -23,11 +24,11 @@ public class DownloadInfo implements Parcelable {
         this.shouldTestIntegrity = false;
         this.shouldUnzip = false;
     }
-    public DownloadInfo(String name, String url, String destinationPath, long size, boolean shouldTestIntegrity, boolean shouldUnzip) {
+    public DownloadInfo(String name, String url, @NonNull String destinationPath, long sizeKb, boolean shouldTestIntegrity, boolean shouldUnzip) {
         this.name = name;
         this.url = url;
         this.destinationPath = destinationPath;
-        this.size = size;
+        this.size = sizeKb;
         this.shouldTestIntegrity = shouldTestIntegrity;
         this.shouldUnzip = shouldUnzip;
     }

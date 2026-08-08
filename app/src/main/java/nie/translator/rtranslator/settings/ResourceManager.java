@@ -1,11 +1,29 @@
 package nie.translator.rtranslator.settings;
 
+import static nie.translator.rtranslator.tools.DownloaderTools.checkMozillaModelsPresence;
+import static nie.translator.rtranslator.tools.DownloaderTools.isMozillaDownload;
+
+import android.app.Activity;
+import android.view.View;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.cardview.widget.CardView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.common.collect.Lists;
+
+import java.util.ArrayList;
+
+import nie.translator.rtranslator.Global;
+import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
 import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.ResourceManagerView;
+import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
 
 public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerItem {
     @Nullable
@@ -19,7 +37,10 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
     private final DownloadGroupInfo downloadInfo;
     @Nullable
     private ResourceManagerView view;
+    @Nullable
+    private Listener clientListener;
     private final DownloadManager downloadManager;
+    private final Activity activity;
     private final ResourceManagerView.Listener viewListener = new ResourceManagerView.Listener() {
         @Override
         public void onDownloadClicked() {
@@ -41,19 +62,44 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
 
         @Override
         public void onDeletePressed() {
-            setState(ResourceManagerView.State.EMPTY);
-            downloadManager.cancelDownload(downloadInfo);
+            DownloadGroupInfo hyMtDownloadInfo = ((Global) activity.getApplication()).getHyMtDownloadInfo();
+            DownloadGroupInfo madladDownloadInfo = ((Global) activity.getApplication()).getMadladDownloadInfo();
+            if(isMozillaDownload(downloadInfo) || downloadInfo.equals(hyMtDownloadInfo) || downloadInfo.equals(madladDownloadInfo)) {
+                //this is to prevent the user from deleting all the translation models
+                int numberOfModelsAvailable = 0;
+                for (DownloadGroupInfo downloadGroupInfo : downloadManager.getSavedDownloadStatus()) {
+                    if (isMozillaDownload(downloadGroupInfo)) {
+                        if (downloadGroupInfo.isAllDownloadCompleted()) {
+                            numberOfModelsAvailable++;
+                            break;
+                        }
+                    }
+                }
+                if (downloadManager.checkDownloadCompleted(hyMtDownloadInfo)) {
+                    numberOfModelsAvailable++;
+                }
+                if (downloadManager.checkDownloadCompleted(madladDownloadInfo)) {
+                    numberOfModelsAvailable++;
+                }
+                if (numberOfModelsAvailable <= 1) {
+                    showCannotDeleteDialog();
+                    return;
+                }
+            }
+            showDeleteDialog();
         }
     };
 
-    public ResourceManager(DownloadGroupInfo downloadInfo, ResourceManagerView view, DownloadManager downloadManager) {
+    public ResourceManager(Activity activity, DownloadGroupInfo downloadInfo, ResourceManagerView view, DownloadManager downloadManager) {
+        this.activity = activity;
         this.downloadInfo = downloadInfo;
         this.view = view;
         this.downloadManager = downloadManager;
         view.setListener(viewListener);
     }
 
-    public ResourceManager(DownloadGroupInfo downloadInfo, DownloadManager downloadManager, @Nullable String title, @Nullable String description, int modelSizeMb, @NonNull ResourceManagerView.State state, int progress) {
+    public ResourceManager(Activity activity, DownloadGroupInfo downloadInfo, DownloadManager downloadManager, @Nullable String title, @Nullable String description, int modelSizeMb, @NonNull ResourceManagerView.State state, int progress) {
+        this.activity = activity;
         this.downloadInfo = downloadInfo;
         this.downloadManager = downloadManager;
         this.title = title;
@@ -103,8 +149,13 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
         return view;
     }
 
-    public void setView(@Nullable ResourceManagerView view) {
+    public void setView(@Nullable ResourceManagerView view, @Nullable Listener listener) {
         this.view = view;
+        if(view != null) {
+            this.clientListener = listener;
+        }else{
+            this.clientListener = null;
+        }
         if(view != null) {
             view.setListener(viewListener);
             view.setTitle(title);
@@ -143,5 +194,63 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
             return downloadInfo.equals(((ResourceManager) obj).downloadInfo);
         }
         return downloadInfo.equals(obj);
+    }
+
+    public void showDeleteDialog(){
+        final View editDialogLayout = activity.getLayoutInflater().inflate(R.layout.dialog_delete, null);
+
+        final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity, R.style.MyThemeOverlay_MaterialComponents_MaterialAlertDialog);
+        builder.setCancelable(true);
+
+        AlertDialog dialog = builder.create();
+        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(activity, 16), 0, 0);
+        dialog.show();
+
+        CardView continueButton = editDialogLayout.findViewById(R.id.okButtonCard);
+        CardView cancelButton = editDialogLayout.findViewById(R.id.cancelButtonCard);
+
+        continueButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                setState(ResourceManagerView.State.EMPTY);
+                downloadManager.cancelDownload(downloadInfo);
+                if(clientListener != null) clientListener.onResourceDeleted();
+            }
+        });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.cancel();
+            }
+        });
+    }
+
+    public void showCannotDeleteDialog(){
+        final View editDialogLayout = activity.getLayoutInflater().inflate(R.layout.dialog_error, null);
+
+        final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity, R.style.MyThemeOverlay_MaterialComponents_MaterialAlertDialog);
+        builder.setCancelable(true);
+
+        AlertDialog dialog = builder.create();
+        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(activity, 16), 0, 0);
+        dialog.show();
+
+        TextView textView = editDialogLayout.findViewById(R.id.textView);
+        CardView okButton = editDialogLayout.findViewById(R.id.okButtonCard);
+
+        //todo: convert this text to a resource and translate it
+        textView.setText("This is the last downloaded translation model, you cannot delete all the translation models, please download another translation model before deleting this one.");
+
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+    }
+
+    public interface Listener {
+        void onResourceDeleted();
     }
 }

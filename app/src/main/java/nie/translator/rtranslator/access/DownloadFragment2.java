@@ -17,7 +17,6 @@
 package nie.translator.rtranslator.access;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.icu.text.DecimalFormat;
 import android.os.Bundle;
 import android.os.Looper;
@@ -36,16 +35,14 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import java.util.ArrayList;
 
 import nie.translator.rtranslator.Global;
-import nie.translator.rtranslator.LoadingActivity;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
 import nie.translator.rtranslator.downloader2.DownloadInfo;
 import nie.translator.rtranslator.downloader2.DownloadInfoExtended;
 import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.tools.DownloaderTools;
 
 public class DownloadFragment2 extends Fragment {
-    @Nullable
-    public static String downloadFolder;
     @Nullable
     public static DownloadInfoExtended[] DOWNLOAD_INFOS;
     private static final long INTERVAL_TIME_FOR_GUI_UPDATES_MS = 100;  //500
@@ -63,6 +60,7 @@ public class DownloadFragment2 extends Fragment {
     private LinearProgressIndicator progressBar;
     private TextView progressDescriptionText;
     private TextView progressNumbersText;
+    private DownloadManager.Callback downloadManagerCallback;
 
     public DownloadFragment2() {
         // Required empty public constructor
@@ -90,7 +88,7 @@ public class DownloadFragment2 extends Fragment {
         progressBar = view.findViewById(R.id.barRam);
         progressDescriptionText = view.findViewById(R.id.progress_description);
         pauseButton = view.findViewById(R.id.pauseButton);
-        pauseButton.setTag("iconCancel");
+        pauseButton.setTag("iconPause");
         progressNumbersText = view.findViewById(R.id.progress_numbers);
     }
 
@@ -99,92 +97,8 @@ public class DownloadFragment2 extends Fragment {
         super.onActivityCreated(savedInstanceState);
         activity = (AccessActivity) requireActivity();
         global = (Global) activity.getApplication();
-        downloadFolder = global.getFilesDir().getAbsolutePath();
-        String baseUrl = "https://github.com/niedev/RTranslator/releases/download/2.0.0/";
-        DOWNLOAD_INFOS = new DownloadInfoExtended[]{
-                new DownloadInfoExtended(
-                        "NLLB_cache_initializer.onnx",
-                        baseUrl + "NLLB_cache_initializer.onnx",
-                        downloadFolder,
-                        24000,
-                        true,
-                        false
-                ),
-                new DownloadInfoExtended(
-                        "NLLB_decoder.onnx",
-                        baseUrl + "NLLB_decoder.onnx",
-                        downloadFolder,
-                        171000,
-                        true,
-                        false
-                ),
-                new DownloadInfoExtended(
-                        "NLLB_embed_and_lm_head.onnx",
-                        baseUrl + "NLLB_embed_and_lm_head.onnx",
-                        downloadFolder,
-                        500000,
-                        true,
-                        false
-                ),
-                new DownloadInfoExtended(
-                        "NLLB_encoder.onnx",
-                        baseUrl + "NLLB_encoder.onnx",
-                        downloadFolder,
-                        254000,
-                        true,
-                        false
-                ),
-                new DownloadInfoExtended(
-                        "Whisper_cache_initializer.onnx",
-                        baseUrl + "Whisper_cache_initializer.onnx",
-                        downloadFolder,
-                        14000,
-                        true,
-                        false
-                ),
-                new DownloadInfoExtended(
-                        "Whisper_cache_initializer_batch.onnx",
-                        baseUrl + "Whisper_cache_initializer_batch.onnx",
-                        downloadFolder,
-                        14000,
-                        true,
-                        false
-                ),
-                new DownloadInfoExtended(
-                        "Whisper_decoder.onnx",
-                        baseUrl + "Whisper_decoder.onnx",
-                        downloadFolder,
-                        173000,
-                        true,
-                        false
-                ),
-                new DownloadInfoExtended(
-                        "Whisper_detokenizer.onnx",
-                        baseUrl + "Whisper_detokenizer.onnx",
-                        downloadFolder,
-                        461,
-                        true,
-                        false
-                ),
-                new DownloadInfoExtended(
-                        "Whisper_encoder.onnx",
-                        baseUrl + "Whisper_encoder.onnx",
-                        downloadFolder,
-                        88000,
-                        true,
-                        false
-                ),
-                new DownloadInfoExtended(
-                        "Whisper_initializer.onnx",
-                        baseUrl + "Whisper_initializer.onnx",
-                        downloadFolder,
-                        69,
-                        true,
-                        false
-                ),
 
-
-        };
+        DOWNLOAD_INFOS = global.getInitialDownloadInfo().downloadsInfo;
 
         mainHandler = new android.os.Handler(Looper.getMainLooper());
         downloader = new DownloadManager(global);
@@ -203,7 +117,7 @@ public class DownloadFragment2 extends Fragment {
         pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(pauseButton.getTag().equals("iconCancel")){
+                if(pauseButton.getTag().equals("iconPause")){
                     //we pause the download
                     boolean success = downloader.pauseAllDownloads();
                     if(success) {
@@ -215,12 +129,58 @@ public class DownloadFragment2 extends Fragment {
                 }else{
                     downloader.startAllDownloads();
                     //we change the icon and tag
-                    pauseButton.setImageResource(R.drawable.cancel_icon);
+                    pauseButton.setImageResource(R.drawable.pause_icon);
                     //pauseButton.setImageDrawable(global.getResources().getDrawable(R.drawable.cancel_icon, null));
-                    pauseButton.setTag("iconCancel");
+                    pauseButton.setTag("iconPause");
                 }
             }
         });
+
+        downloadManagerCallback = new DownloadManager.Callback() {
+            public void onServiceConnected(){
+                ArrayList<DownloadGroupInfo> downloadStatus = downloader.getDownloadsStatus();
+                // we change the GUI based on current download status
+                restoreGuiState(downloadStatus);
+            }
+
+            @Override
+            public void onAllCompleted(DownloadGroupInfo downloadGroup) {
+                activity.startFragment(AccessActivity.MODEL_MANAGER, null);
+            }
+
+            @Override
+            public void onCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download) {
+                //for now we do nothing here
+            }
+
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean testingIntegrity, boolean unzipping) {
+                //update of progress bar
+                int progressNormalized = totalProgress * progressBar.getMax() / 100;
+                progressBar.setProgress(progressNormalized, true);
+                //we update the progressNumbersText
+                double totalSize = 0;
+                for (DownloadInfo info : DOWNLOAD_INFOS) {
+                    totalSize = totalSize + info.getSize();
+                }
+                totalSize = totalSize/1000000;   //we convert from Kb to Gb
+                float downloadedGb = (float) (totalProgress*totalSize/100);    //progress : 100 = x : totalSize   (where x is downloadedGb)
+                DecimalFormat decimalFormat = new DecimalFormat("#.##");
+                progressNumbersText.setText(decimalFormat.format(downloadedGb)+" / "+decimalFormat.format(totalSize)+" GB");
+                //update of the progress description
+                if(testingIntegrity){
+                    progressDescriptionText.setText(getString(R.string.description_integrity_check, download.getName()));
+                }else{
+                    progressDescriptionText.setText(getString(R.string.description_download, download.getName()));
+                }
+            }
+
+            @Override
+            public void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
+                showDownloadError();
+            }
+        };
     }
 
     @Override
@@ -239,75 +199,49 @@ public class DownloadFragment2 extends Fragment {
                 storageWarningText.setVisibility(View.VISIBLE);
             }
 
-            final DownloadManager.Callback callback = new DownloadManager.Callback() {
-                public void onServiceConnected(){
-                    ArrayList<DownloadGroupInfo> downloadStatus = downloader.getDownloadsStatus();
-                    // we change the GUI based on current download status
-                    if(downloadStatus != null){
-                        int index = downloadStatus.indexOf(DOWNLOAD_INFOS);
-                        if(index != -1) {
-                            if (downloadStatus.get(index).isAllDownloadCompleted()) {
-                                this.onAllCompleted(downloadStatus.get(index));
-                            } else {
-                                DownloadInfoExtended runningDownload = downloadStatus.get(index).getRunningDownload();
-                                if (runningDownload != null) {
-                                    if (runningDownload.getCurrentError() != -1) {
-                                        this.onError(downloadStatus.get(index), runningDownload, runningDownload.getCurrentError());
-                                    } else {
-                                        this.onProgress(downloadStatus.get(index), runningDownload, downloadStatus.get(index).getCurrentProgress(), runningDownload.getCurrentProgress(), runningDownload.isUnzipping(), runningDownload.isTestingIntegrity());
-                                    }
-                                }
-                                //todo: manage the case where a download is paused
-                            }
-                        }
-                    }
-                }
+            boolean serviceStarted = downloader.subscribeAndResumeDownload(downloadManagerCallback);
 
-                @Override
-                public void onAllCompleted(DownloadGroupInfo downloadGroup) {
-                    startRTranslator();
-                }
-
-                @Override
-                public void onCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download) {
-                    //for now we do nothing here
-                }
-
-                @SuppressLint("SetTextI18n")
-                @Override
-                public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean testingIntegrity, boolean unzipping) {
-                    //update of progress bar
-                    int progressNormalized = totalProgress * progressBar.getMax() / 100;
-                    progressBar.setProgress(progressNormalized, true);
-                    //we update the progressNumbersText
-                    double totalSize = 0;
-                    for (DownloadInfo info : DOWNLOAD_INFOS) {
-                        totalSize = totalSize + info.getSize();
-                    }
-                    totalSize = totalSize/1000000;   //we convert from Kb to Gb
-                    float downloadedGb = (float) (totalProgress*totalSize/100);    //progress : 100 = x : totalSize   (where x is downloadedGb)
-                    DecimalFormat decimalFormat = new DecimalFormat("#.##");
-                    progressNumbersText.setText(decimalFormat.format(downloadedGb)+" / "+decimalFormat.format(totalSize)+" GB");
-                    //update of the progress description
-                    if(testingIntegrity){
-                        progressDescriptionText.setText(getString(R.string.description_integrity_check, download.getName()));
-                    }else{
-                        progressDescriptionText.setText(getString(R.string.description_download, download.getName()));
-                    }
-                }
-
-                @Override
-                public void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
-                    showDownloadError();
-                }
-            };
-
-            downloader.subscribeAndResumeDownload(callback);
             ArrayList<DownloadGroupInfo> downloadStatus = downloader.getSavedDownloadStatus();
             // we eventually start the download if it is the first time
             DownloadGroupInfo downloadGroupInfo = new DownloadGroupInfo(DOWNLOAD_INFOS);
-            if(downloadStatus == null || !downloadStatus.contains(downloadGroupInfo)) downloader.startDownload(downloadGroupInfo);
+            if(downloadStatus == null || !downloadStatus.contains(downloadGroupInfo)){
+                downloader.startDownload(downloadGroupInfo);
+            }else if(!serviceStarted){
+                // we change the GUI based on current saved download status
+                // normally we do this when the service starts, but if it won't start (paused download or other reasons)
+                // we restore the GUI state based on the saved download state instead.
+                restoreGuiState(downloadStatus);
+            }
+        }
+    }
 
+    public void restoreGuiState(ArrayList<DownloadGroupInfo> downloadStatus){
+        // we change the GUI based on current download status
+        if(downloadStatus != null){
+            int index = downloadStatus.indexOf(new DownloadGroupInfo(DOWNLOAD_INFOS));
+            if(index != -1) {
+                if (downloadStatus.get(index).isAllDownloadCompleted()) {
+                    downloadManagerCallback.onAllCompleted(downloadStatus.get(index));
+                } else {
+                    DownloadInfoExtended runningDownload = downloadStatus.get(index).getRunningDownload();
+                    if (runningDownload != null) {
+                        if (runningDownload.getCurrentError() != -1) {
+                            //the download has an error
+                            downloadManagerCallback.onError(downloadStatus.get(index), runningDownload, runningDownload.getCurrentError());
+                        } else {
+                            //the download is running
+                            downloadManagerCallback.onProgress(downloadStatus.get(index), runningDownload, downloadStatus.get(index).getCurrentProgress(), runningDownload.getCurrentProgress(), runningDownload.isUnzipping(), runningDownload.isTestingIntegrity());
+                        }
+                    }else{
+                        //the download is paused
+                        DownloadInfoExtended pausedDownload = downloadStatus.get(index).downloadsInfo[DownloaderTools.findFirstIncompletedDownload(downloadStatus.get(index))];
+                        downloadManagerCallback.onProgress(downloadStatus.get(index), pausedDownload, downloadStatus.get(index).getCurrentProgress(), pausedDownload.getCurrentProgress(), pausedDownload.isUnzipping(), pausedDownload.isTestingIntegrity());
+                        //we change the pause icon and tag
+                        pauseButton.setImageResource(R.drawable.play_icon);
+                        pauseButton.setTag("iconPlay");
+                    }
+                }
+            }
         }
     }
 
@@ -335,16 +269,5 @@ public class DownloadFragment2 extends Fragment {
         downloader.startAllDownloads();
     }
 
-    private void startRTranslator(){
-        if (activity != null) {
-            //modification of the firstStart
-            global.setFirstStart(false);
-            //start activity
-            Intent intent = new Intent(activity, LoadingActivity.class);
-            intent.putExtra("activity", "download");
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            activity.startActivity(intent);
-            activity.finish();
-        }
-    }
+
 }

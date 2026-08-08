@@ -3,25 +3,26 @@ package nie.translator.rtranslator.downloader2;
 import android.os.Parcel;
 
 import androidx.annotation.NonNull;
-
-import javax.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 public class DownloadInfoExtended extends DownloadInfo{
     private int currentProgress;
     private boolean downloadCompleted = false;
-    private boolean unzipped = !shouldUnzip;  //true if unzipped or if the download shouldn't be unzipped
-    private boolean integrityTested = !shouldTestIntegrity;  //true if tested or if the download shouldn't be tested
+    private boolean unzipped = false;
+    @Nullable
+    private String internalFolder = null;
+    private boolean integrityTested = false;
     private int currentError = -1;
 
-    public DownloadInfoExtended(String name, String url, String destinationPath, long size, boolean shouldTestIntegrity, boolean shouldUnzip) {
-        super(name, url, destinationPath, size, shouldTestIntegrity, shouldUnzip);
+    public DownloadInfoExtended(String name, String url, String destinationPath, long sizeKb, boolean shouldTestIntegrity, boolean shouldUnzip) {
+        super(name, url, destinationPath, sizeKb, shouldTestIntegrity, shouldUnzip);
     }
 
     public int getCurrentError() {
         return currentError;
     }
 
-    public void setCurrentError(@Nullable int errorReason) {
+    public void setCurrentError(int errorReason) {
         this.currentError = errorReason;
     }
 
@@ -34,11 +35,11 @@ public class DownloadInfoExtended extends DownloadInfo{
     }
 
     public boolean isUnzipping(){
-        return downloadCompleted && !unzipped;
+        return downloadCompleted && (!unzipped && shouldUnzip);
     }
 
     public boolean isTestingIntegrity() {
-        return downloadCompleted && unzipped && !integrityTested;
+        return downloadCompleted && (unzipped || !shouldUnzip) && (!integrityTested && shouldTestIntegrity);
     }
 
     public boolean isDownloadCompleted() {
@@ -69,6 +70,15 @@ public class DownloadInfoExtended extends DownloadInfo{
         boolean unzippingCompleted = !shouldUnzip || unzipped;
         boolean testingCompleted = !shouldTestIntegrity || integrityTested;
         return downloadCompleted && unzippingCompleted && testingCompleted;
+    }
+
+    @Nullable
+    public String getInternalFolder() {
+        return internalFolder;
+    }
+
+    public void setInternalFolder(@Nullable String internalFolder) {
+        this.internalFolder = internalFolder;
     }
 
 

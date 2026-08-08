@@ -173,7 +173,7 @@
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/continueButtonCard"
+            android:id="@+id/okButtonCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
@@ -190,14 +190,14 @@
             app:layout_constraintVertical_bias="0">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/continueButtonLayout"
+                android:id="@+id/okButtonLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal">
 
                 <nie.translator.rtranslator.tools.gui.AnimatedTextView
-                    android:id="@+id/continueButtonText"
+                    android:id="@+id/okButtonText"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"

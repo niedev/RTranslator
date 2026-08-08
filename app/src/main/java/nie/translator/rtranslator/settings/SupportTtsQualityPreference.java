@@ -76,7 +76,7 @@ public class SupportTtsQualityPreference extends SwitchPreference {
     public void downloadLanguages() {
         if(global != null && fragment != null) {
             fragment.addDownload();
-            global.getLanguages(false);
+            global.getLanguages(Global.RTranslatorMode.TEXT_TRANSLATION_MODE, false);
             fragment.removeDownload();
             fragment.getLanguagePreference().initializeLanguagesList();
         }
