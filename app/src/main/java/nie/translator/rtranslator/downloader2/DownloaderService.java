@@ -17,9 +17,7 @@ import com.downloader.PRDownloaderConfig;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 
 import nie.translator.rtranslator.tools.DownloaderTools;
 
@@ -40,6 +38,7 @@ public class DownloaderService extends Service {
     private final java.util.Map<Integer, Integer> lastChildProgresses = new java.util.HashMap<>();
     private final java.util.Map<Integer, Long> lastChildUpdateTimes = new java.util.HashMap<>();
     public static boolean running = false;
+    private int nextNotificationId = 2000;  //this will be incremented and used as a unique id for every downloader in this service instance, it will be used as unique id for the notifications
 
     public class LocalBinder extends Binder {
         DownloaderService getService() {
@@ -60,7 +59,7 @@ public class DownloaderService extends Service {
         downloaderCallback = new Downloader2.ClientCallback() {
             @Override
             public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
-                if(downloadGroup.getRunningDownload() != null) updateDownloadProgress(downloaders.indexOf(downloadGroup), downloadGroup.getRunningDownload().name, totalProgress, downloadGroup.getRunningDownloadIndex() == -1, unzipping, testingIntegrity);
+                if(downloadGroup.getRunningDownload() != null) updateDownloadProgress(downloadGroup, downloadGroup.getRunningDownload().name, totalProgress, downloadGroup.getRunningDownloadIndex() == -1, unzipping, testingIntegrity);
                 notifyProgress(downloadGroup, download, totalProgress, progress, unzipping, testingIntegrity);
             }
 
@@ -95,6 +94,7 @@ public class DownloaderService extends Service {
 
             @Override
             public void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
+                updateDownloadGroupInfoPreference(downloadGroup);
                 notifyError(downloadGroup, download, reason);
                 int i = downloaders.indexOf(downloadGroup);
                 removeDownload(i);
@@ -133,7 +133,7 @@ public class DownloaderService extends Service {
                 if (downloadGroupInfos != null) {
                     for (DownloadGroupInfo groupInfo : downloadGroupInfos) {
                         if (!groupInfo.isAllDownloadCompleted()){
-                            DownloadInfoExtended lastDownload = groupInfo.downloadsInfo[groupInfo.downloadsInfo.length-1];
+                            DownloadInfo lastDownload = groupInfo.downloadsInfo[groupInfo.downloadsInfo.length-1];
                             if(lastDownload.isAllCompleted()){
                                 // here we check if a download from the preferences is not marked as all completed
                                 // but it is actually completed because the last download is completed (if there has been an error in the update of the preference during the completion of the download).
@@ -145,12 +145,17 @@ public class DownloaderService extends Service {
                             }else{
                                 // in this case the download is paused so we add it to the downloaders but without starting it (plus we create its notification)
                                 int index;
-                                downloaders.add(new Downloader2(groupInfo, this, downloaderCallback));
-                                index = downloaders.size()-1;
-                                int runningDownloadIndex = downloaders.get(index).findFirstIncompletedDownload();
-                                if(runningDownloadIndex != -1) {
-                                    DownloadInfoExtended runningDownload = downloaders.get(index).getDownloadGroupInfo().downloadsInfo[runningDownloadIndex];
-                                    updateDownloadProgress(index, runningDownload.name, downloaders.get(index).getDownloadGroupInfo().getCurrentProgress(), true, runningDownload.isUnzipping(), runningDownload.isTestingIntegrity());
+                                Downloader2 downloader = new Downloader2(groupInfo, this, nextNotificationId++, downloaderCallback);
+                                downloaders.add(downloader);
+                                int runningDownloadIndex = downloader.findFirstIncompletedDownload();
+                                if(runningDownloadIndex < downloader.getDownloadGroupInfo().downloadsInfo.length) {
+                                    DownloadInfo runningDownload = downloader.getDownloadGroupInfo().downloadsInfo[runningDownloadIndex];
+                                    updateDownloadProgress(downloader.getDownloadGroupInfo(), runningDownload.name, downloader.getDownloadGroupInfo().getCurrentProgress(), true, runningDownload.isUnzipping(), runningDownload.isTestingIntegrity());
+                                }else{
+                                    // the download group is completed even if for some errors the group is not marked as completed
+                                    DownloadGroupInfo downloadGroup = downloader.getDownloadGroupInfo();
+                                    downloadGroup.setAllDownloadCompleted(true);
+                                    downloaderCallback.onAllCompleted(downloadGroup);
                                 }
                             }
                         }
@@ -190,7 +195,7 @@ public class DownloaderService extends Service {
     public void startDownload(DownloadGroupInfo download) {
         int index = downloaders.indexOf(download);
         if(index == -1) {
-            final Downloader2 newDownloader = new Downloader2(download, this, downloaderCallback);
+            final Downloader2 newDownloader = new Downloader2(download, this, nextNotificationId++, downloaderCallback);
             downloaders.add(newDownloader);
             index = downloaders.size()-1;
             addDownloadGroupInfoPreference(download);
@@ -208,9 +213,9 @@ public class DownloaderService extends Service {
         int index = downloaders.indexOf(download);
         if (index != -1 && downloaders.get(index).getDownloadGroupInfo().getRunningDownloadIndex() != -1) {
             DownloadGroupInfo downloadGroupInfo = downloaders.get(index).getDownloadGroupInfo();
-            DownloadInfoExtended runningDownload = downloadGroupInfo.getRunningDownload();
+            DownloadInfo runningDownload = downloadGroupInfo.getRunningDownload();
             downloaders.get(index).pauseDownloads();
-            updateDownloadProgress(index, runningDownload.name, downloadGroupInfo.getCurrentProgress(), true, runningDownload.isUnzipping(), runningDownload.isTestingIntegrity());
+            updateDownloadProgress(downloadGroupInfo, runningDownload.name, downloadGroupInfo.getCurrentProgress(), true, runningDownload.isUnzipping(), runningDownload.isTestingIntegrity());
         }
     }
 
@@ -239,7 +244,9 @@ public class DownloaderService extends Service {
         for(Downloader2 downloader : downloaders){
             downloadGroupInfos.add(downloader.getDownloadGroupInfo());
         }
-        return downloadGroupInfos;
+        ArrayList<DownloadGroupInfo> clone = new ArrayList<DownloadGroupInfo>(downloadGroupInfos.size());
+        for (DownloadGroupInfo item : downloadGroupInfos) clone.add(item.clone());
+        return clone;
     }
 
     private void updateDownloadGroupInfoPreference(DownloadGroupInfo downloadGroup){
@@ -287,51 +294,54 @@ public class DownloaderService extends Service {
         DownloaderTools.deleteDownloadGroupInfoPreference(this, downloadGroup);
     }
 
-    public void updateDownloadProgress(int downloadIndex, String filename, int progress, boolean paused, boolean unzipping, boolean testingIntegrity) {
-        int safeId = downloadIndex + 2000;  //Shift the index by an offset so it never equals 0 or conflicts with SUMMARY_ID
+    public void updateDownloadProgress(DownloadGroupInfo downloadGroup, String filename, int progress, boolean paused, boolean unzipping, boolean testingIntegrity) {
+        int safeId = -1;
+        int index = downloaders.indexOf(downloadGroup);
+        if(index != -1) safeId = downloaders.get(index).getId();
 
-        long currentTime = System.currentTimeMillis();
-        Integer lastProg = lastChildProgresses.get(safeId);
-        Long lastTime = lastChildUpdateTimes.get(safeId);
+        if(safeId != -1) {
+            long currentTime = System.currentTimeMillis();
+            Integer lastProg = lastChildProgresses.get(safeId);
+            Long lastTime = lastChildUpdateTimes.get(safeId);
 
-        // Only update if progress percentage changed OR 500ms has passed (if paused is false)
-        if (!paused && lastProg != null && lastProg == progress) return;
-        if (!paused && lastTime != null && (currentTime - lastTime < 500) && progress < 100) return;
+            // Only update if progress percentage changed OR 500ms has passed (if paused is false)
+            if (!paused && lastProg != null && lastProg == progress) return;
+            if (!paused && lastTime != null && (currentTime - lastTime < 500) && progress < 100)
+                return;
 
-        // Save new states
-        lastChildProgresses.put(safeId, progress);
-        lastChildUpdateTimes.put(safeId, currentTime);
+            // Save new states
+            lastChildProgresses.put(safeId, progress);
+            lastChildUpdateTimes.put(safeId, currentTime);
 
-        String sortKey = String.format(java.util.Locale.US, "%04d", downloadIndex);
-        String contentText = progress + "%";   //todo: insert this text as a resource and translate it
-        if(unzipping){
-            contentText = "Unzipping...";
-        }
-        if(testingIntegrity){
-            contentText = "Testing integrity...";
-        }
+            String sortKey = String.format(java.util.Locale.US, "%04d", safeId);
+            //todo: insert this text as a resource and translate it
+            String contentText = progress + "%";
+            if (unzipping) {
+                contentText = "Unzipping...";
+            }
+            if (testingIntegrity) {
+                contentText = "Testing integrity...";
+            }
 
-        // Build and update the specific Child Notification
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(paused ? android.R.drawable.stat_sys_download_done : android.R.drawable.stat_sys_download) // System download icon
-                .setGroup(GROUP_KEY_DOWNLOADS)            // Assigns this to the group
-                .setSortKey(sortKey)                      // Prevents continuous reordering of the notifications
-                .setOnlyAlertOnce(true)                    // Prevents sound/vibration spam
-                .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentTitle((paused ? "Paused: " : "") + filename)  //todo: insert this text as a resource and translate it
-                .setContentText(contentText)
-                .setProgress(100, progress, false).build();
+            // Build and update the specific Child Notification
+            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(paused ? android.R.drawable.stat_sys_download_done : android.R.drawable.stat_sys_download) // System download icon
+                    .setGroup(GROUP_KEY_DOWNLOADS)            // Assigns this to the group
+                    .setSortKey(sortKey)                      // Prevents continuous reordering of the notifications
+                    .setOnlyAlertOnce(true)                    // Prevents sound/vibration spam
+                    .setOngoing(true)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setContentTitle((paused ? "Paused: " : "") + filename)  //todo: insert this text as a resource and translate it
+                    .setContentText(contentText)
+                    .setProgress(100, progress, false).build();
 
-        notificationManager.notify(safeId, notification);
+            notificationManager.notify(safeId, notification);
 
-        // Re-calculate average and update the Summary Notification
-        updateSummaryNotification();
+            // Re-calculate average and update the Summary Notification
+            updateSummaryNotification();
 
-        // update the state of this download in the preferences (with the new progress)
-        if(downloadIndex != -1) {
-            DownloadGroupInfo downloadGroup = downloaders.get(downloadIndex).getDownloadGroupInfo();
-            updateDownloadGroupInfoPreference(downloadGroup);
+            // update the state of this download in the preferences (with the new progress)
+            updateDownloadGroupInfoPreference(downloaders.get(index).getDownloadGroupInfo());
         }
     }
 
@@ -366,14 +376,15 @@ public class DownloaderService extends Service {
         notificationManager.notify(SUMMARY_ID, summaryBuilder.build());
     }
 
-    private void deleteDownloadNotification(int downloadIndex) {
-        int safeId = downloadIndex + 2000;
-        // Remove the child notification from the shade
-        notificationManager.cancel(safeId);
+    private void deleteDownloadNotification(int safeId) {
+        if(safeId != -1) {
+            // Remove the child notification from the shade
+            notificationManager.cancel(safeId);
 
-        if (!downloaders.isEmpty()) {
-            // Recalculate average progress based on remaining active downloads
-            updateSummaryNotification();
+            if (!downloaders.isEmpty()) {
+                // Recalculate average progress based on remaining active downloads
+                updateSummaryNotification();
+            }
         }
     }
 
@@ -386,11 +397,10 @@ public class DownloaderService extends Service {
 
     private void removeDownload(int index){
         if (index >= 0) {
+            int safeId = downloaders.get(index).getId();
             downloaders.remove(index);
-            deleteDownloadNotification(index);
-            if (downloaders.isEmpty()) {
-                stopSelf();
-            }
+            deleteDownloadNotification(safeId);
+            checkAndStopService();
         }
     }
 
@@ -407,21 +417,18 @@ public class DownloaderService extends Service {
         for (Downloader2.ClientCallback client : new ArrayList<>(clients)) {
             client.onCompleted(downloadGroup, download);
         }
-        checkAndStopService();
     }
 
     public void notifyAllCompleted(DownloadGroupInfo downloadGroup) {
         for (Downloader2.ClientCallback client : new ArrayList<>(clients)) {
             client.onAllCompleted(downloadGroup);
         }
-        checkAndStopService();
     }
 
     public void notifyError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
         for (Downloader2.ClientCallback client : new ArrayList<>(clients)) {
             client.onError(downloadGroup, download, reason);
         }
-        checkAndStopService();
     }
 
     @Override
@@ -436,6 +443,7 @@ public class DownloaderService extends Service {
 
     private void checkAndStopService() {
         if (areAllDownloadsFinished()) {
+            stopForeground(true);
             stopSelf();
         }
     }

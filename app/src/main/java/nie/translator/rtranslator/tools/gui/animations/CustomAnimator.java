@@ -970,9 +970,12 @@ public class CustomAnimator {
         int buttonDeleteRightMargin = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_RIGHT_MARGIN);
         int buttonDeleteSize = Tools.convertDpToPixels(context, ResourceManagerView.BUTTON_DELETE_SIZE);
 
-        progressBar.setClickable(false);
+        pauseIcon.setClickable(false);
         buttonDelete.setClickable(false);
         buttonDownload.setClickable(false);
+        progressBar.setVisibility(View.VISIBLE);
+        pauseIcon.setVisibility(View.VISIBLE);
+        buttonDelete.setVisibility(View.VISIBLE);
 
         AnimatorSet animatorSet= new AnimatorSet();
 
@@ -990,22 +993,22 @@ public class CustomAnimator {
                 .after(animationDownloadAlpha);
         animatorSet.play(animationDownloadAlpha);
 
+        final boolean[] cancelled = {false};
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animator) {
                 if (listener != null) {
                     listener.onAnimationStart();
                 }
-                progressBar.setVisibility(View.VISIBLE);
-                pauseIcon.setVisibility(View.VISIBLE);
-                buttonDelete.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onAnimationEnd(Animator animator) {
-                buttonDownload.setVisibility(View.INVISIBLE);
-                progressBar.setClickable(true);
-                buttonDelete.setClickable(true);
+                if(!cancelled[0]) {
+                    buttonDownload.setVisibility(View.INVISIBLE);
+                    buttonDelete.setClickable(true);
+                    pauseIcon.setClickable(true);
+                }
                 if (listener != null) {
                     listener.onAnimationEnd();
                 }
@@ -1013,6 +1016,7 @@ public class CustomAnimator {
 
             @Override
             public void onAnimationCancel(Animator animator) {
+                cancelled[0] = true;
             }
 
             @Override
@@ -1034,9 +1038,10 @@ public class CustomAnimator {
         int buttonDeleteLeftMargin = ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX;
         int buttonDeleteRightMargin = ResourceManagerView.BUTTON_DELETE_RIGHT_MARGIN_REDUCED_PX;
 
-        progressBar.setClickable(false);
+        pauseOrResumeIcon.setClickable(false);
         buttonDelete.setClickable(false);
         buttonDownload.setClickable(false);
+        buttonDownload.setVisibility(View.VISIBLE);
 
         AnimatorSet animatorSet= new AnimatorSet();
 
@@ -1050,30 +1055,31 @@ public class CustomAnimator {
         Animator animationButtonDeleteWidth = createAnimatorWidth(buttonDelete, buttonDelete.getWidth(), buttonDeleteSize, duration);
         Animator animationProgressBarSize = createAnimatorIndicatorSize(progressBar, progressBar.getIndicatorSize(), ResourceManagerView.PROGRESS_BAR_SIZE_PX, duration);
 
-        animatorSet.play(animationDownloadAlpha).after(animationButtonDeleteLeftMargin);
         if(progressBar.getVisibility() == View.VISIBLE && pauseOrResumeIcon.getVisibility() == View.VISIBLE) {
             animatorSet.play(animationButtonDeleteLeftMargin).with(animationButtonDeleteRightMargin).with(animationButtonDeleteHeight).with(animationButtonDeleteWidth)
-                    .with(animationPauseOrResumeIconAlpha).with(animationProgressBarAlpha).with(animationButtonDeleteAlpha);
+                    .with(animationPauseOrResumeIconAlpha).with(animationProgressBarAlpha).with(animationButtonDeleteAlpha).before(animationDownloadAlpha);
         }else{
             animatorSet.play(animationButtonDeleteLeftMargin).with(animationButtonDeleteRightMargin).with(animationButtonDeleteHeight).with(animationButtonDeleteWidth)
-                    .with(animationButtonDeleteAlpha).with(animationProgressBarSize);
+                    .with(animationButtonDeleteAlpha).with(animationProgressBarSize).before(animationDownloadAlpha);
         }
 
+        final boolean[] cancelled = {false};
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animator) {
                 if (listener != null) {
                     listener.onAnimationStart();
                 }
-                buttonDownload.setVisibility(View.VISIBLE);
-                buttonDownload.setClickable(true);
             }
 
             @Override
             public void onAnimationEnd(Animator animator) {
-                progressBar.setVisibility(View.INVISIBLE);
-                pauseOrResumeIcon.setVisibility(View.INVISIBLE);
-                buttonDelete.setVisibility(View.INVISIBLE);
+                if(!cancelled[0]) {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    pauseOrResumeIcon.setVisibility(View.INVISIBLE);
+                    buttonDelete.setVisibility(View.INVISIBLE);
+                    buttonDownload.setClickable(true);
+                }
                 if (listener != null) {
                     listener.onAnimationEnd();
                 }
@@ -1081,6 +1087,7 @@ public class CustomAnimator {
 
             @Override
             public void onAnimationCancel(Animator animator) {
+                cancelled[0] = true;
             }
 
             @Override
@@ -1098,8 +1105,11 @@ public class CustomAnimator {
         int buttonDeleteLeftMarginInit = layoutParamsBar.rightMargin;
         int buttonDeleteLeftMargin = ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX;
 
-        progressBar.setClickable(false);
         buttonDelete.setClickable(false);
+        pauseOrResumeIcon.setClickable(false);
+        progressBar.setVisibility(View.VISIBLE);
+        pauseOrResumeIcon.setVisibility(View.VISIBLE);
+        buttonDelete.setVisibility(View.VISIBLE);
 
         AnimatorSet animatorSet= new AnimatorSet();
 
@@ -1110,22 +1120,22 @@ public class CustomAnimator {
 
         animatorSet.play(animationPauseOrResumeIconAlpha).with(animationProgressBarAlpha).with(animationProgressBarSize).with(animationButtonDeleteLeftMargin);
 
+        final boolean[] cancelled = {false};
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animator) {
                 if (listener != null) {
                     listener.onAnimationStart();
                 }
-                progressBar.setVisibility(View.VISIBLE);
-                pauseOrResumeIcon.setVisibility(View.VISIBLE);
-                buttonDelete.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onAnimationEnd(Animator animator) {
-                progressBar.setVisibility(View.INVISIBLE);
-                pauseOrResumeIcon.setVisibility(View.INVISIBLE);
-                buttonDelete.setClickable(true);
+                if(!cancelled[0]) {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    pauseOrResumeIcon.setVisibility(View.INVISIBLE);
+                    buttonDelete.setClickable(true);
+                }
                 if (listener != null) {
                     listener.onAnimationEnd();
                 }
@@ -1133,6 +1143,7 @@ public class CustomAnimator {
 
             @Override
             public void onAnimationCancel(Animator animator) {
+                cancelled[0] = true;
             }
 
             @Override
@@ -1844,6 +1855,7 @@ public class CustomAnimator {
         return animation;
     }
 
+    @NonNull
     public Animator createAnimatorAlpha(View view, float initialValue, float finalValue, int duration){
         Animator animation = ObjectAnimator.ofFloat(view, "alpha", initialValue, finalValue);
         animation.setDuration(duration);

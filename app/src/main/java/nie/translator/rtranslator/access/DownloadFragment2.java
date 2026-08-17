@@ -38,13 +38,12 @@ import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
 import nie.translator.rtranslator.downloader2.DownloadInfo;
-import nie.translator.rtranslator.downloader2.DownloadInfoExtended;
 import nie.translator.rtranslator.downloader2.DownloadManager;
 import nie.translator.rtranslator.tools.DownloaderTools;
 
 public class DownloadFragment2 extends Fragment {
     @Nullable
-    public static DownloadInfoExtended[] DOWNLOAD_INFOS;
+    public static DownloadInfo[] DOWNLOAD_INFOS;
     private static final long INTERVAL_TIME_FOR_GUI_UPDATES_MS = 100;  //500
     private AccessActivity activity;
     private Global global;
@@ -61,6 +60,7 @@ public class DownloadFragment2 extends Fragment {
     private TextView progressDescriptionText;
     private TextView progressNumbersText;
     private DownloadManager.Callback downloadManagerCallback;
+    private boolean guiStateRestored = false;
 
     public DownloadFragment2() {
         // Required empty public constructor
@@ -138,9 +138,11 @@ public class DownloadFragment2 extends Fragment {
 
         downloadManagerCallback = new DownloadManager.Callback() {
             public void onServiceConnected(){
-                ArrayList<DownloadGroupInfo> downloadStatus = downloader.getDownloadsStatus();
-                // we change the GUI based on current download status
-                restoreGuiState(downloadStatus);
+                if(!guiStateRestored) {
+                    ArrayList<DownloadGroupInfo> downloadStatus = downloader.getDownloadsStatus();
+                    // we change the GUI based on current download status
+                    restoreGuiState(downloadStatus);
+                }
             }
 
             @Override
@@ -218,12 +220,13 @@ public class DownloadFragment2 extends Fragment {
     public void restoreGuiState(ArrayList<DownloadGroupInfo> downloadStatus){
         // we change the GUI based on current download status
         if(downloadStatus != null){
+            guiStateRestored = true;
             int index = downloadStatus.indexOf(new DownloadGroupInfo(DOWNLOAD_INFOS));
             if(index != -1) {
                 if (downloadStatus.get(index).isAllDownloadCompleted()) {
                     downloadManagerCallback.onAllCompleted(downloadStatus.get(index));
                 } else {
-                    DownloadInfoExtended runningDownload = downloadStatus.get(index).getRunningDownload();
+                    DownloadInfo runningDownload = downloadStatus.get(index).getRunningDownload();
                     if (runningDownload != null) {
                         if (runningDownload.getCurrentError() != -1) {
                             //the download has an error
@@ -233,12 +236,18 @@ public class DownloadFragment2 extends Fragment {
                             downloadManagerCallback.onProgress(downloadStatus.get(index), runningDownload, downloadStatus.get(index).getCurrentProgress(), runningDownload.getCurrentProgress(), runningDownload.isUnzipping(), runningDownload.isTestingIntegrity());
                         }
                     }else{
-                        //the download is paused
-                        DownloadInfoExtended pausedDownload = downloadStatus.get(index).downloadsInfo[DownloaderTools.findFirstIncompletedDownload(downloadStatus.get(index))];
-                        downloadManagerCallback.onProgress(downloadStatus.get(index), pausedDownload, downloadStatus.get(index).getCurrentProgress(), pausedDownload.getCurrentProgress(), pausedDownload.isUnzipping(), pausedDownload.isTestingIntegrity());
-                        //we change the pause icon and tag
-                        pauseButton.setImageResource(R.drawable.play_icon);
-                        pauseButton.setTag("iconPlay");
+                        int firstIncompleteIndex = DownloaderTools.findFirstIncompletedDownload(downloadStatus.get(index));
+                        if(firstIncompleteIndex < downloadStatus.get(index).downloadsInfo.length) {
+                            //the download is paused
+                            DownloadInfo pausedDownload = downloadStatus.get(index).downloadsInfo[firstIncompleteIndex];
+                            downloadManagerCallback.onProgress(downloadStatus.get(index), pausedDownload, downloadStatus.get(index).getCurrentProgress(), pausedDownload.getCurrentProgress(), pausedDownload.isUnzipping(), pausedDownload.isTestingIntegrity());
+                            //we change the pause icon and tag
+                            pauseButton.setImageResource(R.drawable.play_icon);
+                            pauseButton.setTag("iconPlay");
+                        }else{
+                            // the download group is completed even if for some errors the group is not marked as completed
+                            downloadManagerCallback.onAllCompleted(downloadStatus.get(index));
+                        }
                     }
                 }
             }
@@ -248,6 +257,7 @@ public class DownloadFragment2 extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+        guiStateRestored = false;
         downloader.unsubscribe();
         //we cancel the storage warning (in this way when the user reopens the app the warning is shown only if the storage is still low)
         storageWarningText.setVisibility(View.GONE);
@@ -268,6 +278,4 @@ public class DownloadFragment2 extends Fragment {
     private void retryCurrentDownload(){
         downloader.startAllDownloads();
     }
-
-
 }

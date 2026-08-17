@@ -6,22 +6,18 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.Arrays;
-import java.util.Objects;
-
 import javax.annotation.Nonnull;
 
-import nie.translator.rtranslator.bluetooth.Peer;
 import nie.translator.rtranslator.settings.ResourceManager;
 
 public class DownloadGroupInfo implements Parcelable{
     @NonNull
-    public final DownloadInfoExtended[] downloadsInfo;
+    public final DownloadInfo[] downloadsInfo;
     public int runningDownloadIndex = -1;
     private int currentProgress = -1;
     private boolean allDownloadCompleted = false;
 
-    public DownloadGroupInfo(@Nonnull DownloadInfoExtended[] downloadsInfo){
+    public DownloadGroupInfo(@Nonnull DownloadInfo[] downloadsInfo){
         this.downloadsInfo = downloadsInfo;
     }
 
@@ -46,7 +42,7 @@ public class DownloadGroupInfo implements Parcelable{
     }
 
     @Nullable
-    public DownloadInfoExtended getRunningDownload(){
+    public DownloadInfo getRunningDownload(){
         if(runningDownloadIndex != -1){
             return downloadsInfo[runningDownloadIndex];
         }
@@ -83,6 +79,20 @@ public class DownloadGroupInfo implements Parcelable{
         return false;
     }
 
+    @NonNull
+    @Override
+    protected DownloadGroupInfo clone() {
+        DownloadInfo[] downloadsInfoClone = new DownloadInfo[downloadsInfo.length];
+        for(int i = 0; i<downloadsInfo.length; i++){
+            downloadsInfoClone[i] = downloadsInfo[i].clone();
+        }
+        DownloadGroupInfo copy = new DownloadGroupInfo(downloadsInfoClone);
+        copy.runningDownloadIndex = this.runningDownloadIndex;
+        copy.currentProgress = this.currentProgress;
+        copy.allDownloadCompleted = this.allDownloadCompleted;
+        return copy;
+    }
+
     //parcel implementation
     public static final Parcelable.Creator<DownloadGroupInfo> CREATOR = new Parcelable.Creator<DownloadGroupInfo>() {
         @Override
@@ -97,7 +107,7 @@ public class DownloadGroupInfo implements Parcelable{
     };
 
     private DownloadGroupInfo(Parcel in) {
-        downloadsInfo = (DownloadInfoExtended[]) in.readParcelableArray(DownloadInfoExtended.class.getClassLoader());
+        downloadsInfo = (DownloadInfo[]) in.readParcelableArray(DownloadInfo.class.getClassLoader());
         runningDownloadIndex = in.readInt();
         currentProgress = in.readInt();
         allDownloadCompleted = in.readByte() != 0;

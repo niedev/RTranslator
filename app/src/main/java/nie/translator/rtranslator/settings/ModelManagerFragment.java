@@ -36,6 +36,7 @@ import nie.translator.rtranslator.access.AccessActivity;
 import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
 import nie.translator.rtranslator.downloader2.DownloadInfo;
 import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.ResourceManagerView;
@@ -77,6 +78,7 @@ public class ModelManagerFragment extends Fragment {
     private TextView textRamUsage;
     private TextView textRamUsage2;
     private ImageView arrowMozilla;
+    private boolean guiStateRestored = false;
 
 
     @Override
@@ -157,16 +159,18 @@ public class ModelManagerFragment extends Fragment {
         downloadManagerCallback = new DownloadManager.Callback() {
             @Override
             public void onServiceConnected() {
-                ArrayList<DownloadGroupInfo> downloadsStatus = downloadManager.getDownloadsStatus();
-                // we change the GUI based on current download status
-                restoreGuiState(downloadsStatus);
+                if(!guiStateRestored) {
+                    ArrayList<DownloadGroupInfo> downloadsStatus = downloadManager.getDownloadsStatus();
+                    // we change the GUI based on current download status
+                    restoreGuiState(downloadsStatus);
+                }
             }
 
             @Override
             public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
                 for(ResourceManager manager: resourceManagers.values()) {
                     if (downloadGroup.equals(manager.getDownloadInfo())) {
-                        manager.setProgress(totalProgress);
+                        manager.setProgress(totalProgress, unzipping, testingIntegrity);
                     }
                 }
             }
@@ -189,7 +193,7 @@ public class ModelManagerFragment extends Fragment {
             public void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
                 for(ResourceManager manager: resourceManagers.values()) {
                     if (downloadGroup.equals(manager.getDownloadInfo())) {
-                        manager.setError();
+                        manager.setError(reason);
                     }
                 }
             }
@@ -266,27 +270,38 @@ public class ModelManagerFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+        guiStateRestored = false;
         downloadManager.unsubscribe();
     }
 
     public void restoreGuiState(ArrayList<DownloadGroupInfo> downloadStatus){
         // we change the GUI based on current download status
         if(downloadStatus != null){
+            guiStateRestored = true;
             for(DownloadGroupInfo download: downloadStatus){
                 for(ResourceManager manager: resourceManagers.values()) {
                     if (download.equals(manager.getDownloadInfo())) {
                         ResourceManagerView.State state = ResourceManagerView.State.EMPTY;
+                        int index = DownloaderTools.findFirstIncompletedDownload(download);
                         //todo: improve detection methods of status
                         if(download.isAllDownloadCompleted()){
                             state = ResourceManagerView.State.DOWNLOADED;
                         } else if (download.getRunningDownloadIndex() == -1 && download.getCurrentProgress() <= 0) {
                             state = ResourceManagerView.State.EMPTY;
-                        } else if (download.getRunningDownloadIndex() == -1 && download.getCurrentProgress() > 0) {
+                        } else if (
+                                (download.getRunningDownloadIndex() == -1 && download.getCurrentProgress() > 0) ||
+                                (download.getRunningDownloadIndex() != -1 && download.getRunningDownload().getCurrentError() != -1)  //in case of an error the status will be PAUSED
+                        ) {
                             state = ResourceManagerView.State.PAUSED;
                         } else if (download.getRunningDownloadIndex() != -1) {
                             state = ResourceManagerView.State.DOWNLOADING;
                         }
-                        manager.setStatus(state, download.getCurrentProgress());
+                        if(index < download.downloadsInfo.length) {
+                            manager.setStatus(state, download.getCurrentProgress(), download.downloadsInfo[index].isUnzipping(), download.downloadsInfo[index].isTestingIntegrity());
+                            manager.setError(download.downloadsInfo[index].getCurrentError());
+                        }else{
+                            manager.setStatus(state, download.getCurrentProgress(), false, false);
+                        }
                     }
                 }
             }

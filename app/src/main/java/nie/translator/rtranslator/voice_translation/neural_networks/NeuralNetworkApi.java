@@ -56,21 +56,27 @@ public class NeuralNetworkApi {
         try {
             isVerifying = true;
             File modelFile = new File(testModelPath);
-            if(modelFile.exists() && FilenameUtils.getExtension(testModelPath).equals("onnx")){
-                OrtEnvironment onnxEnv = OrtEnvironment.getEnvironment();
-                OrtSession.SessionOptions testOptions = new OrtSession.SessionOptions();
-                testOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
-                testOptions.setMemoryPatternOptimization(false);
-                testOptions.setCPUArenaAllocator(false);
-                if(!testModelPath.contains("detokenizer.onnx")) {   //for Whisper_detokenizer.onnx we test with OnnxRuntime optimization because we do it that way in the Recognizer
-                    testOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
+            if(modelFile.exists()) {
+                if (FilenameUtils.getExtension(testModelPath).equals("onnx")) {
+                    OrtEnvironment onnxEnv = OrtEnvironment.getEnvironment();
+                    try (OrtSession.SessionOptions testOptions = new OrtSession.SessionOptions()) {
+                        testOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
+                        testOptions.setMemoryPatternOptimization(false);
+                        testOptions.setCPUArenaAllocator(false);
+                        if (!testModelPath.contains("detokenizer.onnx")) {   //for Whisper_detokenizer.onnx we test with OnnxRuntime optimization because we do it that way in the Recognizer
+                            testOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
+                        }
+                        try (OrtSession testSession = onnxEnv.createSession(testModelPath, testOptions)) {
+                        }
+                    }
                 }
-                OrtSession testSession = onnxEnv.createSession(testModelPath, testOptions);
-                testSession.close();
+                isVerifying = false;
+                initListener.onInitializationFinished();
+            }else{
+                isVerifying = false;
+                initListener.onError(new int[]{ErrorCodes.ERROR_LOADING_MODEL},0);
             }
-            isVerifying = false;
-            initListener.onInitializationFinished();
-        } catch (OrtException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             isVerifying = false;
             initListener.onError(new int[]{ErrorCodes.ERROR_LOADING_MODEL},0);
@@ -83,23 +89,28 @@ public class NeuralNetworkApi {
             isVerifying = true;
             File dir = new File(testFolderPath);
             Collection<File> files = FileUtils.listFiles(dir, null, true);
-            for(File modelFile : files) {
-                if (modelFile.exists() && FilenameUtils.getExtension(modelFile.getPath()).equals("onnx")) {
-                    OrtEnvironment onnxEnv = OrtEnvironment.getEnvironment();
-                    OrtSession.SessionOptions testOptions = new OrtSession.SessionOptions();
-                    testOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
-                    testOptions.setMemoryPatternOptimization(false);
-                    testOptions.setCPUArenaAllocator(false);
-                    if (!modelFile.getPath().contains("detokenizer.onnx")) {   //for Whisper_detokenizer.onnx we test with OnnxRuntime optimization because we do it that way in the Recognizer
-                        testOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
+            try(OrtSession.SessionOptions testOptions = new OrtSession.SessionOptions()) {
+                testOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
+                testOptions.setMemoryPatternOptimization(false);
+                testOptions.setCPUArenaAllocator(false);
+                OrtEnvironment onnxEnv = OrtEnvironment.getEnvironment();
+                for (File modelFile : files) {
+                    if (Thread.currentThread().isInterrupted()) break;
+                    if (modelFile.exists() && FilenameUtils.getExtension(modelFile.getPath()).equals("onnx")) {
+                        if (!modelFile.getPath().contains("detokenizer.onnx")) {   //for Whisper_detokenizer.onnx we test with OnnxRuntime optimization because we do it that way in the Recognizer
+                            testOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
+                        }else{
+                            testOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT);
+                        }
+                        try (OrtSession testSession = onnxEnv.createSession(modelFile.getPath(), testOptions)) {}
                     }
-                    OrtSession testSession = onnxEnv.createSession(modelFile.getPath(), testOptions);
-                    testSession.close();
                 }
             }
             isVerifying = false;
-            initListener.onInitializationFinished();
-        } catch (OrtException e) {
+            if(!Thread.currentThread().isInterrupted()) {
+                initListener.onInitializationFinished();
+            }
+        } catch (Exception e) {
             e.printStackTrace();
             isVerifying = false;
             initListener.onError(new int[]{ErrorCodes.ERROR_LOADING_MODEL},0);

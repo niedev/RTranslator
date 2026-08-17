@@ -37,12 +37,9 @@ import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
 import nie.translator.rtranslator.downloader2.DownloadInfo;
-import nie.translator.rtranslator.downloader2.DownloadInfoExtended;
 import nie.translator.rtranslator.downloader2.DownloadManager;
-import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.tools.gui.ResourceManagerView;
-import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
 
 public class MozillaManagerFragment  extends Fragment {
     private Activity activity;
@@ -51,6 +48,7 @@ public class MozillaManagerFragment  extends Fragment {
     private RecyclerView recyclerView;
     private MozillaLanguagesAdapter adapter;
     private DownloadManager.Callback downloadManagerCallback;
+    private boolean guiStateRestored = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -77,15 +75,17 @@ public class MozillaManagerFragment  extends Fragment {
         downloadManagerCallback = new DownloadManager.Callback() {
             @Override
             public void onServiceConnected() {
-                ArrayList<DownloadGroupInfo> downloadsStatus = downloadManager.getDownloadsStatus();
-                // we change the GUI based on current download status
-                restoreGuiState(downloadsStatus);
+                if(!guiStateRestored) {
+                    ArrayList<DownloadGroupInfo> downloadsStatus = downloadManager.getDownloadsStatus();
+                    // we change the GUI based on current download status
+                    restoreGuiState(downloadsStatus);
+                }
             }
 
             @Override
             public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
                 if (isMozillaDownload(downloadGroup)) {
-                    adapter.setProgress(downloadGroup, totalProgress);
+                    adapter.setProgress(downloadGroup, totalProgress, unzipping, testingIntegrity);
                 }
             }
 
@@ -97,13 +97,15 @@ public class MozillaManagerFragment  extends Fragment {
             @Override
             public void onAllCompleted(DownloadGroupInfo downloadGroup) {
                 if (isMozillaDownload(downloadGroup)) {
-                    adapter.setState(downloadGroup, ResourceManagerView.State.DOWNLOADED, true);
+                    adapter.setState(downloadGroup, ResourceManagerView.State.DOWNLOADED, false);
                 }
             }
 
             @Override
             public void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
-
+                if(isMozillaDownload(downloadGroup)){
+                    adapter.setError(downloadGroup, reason);
+                }
             }
         };
 
@@ -141,7 +143,8 @@ public class MozillaManagerFragment  extends Fragment {
                                 "",
                                 (int) (((float) langDownloadInfo.downloadGroupInfo.downloadsInfo[0].getSize() / 1000) * compressionRatio),
                                 ResourceManagerView.State.DOWNLOADED,
-                                100
+                                100,
+                                false
                         )
                 );
             } else {
@@ -154,7 +157,8 @@ public class MozillaManagerFragment  extends Fragment {
                                 "",
                                 (int) (((float) langDownloadInfo.downloadGroupInfo.downloadsInfo[0].getSize() / 1000) * compressionRatio),
                                 ResourceManagerView.State.EMPTY,
-                                0
+                                0,
+                                false
                         )
                 );
             }
@@ -180,20 +184,30 @@ public class MozillaManagerFragment  extends Fragment {
     public void restoreGuiState(ArrayList<DownloadGroupInfo> downloadStatus){
         // we change the GUI based on current download status
         if(downloadStatus != null){
+            guiStateRestored = true;
             for(DownloadGroupInfo download: downloadStatus){
                 if (isMozillaDownload(download)) {
                     ResourceManagerView.State state = ResourceManagerView.State.EMPTY;
+                    int index = DownloaderTools.findFirstIncompletedDownload(download);
                     //todo: improve detection methods of status
                     if(download.isAllDownloadCompleted()){
                         state = ResourceManagerView.State.DOWNLOADED;
                     } else if (download.getRunningDownloadIndex() == -1 && download.getCurrentProgress() <= 0) {
                         state = ResourceManagerView.State.EMPTY;
-                    } else if (download.getRunningDownloadIndex() == -1 && download.getCurrentProgress() > 0) {
+                    } else if (
+                            (download.getRunningDownloadIndex() == -1 && download.getCurrentProgress() > 0) ||
+                            (download.getRunningDownloadIndex() != -1 && download.getRunningDownload().getCurrentError() != -1)  //in case of an error the status will be PAUSED
+                    ) {
                         state = ResourceManagerView.State.PAUSED;
                     } else if (download.getRunningDownloadIndex() != -1) {
                         state = ResourceManagerView.State.DOWNLOADING;
                     }
-                    adapter.setStatus(download, state, download.getCurrentProgress());
+                    if(index < download.downloadsInfo.length) {
+                        adapter.setStatus(download, state, download.getCurrentProgress(), download.downloadsInfo[index].isUnzipping(), download.downloadsInfo[index].isTestingIntegrity());
+                        adapter.setError(download, download.downloadsInfo[index].getCurrentError());
+                    }else{
+                        adapter.setStatus(download, state, download.getCurrentProgress(), false, false);
+                    }
                 }
             }
         }
@@ -202,6 +216,7 @@ public class MozillaManagerFragment  extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+        guiStateRestored = false;
         downloadManager.unsubscribe();
     }
 }

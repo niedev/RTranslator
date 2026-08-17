@@ -48,6 +48,7 @@ public class ResourceManagerView extends ConstraintLayout {
     private ImageView buttonDownload;
     private ImageView playIcon;
     private ImageView pauseIcon;
+    private ImageView errorIcon;
     private CustomAnimator animator = new CustomAnimator();
     private Animator animation;
 
@@ -80,6 +81,7 @@ public class ResourceManagerView extends ConstraintLayout {
         buttonDelete = findViewById(R.id.buttonDelete);
         playIcon = findViewById(R.id.playImage);
         pauseIcon = findViewById(R.id.pauseImage);
+        errorIcon = findViewById(R.id.errorIcon);
 
         //initialize buttonDelete reduced measures
         ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) buttonDelete.getLayoutParams();
@@ -117,9 +119,8 @@ public class ResourceManagerView extends ConstraintLayout {
             a.recycle();
         }
 
-        // Set up internal component logic
+        // Set up callbacks
         buttonDownload.setOnClickListener(v -> {
-            // Trigger download logic natively inside the component
             if (listener != null && state == State.EMPTY) {
                 listener.onDownloadClicked();
             }
@@ -146,13 +147,13 @@ public class ResourceManagerView extends ConstraintLayout {
         });
     }
 
-    // --- Public APIs to manipulate the component from the Activity/Fragment ---
+    // Public APIs to manipulate the component from the Activity/Fragment ---
 
 
     public void setState(State state, boolean animate) {
         State oldState = this.state;
         this.state = state;
-        if(animation != null) {
+        if(animation != null && this.state != oldState && animate) {
             animation.cancel();
             animation = null;
         }
@@ -161,90 +162,85 @@ public class ResourceManagerView extends ConstraintLayout {
             setModelSize(modelSizeMb);
         }
         if(animate) {
-            switch (state) {
-                case DOWNLOADING:
-                    if(oldState == State.EMPTY) {
-                        animation = animator.animateResourceDownloadStart(getContext(), buttonDownload, progressBarDownload, pauseIcon, buttonDelete, new CustomAnimator.Listener() {
-                            @Override
-                            public void onAnimationEnd() {
-                                animation = null;
-                            }
-                        });
-                    }else if(oldState == State.PAUSED){
-                        pauseIcon.setVisibility(View.VISIBLE);
-                        playIcon.setVisibility(View.INVISIBLE);
-                    }
-                    break;
-                case PAUSED:
-                    if(oldState == State.DOWNLOADING){
-                        pauseIcon.setVisibility(View.INVISIBLE);
-                        playIcon.setVisibility(View.VISIBLE);
-                    }
-                    break;
-                case EMPTY:
-                    if(oldState == State.DOWNLOADING || oldState == State.DOWNLOADED){
-                        ImageView pauseOrResumeIcon;
-                        if(pauseIcon.getVisibility() == View.VISIBLE){
-                            pauseOrResumeIcon = pauseIcon;
-                        }else{
-                            pauseOrResumeIcon = playIcon;
+            if(this.state != oldState) {
+                switch (state) {
+                    case DOWNLOADING:
+                        if (oldState == State.EMPTY) {
+                            animation = animator.animateResourceDownloadStart(getContext(), buttonDownload, progressBarDownload, pauseIcon, buttonDelete, new CustomAnimator.Listener() {
+                                @Override
+                                public void onAnimationEnd() {
+                                    animation = null;
+                                }
+                            });
+                        } else if (oldState == State.PAUSED) {
+                            applyStateDownloading();
                         }
-                        animation = animator.animateResourceDeletion(getContext(), buttonDownload, progressBarDownload, pauseOrResumeIcon, buttonDelete, new CustomAnimator.Listener() {
-                            @Override
-                            public void onAnimationEnd() {
-                                animation = null;
+                        if (errorIcon.getVisibility() != INVISIBLE) {   //we eventually remove the error
+                            errorIcon.setVisibility(INVISIBLE);
+                        }
+                        break;
+                    case PAUSED:
+                        if (oldState == State.DOWNLOADING) {
+                            applyStatePaused();
+                        }
+                        break;
+                    case EMPTY:
+                        if (oldState == State.DOWNLOADING || oldState == State.DOWNLOADED) {
+                            ImageView pauseOrResumeIcon;
+                            if (pauseIcon.getVisibility() == View.VISIBLE) {
+                                pauseOrResumeIcon = pauseIcon;
+                            } else {
+                                pauseOrResumeIcon = playIcon;
                             }
-                        });
-                    }
-                    break;
-                case DOWNLOADED:
-                    if(oldState == State.DOWNLOADING){
-                        animation = animator.animateResourceDownloadCompleted(getContext(), progressBarDownload, pauseIcon, buttonDelete, new CustomAnimator.Listener() {
-                            @Override
-                            public void onAnimationEnd() {
-                                animation = null;
-                            }
-                        });
-                    }
-                    break;
+                            animation = animator.animateResourceDeletion(getContext(), buttonDownload, progressBarDownload, pauseOrResumeIcon, buttonDelete, new CustomAnimator.Listener() {
+                                @Override
+                                public void onAnimationEnd() {
+                                    animation = null;
+                                }
+                            });
+                        }
+                        if (errorIcon.getVisibility() != INVISIBLE) {   //we eventually remove the error
+                            errorIcon.setVisibility(INVISIBLE);
+                        }
+                        break;
+                    case DOWNLOADED:
+                        if (oldState == State.DOWNLOADING) {
+                            animation = animator.animateResourceDownloadCompleted(getContext(), progressBarDownload, pauseIcon, buttonDelete, new CustomAnimator.Listener() {
+                                @Override
+                                public void onAnimationEnd() {
+                                    animation = null;
+                                }
+                            });
+                        }
+                        break;
+                }
             }
         }else{
+            // Force reset all alphas so cancelled animations don't leave views transparent
+            buttonDownload.setAlpha(1f);
+            progressBarDownload.setAlpha(1f);
+            pauseIcon.setAlpha(1f);
+            playIcon.setAlpha(1f);
+            buttonDelete.setAlpha(1f);
+
             switch (state) {
                 case DOWNLOADING:
-                    buttonDownload.setVisibility(INVISIBLE);
-                    progressBarDownload.setVisibility(VISIBLE);
-                    pauseIcon.setVisibility(VISIBLE);
-                    playIcon.setVisibility(INVISIBLE);
-                    buttonDelete.setVisibility(VISIBLE);
-                    setButtonDeleteSize(false, false);
-                    progressBarDownload.setIndicatorSize(PROGRESS_BAR_SIZE_PX);
+                    applyStateDownloading();
+                    if (errorIcon.getVisibility() != INVISIBLE) {   //we eventually remove the error
+                        errorIcon.setVisibility(INVISIBLE);
+                    }
                     break;
                 case PAUSED:
-                    buttonDownload.setVisibility(INVISIBLE);
-                    progressBarDownload.setVisibility(VISIBLE);
-                    pauseIcon.setVisibility(INVISIBLE);
-                    playIcon.setVisibility(VISIBLE);
-                    buttonDelete.setVisibility(VISIBLE);
-                    setButtonDeleteSize(false, false);
-                    progressBarDownload.setIndicatorSize(PROGRESS_BAR_SIZE_PX);
+                    applyStatePaused();
                     break;
                 case EMPTY:
-                    buttonDownload.setVisibility(VISIBLE);
-                    progressBarDownload.setVisibility(INVISIBLE);
-                    pauseIcon.setVisibility(INVISIBLE);
-                    playIcon.setVisibility(INVISIBLE);
-                    buttonDelete.setVisibility(INVISIBLE);
-                    setButtonDeleteSize(true, true);
-                    progressBarDownload.setIndicatorSize(PROGRESS_BAR_SIZE_PX);
+                    applyStateEmpty();
+                    if (errorIcon.getVisibility() != INVISIBLE) {   //we eventually remove the error
+                        errorIcon.setVisibility(INVISIBLE);
+                    }
                     break;
                 case DOWNLOADED:
-                    buttonDownload.setVisibility(INVISIBLE);
-                    progressBarDownload.setVisibility(INVISIBLE);
-                    pauseIcon.setVisibility(INVISIBLE);
-                    playIcon.setVisibility(INVISIBLE);
-                    buttonDelete.setVisibility(VISIBLE);
-                    setButtonDeleteSize(false, true);
-                    progressBarDownload.setIndicatorSize(1);
+                    applyStateDownloaded();
                     break;
             }
         }
@@ -287,6 +283,62 @@ public class ResourceManagerView extends ConstraintLayout {
         }
     }
 
+    private void applyStateDownloading(){
+        buttonDownload.setVisibility(INVISIBLE);
+        progressBarDownload.setVisibility(VISIBLE);
+        pauseIcon.setVisibility(VISIBLE);
+        playIcon.setVisibility(INVISIBLE);
+        buttonDelete.setVisibility(VISIBLE);
+        setButtonDeleteSize(false, false);
+        progressBarDownload.setIndicatorSize(PROGRESS_BAR_SIZE_PX);
+        buttonDownload.setClickable(false);
+        pauseIcon.setClickable(true);
+        playIcon.setClickable(false);
+        buttonDelete.setClickable(true);
+    }
+
+    private void applyStatePaused(){
+        buttonDownload.setVisibility(INVISIBLE);
+        progressBarDownload.setVisibility(VISIBLE);
+        pauseIcon.setVisibility(INVISIBLE);
+        playIcon.setVisibility(VISIBLE);
+        buttonDelete.setVisibility(VISIBLE);
+        setButtonDeleteSize(false, false);
+        progressBarDownload.setIndicatorSize(PROGRESS_BAR_SIZE_PX);
+        buttonDownload.setClickable(false);
+        pauseIcon.setClickable(false);
+        playIcon.setClickable(true);
+        buttonDelete.setClickable(true);
+    }
+
+    private void applyStateEmpty(){
+        buttonDownload.setVisibility(VISIBLE);
+        progressBarDownload.setVisibility(INVISIBLE);
+        pauseIcon.setVisibility(INVISIBLE);
+        playIcon.setVisibility(INVISIBLE);
+        buttonDelete.setVisibility(INVISIBLE);
+        setButtonDeleteSize(true, true);
+        progressBarDownload.setIndicatorSize(PROGRESS_BAR_SIZE_PX);
+        buttonDownload.setClickable(true);
+        pauseIcon.setClickable(false);
+        playIcon.setClickable(false);
+        buttonDelete.setClickable(false);
+    }
+
+    private void applyStateDownloaded(){
+        buttonDownload.setVisibility(INVISIBLE);
+        progressBarDownload.setVisibility(INVISIBLE);
+        pauseIcon.setVisibility(INVISIBLE);
+        playIcon.setVisibility(INVISIBLE);
+        buttonDelete.setVisibility(VISIBLE);
+        setButtonDeleteSize(false, true);
+        progressBarDownload.setIndicatorSize(1);
+        buttonDownload.setClickable(false);
+        pauseIcon.setClickable(false);
+        playIcon.setClickable(false);
+        buttonDelete.setClickable(true);
+    }
+
     private void setButtonDeleteSize(boolean reduced, boolean marginsReduced){
         int buttonDeleteLeftMargin = marginsReduced ? ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN_REDUCED_PX : Tools.convertDpToPixels(getContext(), ResourceManagerView.BUTTON_DELETE_LEFT_MARGIN);
         if(reduced) {
@@ -315,8 +367,13 @@ public class ResourceManagerView extends ConstraintLayout {
     }
 
     public void setDownloadProgress(int progress) {
-        if(progress > 0) {
+        setDownloadProgress(progress, false, false);
+    }
+
+    public void setDownloadProgress(int progress, boolean unzipping, boolean testing) {
+        if(progress > 0 && !unzipping && !testing) {
             // show the progress in the progress bar
+            progressBarDownload.setIndeterminate(false);
             progressBarDownload.setProgress(progress);
             // show the numerical progress
             if (modelSizeMb > 0 && (state == State.DOWNLOADING || state == State.PAUSED)) {
@@ -335,11 +392,39 @@ public class ResourceManagerView extends ConstraintLayout {
                     textDownload.setText(df.format(modelDownloadedMb) + "/" + df.format(modelSizeMb) + " MB");
                 }
             }
+            return;
         }
-        /*if (progress >= 100) {
-            progressBarDownload.setVisibility(View.INVISIBLE);
-            buttonDownload.setVisibility(View.VISIBLE);
-        }*/
+        if(unzipping){
+            progressBarDownload.setIndeterminate(true);
+            if (state == State.DOWNLOADING || state == State.PAUSED) {
+                textDownload.setText("Unzipping...");
+            }
+            return;
+        }
+        if(testing){
+            progressBarDownload.setIndeterminate(true);
+            if (state == State.DOWNLOADING || state == State.PAUSED) {
+                textDownload.setText("Testing...");
+            }
+            return;
+        }
+    }
+
+    public void setError(int reason){
+        if(reason != -1){
+            errorIcon.setVisibility(VISIBLE);
+            errorIcon.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(listener != null){
+                        listener.onErrorPressed();
+                    }
+                }
+            });
+        }else{
+            errorIcon.setVisibility(INVISIBLE);
+            errorIcon.setOnClickListener(null);
+        }
     }
 
     // --- Callback Interface (Similar to passing a function prop in React) ---
@@ -349,6 +434,7 @@ public class ResourceManagerView extends ConstraintLayout {
         void onPauseClicked();
         void onResumeClicked();
         void onDeletePressed();
+        void onErrorPressed();
     }
 
     private Listener listener;

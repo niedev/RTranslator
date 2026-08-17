@@ -40,6 +40,13 @@ public class DownloaderTools {
         return found;
     }
 
+    /**
+     * This method returns the index of the first incompleted download of the download group passed.
+     *
+     * @param downloadGroupInfo
+     * @return the index of the first incompleted download, the value can go from 0 to DownloadGroupInfo.downloadsInfo.length.
+     * This last case occurs only when all the downloads of the group are completed.
+     */
     public static int findFirstIncompletedDownload(DownloadGroupInfo downloadGroupInfo){
         int index = 0;
         for(int i=0; i<downloadGroupInfo.downloadsInfo.length; i++){

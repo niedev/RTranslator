@@ -96,13 +96,14 @@ public class DownloadManager implements ServiceConnection {
     }
 
     public void startDownload(DownloadGroupInfo downloadGroup){
+        DownloadGroupInfo downloadGroupCopy = downloadGroup.clone();
         if(downloaderService == null && !downloadsToStart.contains(downloadGroup)){
-            downloadsToStart.add(downloadGroup);
+            downloadsToStart.add(downloadGroupCopy);
             if(!DownloaderService.running){
                 startAndBindService();
             }
         }else if(downloaderService != null) {
-            downloaderService.startDownload(downloadGroup);
+            downloaderService.startDownload(downloadGroupCopy);
         }
     }
 
@@ -162,9 +163,28 @@ public class DownloadManager implements ServiceConnection {
 
     public ArrayList<DownloadGroupInfo> getDownloadsStatus() {
         if (downloaderService != null) {
-            return downloaderService.getDownloadsStatus();
+            ArrayList<DownloadGroupInfo> serviceDownloadStatus = downloaderService.getDownloadsStatus();  //this contains the status of only the incompleted downloads
+            ArrayList<DownloadGroupInfo> savedDownloadStatus = getSavedDownloadStatus();    //this contains the status of all the downloads, even the completed ones
+            //we add the completed downloads status to the status of the running downloads from the service
+            for(DownloadGroupInfo savedDownloadGroup: savedDownloadStatus){
+                if(!serviceDownloadStatus.contains(savedDownloadGroup)){
+                    serviceDownloadStatus.add(savedDownloadGroup);
+                }
+            }
+            return serviceDownloadStatus;
         }
         return null;
+    }
+
+    public ArrayList<DownloadGroupInfo> getSavedDownloadStatus(){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        if (!downloadsStatusString.isEmpty()) {
+            //we check if there are unfinished downloads that are not paused (or also paused ones if includePaused is true)
+            Gson gson = new Gson();
+            return gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
+        }
+        return new ArrayList<>();
     }
 
     public boolean checkDownloadCompleted(DownloadGroupInfo downloadGroupInfo){
@@ -215,17 +235,6 @@ public class DownloadManager implements ServiceConnection {
             }
         }
         return false;
-    }
-
-    public ArrayList<DownloadGroupInfo> getSavedDownloadStatus(){
-        SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
-        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
-        if (!downloadsStatusString.isEmpty()) {
-            //we check if there are unfinished downloads that are not paused (or also paused ones if includePaused is true)
-            Gson gson = new Gson();
-            return gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
-        }
-        return new ArrayList<>();
     }
 
     @Override

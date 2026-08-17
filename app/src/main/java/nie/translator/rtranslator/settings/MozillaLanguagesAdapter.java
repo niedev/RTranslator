@@ -194,9 +194,9 @@ public class MozillaLanguagesAdapter extends RecyclerView.Adapter<RecyclerView.V
         return (!modelsInstalled.isEmpty() ? modelsInstalled.size() : 0) + (!modelsAvailable.isEmpty() ? modelsAvailable.size() : 0);
     }
 
-    public void setStatus(DownloadGroupInfo item, ResourceManagerView.State state, int progress) {
+    public void setStatus(DownloadGroupInfo item, ResourceManagerView.State state, int progress, boolean unzipping, boolean testing) {
         setState(item, state, false);
-        setProgress(item, progress);
+        setProgress(item, progress, unzipping, testing);
     }
 
     public void setState(DownloadGroupInfo item, ResourceManagerView.State state, boolean animate){
@@ -224,15 +224,27 @@ public class MozillaLanguagesAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
     }
 
-    public void setProgress(DownloadGroupInfo item, int progress){
+    public void setProgress(DownloadGroupInfo item, int progress, boolean unzipping, boolean testing){
         int indexInstalled = modelsInstalled.indexOf(item);
         if(indexInstalled != -1){
-            modelsInstalled.get(indexInstalled).setProgress(progress);
+            modelsInstalled.get(indexInstalled).setProgress(progress, unzipping, testing);
             return;
         }
         int indexAvailable = modelsAvailable.indexOf(item);
         if(indexAvailable != -1){
-            modelsAvailable.get(indexAvailable).setProgress(progress);
+            modelsAvailable.get(indexAvailable).setProgress(progress, unzipping, testing);
+        }
+    }
+
+    public void setError(DownloadGroupInfo item, int reason){
+        int indexInstalled = modelsInstalled.indexOf(item);
+        if(indexInstalled != -1){
+            modelsInstalled.get(indexInstalled).setError(reason);
+            return;
+        }
+        int indexAvailable = modelsAvailable.indexOf(item);
+        if(indexAvailable != -1){
+            modelsAvailable.get(indexAvailable).setError(reason);
         }
     }
 

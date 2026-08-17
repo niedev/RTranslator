@@ -47,13 +47,10 @@ import java.util.ArrayList;
 import ai.onnxruntime.OrtException;
 import nie.translator.rtranslator.access.AccessActivity;
 import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
-import nie.translator.rtranslator.downloader2.DownloadInfoExtended;
-import nie.translator.rtranslator.downloader2.DownloadManager;
-import nie.translator.rtranslator.settings.ResourceManager;
+import nie.translator.rtranslator.downloader2.DownloadInfo;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.TTS;
-import nie.translator.rtranslator.tools.gui.ResourceManagerView;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
 import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
@@ -328,7 +325,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             String fileName = "Mozilla_"+langInfo.lang.getLanguage()+".zip";
             languageDownloadInfos.add(new MozillaLanguageDownloadInfo(
                     langInfo.lang,
-                    new DownloadGroupInfo(new DownloadInfoExtended[]{new DownloadInfoExtended(fileName, baseUrl+fileName, downloadFolder, langInfo.sizeKb, false, true)})
+                    new DownloadGroupInfo(new DownloadInfo[]{new DownloadInfo(fileName, baseUrl+fileName, downloadFolder, langInfo.sizeKb, false, true)})
             ));
         }
         return languageDownloadInfos;
@@ -355,8 +352,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
     public DownloadGroupInfo getHyMtDownloadInfo(){
         String downloadFolder = getFilesDir().getAbsolutePath();
         String baseUrl = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
-        return new DownloadGroupInfo(new DownloadInfoExtended[]{
-                new DownloadInfoExtended(
+        return new DownloadGroupInfo(new DownloadInfo[]{
+                new DownloadInfo(
                         "HY-MT.zip",
                         baseUrl + "HY-MT.zip",
                         downloadFolder + "/Translation/",
@@ -369,8 +366,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
     public DownloadGroupInfo getMadladDownloadInfo(){
         String downloadFolder = getFilesDir().getAbsolutePath();
         String baseUrl = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
-        return new DownloadGroupInfo(new DownloadInfoExtended[]{
-                new DownloadInfoExtended(
+        return new DownloadGroupInfo(new DownloadInfo[]{
+                new DownloadInfo(
                         "Madlad.zip",
                         baseUrl + "Madlad.zip",
                         downloadFolder + "/Translation/",
@@ -384,8 +381,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
     public DownloadGroupInfo getTatoebaDownloadInfo(){
         String downloadFolder = getFilesDir().getAbsolutePath();
         String baseUrl = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
-        return new DownloadGroupInfo(new DownloadInfoExtended[]{
-                new DownloadInfoExtended(
+        return new DownloadGroupInfo(new DownloadInfo[]{
+                new DownloadInfo(
                         "Tatoeba.zip",
                         baseUrl + "Tatoeba.zip",
                         downloadFolder + "/Translation/",
@@ -400,7 +397,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         String downloadFolder = getFilesDir().getAbsolutePath();
         String baseUrl = "https://github.com/niedev/RTranslator/releases/download/2.0.0/";
         String baseUrlAlt = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
-        return new DownloadGroupInfo(new DownloadInfoExtended[]{
+        return new DownloadGroupInfo(new DownloadInfo[]{
                 /*new DownloadInfoExtended(
                         "NLLB_cache_initializer.onnx",
                         baseUrl + "NLLB_cache_initializer.onnx",
@@ -433,7 +430,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                         true,
                         false
                 ),*/
-                new DownloadInfoExtended(
+                new DownloadInfo(
                         "Whisper_cache_initializer.onnx",
                         baseUrl + "Whisper_cache_initializer.onnx",
                         downloadFolder,
@@ -441,7 +438,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                         true,
                         false
                 ),
-                new DownloadInfoExtended(
+                new DownloadInfo(
                         "Whisper_cache_initializer_batch.onnx",
                         baseUrl + "Whisper_cache_initializer_batch.onnx",
                         downloadFolder,
@@ -449,7 +446,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                         true,
                         false
                 ),
-                new DownloadInfoExtended(
+                new DownloadInfo(
                         "Whisper_decoder.onnx",
                         baseUrl + "Whisper_decoder.onnx",
                         downloadFolder,
@@ -457,7 +454,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                         true,
                         false
                 ),
-                new DownloadInfoExtended(
+                new DownloadInfo(
                         "Whisper_detokenizer.onnx",
                         baseUrl + "Whisper_detokenizer.onnx",
                         downloadFolder,
@@ -465,7 +462,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                         true,
                         false
                 ),
-                new DownloadInfoExtended(
+                new DownloadInfo(
                         "Whisper_encoder.onnx",
                         baseUrl + "Whisper_encoder.onnx",
                         downloadFolder,
@@ -473,7 +470,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                         true,
                         false
                 ),
-                new DownloadInfoExtended(
+                new DownloadInfo(
                         "Whisper_initializer.onnx",
                         baseUrl + "Whisper_initializer.onnx",
                         downloadFolder,
@@ -481,7 +478,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                         true,
                         false
                 ),
-                new DownloadInfoExtended(
+                new DownloadInfo(
                         "TranslationDictionaries.zip",
                         baseUrlAlt + "TranslationDictionaries.zip",
                         downloadFolder + "/Translation/",

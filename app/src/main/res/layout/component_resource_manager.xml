@@ -117,4 +117,18 @@
         app:layout_constraintTop_toTopOf="@+id/progressBarDownload"
         android:src="@drawable/play_icon" />
 
+    <ImageView
+        android:id="@+id/errorIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/titleResource"
+        app:layout_constraintEnd_toStartOf="@+id/textDownload"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/titleResource"
+        app:layout_constraintTop_toTopOf="@+id/titleResource"
+        android:src="@drawable/error_icon"
+        android:tint="@color/red"
+        android:visibility="invisible"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

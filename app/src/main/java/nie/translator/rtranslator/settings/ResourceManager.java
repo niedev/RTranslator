@@ -34,6 +34,9 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
     @NonNull
     private ResourceManagerView.State state = ResourceManagerView.State.EMPTY;
     private int progress;
+    private boolean progressUnzipping = false;
+    private boolean progressTesting = false;
+    private int error = -1;
     private final DownloadGroupInfo downloadInfo;
     @Nullable
     private ResourceManagerView view;
@@ -41,6 +44,7 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
     private Listener clientListener;
     private final DownloadManager downloadManager;
     private final Activity activity;
+    private boolean animateDeletion = true;
     private final ResourceManagerView.Listener viewListener = new ResourceManagerView.Listener() {
         @Override
         public void onDownloadClicked() {
@@ -88,6 +92,11 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
             }
             showDeleteDialog();
         }
+
+        @Override
+        public void onErrorPressed() {
+            showErrorInfoDialog();
+        }
     };
 
     public ResourceManager(Activity activity, DownloadGroupInfo downloadInfo, ResourceManagerView view, DownloadManager downloadManager) {
@@ -98,7 +107,7 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
         view.setListener(viewListener);
     }
 
-    public ResourceManager(Activity activity, DownloadGroupInfo downloadInfo, DownloadManager downloadManager, @Nullable String title, @Nullable String description, int modelSizeMb, @NonNull ResourceManagerView.State state, int progress) {
+    public ResourceManager(Activity activity, DownloadGroupInfo downloadInfo, DownloadManager downloadManager, @Nullable String title, @Nullable String description, int modelSizeMb, @NonNull ResourceManagerView.State state, int progress, boolean animateDeletion) {
         this.activity = activity;
         this.downloadInfo = downloadInfo;
         this.downloadManager = downloadManager;
@@ -107,11 +116,12 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
         this.modelSizeMb = modelSizeMb;
         this.state = state;
         this.progress = progress;
+        this.animateDeletion = animateDeletion;
     }
 
-    public void setStatus(ResourceManagerView.State state, int progress) {
+    public void setStatus(ResourceManagerView.State state, int progress, boolean unzipping, boolean testing) {
         setState(state, false);
-        setProgress(progress);
+        setProgress(progress, unzipping, testing);
     }
 
     public void setState(ResourceManagerView.State state){
@@ -125,15 +135,22 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
         }
     }
 
-    public void setProgress(int progress){
+    public void setProgress(int progress, boolean unzipping, boolean testing){
         this.progress = progress;
+        this.progressUnzipping = unzipping;
+        this.progressTesting = testing;
         if (view != null) {
-            view.setDownloadProgress(progress);
+            view.setDownloadProgress(progress, unzipping, testing);
         }
     }
 
-    public void setError(){
-
+    public void setError(int reason){
+        if(reason != -1) this.state = ResourceManagerView.State.PAUSED;
+        this.error = reason;
+        if(view != null){
+            if(reason != -1) view.setState(ResourceManagerView.State.PAUSED, false);
+            view.setError(reason);
+        }
     }
 
     public DownloadGroupInfo getDownloadInfo() {
@@ -162,7 +179,8 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
             view.setDescription(description);
             view.setModelSize(modelSizeMb);
             view.setState(state, false);
-            view.setDownloadProgress(progress);
+            view.setDownloadProgress(progress, progressUnzipping, progressTesting);
+            view.setError(error);
         }
     }
 
@@ -213,7 +231,7 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
-                setState(ResourceManagerView.State.EMPTY);
+                setState(ResourceManagerView.State.EMPTY, animateDeletion);
                 downloadManager.cancelDownload(downloadInfo);
                 if(clientListener != null) clientListener.onResourceDeleted();
             }
@@ -241,6 +259,29 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
 
         //todo: convert this text to a resource and translate it
         textView.setText("This is the last downloaded translation model, you cannot delete all the translation models, please download another translation model before deleting this one.");
+
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+    }
+
+    public void showErrorInfoDialog(){
+        final View editDialogLayout = activity.getLayoutInflater().inflate(R.layout.dialog_error, null);
+
+        final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity, R.style.MyThemeOverlay_MaterialComponents_MaterialAlertDialog);
+        builder.setCancelable(true);
+
+        AlertDialog dialog = builder.create();
+        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(activity, 16), 0, 0);
+        dialog.show();
+
+        TextView textView = editDialogLayout.findViewById(R.id.textView);
+        CardView okButton = editDialogLayout.findViewById(R.id.okButtonCard);
+
+        textView.setText(activity.getResources().getText(R.string.error_download));
 
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
