@@ -224,7 +224,7 @@ public class Recognizer extends NeuralNetworkApi {
                     detokenizerSession = onnxEnv.createSession(detokenizerPath, detokenizerSessionOptions);
 
                     initListener.onInitializationFinished();
-                } catch (OrtException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     initListener.onError(new int[]{ErrorCodes.ERROR_LOADING_MODEL},0);
                 }
@@ -555,7 +555,7 @@ public class Recognizer extends NeuralNetworkApi {
 
                     android.util.Log.i("performance", "SPEECH RECOGNITION DONE IN: " + (SystemClock.elapsedRealtime() - startTimeInMs) + "ms");
 
-                } catch (OrtException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     notifyError(new int[]{ErrorCodes.ERROR_EXECUTING_MODEL}, 0);
                 }

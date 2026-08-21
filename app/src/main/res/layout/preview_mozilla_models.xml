@@ -15,8 +15,8 @@
         app:layout_constraintStart_toEndOf="@+id/radioMadlad"
         app:layout_constraintTop_toTopOf="parent"
         app:modelDescription=""
-        app:modelSize="120"
-        app:modelTitle="Italian"
+        app:modelSize="150"
+        app:modelTitle="English"
         app:state="downloaded" />
     <nie.translator.rtranslator.tools.gui.ResourceManagerView
         android:layout_width="match_parent"
@@ -26,8 +26,8 @@
         app:layout_constraintStart_toEndOf="@+id/radioMadlad"
         app:layout_constraintTop_toTopOf="parent"
         app:modelDescription=""
-        app:modelSize="150"
-        app:modelTitle="English"
+        app:modelSize="120"
+        app:modelTitle="Italian"
         app:state="downloaded" />
     <include layout="@layout/component_row_models_available" />
     <nie.translator.rtranslator.tools.gui.ResourceManagerView

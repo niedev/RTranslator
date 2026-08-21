@@ -29,7 +29,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:src="@drawable/delete_icon"
+            android:src="@drawable/settings_icon"
             android:tint="@color/primary_very_dark" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -58,7 +58,7 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="32dp"
-                android:text="Are you sure you want to delete this resource?"
+                android:text="Are you sure you want to quit without applying the new settings?"
                 app:layout_constraintBottom_toTopOf="@+id/okButtonCard"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -125,7 +125,7 @@
                         android:layout_marginEnd="16dp"
                         android:layout_marginBottom="11dp"
                         android:fontFamily="@font/nunito_sans_semibold"
-                        android:text="No"
+                        android:text="Exit"
                         android:textAlignment="center"
                         android:textColor="@color/accent_white"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -168,7 +168,7 @@
                         android:layout_marginEnd="16dp"
                         android:layout_marginBottom="11dp"
                         android:fontFamily="@font/nunito_semibold"
-                        android:text="Yes"
+                        android:text="Apply"
                         android:textAlignment="center"
                         android:textColor="@color/accent_white"
                         app:layout_constraintBottom_toBottomOf="parent"

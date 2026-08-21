@@ -90,6 +90,10 @@ public class DownloadManager implements ServiceConnection {
             boolean shouldStopService = !areDownloadsRunning(false);
             if(shouldStopService) {
                 stopAndUnbindService();
+            }else{
+                //we just unbind from the service
+                context.unbindService(this);
+                downloaderService = null;
             }
             this.callback = null;
         }
@@ -177,6 +181,10 @@ public class DownloadManager implements ServiceConnection {
     }
 
     public ArrayList<DownloadGroupInfo> getSavedDownloadStatus(){
+        return getSavedDownloadStatus(context);
+    }
+
+    public static ArrayList<DownloadGroupInfo> getSavedDownloadStatus(Context context){
         SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
         String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
         if (!downloadsStatusString.isEmpty()) {
@@ -213,6 +221,7 @@ public class DownloadManager implements ServiceConnection {
         if (downloaderService != null) {
             //we unbind from the service
             context.unbindService(this);
+            downloaderService = null;
             // stop the service
             final Intent intent = new Intent(context, DownloaderService.class);
             context.stopService(intent);

@@ -83,9 +83,9 @@ public class DownloaderTools {
             if (file.exists()) {
                 file.delete();
             }
-            // in the case the download is an extracted download we delete the extracted internal folder and its content (instead of just a single file)
+            // in the case the download is an extracted download we delete the extracted (or partially extracted) internal folder and its content (instead of just a single file)
             String internalFolder = downloadGroup.downloadsInfo[i].getInternalFolder();
-            if (downloadGroup.downloadsInfo[i].isUnzipped() && internalFolder != null && !internalFolder.isEmpty()){
+            if (internalFolder != null && !internalFolder.isEmpty()){
                 String folderPath = downloadGroup.downloadsInfo[i].getDestinationPath() + "/" + internalFolder + "/";
                 File folder = new File(folderPath);
                 try {

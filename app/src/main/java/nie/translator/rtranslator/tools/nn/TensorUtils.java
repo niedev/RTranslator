@@ -80,7 +80,7 @@ public final class TensorUtils {
         }
         try {
             return OnnxTensor.createTensor(onnxEnv,buffer,shape);
-        } catch (OrtException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

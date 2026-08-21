@@ -217,7 +217,7 @@ public class DownloadFragment2 extends Fragment {
         }
     }
 
-    public void restoreGuiState(ArrayList<DownloadGroupInfo> downloadStatus){
+    private void restoreGuiState(ArrayList<DownloadGroupInfo> downloadStatus){
         // we change the GUI based on current download status
         if(downloadStatus != null){
             guiStateRestored = true;

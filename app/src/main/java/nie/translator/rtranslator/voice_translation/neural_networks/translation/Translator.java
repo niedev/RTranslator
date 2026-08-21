@@ -79,7 +79,7 @@ public class Translator extends NeuralNetworkApi {
     public static final int MADLAD_CACHE = 5;
     public static final int MOZILLA = 7;
     public static final int HY_MT = 8;
-    private int mode;
+    private int mode = -1;
     private Tokenizer tokenizer;
     private OrtEnvironment onnxEnv;
     private OrtSession encoderSession;
@@ -112,17 +112,83 @@ public class Translator extends NeuralNetworkApi {
     private LanguageResourcesManager languageResourcesManager;
 
 
-    public Translator(@NonNull Global global, int mode, GeneralListener initListener) {
+    public Translator(@NonNull Global global, int mode, boolean useMozillaForVoiceTranslation, boolean useTatoeba, boolean useTranslationDicts, GeneralListener initListener) {
         this.global = global;
-        this.mode = mode;
         mainHandler = new android.os.Handler(Looper.getMainLooper());
         initializeNllbLanguagesCodes(global);
         initializeHyLanguagesInfo(global);
 
-        initialize(global, mode, false, initListener);
+        setTranslationStatus(mode, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts, initListener);
     }
 
-    private void initialize(@NonNull Global global, int mode, boolean restart, GeneralListener initListener){
+    public void setTranslationStatus(int modelMode, boolean useMozillaForVoiceTranslation, boolean useTatoeba, boolean useTranslationDicts, GeneralListener listener){
+        final Thread t = new Thread("textTranslation") {
+            public void run() {
+                try {
+                    int oldMode = Translator.this.mode;
+                    Translator.this.mode = modelMode;
+                    if(oldMode != modelMode) {
+                        /** CLEANUP **/
+                        if (oldMode != -1) {
+                            // translation onnx model cleanup
+                            onnxTranslationModelCleanup(oldMode);
+                        }
+
+                        /** INITIALIZATION **/
+                        // translation onnx model initialization
+                        if (mode != MOZILLA) {
+                            onnxTranslationModelInitialization();
+                        }
+                    }
+
+                    // translation resources update (or initialization) (N.B. mozilla models are translation resources)
+                    if(languageResourcesManager != null) global.updateLanguages();  //if it is not the first start we update the languages before updating the resources
+
+                    CustomLocale firstTextLanguage = global.getFirstTextLanguage(true);
+                    CustomLocale secondTextLanguage = global.getSecondTextLanguage(true);
+                    CustomLocale firstLanguage = global.getFirstLanguage(true);
+                    CustomLocale secondLanguage = global.getSecondLanguage(true);
+                    CustomLocale language = global.getLanguage(true);
+
+                    if(languageResourcesManager == null) {
+                        languageResourcesManager = new LanguageResourcesManager(global, mode == MOZILLA, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts,
+                                firstTextLanguage, secondTextLanguage, firstLanguage, secondLanguage);
+                    }else{
+                        languageResourcesManager.setStatus(mode == MOZILLA, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts,
+                                firstTextLanguage, secondTextLanguage, firstLanguage, secondLanguage, language);
+                    }
+
+                    //eventual initialization of language detector (it must happen after the language resources initialization)
+                    if(languageDetector == null) {
+                        languageDetector = new LanguageDetector();
+                        languageDetector.initialize(global, languageResourcesManager);
+                    }
+                    mainHandler.post(() -> listener.onSuccess());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    mainHandler.post(() -> listener.onFailure(new int[]{ErrorCodes.ERROR_LOADING_MODEL},0));
+                }
+            }
+        };
+        t.start();
+    }
+
+    private void onnxTranslationModelCleanup(int mode) throws OrtException {
+        if (mode == NLLB || mode == NLLB_CACHE || mode == MADLAD || mode == MADLAD_CACHE) {
+            encoderSession.close();
+            decoderSession.close();
+            cacheInitSession.close();
+            if (mode == MADLAD_CACHE) {
+                embedSession.close();
+            } else {
+                embedAndLmHeadSession.close();
+            }
+        } else if(mode == HY_MT) {
+            decoderSession.close();
+        }
+    }
+
+    private void onnxTranslationModelInitialization() throws OrtException, IOException {
         String encoderPath = "";
         String decoderPath = "";
         String vocabPath = "";
@@ -177,152 +243,63 @@ public class Translator extends NeuralNetworkApi {
                 vocabPath = basePath + "/tokenizer.json";
             }
         }
+        if(onnxEnv == null) {
+            onnxEnv = OrtEnvironment.getEnvironment();
+        }
+        //we eventually transfer the vocab file from the assets to the internal memory (because the tokenizer can open vocab only via a path to internal or external memory)
+        File outFile = new File(global.getFilesDir(), "sentencepiece_bpe.model");
+        if(!outFile.exists()) {
+            FileTools.copyAssetToInternalMemory(global, "sentencepiece_bpe.model");
+        }
+        //we eventually transfer the fasttext model file from the assets to the internal memory (because the fasttext djl lib can open model only via a path to internal or external memory)
+        File outFileFastText = new File(global.getFilesDir(), "fasttext.ftz");
+        if(!outFileFastText.exists()) {
+            FileTools.copyAssetToInternalMemory(global, "fasttext.ftz");
+        }
 
-        String finalDecoderPath = decoderPath;
-        String finalEncoderPath = encoderPath;
-        String finalCacheInitializerPath = cacheInitializerPath;
-        String finalEmbedAndLmHeadPath = embedAndLmHeadPath;
-        String finalVocabPath = vocabPath;
-        final Thread t = new Thread("textTranslation") {
-            public void run() {
-                onnxEnv = OrtEnvironment.getEnvironment();
-                //we eventually transfer the vocab file from the assets to the internal memory (because the tokenizer can open vocab only via a path to internal or external memory)
-                File outFile = new File(global.getFilesDir(), "sentencepiece_bpe.model");
-                if(!outFile.exists()) {
-                    FileTools.copyAssetToInternalMemory(global, "sentencepiece_bpe.model");
-                }
-                //we eventually transfer the fasttext model file from the assets to the internal memory (because the fasttext djl lib can open model only via a path to internal or external memory)
-                File outFileFastText = new File(global.getFilesDir(), "fasttext.ftz");
-                if(!outFileFastText.exists()) {
-                    FileTools.copyAssetToInternalMemory(global, "fasttext.ftz");
-                }
+        if(mode == MADLAD || mode == MADLAD_CACHE) {
+            tokenizer = new Tokenizer(vocabPath, Tokenizer.MADLAD);
+        }else if(mode == NLLB || mode == NLLB_CACHE) {
+            tokenizer = new Tokenizer(vocabPath, Tokenizer.NLLB);
+        }else if(mode == HY_MT) {
+            tokenizer = new Tokenizer(vocabPath, Tokenizer.HY_MT);
+        }
 
-                CustomLocale firstTextLanguage = global.getFirstTextLanguage(true);
-                CustomLocale secondTextLanguage = global.getSecondTextLanguage(true);
-                CustomLocale firstLanguage = global.getFirstLanguage(true);
-                CustomLocale secondLanguage = global.getSecondLanguage(true);
+        final OrtSession.SessionOptions.OptLevel optDefaultLevel = OrtSession.SessionOptions.OptLevel.EXTENDED_OPT;
+        boolean arena = true;
 
-                try {
-                    if(!restart){
-                        languageResourcesManager = new LanguageResourcesManager(global, mode, firstTextLanguage, secondTextLanguage, firstLanguage, secondLanguage);
-                    }
+        OrtSession.SessionOptions decoderOptions = new OrtSession.SessionOptions();
+        decoderOptions.setMemoryPatternOptimization(arena);
+        decoderOptions.setCPUArenaAllocator(arena);
+        decoderOptions.setOptimizationLevel(optDefaultLevel);
+        decoderSession = onnxEnv.createSession(decoderPath, decoderOptions);
 
-                    languageDetector = new LanguageDetector();
-                    languageDetector.initialize(global, languageResourcesManager);
+        OrtSession.SessionOptions encoderOptions = new OrtSession.SessionOptions();
+        encoderOptions.setMemoryPatternOptimization(arena);
+        encoderOptions.setCPUArenaAllocator(arena);
+        encoderOptions.setOptimizationLevel(optDefaultLevel);
+        if(mode != HY_MT) encoderSession = onnxEnv.createSession(encoderPath, encoderOptions);
 
-                    if(mode == MADLAD || mode == MADLAD_CACHE) {
-                        tokenizer = new Tokenizer(finalVocabPath, Tokenizer.MADLAD);
-                    }else if(mode == NLLB || mode == NLLB_CACHE) {
-                        tokenizer = new Tokenizer(finalVocabPath, Tokenizer.NLLB);
-                    }else if(mode == HY_MT) {
-                        tokenizer = new Tokenizer(finalVocabPath, Tokenizer.HY_MT);
-                    }
+        OrtSession.SessionOptions cacheInitOptions = new OrtSession.SessionOptions();
+        cacheInitOptions.setMemoryPatternOptimization(arena);
+        cacheInitOptions.setCPUArenaAllocator(arena);
+        cacheInitOptions.setOptimizationLevel(optDefaultLevel);
+        if(mode != HY_MT) cacheInitSession = onnxEnv.createSession(cacheInitializerPath, cacheInitOptions);
 
-                    if(mode == MOZILLA || global.isUseMozillaForVoiceTranslation()) {
-                        if(restart) languageResourcesManager.loadAllMozillaResources();
-                    }
-                    if(mode != MOZILLA){
-                        final OrtSession.SessionOptions.OptLevel optDefaultLevel = OrtSession.SessionOptions.OptLevel.EXTENDED_OPT;
-                        boolean arena = true;
+        OrtSession.SessionOptions embedAndLmHeadOptions = new OrtSession.SessionOptions();
+        embedAndLmHeadOptions.setMemoryPatternOptimization(arena);
+        embedAndLmHeadOptions.setCPUArenaAllocator(arena);
+        embedAndLmHeadOptions.setOptimizationLevel(optDefaultLevel);
+        if (mode == MADLAD_CACHE) {
+            embedSession = onnxEnv.createSession(embedAndLmHeadPath, embedAndLmHeadOptions);
+        } else if(mode != HY_MT){
+            embedAndLmHeadSession = onnxEnv.createSession(embedAndLmHeadPath, embedAndLmHeadOptions);
+        }
 
-                        OrtSession.SessionOptions decoderOptions = new OrtSession.SessionOptions();
-                        decoderOptions.setMemoryPatternOptimization(arena);
-                        decoderOptions.setCPUArenaAllocator(arena);
-                        decoderOptions.setOptimizationLevel(optDefaultLevel);
-                        decoderSession = onnxEnv.createSession(finalDecoderPath, decoderOptions);
-
-                        OrtSession.SessionOptions encoderOptions = new OrtSession.SessionOptions();
-                        encoderOptions.setMemoryPatternOptimization(arena);
-                        encoderOptions.setCPUArenaAllocator(arena);
-                        encoderOptions.setOptimizationLevel(optDefaultLevel);
-                        if(mode != HY_MT) encoderSession = onnxEnv.createSession(finalEncoderPath, encoderOptions);
-
-                        OrtSession.SessionOptions cacheInitOptions = new OrtSession.SessionOptions();
-                        cacheInitOptions.setMemoryPatternOptimization(arena);
-                        cacheInitOptions.setCPUArenaAllocator(arena);
-                        cacheInitOptions.setOptimizationLevel(optDefaultLevel);
-                        if(mode != HY_MT) cacheInitSession = onnxEnv.createSession(finalCacheInitializerPath, cacheInitOptions);
-
-                        OrtSession.SessionOptions embedAndLmHeadOptions = new OrtSession.SessionOptions();
-                        embedAndLmHeadOptions.setMemoryPatternOptimization(arena);
-                        embedAndLmHeadOptions.setCPUArenaAllocator(arena);
-                        embedAndLmHeadOptions.setOptimizationLevel(optDefaultLevel);
-                        if (mode == MADLAD_CACHE) {
-                            embedSession = onnxEnv.createSession(finalEmbedAndLmHeadPath, embedAndLmHeadOptions);
-                        } else if(mode != HY_MT){
-                            embedAndLmHeadSession = onnxEnv.createSession(finalEmbedAndLmHeadPath, embedAndLmHeadOptions);
-                        }
-
-                        decoderOptions.close();
-                        encoderOptions.close();
-                        cacheInitOptions.close();
-                        embedAndLmHeadOptions.close();
-                    }
-
-                    mainHandler.post(() -> initListener.onSuccess());
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    mainHandler.post(() -> initListener.onFailure(new int[]{ErrorCodes.ERROR_LOADING_MODEL},0));
-                }
-            }
-        };
-        t.start();
-    }
-
-    private void destroy(GeneralListener listener){
-        final Thread t = new Thread("textTranslation") {
-            public void run() {
-                try {
-                    if (mode == NLLB || mode == NLLB_CACHE || mode == MADLAD || mode == MADLAD_CACHE) {
-                        encoderSession.close();
-                        decoderSession.close();
-                        cacheInitSession.close();
-                        if (mode == MADLAD_CACHE) {
-                            embedSession.close();
-                        } else {
-                            embedAndLmHeadSession.close();
-                        }
-                        mainHandler.post(() -> listener.onSuccess());
-                    } else if(mode == HY_MT) {
-                        decoderSession.close();
-                    }
-                    if(mode == MOZILLA || global.isUseMozillaForVoiceTranslation()){
-                        unloadAllMozillaResources(listener);
-                    }
-                    onnxEnv.close();
-                } catch (OrtException e) {
-                    e.printStackTrace();
-                    mainHandler.post(() -> listener.onFailure(new int[]{ErrorCodes.ERROR_LOADING_MODEL},0));
-                }
-            }
-        };
-        t.start();
-    }
-
-    public void restart(int mode, GeneralListener listener){
-        destroy(new GeneralListener() {
-            @Override
-            public void onSuccess() {
-                initialize(global, mode, true, new GeneralListener() {
-                    @Override
-                    public void onSuccess() {
-                        Translator.this.mode = mode;
-                        listener.onSuccess();
-                    }
-
-                    @Override
-                    public void onFailure(int[] reasons, long value) {
-                        listener.onFailure(reasons, value);
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(int[] reasons, long value) {
-                listener.onFailure(reasons, value);
-            }
-        });
+        decoderOptions.close();
+        encoderOptions.close();
+        cacheInitOptions.close();
+        embedAndLmHeadOptions.close();
     }
 
     public void translate(final String textToTranslate, final CustomLocale languageInput, final CustomLocale languageOutput, int beamSize, boolean saveResults, Global.RTranslatorMode rtranslatorMode) {
@@ -554,11 +531,13 @@ public class Translator extends NeuralNetworkApi {
             synchronized (langResourcesLock) {
                 try {
                     //execution of language resource loading
-                    languageResourcesManager.loadLanguageResources(srcLang, tgtLang, rtranslatorMode);
+                    languageResourcesManager.setLanguageResources(srcLang, tgtLang, rtranslatorMode);
                     //we notify the success of the loading
-                    if(listener != null) mainHandler.post(() -> listener.onSuccess());
+                    mainHandler.post(() -> {
+                        if(listener != null) listener.onSuccess();
+                    });
                 } catch (Exception e) {
-                    Log.e("resources", e.getMessage());
+                    e.printStackTrace();
                     if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
                 }
             }
@@ -570,11 +549,13 @@ public class Translator extends NeuralNetworkApi {
             synchronized (langResourcesLock) {
                 try {
                     //execution of language resource loading
-                    languageResourcesManager.loadSrcLangResourcesForPeer(lang, peer);
+                    languageResourcesManager.setSrcLangResourcesForPeer(lang, peer);
                     //we notify the success of the loading
-                    if(listener != null) mainHandler.post(() -> listener.onSuccess());
+                    mainHandler.post(() -> {
+                        if(listener != null) listener.onSuccess();
+                    });
                 } catch (Exception e) {
-                    Log.e("resources", e.getMessage());
+                    e.printStackTrace();
                     if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
                 }
             }
@@ -586,11 +567,13 @@ public class Translator extends NeuralNetworkApi {
             synchronized (langResourcesLock) {
                 try {
                     //execution of language resource loading
-                    languageResourcesManager.loadTgtLangResourcesForConversation(lang);
+                    languageResourcesManager.setTgtLangResourcesForConversation(lang);
                     //we notify the success of the loading
-                    if(listener != null) mainHandler.post(() -> listener.onSuccess());
+                    mainHandler.post(() -> {
+                        if(listener != null) listener.onSuccess();
+                    });
                 } catch (Exception e) {
-                    Log.e("resources", e.getMessage());
+                    e.printStackTrace();
                     if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
                 }
             }
@@ -601,75 +584,6 @@ public class Translator extends NeuralNetworkApi {
         languageResourcesManager.updatePeer(oldPeer, newPeer);
     }
 
-    public void loadAllMozillaResources(GeneralListener listener){
-        new Thread(() -> {
-            synchronized (langResourcesLock) {
-                try {
-                    //execution of the resources unloading
-                    languageResourcesManager.loadAllMozillaResources();
-                    if(listener != null) listener.onSuccess();
-                } catch (Exception e) {
-                    Log.e("resources", e.getMessage());
-                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
-                }
-            }
-        }).start();
-    }
-
-    public void loadAllTatoebaResources(GeneralListener listener){
-        new Thread(() -> {
-            synchronized (langResourcesLock) {
-                try {
-                    //execution of the resources unloading
-                    languageResourcesManager.loadAllTatoebaResources();
-                    if(listener != null) listener.onSuccess();
-                } catch (Exception e) {
-                    Log.e("resources", e.getMessage());
-                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
-                }
-            }
-        }).start();
-    }
-
-    public void loadAllTranslationDictionariesResources(GeneralListener listener){
-        new Thread(() -> {
-            synchronized (langResourcesLock) {
-                try {
-                    //execution of the resources unloading
-                    languageResourcesManager.loadAllTranslationDictionariesResources();
-                    if(listener != null) listener.onSuccess();
-                } catch (Exception e) {
-                    Log.e("resources", e.getMessage());
-                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
-                }
-            }
-        }).start();
-    }
-
-    public void unloadAllMozillaResources(GeneralListener listener){
-        new Thread(() -> {
-            synchronized (langResourcesLock) {
-                //execution of the resources unloading
-                languageResourcesManager.unloadAllMozillaResources();
-                if(listener != null) listener.onSuccess();
-            }
-        }).start();
-    }
-
-    public void unloadAllTatoebaResources(){
-        synchronized (langResourcesLock) {
-            //execution of the resources unloading
-            languageResourcesManager.unloadAllTatoebaResources();
-        }
-    }
-
-    public void unloadAllTranslationDictionariesResources(){
-        synchronized (langResourcesLock) {
-            //execution of the resources unloading
-            languageResourcesManager.unloadAllTranslationDictionariesResources();
-        }
-    }
-
     public void unloadSrcLangResourcesForPeer(Peer peer, @Nullable GeneralListener listener){
         new Thread(() -> {
             synchronized (langResourcesLock) {
@@ -677,10 +591,14 @@ public class Translator extends NeuralNetworkApi {
                     //execution of language resource unloading
                     languageResourcesManager.unloadSrcLangResourcesForPeer(peer);
                     //we notify the success of the unloading
-                    if(listener != null) mainHandler.post(() -> listener.onSuccess());
+                    mainHandler.post(() -> {
+                        if(listener != null) listener.onSuccess();
+                    });
                 } catch (Exception e) {
-                    Log.e("resources", e.getMessage());
-                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
+                    e.printStackTrace();
+                    mainHandler.post(() -> {
+                        if(listener != null) listener.onFailure(new int[]{0}, 0);
+                    });    //todo: implementare una vera gestione degli errori
                 }
             }
         }).start();
@@ -693,10 +611,14 @@ public class Translator extends NeuralNetworkApi {
                     //execution of language resource unloading
                     languageResourcesManager.unloadAllLangResourcesForConversation();
                     //we notify the success of the unloading
-                    if(listener != null) mainHandler.post(() -> listener.onSuccess());
+                    mainHandler.post(() -> {
+                        if(listener != null) listener.onSuccess();
+                    });
                 } catch (Exception e) {
-                    Log.e("resources", e.getMessage());
-                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
+                    e.printStackTrace();
+                    mainHandler.post(() -> {
+                        if(listener != null) listener.onFailure(new int[]{0}, 0);
+                    });    //todo: implementare una vera gestione degli errori
                 }
             }
         }).start();
@@ -829,6 +751,7 @@ public class Translator extends NeuralNetworkApi {
                 android.util.Log.i("performance", "Detokenization done in: " + (System.currentTimeMillis() - time) + "ms");
             }else{
                 //perform text translation using mozilla models
+                android.util.Log.i("translator", "Translating using Bergamot models...");
                 if(global.isUseTranslationDictionaries()) {
                     String[] dictionaryResult = performDictionaryTranslation(textToTranslate, inputLanguage, outputLanguage);
                     if(dictionaryResult != null && dictionaryResult.length > 0) {
@@ -936,6 +859,7 @@ public class Translator extends NeuralNetworkApi {
     }
 
     private String performNNTextTranslation(final String textToTranslate, String[] joinedStringOutput, final CustomLocale inputLanguage, final CustomLocale outputLanguage, int beamSize, boolean saveResults, @Nullable final TranslateListener responseListener) throws Exception {
+        android.util.Log.i("translator", "Translating using ONNX models...");
         //tokenization
         long time = System.currentTimeMillis();
         TokenizerResult input = null;
@@ -1050,7 +974,7 @@ public class Translator extends NeuralNetworkApi {
             input.forEach((s, onnxTensor) -> onnxTensor.close());
 
             return (OnnxTensor) output.get();
-        } catch (OrtException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }

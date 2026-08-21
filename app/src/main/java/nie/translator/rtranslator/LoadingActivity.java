@@ -31,6 +31,7 @@ import androidx.appcompat.app.AlertDialog;
 import java.util.ArrayList;
 import nie.translator.rtranslator.access.AccessActivity;
 import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.ImageActivity;
@@ -84,16 +85,15 @@ public class LoadingActivity extends GeneralActivity {
         isVisible = true;
         global = (Global) getApplication();
         if (global.isFirstStart()) {
-            Intent intent = new Intent(this, AccessActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            finish();
+            startAccessActivity();
         } else if (global.getTranslator() != null && (Global.ONLY_TEXT_TRANSLATION_MODE || global.getSpeechRecognizer() != null)) {
-            startVoiceTranslationActivity();
+            if(checkIfResourcesPreferencesRespectDownloads()) {
+                startVoiceTranslationActivity();
+            }else{
+                startSettingsActivityWithModelManager();
+            }
         } else {
             initializeApp(false);
-            //onFailure(new int[]{ErrorCodes.GOOGLE_TTS_ERROR}, 0);
         }
     }
 
@@ -149,6 +149,14 @@ public class LoadingActivity extends GeneralActivity {
         });
     }
 
+    private void startAccessActivity(){
+        Intent intent = new Intent(this, AccessActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        finish();
+    }
+
     private void startVoiceTranslationActivity() {
         if(!START_IMAGE) {
             startingActivity = true;
@@ -162,6 +170,15 @@ public class LoadingActivity extends GeneralActivity {
         }
     }
 
+    private void startSettingsActivityWithModelManager(){
+        Intent intent = new Intent(this, SettingsActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("startWithModelManager", true);
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        finish();
+    }
+
     private void startImageActivity() {
         startingActivity = true;
         Intent intent = new Intent(LoadingActivity.this, ImageActivity.class);
@@ -169,6 +186,40 @@ public class LoadingActivity extends GeneralActivity {
         startActivity(intent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
+    }
+
+    private boolean checkIfResourcesPreferencesRespectDownloads(){
+        long initTime = System.currentTimeMillis();
+        // check of translation model preference
+        DownloadManager downloadManager = new DownloadManager(this);
+        int translationMode = global.getTranslationMode();
+        switch (translationMode) {
+            case Translator.MOZILLA:
+                if(!checkMozillaModelsPresence(downloadManager)){
+                    return false;
+                }
+                break;
+            case Translator.HY_MT:
+                if(!downloadManager.checkDownloadCompleted(global.getHyMtDownloadInfo())){
+                    return false;
+                }
+                break;
+            case Translator.MADLAD_CACHE:
+                if(!downloadManager.checkDownloadCompleted(global.getMadladDownloadInfo())){
+                    return false;
+                }
+                break;
+        }
+        // check of Mozilla for voice translation modes preference
+        if(translationMode != Translator.MOZILLA && global.isUseMozillaForVoiceTranslation() && !checkMozillaModelsPresence(downloadManager)){
+            return false;
+        }
+        // check of Tatoeba preference
+        if(global.isUseTatoeba() && !downloadManager.checkDownloadCompleted(global.getTatoebaDownloadInfo())){
+            return false;
+        }
+        android.util.Log.i("performance", "checkIfResourcesPreferencesRespectDownloads done in: " + (System.currentTimeMillis() - initTime) + "ms");
+        return true;
     }
 
     /**
@@ -183,6 +234,7 @@ public class LoadingActivity extends GeneralActivity {
      * a downloaded translation model, and nothing else)
      */
     private void adaptResourcesPreferencesToDownloads(){
+        long initTime = System.currentTimeMillis();
         // eventual adaptation of translation model preference
         DownloadManager downloadManager = new DownloadManager(this);
         int translationMode = global.getTranslationMode();
@@ -226,6 +278,7 @@ public class LoadingActivity extends GeneralActivity {
             editor.putBoolean("useTatoeba", false);
             editor.apply();
         }
+        android.util.Log.i("performance", "adaptResourcesPreferencesToDownloads done in: " + (System.currentTimeMillis() - initTime) + "ms");
     }
 
     private void notifyGoogleTTSErrorDialog() {

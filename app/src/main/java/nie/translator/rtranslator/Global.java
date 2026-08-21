@@ -44,10 +44,10 @@ import com.konovalov.vad.silero.config.SampleRate;
 import java.io.File;
 import java.util.ArrayList;
 
-import ai.onnxruntime.OrtException;
 import nie.translator.rtranslator.access.AccessActivity;
 import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
 import nie.translator.rtranslator.downloader2.DownloadInfo;
+import nie.translator.rtranslator.downloader2.DownloadManager;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.TTS;
@@ -65,7 +65,7 @@ import nie.translator.rtranslator.voice_translation.neural_networks.voice.Record
 
 public class Global extends Application implements DefaultLifecycleObserver {
     public static final boolean ONLY_TEXT_TRANSLATION_MODE = false;
-    public static final boolean USE_EXTERNAL_MEMORY_FOR_RESOURCES = true;
+    public static final boolean USE_EXTERNAL_MEMORY_FOR_RESOURCES = false;
 
     public static final int REQUEST_CODE_PERMISSIONS_PAIRING = 2;
     public static String[] REQUIRED_PERMISSIONS_PAIRING;
@@ -83,6 +83,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     private ArrayList<CustomLocale> languages = new ArrayList<>();
     private ArrayList<CustomLocale> translatorLanguages = new ArrayList<>();
     private ArrayList<Translator.MozillaLanguageInfo> mozillaLanguages = new ArrayList<>();
+    private ArrayList<CustomLocale> mozillaInstalledLanguages = new ArrayList<>();
     private ArrayList<CustomLocale> ttsLanguages = new ArrayList<>();
     private CustomLocale language;
     private CustomLocale firstLanguage;
@@ -91,7 +92,9 @@ public class Global extends Application implements DefaultLifecycleObserver {
     private CustomLocale secondTextLanguage;
     private RecentPeersDataManager recentPeersDataManager;
     private ConversationBluetoothCommunicator bluetoothCommunicator;
+    @Nullable
     private Translator translator;
+    @Nullable
     private Recognizer speechRecognizer;
     private String name = "";
     private int micSensitivity = -1;
@@ -145,9 +148,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
 
     public void initializeTranslator(Translator.GeneralListener initListener){
         if(translator == null) {
-            SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
-            int mode = sharedPreferences.getInt("selectedTranslationModel", Translator.MOZILLA);
-            translator = new Translator(this, mode, initListener);
+            translator = new Translator(this, getTranslationMode(), isUseMozillaForVoiceTranslation(), isUseTatoeba(), isUseTranslationDictionaries(), initListener);
         }else{
             initListener.onSuccess();
         }
@@ -177,24 +178,6 @@ public class Global extends Application implements DefaultLifecycleObserver {
 
     public VadSilero getVad() {
         return vad;
-    }
-
-    public void restartTranslator(Translator.GeneralListener listener){
-        getLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, false);
-        SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
-        int mode = sharedPreferences.getInt("selectedTranslationModel", Translator.MOZILLA);
-        translator.restart(mode, new Translator.GeneralListener() {
-            @Override
-            public void onSuccess() {
-                getTranslatorLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, false);  //refresh languages
-                listener.onSuccess();
-            }
-
-            @Override
-            public void onFailure(int[] reasons, long value) {
-                listener.onFailure(reasons, value);
-            }
-        });
     }
 
     @Nullable
@@ -268,25 +251,50 @@ public class Global extends Application implements DefaultLifecycleObserver {
             SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
             mode = sharedPreferences.getInt("selectedTranslationModel", Translator.MOZILLA);
         }
-        ArrayList<CustomLocale> languages = Translator.getSupportedLanguages(Global.this, mode);
-        translatorLanguages = languages;
+        ArrayList<CustomLocale> languages = Translator.getSupportedLanguages(Global.this, mode);  //in the case of mozilla, this method will return all the supported languages, not only the installed ones, so for mozilla we will use the getMozillaLanguages method
         ArrayList<CustomLocale> mozillaLanguages = getMozillaLanguages(false);
-        if(isUseMozillaForVoiceTranslation() && (rtranslatorMode == RTranslatorMode.CONVERSATION_MODE || rtranslatorMode == RTranslatorMode.WALKIE_TALKIE_MODE)) {
+        if(mode == Translator.MOZILLA) {
+            translatorLanguages = mozillaLanguages;
             return mozillaLanguages;
         }else{
-            return languages;
+            translatorLanguages = languages;
+            if(isUseMozillaForVoiceTranslation() && (rtranslatorMode == RTranslatorMode.CONVERSATION_MODE || rtranslatorMode == RTranslatorMode.WALKIE_TALKIE_MODE)) {
+                return mozillaLanguages;
+            }else{
+                return languages;
+            }
         }
     }
 
+    /**
+     * getMozillaLanguages
+     * @param recycleResult decides if recycle the result or not
+     * @return the list of installed Mozilla languages
+     */
     private ArrayList<CustomLocale> getMozillaLanguages(final boolean recycleResult){
-        ArrayList<Translator.MozillaLanguageInfo> mozillaLanguageInfos = getMozillaLanguagesInfo(recycleResult);
-        ArrayList<CustomLocale> mozillaLanguages = new ArrayList<>(mozillaLanguageInfos.size());
-        for(Translator.MozillaLanguageInfo info: mozillaLanguageInfos){
-            mozillaLanguages.add(info.lang);
+        if (recycleResult && !mozillaInstalledLanguages.isEmpty()) {
+            return mozillaInstalledLanguages;
+        } else {
+            ArrayList<DownloadGroupInfo> downloads = DownloadManager.getSavedDownloadStatus(this);
+            ArrayList<MozillaLanguageDownloadInfo> mozillaLanguageDownloadInfos = getMozillaLanguagesDownloadInfo(recycleResult);
+            ArrayList<CustomLocale> mozillaInstalledLanguages = new ArrayList<>();
+            mozillaInstalledLanguages.add(new CustomLocale("en"));  //English is always present, but it isn't present in the getMozillaLanguagesDownloadInfo list, so we add it manually
+            for (Global.MozillaLanguageDownloadInfo langDownloadInfo : mozillaLanguageDownloadInfos) {
+                int index = downloads.indexOf(langDownloadInfo.downloadGroupInfo);
+                if (index != -1 && downloads.get(index).isAllDownloadCompleted()) {
+                    mozillaInstalledLanguages.add(langDownloadInfo.lang);
+                }
+            }
+            this.mozillaInstalledLanguages = mozillaInstalledLanguages;
+            return mozillaInstalledLanguages;
         }
-        return mozillaLanguages;
     }
 
+    /**
+     * getMozillaLanguages
+     * @param recycleResult decides if recycle the result or not
+     * @return the list of all supported Mozilla languages (installed and not) with also the size of each language model
+     */
     public ArrayList<Translator.MozillaLanguageInfo> getMozillaLanguagesInfo(final boolean recycleResult) {
         if (recycleResult && !mozillaLanguages.isEmpty()) {
             return mozillaLanguages;
@@ -490,6 +498,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
 
 
+    @Nullable
     public Translator getTranslator() {
         return translator;
     }
@@ -498,6 +507,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         translator = null;
     }
 
+    @Nullable
     public Recognizer getSpeechRecognizer() {
         return speechRecognizer;
     }
@@ -590,6 +600,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
             int index2 = CustomLocale.search(languages, predefinedLanguage);
             if (index2 != -1) {
                 language = predefinedLanguage;
+            } else if(!languages.isEmpty()) {
+                language = languages.get(0);  //we pick the first language of the list
             } else {
                 language = new CustomLocale("en");
             }
@@ -645,6 +657,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
             int index2 = CustomLocale.search(languages, predefinedLanguage);
             if (index2 != -1) {
                 language = predefinedLanguage;
+            } else if(!languages.isEmpty()) {
+                language = languages.get(0);  //we pick the first language of the list
             } else {
                 language = new CustomLocale("en");
             }
@@ -696,7 +710,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("language", language.getCode());
         editor.apply();
-        if(ConversationService.isRunning){
+        if(ConversationService.isRunning && translator != null){
             translator.loadTgtLangResourcesForConversation(language, null);
             if(getBluetoothCommunicator() != null){
                 getBluetoothCommunicator().sendLanguage(language);
@@ -839,62 +853,12 @@ public class Global extends Application implements DefaultLifecycleObserver {
         return useTatoeba;
     }
 
-    public void setUseTatoeba(boolean useTatoeba) {
-        this.useTatoeba = useTatoeba;
-        final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("useTatoeba", useTatoeba);
-        editor.apply();
-        // loading of tatoeba
-        if(useTatoeba) {
-            translator.loadAllTatoebaResources(null);
-        }else{
-            translator.unloadAllTatoebaResources();
-        }
-    }
-
     public boolean isUseTranslationDictionaries(){
         return useTranslationDictionaries;
     }
 
-    public void setUseTranslationDictionaries(boolean useTranslationDictionaries) {
-        this.useTranslationDictionaries = useTranslationDictionaries;
-        final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("useTranslationDictionaries", useTranslationDictionaries);
-        editor.apply();
-        // loading or unloading of translation dictionaries resources
-        if(translator != null) {
-            if (useTranslationDictionaries) {
-                translator.loadAllTranslationDictionariesResources(null);
-            } else {
-                translator.unloadAllTranslationDictionariesResources();
-            }
-        }
-    }
-
     public boolean isUseMozillaForVoiceTranslation() {
         return useMozillaForVoiceTranslation;
-    }
-
-    public void setUseMozillaForVoiceTranslation(boolean useMozillaForVoiceTranslation, @Nullable Translator.GeneralListener listener) {
-        if(this.useMozillaForVoiceTranslation != useMozillaForVoiceTranslation) {
-            this.useMozillaForVoiceTranslation = useMozillaForVoiceTranslation;
-            final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("useMozillaForVoiceTranslation", useMozillaForVoiceTranslation);
-            editor.apply();
-            // loading or unloading of mozilla resources
-            if (translator != null) {
-                if (useMozillaForVoiceTranslation && translator.getMode() != Translator.MOZILLA) {
-                    translator.loadAllMozillaResources(listener);
-                } else if (!useMozillaForVoiceTranslation && translator.getMode() != Translator.MOZILLA) {
-                    translator.unloadAllMozillaResources(listener);
-                }
-            }
-        }else{
-            if(listener != null) listener.onSuccess();
-        }
     }
 
     public boolean isWhisperReducedRam() {
@@ -915,10 +879,14 @@ public class Global extends Application implements DefaultLifecycleObserver {
                 public void run() {
                     try {
                         if(speechRecognizer != null) speechRecognizer.initializeEncoderSession();
-                        if(listener != null) listener.onSuccess();
-                    } catch (OrtException e) {
+                        mainHandler.post(() -> {
+                            if(listener != null) listener.onSuccess();
+                        });
+                    } catch (Exception e) {
                         e.printStackTrace();
-                        if(listener != null) listener.onFailure(new int[]{ErrorCodes.ERROR}, 0);
+                        mainHandler.post(() -> {
+                            if (listener != null) listener.onFailure(new int[]{ErrorCodes.ERROR}, 0);
+                        });
                     }
                 }
             }).start();
@@ -931,20 +899,78 @@ public class Global extends Application implements DefaultLifecycleObserver {
         return translationMode;
     }
 
-    public void setTranslationMode(int translationMode, @NonNull Translator.GeneralListener listener) {
-        int oldMode = this.translationMode;
-        boolean changed = oldMode != translationMode;
+    public void setTranslationStatus(int translationMode, boolean useMozillaForVoiceTranslation, boolean useTatoeba, boolean useTranslationDicts, @NonNull Translator.GeneralListener listener) {
+        boolean changed = this.translationMode != translationMode
+                || this.useMozillaForVoiceTranslation != useMozillaForVoiceTranslation
+                || this.useTatoeba != useTatoeba
+                || this.useTranslationDictionaries != useTranslationDicts;
         if(changed) {
             this.translationMode = translationMode;
+            this.useMozillaForVoiceTranslation = useMozillaForVoiceTranslation;
+            this.useTatoeba = useTatoeba;
+            this.useTranslationDictionaries = useTranslationDicts;
             final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putInt("selectedTranslationModel", translationMode);
+            editor.putBoolean("useMozillaForVoiceTranslation", useMozillaForVoiceTranslation);
+            editor.putBoolean("useTatoeba", useTatoeba);
+            editor.putBoolean("useTranslationDictionaries", useTranslationDicts);
             editor.apply();
-            // restart of the translator with the new model mode
-            restartTranslator(listener);
+            // update of the translator status (if the translator is already initialized)
+            if (translator != null) {
+                translator.setTranslationStatus(translationMode, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts, listener);
+            }else{
+                listener.onSuccess();
+            }
         }else{
             listener.onSuccess();
         }
+    }
+
+    /**
+     * This method will update the languages selected for all rtranslator modes (text, walkieTalkie, conversation),
+     * usually it is called after a model change for some modes, because the selected languages could be not compatible anymore with the new model.
+     * In that case, this method will select a compatible language for the selected model in that rtranslator mode.
+     * This method will also update the lists of languages available to each rtranslator mode based on the new selected models.
+     * But it won't update the resources associated with the new languages.
+     */
+    public void updateLanguages() {
+        getLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, false);  //this will update the recognizer langs, the translator langs and also the mozilla langs (for all the RTranslator modes)
+        getFirstTextLanguage(false);
+        getSecondTextLanguage(false);
+        getFirstLanguage(false);
+        getSecondLanguage(false);
+        getLanguage(false);
+    }
+
+    /**
+     * This method does the same thing as updateLanguages() but it also updates the preferences and resources of the new languages.
+     * @param listener
+     */
+    public void updateLanguagesAndResources(Translator.GeneralListener listener){
+        getLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, false);  //this will update the recognizer langs, the translator langs and also the mozilla langs (for all the RTranslator modes)
+        setFirstTextLanguage(getFirstTextLanguage(false), new Translator.GeneralListener() {
+            @Override
+            public void onSuccess() {
+                setSecondTextLanguage(getSecondTextLanguage(false), new Translator.GeneralListener() {
+                    @Override
+                    public void onSuccess() {
+                        setFirstLanguage(getFirstLanguage(false), new Translator.GeneralListener() {
+                            @Override
+                            public void onSuccess() {
+                                setSecondLanguage(getSecondLanguage(false), new Translator.GeneralListener() {
+                                    @Override
+                                    public void onSuccess() {
+                                        setLanguage(getLanguage(false));
+                                        mainHandler.post(() -> listener.onSuccess());
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 
     public String getName() {
@@ -1122,7 +1148,11 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
 
     private void loadLanguagesResources(CustomLocale firstLanguage, CustomLocale secondLanguage, RTranslatorMode mode, Translator.GeneralListener listener){
-        translator.loadLanguageResources(firstLanguage, secondLanguage, mode, listener);
+        if(translator != null) {
+            translator.loadLanguageResources(firstLanguage, secondLanguage, mode, listener);
+        }else{
+            listener.onSuccess();  //if the translator is not initialized yet we do not load the language resources
+        }
     }
 }
 

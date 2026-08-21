@@ -93,7 +93,7 @@ public class ModelManagerFragmentOld extends Fragment {
             applyButton.setActivated(false);
             loading.setVisibility(View.VISIBLE);
             applyingModel = true;
-            global.restartTranslator(new Translator.GeneralListener() {
+            /*global.restartTranslator(new Translator.GeneralListener() {
                 @Override
                 public void onSuccess() {
                     radioGroup.setActivated(true);
@@ -107,7 +107,7 @@ public class ModelManagerFragmentOld extends Fragment {
                 public void onFailure(int[] reasons, long value) {
 
                 }
-            });
+            });*/
         });
     }
 
