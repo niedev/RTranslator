@@ -31,6 +31,17 @@
         app:iconSpaceReserved="false" />
 
     <androidx.preference.PreferenceCategory
+        android:title="@string/general"
+        app:iconSpaceReserved="false"
+        app:allowDividerBelow="true">
+        <androidx.preference.Preference
+            android:key="modelsManager"
+            android:title="@string/preference_title_models_manager"
+            android:summary="@string/preference_description_models_manager"
+            app:iconSpaceReserved="false" />
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
         android:title="@string/preference_header_input"
         app:iconSpaceReserved="false"
         app:allowDividerBelow="true">
@@ -96,11 +107,6 @@
         <nie.translator.rtranslator.settings.SeekBarPreference
             android:key="PrevVoiceDurationSetting"
             android:layout="@layout/preference_seekbar"
-            app:iconSpaceReserved="false" />
-        <androidx.preference.Preference
-            android:key="modelsManager"
-            android:title="Models Manager"
-            android:summary="Chose the model you want to use for translation"
             app:iconSpaceReserved="false" />
     </androidx.preference.PreferenceCategory>
 </androidx.preference.PreferenceScreen>

@@ -57,6 +57,7 @@
     <string name="translation_enhancements">Translation Enhancements</string>
     <string name="no">No</string>
     <string name="yes">Yes</string>
+    <string name="general">General</string>
 
     <string name="notification_channel_name">use in background notification</string>
 
@@ -193,6 +194,7 @@
     <string name="preference_title_speech_timeout">End of voice timeout</string>
     <string name="preference_title_prev_voice_duration">Voice anticipation duration</string>
     <string name="preference_title_beam_size">Beam Search (beta)</string>
+    <string name="preference_title_models_manager">Models Manager</string>
 
     <string name="preference_description_mic_sensitivity">Select the volume level you need to start and maintain voice recognition</string>
     <string name="preference_description_languages_quality">It allow to also supports languages that have low translation or speech recognition quality</string>
@@ -202,6 +204,8 @@
     <string name="preference_description_speech_timeout">Select the time after you stop talking to send the transcribed text</string>
     <string name="preference_description_prev_voice_duration">Select the length of the recording before you start speaking that will be included in the voice recognition</string>
     <string name="preference_description_beam_size">Set the beam size of the beam search algorithm, to improve translation quality at the expense of speed (only for text translation)</string>
+    <string name="preference_description_models_manager">Choose the model you want to use for translation and manage other translation options</string>
+
     <string name="conversation_mode" >Conversation</string>
     <string name="conversation_mode_running" >Conversation mode is running...</string>
     <string name="walkietalkie_mode" >WalkieTalkie</string>

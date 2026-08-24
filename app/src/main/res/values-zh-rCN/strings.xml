@@ -19,6 +19,27 @@
     <string name="automatic">自动的</string>
     <string name="chat">聊天</string>
     <string name="select_tts">选择 TTS</string>
+    <string name="unzipping">正在解压...</string>
+    <string name="testing_integrity">正在校验完整性...</string>
+    <string name="paused">已暂停：</string>
+    <string name="applying_settings">正在应用新设置...</string>
+    <string name="dictionary">词典</string>
+    <string name="apply">应用</string>
+    <string name="speech_recognition_model">语音识别模型</string>
+    <string name="translation_dictionaries">翻译词典</string>
+    <string name="performance">性能</string>
+    <string name="quality">质量</string>
+    <string name="versatility">通用性</string>
+    <string name="translation_model">翻译模型</string>
+    <string name="system_and_other_apps">系统和其他应用</string>
+    <string name="ram">内存</string>
+    <string name="cancel">取消</string>
+    <string name="continue_text">继续</string>
+    <string name="ok">确定</string>
+    <string name="translation_enhancements">翻译增强</string>
+    <string name="no">否</string>
+    <string name="yes">是</string>
+    <string name="general">常规</string>
 
     <string name="notification_channel_name">背景通知</string>
 
@@ -41,6 +62,8 @@
     <string name="dialog_select_first_language">选择主要语言</string>
     <string name="dialog_select_second_language">选择次要语言</string>
     <string name="dialog_insert_name">输入您的名字</string>
+    <string name="dialog_confirm_apply_quit">确定要退出而不应用新设置吗？</string>
+    <string name="dialog_confirm_delete_resource">确定要删除此资源吗？</string>
 
     <string name="menu_image_select_from_gallery">从相册中选择</string>
     <string name="menu_image_remove">删除</string>
@@ -51,6 +74,7 @@
 
     <string name="error_missing_location_permissions">无法在没有位置和蓝牙权限的情况下使用对话模式，请在设置中授予权限，或重新安装应用程序</string>
     <string name="error_missing_mic_permissions">没有麦克风权限，语音识别无法运作，请在设置中授予权限或重新安装应用程序</string>
+    <string name="error_missing_mic_permissions_walkietalkie">未授予麦克风权限，无法使用 WalkieTalkie 模式。请前往设置授予权限，或重新安装应用</string>
     <string name="error_tts_toast">缺少 TTS</string>
     <string name="error_tts">TTS 初始化时出现错误，是否要在没有 TTS 的情况下继续？</string>
     <string name="error_missing_tts">此设备上没有 Google TTS 引擎，请下载以使用 TTS</string>
@@ -76,10 +100,19 @@
     <string name="error_missing_username">请输入名字</string>
     <string name="error_wrong_username">文字包含非法字符，仅允许以下字符：</string>
     <string name="error_models_loading">加载翻译和语音识别模型档案时出错，部分档案可能损坏，请尝试重新启动应用程序，如果问题仍然存在，请点击修复按钮，这将重新下载损坏的档案。</string>
+    <string name="error_models_loading_short">加载新模型时出错</string>
     <string name="error_download">下载时出错，请确保您有因特网联机并重试：</string>
     <string name="error_transfer">从外部内存到内部存储器传输下载文件时出错，请确保您没有取出 SD 卡或其他外部存储设备，并保持应用程序开启重新尝试：</string>
     <string name="error_ram">您的设备内存小于 6GB，应用程序至少需要 6GB 内存才能运行，您仍然可以尝试使用，但应用可能会崩溃。</string>
     <string name="error_storage">存储空间不足，下载可能失败</string>
+    <string name="error_missing_mozilla">您已选择 Mozilla 作为翻译模型，但尚未下载其任何语言。请先下载至少一个语言模型，再选择 Mozilla。</string>
+    <string name="error_missing_hy">您已选择 HY-MT 作为翻译模型，但尚未下载。请先下载该模型，再进行选择。</string>
+    <string name="error_missing_madlad">您已选择 Madlad 作为翻译模型，但尚未下载。请先下载该模型，再进行选择。</string>
+    <string name="error_missing_mozilla_voice">您已启用在 WalkieTalkie 和对话模式下使用 Mozilla 模型，但尚未下载任何 Mozilla 模型。请先下载后再启用此选项。</string>
+    <string name="error_missing_tatoeba">您已启用 Tatoeba，但尚未下载。请先下载 Tatoeba，再启用它。</string>
+    <string name="error_missing_general">缺少所需资源</string>
+    <string name="error_apply_unknown">未知错误，请重试。</string>
+    <string name="error_delete_last_download">这是最后一个已下载的翻译模型，无法删除所有翻译模型。请先下载另一个翻译模型，再删除此模型。</string>
 
     <string name="title_graph">每小时花费的美元 (USD)</string>
     <string name="title_image_selector">用户头像</string>
@@ -91,6 +124,8 @@
     <string name="title_fragment_notice">注意</string>
     <string name="title_fragment_user_data">输入您的数据</string>
     <string name="title_fragment_download">模型下载</string>
+    <string name="title_mozilla_voice">语音翻译模式的性能模型</string>
+    <string name="title_whisper_ram_reduction">降低语音识别内存占用</string>
 
     <string name="title_activity_settings">设置</string>
     <string name="title_activity_credit">API 管理</string>
@@ -108,11 +143,22 @@
     <string name="description_conversation">对话模式是 RTranslator 的主要功能，它允许您实时翻译多个人之间的对话，为了更好的体验，建议将手机连接到蓝牙耳机，此外应用程序在后台运行和手机待机时也会继续工作（然而，一些手机在后台运行应用程序时可能会有性能问题）</string>
     <string name="description_walkie_talkie">对讲机模式是 RTranslator 的次要功能，它不支持实时翻译，但只需要使用一部手机，它会自动检测并将语音从一种语言翻译成另一种语言，应用程序在后台运行和手机待机时也会继续工作</string>
     <string name="description_notice">RTranslator 使用 <a href="https://openai.com/index/whisper/">OpenAI 的 Whisper</a> 进行语音识别，使用 <a href="https://ai.meta.com/research/no-language-left-behind/">Meta 的 NLLB</a> 进行翻译，这些模型需要相当多的计算能力和至少 6GB 的内存来执行，所以请确保您使用的是现代智能手机，以避免速度变慢或崩溃。更多有关 RTranslator 的信息，请访问应用程序的 GitHub 项目<a href="https://github.com/niedev/RTranslator">点击这里</a></string>
-
     <string name="description_download">正在下载 %1$s</string>
     <string name="description_transfer">正在将 %1$s 传输到内部存储器</string>
+    <string name="description_unzip">正在解压 %1$s</string>
     <string name="description_integrity_check">正在检查 %1$s 的完整性</string>
     <string name="description_tts">要说话，RTranslator 使用系统默认的 TTS 引擎，要选择您喜欢的引擎，请点击下面的按钮</string>
+    <string name="description_permission_notification">通知仅用于改善后台操作，例如下载或其他后台任务。本应用绝不会发送通知。</string>
+    <string name="description_permission_pairing">要使用对话模式，请允许 RTranslator 使用蓝牙。</string>
+    <string name="description_permission_walkietalkie">要使用 WalkieTalkie 模式，请允许 RTranslator 访问您的麦克风。</string>
+    <string name="description_permission_conversation">要在对话模式中翻译您的语音，请允许 RTranslator 访问您的麦克风。若不授予此权限，该模式仍可使用，但您只能发送文字消息或接收并播放翻译。</string>
+    <string name="description_model_mozilla">由 Mozilla 开发的单语言轻量模型，质量与 2024 年的 Google 翻译相当。\n\n模型：Mozilla 16-60M fp32</string>
+    <string name="description_model_hy">由腾讯开发的中等规模模型，质量最佳，优于 Google 翻译，可与 Deepseek v3 和 Gemini 3.0 相媲美。\n\n模型：HY-MT-1.5 1.8B int8</string>
+    <string name="description_model_madlad">由 Google 开发的大型模型，质量介于 Mozilla 与 HY-MT 模型之间，但支持 400 种语言。\n\n模型：Madlad 3B int4</string>
+    <string name="description_mozilla_voice">在 WalkieTalkie 和对话模式下使用性能模型（Mozilla），以降低实时翻译模式的延迟，但质量较差。</string>
+    <string name="description_whisper_ram_reduction">将 Whisper 模型的内存占用从 900MB 降至 500MB，但运行速度会降低 24%。</string>
+    <string name="description_tatoeba">用于改善部分句子翻译效果的 Tatoeba 数据集</string>
+    <string name="description_dictionaries">用于改善单词翻译效果的翻译词典。</string>
 
     <string name="preference_header_language">语言</string>
     <string name="preference_header_output">输出</string>
@@ -127,6 +173,7 @@
     <string name="preference_title_speech_timeout">语音超时结束</string>
     <string name="preference_title_prev_voice_duration">语音预期持续时间</string>
     <string name="preference_title_beam_size">定向搜索（测试版）</string>
+    <string name="preference_title_models_manager">模型管理</string>
 
     <string name="preference_description_mic_sensitivity">选择您需要的音量级别以启动和维持语音识别</string>
     <string name="preference_description_languages_quality">它还允许支持翻译或语音识别质量较低的语言</string>
@@ -137,6 +184,8 @@
     <string name="preference_description_speech_timeout">选择您停止说话后发送转录文字的时间</string>
     <string name="preference_description_prev_voice_duration">选择开始说话前的录音长度，将包括在语音识别中</string>
     <string name="preference_description_beam_size">设置波束搜索算法的波束大小，以牺牲速度为代价来提高翻译质量（仅适用于文本翻译）</string>
+    <string name="preference_description_models_manager">选择要用于翻译的模型，并管理其他翻译选项</string>
+
     <string name="conversation_mode" >对话模式</string>
     <string name="conversation_mode_running" >对话模式正在运行...</string>
     <string name="walkietalkie_mode" >对讲机模式</string>

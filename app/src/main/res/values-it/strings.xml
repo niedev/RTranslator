@@ -35,6 +35,27 @@
     <string name="automatic">Automatico</string>
     <string name="chat">Chat</string>
     <string name="select_tts">Seleziona TTS</string>
+    <string name="unzipping">Decompressione...</string>
+    <string name="testing_integrity">Verifica integrità...</string>
+    <string name="paused">"In pausa: "</string>
+    <string name="applying_settings">Applicazione nuove impostazioni...</string>
+    <string name="dictionary">Dizionario</string>
+    <string name="apply">Applica</string>
+    <string name="speech_recognition_model">Modello di Riconoscimento Vocale</string>
+    <string name="translation_dictionaries">Dizionari di Traduzione</string>
+    <string name="performance">Prestazioni</string>
+    <string name="quality">Qualità</string>
+    <string name="versatility">Versatilità</string>
+    <string name="translation_model">Modello di Traduzione</string>
+    <string name="system_and_other_apps">Sistema e altre app</string>
+    <string name="ram">RAM</string>
+    <string name="cancel">Annulla</string>
+    <string name="continue_text">Continua</string>
+    <string name="ok">Ok</string>
+    <string name="translation_enhancements">Miglioramenti della Traduzione</string>
+    <string name="no">No</string>
+    <string name="yes">Sì</string>
+    <string name="general">Generale</string>
 
     <string name="notification_channel_name">notifica uso in background</string>
 
@@ -56,6 +77,8 @@
     <string name="dialog_select_first_language">Seleziona la lingua primaria</string>
     <string name="dialog_select_second_language">Seleziona la lingua secondaria</string>
     <string name="dialog_insert_name">Inserisci il tuo nome</string>
+    <string name="dialog_confirm_apply_quit">Sei sicuro di voler uscire senza applicare le nuove impostazioni?</string>
+    <string name="dialog_confirm_delete_resource">Sei sicuro di voler eliminare questa risorsa?</string>
 
     <string name="menu_image_select_from_gallery">Seleziona dalla galleria</string>
     <string name="menu_image_remove">Rimuovi</string>
@@ -66,6 +89,7 @@
 
     <string name="error_missing_location_permissions">Non é possibile eseguire la modalità Conversazione senza il permesso per la posizione e del bluetooth, andare nelle impostazioni per concederli, oppure reinstallare l\' app</string>
     <string name="error_missing_mic_permissions">Senza il permesso per il microfono il riconoscimento vocale non funziona, andare nelle impostazioni per concedere il permesso oppure reinstalla l\' app</string>
+    <string name="error_missing_mic_permissions_walkietalkie">Non è possibile usare la modalità WalkieTalkie senza il permesso del microfono. Vai nelle impostazioni per concederlo, oppure reinstalla l\'app</string>
     <string name="error_tts_toast">TTS mancante</string>
     <string name="error_tts">C\'è stato un errore con l\'inizializzazione del tts, vuoi continuare senza tts?</string>
     <string name="error_missing_tts">In questo device non è presente il motore di sintesi vocale di google, scaricalo per poter usare il tts</string>
@@ -91,10 +115,19 @@
     <string name="error_missing_username">Inserire un nome</string>
     <string name="error_wrong_username">Il testo contiene caratteri non ammessi, sono ammessi solo i seguenti caratteri: </string>
     <string name="error_models_loading">C\'è stato un errore nel caricamento dei file dei modelli di rete neurale per la traduzione e il riconoscimento vocale, probabilmente qualche file è danneggiato, provare a riavviare l\'app, se il problema persiste allora premere il pulsante "correggi" e solo i file danneggiati verranno riscaricati.</string>
+    <string name="error_models_loading_short">Errore nel caricamento del nuovo modello</string>
     <string name="error_download">Errore nel download, assicurati di avere una connessione a internet e riprova:</string>
     <string name="error_transfer">Errore nel trasferimento del file scaricato dalla memoria esterna a quella interna, assicurati di non aver rimosso una scheda SD o altri dispositivi di archiviazione esterni e riprova tenendo aperta l\'app:</string>
     <string name="error_ram">Il tuo dispositivo ha meno di 6GB di RAM, per funzionare l\'app ha bisogno di almeno 6GB di RAM, puoi provare lo stesso a usarla, ma molto probabilmente crasherà.</string>
     <string name="error_storage">Spazio di archiviazione basso, il download potrebbe fallire</string>
+    <string name="error_missing_mozilla">Hai selezionato Mozilla come modello di traduzione, ma non hai ancora scaricato nessuna delle sue lingue. Scarica almeno un modello linguistico prima di selezionare Mozilla.</string>
+    <string name="error_missing_hy">Hai selezionato HY-MT come modello di traduzione, ma non è ancora stato scaricato. Scarica il modello prima di selezionarlo.</string>
+    <string name="error_missing_madlad">Hai selezionato Madlad come modello di traduzione, ma non è ancora stato scaricato. Scarica il modello prima di selezionarlo.</string>
+    <string name="error_missing_mozilla_voice">Hai attivato l\'uso dei modelli Mozilla per le modalità WalkieTalkie e Conversazione, ma non ci sono modelli Mozilla scaricati. Scaricali prima di attivare questa opzione.</string>
+    <string name="error_missing_tatoeba">Hai attivato Tatoeba, ma non è ancora stato scaricato. Scarica Tatoeba prima di attivarlo.</string>
+    <string name="error_missing_general">Risorsa non scaricata</string>
+    <string name="error_apply_unknown">Errore sconosciuto, riprova.</string>
+    <string name="error_delete_last_download">Questo è l\'ultimo modello di traduzione scaricato. Non puoi eliminare tutti i modelli di traduzione: scaricane un altro prima di eliminare questo.</string>
 
     <string name="title_graph">DOLLARI (USD) SPESI OGNI ORA</string>
     <string name="title_image_selector">immagine del profilo</string>
@@ -106,6 +139,8 @@
     <string name="title_fragment_notice">Avviso</string>
     <string name="title_fragment_user_data">Inserisci i tuoi dati</string>
     <string name="title_fragment_download">Download dei modelli</string>
+    <string name="title_mozilla_voice">Modello "Prestazioni" per le Modalità di Traduzione Vocale</string>
+    <string name="title_whisper_ram_reduction">Riduzione della RAM del Riconoscimento Vocale</string>
 
     <string name="title_activity_settings">Impostazioni</string>
     <string name="title_activity_credit">Gestione APIs</string>
@@ -127,8 +162,20 @@
     <string name="description_notice">RTranslator usa <a href="https://openai.com/index/whisper/">OpenAi Whisper</a> per il riconoscimento vocale e <a href="https://ai.meta.com/research/no-language-left-behind/">Meta NLLB</a> per la traduzione, questi modelli richiedono abbastanza potenza e almeno 6GB di RAM per essere eseguiti, quindi assicurati di usare uno smartphone moderno per evitare rallentamenti o crash. Per più info su RTranslator visita il progetto GitHub dell\'app <a href="https://github.com/niedev/RTranslator">qui</a></string>
     <string name="description_download">Download di %1$s in corso</string>
     <string name="description_transfer">Trasferimento di %1$s nella memoria interna</string>
+    <string name="description_unzip">Decompressione di %1$s</string>
     <string name="description_integrity_check">Verifica dell\'integrità di %1$s</string>
     <string name="description_tts">Per parlare, RTranslator usa il TTS di sistema, il TTS consigliato è il <a href="https://play.google.com/store/apps/details?id=com.google.android.tts">TTS di Google</a>, ma puoi usare quello che preferisci, per selezionarlo clicca sul pulsante sotto</string>
+    <string name="description_permission_notification">Le notifiche saranno usate solo per migliorare le operazioni in background, come i download o altre attività in background. Questa app non invierà mai notifiche.</string>
+    <string name="description_permission_pairing">Per usare la modalità Conversazione, consenti a RTranslator di usare il Bluetooth.</string>
+    <string name="description_permission_walkietalkie">Per usare la modalità WalkieTalkie, consenti a RTranslator di accedere al microfono.</string>
+    <string name="description_permission_conversation">Per tradurre la tua voce nella modalità Conversazione, consenti a RTranslator di accedere al microfono. Se non concedi questo permesso, la modalità funzionerà comunque, ma potrai solo inviare messaggi di testo o ricevere e riprodurre le traduzioni.</string>
+    <string name="description_model_mozilla">Modelli leggeri monolingua creati da Mozilla; hanno una qualità simile a quella di Google Translate del 2024. \n\nModello: Mozilla 16-60M fp32</string>
+    <string name="description_model_hy">Modello di medie dimensioni creato da Tencent; ha la qualità migliore, superiore a Google Translate, paragonabile a Deepseek v3 e Gemini 3.0. \n\nModello: HY-MT-1.5 1.8B int8</string>
+    <string name="description_model_madlad">Modello pesante creato da Google; ha una qualità intermedia tra i modelli Mozilla e HY-MT, ma supporta 400 lingue. \n\nModello: Madlad 3B int4</string>
+    <string name="description_mozilla_voice">Usa i modelli prestazioni (Mozilla) per le modalità WalkieTalkie e Conversazione, per ridurre la latenza nelle modalità di traduzione in tempo reale, ma con una qualità inferiore.</string>
+    <string name="description_whisper_ram_reduction">Riduce il consumo di RAM del modello Whisper da 900MB a 500MB, ma ne riduce la velocità di esecuzione del 24%.</string>
+    <string name="description_tatoeba">Dataset Tatoeba che verrà usato per migliorare la traduzione di alcune frasi</string>
+    <string name="description_dictionaries">Dizionari di traduzione che verranno usati per migliorare la traduzione delle singole parole.</string>
 
     <string name="preference_header_language">Lingua</string>
     <string name="preference_header_output">Output</string>
@@ -143,6 +190,7 @@
     <string name="preference_title_speech_timeout">Timeout fine voce</string>
     <string name="preference_title_prev_voice_duration">Durata anticipo voce</string>
     <string name="preference_title_beam_size">Beam Search (beta)</string>
+    <string name="preference_title_models_manager">Gestione Modelli</string>
 
     <string name="preference_description_mic_sensitivity">Seleziona il livello di volume che serve per avviare e mantenere il riconoscimento vocale</string>
     <string name="preference_description_languages_quality">Permette di supportare anche le lingue che hanno una bassa qualità di traduzione o del riconoscimento vocale</string>
@@ -153,6 +201,8 @@
     <string name="preference_description_speech_timeout">Seleziona il tempo che deve trascorrere dopo aver smesso di parlare per inviare il testo trascritto</string>
     <string name="preference_description_prev_voice_duration">Seleziona la durata della registrazione precedente a quando si inizia a parlare che verrà inclusa nel riconoscimento vocale</string>
     <string name="preference_description_beam_size">Imposta la beam size dell\'algoritmo di beam search, per migliorare la qualità della traduzione a discapito delle performance (solo per la traduzione testuale)</string>
+    <string name="preference_description_models_manager">Scegli il modello che vuoi usare per la traduzione e gestisci le altre opzioni di traduzione</string>
+
     <string name="conversation_mode" >Modalità Conversazione</string>
     <string name="conversation_mode_running" >La modalità conversazione è in esecuzione...</string>
     <string name="walkietalkie_mode" >Modalità WalkieTalkie</string>

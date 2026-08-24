@@ -21,6 +21,27 @@
     <string name="automatic">Aвтоматичний</string>
     <string name="chat">Чат</string>
     <string name="select_tts">Виберіть TTS</string>
+    <string name="unzipping">Розпакування...</string>
+    <string name="testing_integrity">Перевірка цілісності...</string>
+    <string name="paused">"Призупинено: "</string>
+    <string name="applying_settings">Застосування нових налаштувань...</string>
+    <string name="dictionary">Словник</string>
+    <string name="apply">Застосувати</string>
+    <string name="speech_recognition_model">Модель Розпізнавання Мовлення</string>
+    <string name="translation_dictionaries">Словники Перекладу</string>
+    <string name="performance">Продуктивність</string>
+    <string name="quality">Якість</string>
+    <string name="versatility">Універсальність</string>
+    <string name="translation_model">Модель Перекладу</string>
+    <string name="system_and_other_apps">Система та інші застосунки</string>
+    <string name="ram">ОЗП</string>
+    <string name="cancel">Скасувати</string>
+    <string name="continue_text">Продовжити</string>
+    <string name="ok">Гаразд</string>
+    <string name="translation_enhancements">Покращення Перекладу</string>
+    <string name="no">Ні</string>
+    <string name="yes">Так</string>
+    <string name="general">Загальне</string>
 
     <string name="notification_channel_name">використання у фоновому режимі</string>
 
@@ -42,6 +63,8 @@
     <string name="dialog_select_first_language">Виберіть основну мову</string>
     <string name="dialog_select_second_language">Виберіть другу мову</string>
     <string name="dialog_insert_name">Введіть ваше ім\'я</string>
+    <string name="dialog_confirm_apply_quit">Ви впевнені, що хочете вийти без застосування нових налаштувань?</string>
+    <string name="dialog_confirm_delete_resource">Ви впевнені, що хочете видалити цей ресурс?</string>
 
     <string name="menu_image_select_from_gallery">Вибрати з галереї</string>
     <string name="menu_image_remove">Видалити</string>
@@ -52,6 +75,7 @@
 
     <string name="error_missing_location_permissions">Неможливо використовувати режим Розмови без дозволів на місцезнаходження та Bluetooth, перейдіть у налаштування для їх надання або перевстановіть додаток</string>
     <string name="error_missing_mic_permissions">Без дозволу на мікрофон розпізнавання мови не працюватиме, перейдіть у налаштування для надання дозволу або перевстановіть додаток</string>
+    <string name="error_missing_mic_permissions_walkietalkie">Неможливо використовувати режим WalkieTalkie без дозволу на доступ до мікрофона. Перейдіть до налаштувань, щоб надати його, або перевстановіть застосунок</string>
     <string name="error_tts_toast">Відсутній tts</string>
     <string name="error_tts">Виникла помилка при ініціалізації tts, хочете продовжити без tts?</string>
     <string name="error_missing_tts">На цьому пристрої відсутній голосовий двигун Google TTS, завантажте його, щоб мати змогу використовувати tts</string>
@@ -77,10 +101,19 @@
     <string name="error_missing_username">Введіть ім\'я</string>
     <string name="error_wrong_username">Текст містить недопустимі символи, дозволені тільки наступні символи: </string>
     <string name="error_models_loading">Виникла помилка під час завантаження файлів моделей для перекладу та розпізнавання мови, ймовірно, деякі файли пошкоджені, спробуйте перезапустити додаток, якщо проблема виникає, натисніть кнопку виправлення, та будуть перезавантажені лише пошкоджені файли.</string>
+    <string name="error_models_loading_short">Помилка завантаження нової моделі</string>
     <string name="error_download">Помилка завантаження, переконайтеся, що у вас є підключення до Інтернету і повторіть спробу:</string>
     <string name="error_transfer">Помилка перенесення завантаженого файлу зовнішньої пам\'яті внутрішньої пам\'яті, переконайтеся, що ви не видалили карту SD або інші зовнішні сховища і повторіть спробу залишаючи відкритим додаток:</string>
     <string name="error_ram">Ваш пристрій має менше 6 ГБ оперативної пам\'яті, для роботи програми необхідно щонайменше 6 ГБ оперативної пам\'яті, ви все одно можете спробувати використовувати її, але ймовірно, вона буде часто виходити з ладу.</string>
     <string name="error_storage">Мало місця для зберігання, можливе невдача завантаження</string>
+    <string name="error_missing_mozilla">Ви вибрали Mozilla як модель перекладу, але ще не завантажили жодної з її мов. Завантажте принаймні одну мовну модель, перш ніж вибирати Mozilla.</string>
+    <string name="error_missing_hy">Ви вибрали HY-MT як модель перекладу, але її ще не завантажено. Завантажте модель, перш ніж вибирати її.</string>
+    <string name="error_missing_madlad">Ви вибрали Madlad як модель перекладу, але її ще не завантажено. Завантажте модель, перш ніж вибирати її.</string>
+    <string name="error_missing_mozilla_voice">Ви увімкнули використання моделей Mozilla для режимів WalkieTalkie і Розмова, але завантажених моделей Mozilla немає. Завантажте їх, перш ніж вмикати цю опцію.</string>
+    <string name="error_missing_tatoeba">Ви увімкнули Tatoeba, але його ще не завантажено. Завантажте Tatoeba, перш ніж вмикати його.</string>
+    <string name="error_missing_general">Ресурс не завантажено</string>
+    <string name="error_apply_unknown">Невідома помилка, спробуйте ще раз.</string>
+    <string name="error_delete_last_download">Це остання завантажена модель перекладу. Не можна видалити всі моделі перекладу — завантажте іншу, перш ніж видаляти цю.</string>
 
     <string name="title_graph">ДОЛАРІВ (USD) ВИТРАЧАЮТЬ КОЖНУ ГОДИНУ</string>
     <string name="title_image_selector">зображення користувача</string>
@@ -92,6 +125,8 @@
     <string name="title_fragment_notice">Повідомлення</string>
     <string name="title_fragment_user_data">Введіть ваші дані</string>
     <string name="title_fragment_download">Завантаження моделей</string>
+    <string name="title_mozilla_voice">Модель Продуктивності для Голосових Режимів Перекладу</string>
+    <string name="title_whisper_ram_reduction">Зменшення ОЗП для Розпізнавання Мовлення</string>
 
     <string name="title_activity_settings">Налаштування</string>
     <string name="title_activity_credit">Управління API</string>
@@ -113,8 +148,20 @@
     <string name="description_notice">RTranslator використовує <a href="https://openai.com/index/whisper/">Whisper від OpenAi</a> для розпізнавання мовлення та <a href="https://ai.meta.com/research/no-language-left-behind/">NLLB від Meta</a> для перекладів, ці моделі вимагають значної кількості потужності та принаймні 6 ГБ ОЗП для роботи, тому переконайтеся, що ви використовуєте сучасний смартфон, щоб уникнути сповільнень або аварій. Для отримання додаткової інформації про RTranslator відвідайте проект додатка на GitHub <a href="https://github.com/niedev/RTranslator">тут</a></string>
     <string name="description_download">Завантаження %1$s</string>
     <string name="description_transfer">Перенесення %1$s в пам\'ять</string>
+    <string name="description_unzip">Розпакування %1$s</string>
     <string name="description_integrity_check">Перевірка цілісності %1$s</string>
     <string name="description_tts">Щоб говорити, RTranslator використовує систему TTS за замовчуванням, рекомендованим TTS є <a href="https://play.google.com/store/apps/details?id=com.google.android.tts">Google TTS</a>, але ви можете вибрати той, який вам більше подобається, щоб вибрати його, натисніть кнопку нижче</string>
+    <string name="description_permission_notification">Сповіщення використовуються лише для покращення фонових операцій, як-от завантажень та інших фонових задач. Цей застосунок ніколи не надсилатиме сповіщень.</string>
+    <string name="description_permission_pairing">Щоб використовувати режим Розмова, дозвольте RTranslator використовувати Bluetooth.</string>
+    <string name="description_permission_walkietalkie">Щоб використовувати режим WalkieTalkie, надайте RTranslator доступ до мікрофона.</string>
+    <string name="description_permission_conversation">Щоб перекладати ваш голос у режимі Розмова, надайте RTranslator доступ до мікрофона. Якщо ви не надасте цей дозвіл, режим усе одно працюватиме, але ви зможете лише надсилати текстові повідомлення або отримувати та відтворювати переклади.</string>
+    <string name="description_model_mozilla">Одномовні полегшені моделі від Mozilla; їхня якість подібна до Google Translate 2024 року. \n\nМодель: Mozilla 16-60M fp32</string>
+    <string name="description_model_hy">Модель середнього розміру від Tencent; має найкращу якість — кращу за Google Translate, порівнянну з Deepseek v3 і Gemini 3.0. \n\nМодель: HY-MT-1.5 1.8B int8</string>
+    <string name="description_model_madlad">Важка модель від Google; її якість — між моделями Mozilla та HY-MT, але вона підтримує 400 мов. \n\nМодель: Madlad 3B int4</string>
+    <string name="description_mozilla_voice">Використовувати моделі продуктивності (Mozilla) для режимів WalkieTalkie і Розмова, щоб зменшити затримку в режимах перекладу в реальному часі, але з гіршою якістю.</string>
+    <string name="description_whisper_ram_reduction">Зменшує споживання ОЗП моделлю Whisper з 900 МБ до 500 МБ, але знижує швидкість її роботи на 24%.</string>
+    <string name="description_tatoeba">Набір даних Tatoeba, який використовуватиметься для покращення перекладу деяких речень</string>
+    <string name="description_dictionaries">Словники перекладу, які використовуватимуться для покращення перекладу окремих слів.</string>
 
     <string name="preference_header_language">Мова</string>
     <string name="preference_header_output">Вихід</string>
@@ -129,6 +176,7 @@
     <string name="preference_title_speech_timeout">Час завершення голосу</string>
     <string name="preference_title_prev_voice_duration">Тривалість попереднього голосу</string>
     <string name="preference_title_beam_size">Beam Search (бета)</string>
+    <string name="preference_title_models_manager">Керування Моделями</string>
 
     <string name="preference_description_mic_sensitivity">Виберіть рівень гучності, який вам потрібно для запуску та підтримки розпізнавання голосу</string>
     <string name="preference_description_languages_quality">Це дозволяє також підтримувати мови, які мають низьку якість перекладу або розпізнавання мовлення</string>
@@ -139,6 +187,8 @@
     <string name="preference_description_speech_timeout">Виберіть час, після якого ви перестаєте говорити, щоб надіслати транскрибований текст</string>
     <string name="preference_description_prev_voice_duration">Виберіть тривалість запису, перед тим як ви почнете говорити, який буде включено до розпізнавання голосу</string>
     <string name="preference_description_beam_size">Встановіть розмір променя алгоритму пошуку променя, щоб покращити якість перекладу за рахунок швидкості (лише для перекладу тексту)</string>
+    <string name="preference_description_models_manager">Виберіть модель, яку ви хочете використовувати для перекладу, і керуйте іншими параметрами перекладу</string>
+
     <string name="conversation_mode" >Розмова</string>
     <string name="conversation_mode_running" >Режим Розмови працює...</string>
     <string name="walkietalkie_mode" >WalkieTalkie</string>
