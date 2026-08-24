@@ -253,14 +253,15 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
 
         // recycleResult is false
+        SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
         int mode;
         if(translator != null){
             mode = translator.getMode();
         }else{
-            SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
             mode = sharedPreferences.getInt("selectedTranslationModel", Translator.MOZILLA);
         }
-        ArrayList<CustomLocale> languages = Translator.getSupportedLanguages(Global.this, mode);  //in the case of mozilla, this method will return all the supported languages, not only the installed ones, so for mozilla we will use the getMozillaLanguages method
+        boolean qualityLow = sharedPreferences.getBoolean("languagesNNQualityLow", false);
+        ArrayList<CustomLocale> languages = Translator.getSupportedLanguages(Global.this, qualityLow, mode);  //in the case of mozilla, this method will return all the supported languages, not only the installed ones, so for mozilla we will use the getMozillaLanguages method
         ArrayList<CustomLocale> mozillaLanguages = getMozillaLanguages(false);
         if(mode == Translator.MOZILLA) {
             translatorLanguages = mozillaLanguages;

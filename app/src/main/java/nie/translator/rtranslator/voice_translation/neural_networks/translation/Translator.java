@@ -367,7 +367,7 @@ public class Translator extends NeuralNetworkApi {
 
                             @Override
                             public void onFailure(int[] reasons, long value) {
-                                data.responseListener.onFailure(new int[]{ErrorCodes.ERROR_EXECUTING_MODEL}, 0);
+                                data.responseListener.onFailure(reasons, value);
 
                                 //we translate the next message in the queue
                                 if (dataToTranslate.size() >= 1) {
@@ -664,6 +664,30 @@ public class Translator extends NeuralNetworkApi {
                 performMode = MOZILLA;
             }
 
+            //check if the input and output languages are compatible with the translation model
+            ArrayList<CustomLocale> supportedLanguages = global.getTranslatorLanguages(rtranslatorMode, true);
+            if(!supportedLanguages.contains(inputLanguage) || !supportedLanguages.contains(outputLanguage)){
+                //if we are using mozilla for a voice mode we can try to fall back to the bigger multilingual model (because it is also loaded in memory)
+                boolean fallback = false;
+                if(mode != performMode && performMode == MOZILLA){
+                    ArrayList<CustomLocale> supportedLanguagesFallback = global.getTranslatorLanguages(rtranslatorMode, true);
+                    if(supportedLanguagesFallback.contains(inputLanguage) && supportedLanguagesFallback.contains(outputLanguage)){
+                        fallback = true;
+                        performMode = mode;   //we fall back to the bigger multilingual model (only for this translation)
+                    }
+                }
+                if(!fallback){
+                    // if the performMode and mode models don't support the input or output language we interrupt the translation and launch an error
+                    if (responseListener != null) {
+                        mainHandler.post(() -> responseListener.onFailure(new int[]{ErrorCodes.ERROR_LANGUAGE_NOT_SUPPORTED}, 0));
+                    } else {
+                        mainHandler.post(() -> notifyError(new int[]{ErrorCodes.ERROR_LANGUAGE_NOT_SUPPORTED}, 0));
+                    }
+                    return;
+                }
+            }
+
+            //translation execution
             if(performMode != MOZILLA){
                 int maxLength = 200;
                 if(performMode == NLLB || performMode == NLLB_CACHE){
@@ -1766,10 +1790,8 @@ public class Translator extends NeuralNetworkApi {
     }
 
 
-    public static ArrayList<CustomLocale> getSupportedLanguages(Context context, int mode) {
+    public static ArrayList<CustomLocale> getSupportedLanguages(Context context, boolean qualityLow, int mode) {
         ArrayList<CustomLocale> languages = new ArrayList<>();
-        SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
-        boolean qualityLow = sharedPreferences.getBoolean("languagesNNQualityLow", false);
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();

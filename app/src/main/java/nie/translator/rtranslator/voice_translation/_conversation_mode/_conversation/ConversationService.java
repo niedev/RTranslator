@@ -196,6 +196,8 @@ public class ConversationService extends VoiceTranslationService {
 
                     @Override
                     public void onFailure(int[] reasons, long value) {
+                        //todo: improve the error handling for missing languages, if the error is ERROR_LANGUAGE_NOT_SUPPORTED, create a GuiMessage like above (onTranslatedMessage)
+                        // but with an indication of the error. Update the Adapter of the messages to show the error (something like "Language not supported" as the content of the message, shown in red)
                         ConversationService.super.notifyError(reasons, value);
                     }
                 });
@@ -244,6 +246,9 @@ public class ConversationService extends VoiceTranslationService {
 
             @Override
             public void onError(int[] reasons, long value) {
+                if (mVoiceRecorder != null) {
+                    mVoiceCallback.onVoiceEnd();
+                }
                 ConversationService.super.notifyError(reasons, value);
             }
         };

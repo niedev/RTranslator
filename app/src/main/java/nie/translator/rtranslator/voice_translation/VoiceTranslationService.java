@@ -519,9 +519,6 @@ public abstract class VoiceTranslationService extends GeneralService {
 
     public void notifyError(int[] reasons, long value) {
         super.notifyError(reasons, value);
-        if (mVoiceRecorder != null) {
-            mVoiceCallback.onVoiceEnd();
-        }
     }
 
     // connection with clients
