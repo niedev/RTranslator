@@ -420,14 +420,12 @@ public class VoiceTranslationActivity extends GeneralActivity {
         }
 
         //set text
-        //todo: convert the strings to resources and translate them
         if(mode == PAIRING_FRAGMENT){
-            text.setText("To use Conversation mode, allow RTranslator to access your microphone.");
+            text.setText(getString(R.string.description_permission_pairing));
         } else if(mode == WALKIE_TALKIE_FRAGMENT){
-            text.setText("To use WalkieTalkie mode, allow RTranslator to access your microphone.");
+            text.setText(getString(R.string.description_permission_walkietalkie));
         } else if(mode == CONVERSATION_FRAGMENT){
-            text.setText("To translate your voice in Conversation mode, allow RTranslator to access your microphone.\n" +
-                    "If you don't grant this permission, the mode will still work, but you will only be able to send text messages or receive and play translations.");
+            text.setText(getString(R.string.description_permission_conversation));
         }
 
         continueButton.setOnClickListener(new View.OnClickListener() {
@@ -500,8 +498,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
             for (int grantResult : grantResults) {
                 if (grantResult == PackageManager.PERMISSION_DENIED) {
                     if(fragment instanceof VoiceTranslationFragment) ((VoiceTranslationFragment) fragment).onMicPermissionResult(false);
-                    //todo: convert the string to resource and translate it
-                    Toast.makeText(global, "It is not possible to use the WalkieTalkie mode without microphone permission, go to the settings to grant it, or reinstall the app", Toast.LENGTH_LONG).show();
+                    Toast.makeText(global,  getString(R.string.error_missing_mic_permissions_walkietalkie), Toast.LENGTH_LONG).show();
                     startingWalkieTalkie = false;
                     if(currentFragment == -1){
                         setFragment(DEFAULT_FRAGMENT);
@@ -529,7 +526,6 @@ public class VoiceTranslationActivity extends GeneralActivity {
             for (int grantResult : grantResults) {
                 if (grantResult == PackageManager.PERMISSION_DENIED) {
                     if(conversationFragment != null) conversationFragment.onMicPermissionResult(false);
-                    //todo: convert the string to resource and translate it
                     Toast.makeText(global, R.string.error_missing_mic_permissions, Toast.LENGTH_LONG).show();
                     return;
                 }else{

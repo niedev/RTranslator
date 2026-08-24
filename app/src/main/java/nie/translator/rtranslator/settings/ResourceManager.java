@@ -257,8 +257,7 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
         TextView textView = editDialogLayout.findViewById(R.id.textView);
         CardView okButton = editDialogLayout.findViewById(R.id.okButtonCard);
 
-        //todo: convert this text to a resource and translate it
-        textView.setText("This is the last downloaded translation model, you cannot delete all the translation models, please download another translation model before deleting this one.");
+        textView.setText(activity.getString(R.string.error_delete_last_download));
 
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override

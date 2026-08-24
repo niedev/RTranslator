@@ -501,13 +501,6 @@ public class Downloader2 {
         }
     }
 
-    /*public static abstract class Callback {
-        public abstract void onAllDownloadComplete();
-        public abstract void onDownloadComplete(DownloadInfo downloadInfo);
-        public abstract void onProgress(DownloadInfo downloadInfo, int progress, boolean testingIntegrity, boolean unzipping);
-        public abstract void onError(DownloadInfo downloadInfo, int reason);
-    }*/
-
     public abstract static class ClientCallback {
         public abstract void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity);
         public void onDownloadCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download){}

@@ -67,6 +67,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
     public static final boolean ONLY_TEXT_TRANSLATION_MODE = false;
     public static final boolean USE_EXTERNAL_MEMORY_FOR_RESOURCES = false;
 
+    public static final int REQUEST_CODE_PERMISSIONS_NOTIFICATIONS = 5;
+    public static String[] REQUIRED_PERMISSIONS_NOTIFICATIONS;
     public static final int REQUEST_CODE_PERMISSIONS_PAIRING = 2;
     public static String[] REQUIRED_PERMISSIONS_PAIRING;
     public static final int REQUEST_CODE_PERMISSIONS_CONVERSATION = 3;
@@ -143,6 +145,13 @@ public class Global extends Application implements DefaultLifecycleObserver {
                     Manifest.permission.BLUETOOTH_SCAN,
                     Manifest.permission.BLUETOOTH_CONNECT
             };
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            REQUIRED_PERMISSIONS_NOTIFICATIONS = new String[]{
+                    Manifest.permission.POST_NOTIFICATIONS
+            };
+        }else{
+            REQUIRED_PERMISSIONS_NOTIFICATIONS = new String[0];
         }
     }
 
@@ -278,13 +287,13 @@ public class Global extends Application implements DefaultLifecycleObserver {
             ArrayList<DownloadGroupInfo> downloads = DownloadManager.getSavedDownloadStatus(this);
             ArrayList<MozillaLanguageDownloadInfo> mozillaLanguageDownloadInfos = getMozillaLanguagesDownloadInfo(recycleResult);
             ArrayList<CustomLocale> mozillaInstalledLanguages = new ArrayList<>();
-            mozillaInstalledLanguages.add(new CustomLocale("en"));  //English is always present, but it isn't present in the getMozillaLanguagesDownloadInfo list, so we add it manually
             for (Global.MozillaLanguageDownloadInfo langDownloadInfo : mozillaLanguageDownloadInfos) {
                 int index = downloads.indexOf(langDownloadInfo.downloadGroupInfo);
                 if (index != -1 && downloads.get(index).isAllDownloadCompleted()) {
                     mozillaInstalledLanguages.add(langDownloadInfo.lang);
                 }
             }
+            mozillaInstalledLanguages.add(new CustomLocale("en"));  //English is always present, but it isn't present in the getMozillaLanguagesDownloadInfo list, so we add it manually
             this.mozillaInstalledLanguages = mozillaInstalledLanguages;
             return mozillaInstalledLanguages;
         }

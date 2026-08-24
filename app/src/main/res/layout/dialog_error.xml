@@ -48,7 +48,6 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-            <!-- todo: convert the text to resource and translate it -->
             <TextView
                 android:id="@+id/textView"
                 android:layout_width="match_parent"
@@ -59,7 +58,7 @@
                 android:layout_marginBottom="32dp"
                 android:gravity="center"
                 android:text=""
-                tools:text="You selected a model that has not been downloaded yet, download it or select another model to apply the settings."
+                tools:text="@string/error_delete_last_download"
                 app:layout_constraintBottom_toTopOf="@+id/okButtonCard"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -98,7 +97,7 @@
                         android:layout_marginEnd="16dp"
                         android:layout_marginBottom="11dp"
                         android:fontFamily="@font/nunito_semibold"
-                        android:text="Ok"
+                        android:text="@string/ok"
                         android:textAlignment="center"
                         android:textColor="@color/accent_white"
                         app:layout_constraintBottom_toBottomOf="parent"

@@ -231,11 +231,10 @@ public class TranslationFragment extends Fragment {
                         if(animationResultType != null) {
                             animationResultType.cancel();
                         }
-                        //todo: sostituire le stringhe con delle risorse e tradurle
                         if(resultType == ResultType.DICTIONARY){
-                            resultTypeText.setText("Dictionary");
+                            resultTypeText.setText(getString(R.string.dictionary));
                         }else if(resultType == ResultType.TATOEBA){
-                            resultTypeText.setText("Tatoeba");
+                            resultTypeText.setText("Tatoeba");  //this will not be a resource because the name is the same for all languages
                         }
                         animationResultType = animator.animateViewAppearance(activity, resultTypeText, new CustomAnimator.Listener() {
                             @Override

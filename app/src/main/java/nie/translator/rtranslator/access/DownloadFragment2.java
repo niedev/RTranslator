@@ -102,7 +102,6 @@ public class DownloadFragment2 extends Fragment {
 
         mainHandler = new android.os.Handler(Looper.getMainLooper());
         downloader = new DownloadManager(global);
-        //downloader.startAllDownloads();
         retryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,11 +126,7 @@ public class DownloadFragment2 extends Fragment {
                         pauseButton.setTag("iconPlay");
                     }
                 }else{
-                    downloader.startAllDownloads();
-                    //we change the icon and tag
-                    pauseButton.setImageResource(R.drawable.pause_icon);
-                    //pauseButton.setImageDrawable(global.getResources().getDrawable(R.drawable.cancel_icon, null));
-                    pauseButton.setTag("iconPause");
+                    startAllDownloads();
                 }
             }
         });
@@ -157,7 +152,7 @@ public class DownloadFragment2 extends Fragment {
 
             @SuppressLint("SetTextI18n")
             @Override
-            public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean testingIntegrity, boolean unzipping) {
+            public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
                 //update of progress bar
                 int progressNormalized = totalProgress * progressBar.getMax() / 100;
                 progressBar.setProgress(progressNormalized, true);
@@ -173,6 +168,8 @@ public class DownloadFragment2 extends Fragment {
                 //update of the progress description
                 if(testingIntegrity){
                     progressDescriptionText.setText(getString(R.string.description_integrity_check, download.getName()));
+                }else if(unzipping) {
+                    progressDescriptionText.setText(getString(R.string.description_unzip, download.getName()));
                 }else{
                     progressDescriptionText.setText(getString(R.string.description_download, download.getName()));
                 }
@@ -276,6 +273,14 @@ public class DownloadFragment2 extends Fragment {
     }
 
     private void retryCurrentDownload(){
+        startAllDownloads();
+    }
+
+    private void startAllDownloads(){
         downloader.startAllDownloads();
+        //we change the icon and tag
+        pauseButton.setImageResource(R.drawable.pause_icon);
+        //pauseButton.setImageDrawable(global.getResources().getDrawable(R.drawable.cancel_icon, null));
+        pauseButton.setTag("iconPause");
     }
 }

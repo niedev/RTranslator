@@ -18,6 +18,7 @@ package nie.translator.rtranslator.access;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -26,9 +27,15 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 
@@ -49,8 +56,6 @@ public class AccessActivity extends GeneralActivity {
     public static final int MODEL_MANAGER = 3;
     public static final int MOZILLA_MANAGER = 4;
     private Fragment fragment;
-    public static String[] REQUIRED_PERMISSIONS;
-    public static final int REQUEST_CODE_REQUIRED_PERMISSIONS = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,14 +64,6 @@ public class AccessActivity extends GeneralActivity {
 
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            REQUIRED_PERMISSIONS = new String[]{
-                    Manifest.permission.POST_NOTIFICATIONS
-            };
-        }else{
-            REQUIRED_PERMISSIONS = new String[0];
-        }
 
         Global global = (Global) getApplication();
         if (savedInstanceState != null) {
@@ -102,7 +99,9 @@ public class AccessActivity extends GeneralActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        checkAllFilesPermission(); //todo: remove before the final release
+        if(Global.USE_EXTERNAL_MEMORY_FOR_RESOURCES) {
+            checkAndRequireAllFilesPermission();
+        }
     }
 
     @Override
@@ -126,8 +125,8 @@ public class AccessActivity extends GeneralActivity {
                 transaction.replace(R.id.fragment_initialization_container, userDataFragment);
                 transaction.commit();
                 fragment = userDataFragment;
-                if (REQUIRED_PERMISSIONS.length > 0 && !Tools.hasPermissions(this, REQUIRED_PERMISSIONS)) {
-                    requestPermissions(REQUIRED_PERMISSIONS, REQUEST_CODE_REQUIRED_PERMISSIONS);
+                if (Global.REQUIRED_PERMISSIONS_NOTIFICATIONS.length > 0 && !Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_NOTIFICATIONS)) {
+                    showPermissionDialog();
                 }
                 break;
             }
@@ -208,8 +207,7 @@ public class AccessActivity extends GeneralActivity {
         //super.onBackPressed();
     }
 
-    //todo: remove before the final release
-    private void checkAllFilesPermission() {
+    private void checkAndRequireAllFilesPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
                 requestAllFilesPermission();
@@ -217,7 +215,6 @@ public class AccessActivity extends GeneralActivity {
         }
     }
 
-    //todo: remove before the final release
     private void requestAllFilesPermission() {
         try {
             Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
@@ -227,6 +224,50 @@ public class AccessActivity extends GeneralActivity {
             Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
             startActivityForResult(intent, 100);
         }
+    }
+
+    public void showPermissionDialog(){
+        final View editDialogLayout = this.getLayoutInflater().inflate(R.layout.dialog_permission, null);
+
+        final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MyThemeOverlay_MaterialComponents_MaterialAlertDialog);
+        builder.setCancelable(true);
+
+        AlertDialog dialog = builder.create();
+        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(this, 16), 0, 0);
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+
+            }
+        });
+
+        ImageView icon = editDialogLayout.findViewById(R.id.dialogIcon);
+        TextView text = editDialogLayout.findViewById(R.id.textView);
+        CardView continueButton = editDialogLayout.findViewById(R.id.okButtonCard);
+        CardView cancelButton = editDialogLayout.findViewById(R.id.cancelButtonCard);
+
+        //set icon
+        icon.setImageDrawable(getResources().getDrawable(R.drawable.notification_icon));
+
+        //set text
+        text.setText(getString(R.string.description_permission_notification));
+
+        continueButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                requestPermissions(Global.REQUIRED_PERMISSIONS_NOTIFICATIONS, Global.REQUEST_CODE_PERMISSIONS_NOTIFICATIONS);
+            }
+        });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.cancel();
+            }
+        });
     }
 }
 

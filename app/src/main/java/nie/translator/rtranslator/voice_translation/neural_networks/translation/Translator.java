@@ -246,15 +246,10 @@ public class Translator extends NeuralNetworkApi {
         if(onnxEnv == null) {
             onnxEnv = OrtEnvironment.getEnvironment();
         }
-        //we eventually transfer the vocab file from the assets to the internal memory (because the tokenizer can open vocab only via a path to internal or external memory)
+        //we eventually transfer the NLLB vocab file from the assets to the internal memory (because the tokenizer can open vocab only via a path to internal or external memory)
         File outFile = new File(global.getFilesDir(), "sentencepiece_bpe.model");
         if(!outFile.exists()) {
             FileTools.copyAssetToInternalMemory(global, "sentencepiece_bpe.model");
-        }
-        //we eventually transfer the fasttext model file from the assets to the internal memory (because the fasttext djl lib can open model only via a path to internal or external memory)
-        File outFileFastText = new File(global.getFilesDir(), "fasttext.ftz");
-        if(!outFileFastText.exists()) {
-            FileTools.copyAssetToInternalMemory(global, "fasttext.ftz");
         }
 
         if(mode == MADLAD || mode == MADLAD_CACHE) {

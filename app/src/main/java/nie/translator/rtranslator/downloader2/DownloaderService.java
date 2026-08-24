@@ -19,6 +19,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 
+import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.DownloaderTools;
 
 public class DownloaderService extends Service {
@@ -314,13 +315,12 @@ public class DownloaderService extends Service {
             lastChildUpdateTimes.put(safeId, currentTime);
 
             String sortKey = String.format(java.util.Locale.US, "%04d", safeId);
-            //todo: insert this text as a resource and translate it
             String contentText = progress + "%";
             if (unzipping) {
-                contentText = "Unzipping...";
+                contentText = getString(R.string.unzipping);
             }
             if (testingIntegrity) {
-                contentText = "Testing integrity...";
+                contentText = getString(R.string.testing_integrity);
             }
 
             // Build and update the specific Child Notification
@@ -331,7 +331,7 @@ public class DownloaderService extends Service {
                     .setOnlyAlertOnce(true)                    // Prevents sound/vibration spam
                     .setOngoing(true)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setContentTitle((paused ? "Paused: " : "") + filename)  //todo: insert this text as a resource and translate it
+                    .setContentTitle((paused ? getString(R.string.paused) : "") + filename)
                     .setContentText(contentText)
                     .setProgress(100, progress, false).build();
 
@@ -407,9 +407,9 @@ public class DownloaderService extends Service {
     // Implementation of Downloader2.Callback methods
     // These methods will be called by individual Downloader2 instances
 
-    public void notifyProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean testingIntegrity, boolean unzipping) {
+    public void notifyProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
         for (Downloader2.ClientCallback client : new ArrayList<>(clients)) { // Iterate over a copy to avoid ConcurrentModificationException
-            client.onProgress(downloadGroup, download, totalProgress, progress, testingIntegrity, unzipping);
+            client.onProgress(downloadGroup, download, totalProgress, progress, unzipping, testingIntegrity);
         }
     }
 

@@ -350,8 +350,6 @@ public class ModelManagerFragment extends Fragment {
     }
 
     public void applySettings() {
-        //todo: convert texts of gui in resource and translate those
-
         final View editDialogLayout = activity.getLayoutInflater().inflate(R.layout.dialog_loading, null);
 
         final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity, R.style.MyThemeOverlay_MaterialComponents_MaterialAlertDialog);
@@ -379,7 +377,7 @@ public class ModelManagerFragment extends Fragment {
             }
         });
 
-        textView.setText("Applying new settings...");
+        textView.setText(getString(R.string.applying_settings));
         applyTranslationStatus(new Translator.GeneralListener() {
             @Override
             public void onSuccess() {
@@ -425,7 +423,6 @@ public class ModelManagerFragment extends Fragment {
     }
 
     private void notifyApplyError(ApplySettingsStage stage, int error, long value, View dialogLayout){
-        //todo: convert texts of gui in resource and translate those
         TextView textView = dialogLayout.findViewById(R.id.textView);
         CardView okButton = dialogLayout.findViewById(R.id.okButtonCard);
         android.widget.ProgressBar progressBar = dialogLayout.findViewById(R.id.progressBar);
@@ -436,7 +433,7 @@ public class ModelManagerFragment extends Fragment {
         switch (error) {
             case ErrorCodes.ERROR_LOADING_MODEL: {
                 //todo: manage better the error here (with an eventual fix, see loading activity management of this error for reference)
-                textView.setText("Error loading the new model");
+                textView.setText(getString(R.string.error_models_loading_short));
                 break;
             }
             case ErrorCodes.NO_DOWNLOADED_RESOURCE: {
@@ -444,23 +441,23 @@ public class ModelManagerFragment extends Fragment {
                     case TRANSLATION_MODEL:
                         switch ((int) value) {
                             case Translator.MOZILLA:
-                                textView.setText("You selected Mozilla as a translation model, but you haven't downloaded any of its language yet. Please download at least one language model before selecting Mozilla.");
+                                textView.setText(getString(R.string.error_missing_mozilla));
                                 break;
                             case Translator.HY_MT:
-                                textView.setText("You selected HY-MT as a translation model, but it hasn't been downloaded yet. Please download the model before selecting it.");
+                                textView.setText(getString(R.string.error_missing_hy));
                                 break;
                             case Translator.MADLAD_CACHE:
-                                textView.setText("You selected Madlad as a translation model, but it hasn't been downloaded yet. Please download the model before selecting it.");
+                                textView.setText(getString(R.string.error_missing_madlad));
                                 break;
                         }
                         break;
                     case MOZILLA_FOR_VOICE:
-                        textView.setText("You enabled the use of Mozilla models for WalkieTalkie and Conversation modes, but there are no downloaded Mozilla models. Please download them before enabling this option.");
+                        textView.setText(getString(R.string.error_missing_mozilla_voice));
                     case TATOEBA:
-                        textView.setText("You enabled Tatoeba but it hasn't been downloaded yet. Please download Tatoeba before enabling it.");
+                        textView.setText(getString(R.string.error_missing_tatoeba));
                         break;
                     default:
-                        textView.setText("Missing resource download");
+                        textView.setText(getString(R.string.error_missing_general));
                         break;
                 }
                 break;
@@ -468,7 +465,7 @@ public class ModelManagerFragment extends Fragment {
             default: {
                 // general error dialog
                 Log.e("error", "Unknown error apply: "+error);
-                textView.setText("Unknown error, please retry.");
+                textView.setText(getString(R.string.error_apply_unknown));
                 break;
             }
         }

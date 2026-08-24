@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- todo: convert strings to resources and translate those -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -25,7 +24,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Translation Model"
+                android:text="@string/translation_model"
                 android:fontFamily="sans-serif-medium"
                 android:textColor="@color/accent"
                 android:layout_marginStart="16dp"/>
@@ -64,7 +63,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:layout_marginBottom="2dp"
-                            android:text="Mozilla"
+                            android:text="@string/performance"
                             android:textColor="@color/very_very_dark_gray"
                             android:textSize="18sp"
                             android:textStyle="bold"
@@ -82,7 +81,7 @@
                             android:layout_marginTop="16dp"
                             android:layout_marginEnd="16dp"
                             android:layout_marginBottom="8dp"
-                            android:text="Lightweigth models created by Mozilla, they have similar quality to Google Translate."
+                            android:text="@string/description_model_mozilla"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.0"
@@ -136,9 +135,9 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toEndOf="@+id/radioHY"
                             app:layout_constraintTop_toTopOf="parent"
-                            app:modelDescription="Middleweight model, it has the best quality, comparable to Deepseek."
+                            app:modelDescription="@string/description_model_hy"
                             app:modelSize="1790"
-                            app:modelTitle="HY-MT" />
+                            app:modelTitle="@string/quality" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -168,9 +167,9 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toEndOf="@+id/radioMadlad"
                             app:layout_constraintTop_toTopOf="parent"
-                            app:modelDescription="Heavy model, it has a quality in between the Mozilla and HY-MT models but supports 400 languages."
+                            app:modelDescription="@string/description_model_madlad"
                             app:modelSize="1380"
-                            app:modelTitle="Madlad" />
+                            app:modelTitle="@string/versatility" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </LinearLayout>
             </worker8.com.github.radiogroupplus.RadioGroupPlus>
@@ -191,21 +190,8 @@
                         android:id="@+id/titleMozillaForVoice"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:layout_weight="2"
-                        android:text="Use mozilla models for WalkieTalkie and Conversation modes to reduce latency in Real-Time translation modes."
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textView2"
-                        app:layout_constraintVertical_bias="0.0" />
-
-                    <TextView
-                        android:id="@+id/textView2"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:text="Mozilla for Voice Translation Modes"
+                        android:text="@string/title_mozilla_voice"
                         android:textColor="@color/very_very_dark_gray"
                         android:textSize="18sp"
                         android:textStyle="bold"
@@ -213,6 +199,19 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.0" />
+
+                    <TextView
+                        android:id="@+id/descriptionMozillaForVoice"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_weight="2"
+                        android:text="@string/description_mozilla_voice"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/titleMozillaForVoice"
                         app:layout_constraintVertical_bias="0.0" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
                 <com.google.android.material.switchmaterial.SwitchMaterial
@@ -224,6 +223,14 @@
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="16dp"/>
             </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/speech_recognition_model"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/accent"
+                android:layout_marginStart="16dp"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -241,21 +248,8 @@
                         android:id="@+id/titleWhisperReducedRam"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:layout_weight="2"
-                        android:text="Reduce RAM consumption of Whisper model from 900MB to 500MB, but reduces its execution speed by 24%."
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textView3"
-                        app:layout_constraintVertical_bias="0.0" />
-
-                    <TextView
-                        android:id="@+id/textView3"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:text="Whisper RAM Reduction"
+                        android:text="@string/title_whisper_ram_reduction"
                         android:textColor="@color/very_very_dark_gray"
                         android:textSize="18sp"
                         android:textStyle="bold"
@@ -263,6 +257,19 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.0" />
+
+                    <TextView
+                        android:id="@+id/descriptionWhisperReducedRam"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_weight="2"
+                        android:text="@string/description_whisper_ram_reduction"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/titleWhisperReducedRam"
                         app:layout_constraintVertical_bias="0.0" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
                 <com.google.android.material.switchmaterial.SwitchMaterial
@@ -278,7 +285,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Translation Enhancements"
+                android:text="@string/translation_enhancements"
                 android:fontFamily="sans-serif-medium"
                 android:textColor="@color/accent"
                 android:layout_marginStart="16dp"/>
@@ -291,7 +298,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    app:modelDescription="Tatoeba dataset that will be used to improve the translation of some sentences"
+                    app:modelDescription="@string/description_tatoeba"
                     app:modelSize="596"
                     app:modelTitle="Tatoeba"
                     android:layout_weight="2"/>
@@ -320,7 +327,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="24dp"
                         android:layout_marginBottom="2dp"
-                        android:text="Translation Dictionaries"
+                        android:text="@string/translation_dictionaries"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="@color/very_very_dark_gray"
@@ -338,7 +345,7 @@
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="8dp"
                         android:layout_marginBottom="8dp"
-                        android:text="Translation dictionaries that will be used to improve the translation of single words."
+                        android:text="@string/description_dictionaries"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.0"
@@ -386,7 +393,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
-                    android:text="RAM"
+                    android:text="@string/ram"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/barRam"
                     app:layout_constraintHorizontal_bias="0.0"
@@ -457,7 +464,7 @@
                         android:drawablePadding="8dp"
                         android:drawableTint="@color/light_gray"
                         android:gravity="center_vertical"
-                        android:text="System and other apps"
+                        android:text="@string/system_and_other_apps"
                         android:drawableStart="@drawable/dot_icon" />
 
                     <!-- Item 2 -->
@@ -468,7 +475,7 @@
                         android:drawablePadding="8dp"
                         android:drawableTint="@color/blue"
                         android:gravity="center_vertical"
-                        android:text="Speech Recognition Model"
+                        android:text="@string/speech_recognition_model"
                         android:drawableStart="@drawable/dot_icon" />
 
                     <!-- Item 3 -->
@@ -479,7 +486,7 @@
                         android:drawablePadding="8dp"
                         android:drawableTint="@color/yellow"
                         android:gravity="center_vertical"
-                        android:text="Translation Model"
+                        android:text="@string/translation_model"
                         android:drawableStart="@drawable/dot_icon" />
 
                     <!-- Item 5 -->
@@ -490,7 +497,7 @@
                         android:drawablePadding="8dp"
                         android:drawableTint="@color/purple"
                         android:gravity="center_vertical"
-                        android:text="Translation Enhancements"
+                        android:text="@string/translation_enhancements"
                         android:drawableStart="@drawable/dot_icon" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -508,7 +515,7 @@
                 android:backgroundTint="@color/primary"
                 android:elevation="2dp"
                 android:stateListAnimator="@null"
-                android:text="Apply"
+                android:text="@string/apply"
                 android:textColor="@color/white"
                 app:cornerRadius="24dp"
                 android:layout_gravity="center"/>

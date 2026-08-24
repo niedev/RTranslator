@@ -9,7 +9,7 @@
         </intent>
     </queries>
 
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>  <!-- todo: rimuere questo permesso -->
+    <!--<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>   re-enable this to use USE_EXTERNAL_MEMORY_FOR_RESOURCES  -->
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -42,8 +42,6 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />-->
-
-    <!--<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />-->
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 

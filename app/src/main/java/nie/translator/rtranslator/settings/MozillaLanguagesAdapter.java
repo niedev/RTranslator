@@ -87,9 +87,19 @@ public class MozillaLanguagesAdapter extends RecyclerView.Adapter<RecyclerView.V
                     int indexInstalled = modelsInstalled.indexOf(item);
                     if(indexInstalled != -1){
                         // in this case we move the row from modelsInstalled to modelsAvailable
+                        int oldCompleteIndex = getCompleteIndex(ItemTypeExtended.ITEM_MODEL_INSTALLED, indexInstalled);
                         ResourceManager resourceManager = modelsInstalled.remove(indexInstalled);
                         int newIndex = modelsAvailable.addOrdered(resourceManager);
-                        notifyItemMoved(getCompleteIndex(ItemTypeExtended.ITEM_MODEL_INSTALLED, indexInstalled), getCompleteIndex(ItemTypeExtended.ITEM_MODEL_AVAILABLE, newIndex));
+                        if(modelsAvailable.size() == 1){  //if the models available were empty before this insertion
+                            notifyItemInserted(getItemCount()-2);  //we notify the insertion of the header "available"
+                            //we do not update the oldCompleteIndex based on the new insertion of the header because the header is at a position below (higher index)
+                        }
+                        if(modelsInstalled.isEmpty()){  //if the models installed are now empty
+                            notifyItemRemoved(getItemCount()-2);  //we notify the deletion of the header "installed"
+                            oldCompleteIndex--;  //we decrement the oldCompleteIndex based on the new deletion of the header
+                        }
+                        notifyItemMoved(oldCompleteIndex, getCompleteIndex(ItemTypeExtended.ITEM_MODEL_AVAILABLE, newIndex));
+                        //todo: ricilare il codice con il setState
                     }
                 }
             });
@@ -205,9 +215,18 @@ public class MozillaLanguagesAdapter extends RecyclerView.Adapter<RecyclerView.V
             modelsInstalled.get(indexInstalled).setState(state, animate);
             if(state != ResourceManagerView.State.DOWNLOADED){
                 // in this case we move the row from modelsInstalled to modelsAvailable
+                int oldCompleteIndex = getCompleteIndex(ItemTypeExtended.ITEM_MODEL_INSTALLED, indexInstalled);
                 ResourceManager resourceManager = modelsInstalled.remove(indexInstalled);
                 int newIndex = modelsAvailable.addOrdered(resourceManager);
-                notifyItemMoved(getCompleteIndex(ItemTypeExtended.ITEM_MODEL_INSTALLED, indexInstalled), getCompleteIndex(ItemTypeExtended.ITEM_MODEL_AVAILABLE, newIndex));
+                if(modelsAvailable.size() == 1){  //if the models available were empty before this insertion
+                    notifyItemInserted(getItemCount()-2);  //we notify the insertion of the header "available"
+                    //we do not update the oldCompleteIndex based on the new insertion of the header because the header is at a position below (higher index)
+                }
+                if(modelsInstalled.isEmpty()){  //if the models installed are now empty
+                    notifyItemRemoved(getItemCount()-2);  //we notify the deletion of the header "installed"
+                    oldCompleteIndex--;  //we decrement the oldCompleteIndex based on the new deletion of the header
+                }
+                notifyItemMoved(oldCompleteIndex, getCompleteIndex(ItemTypeExtended.ITEM_MODEL_AVAILABLE, newIndex));
             }
             return;
         }
@@ -219,6 +238,14 @@ public class MozillaLanguagesAdapter extends RecyclerView.Adapter<RecyclerView.V
                 int oldCompleteIndex = getCompleteIndex(ItemTypeExtended.ITEM_MODEL_AVAILABLE, indexAvailable);
                 ResourceManager resourceManager = modelsAvailable.remove(indexAvailable);
                 int newIndex = modelsInstalled.addOrdered(resourceManager);
+                if(modelsInstalled.size() == 1){  //if the models installed were empty before this insertion
+                    notifyItemInserted(0);  //we notify the insertion of the header "installed"
+                    oldCompleteIndex++;  //we increment the oldCompleteIndex based on the new insertion of the header
+                }
+                if(modelsAvailable.isEmpty()){  //if the models available are now empty
+                    notifyItemRemoved(getItemCount()-2);  //we notify the deletion of the header "available"
+                    oldCompleteIndex--;  //we decrement the oldCompleteIndex based on the new deletion of the header
+                }
                 notifyItemMoved(oldCompleteIndex, getCompleteIndex(ItemTypeExtended.ITEM_MODEL_INSTALLED, newIndex));
             }
         }
