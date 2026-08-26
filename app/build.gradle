@@ -31,8 +31,8 @@ android {
         applicationId "nie.translator.rtranslator"
         targetSdkVersion 36   //32
         compileSdk 36
-        versionCode 24
-        versionName '2.1.4'
+        versionName '3.0.0-beta1'
+        versionCode 26
         minSdkVersion 28
         externalNativeBuild {
             cmake {
