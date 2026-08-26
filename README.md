@@ -71,12 +71,12 @@ The 3.0 version of RTranslator is currently funded through the [NGI Mobifree Fun
 
 Main changes of this version:
 - The NLLB translation model has been replaced with the option to choose between: Mozilla Bergamot models, Madlad 400 3B, and HY-MT 1.5 1.8B. All these models have better translation quality than NLLB 54B, similar to Google Translate, with HY-MT 1.5 1.8B having much better scores than Google Translate, similar to DeepSeek v3 and Gemini 3.0.
-- MLKit has been replaced with open-source alternatives (FastText and Lingua), making RTranslator 100% open source.
+- MLKit has been replaced with open-source alternatives ([FastText](https://github.com/facebookresearch/fasttext) and [Lingua](https://github.com/pemistahl/lingua)), making RTranslator 100% open source.
 - Various techniques have been added to improve translation quality, including: beam search, multilingual dictionaries, Tatoeba integration, and more.
 - The final version of the app will be released on Play Store and F-Droid.
 - A self-hosted web version of the app for text translation using Mozilla models will be made available in the future (probably around November).
 
-The first beta of this version has been released; go check [here](https://github.com/niedev/RTranslator/releases)! 🚀
+The first beta of this version has been released; go check it [here](https://github.com/niedev/RTranslator/releases)! 🚀
 
 <img src="https://nlnet.nl/logo/banner.svg" width="200px">
 <br />
