@@ -512,7 +512,7 @@ public class ModelManagerFragment extends Fragment {
             }
         }
         //apply translation status
-        global.setTranslationStatus(model, switchMozillaForVoiceModes.isChecked(), switchTatoeba.isChecked(), switchWhisperReducedRam.isChecked(), new Translator.GeneralListener() {
+        global.setTranslationStatus(model, switchMozillaForVoiceModes.isChecked(), switchTatoeba.isChecked(), switchTranslationDict.isChecked(), new Translator.GeneralListener() {
             @Override
             public void onSuccess() {
                 listener.onSuccess();

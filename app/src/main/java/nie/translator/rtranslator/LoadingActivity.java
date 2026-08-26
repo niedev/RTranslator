@@ -125,16 +125,21 @@ public class LoadingActivity extends GeneralActivity {
             // so the access activity will be started with the fragment started that will depend on the missing data.
             if(foundNllb){
                 DownloadGroupInfo initialDownloadInfo = global.getInitialDownloadInfo();
+                int firsIncompleteDownload = -1;
                 if(!DownloadManager.getSavedDownloadStatus(this).contains(initialDownloadInfo)) {
-                    for (DownloadInfo download : initialDownloadInfo.downloadsInfo) {
+                    for (int i = 0; i < initialDownloadInfo.downloadsInfo.length; i++) {
+                        DownloadInfo download = initialDownloadInfo.downloadsInfo[i];
                         File file = new File(download.getDestinationCompletePath());
                         if (file.exists()) {
                             download.setDownloadCompleted(true);
                             if(download.shouldUnzip()) download.setUnzipped(true);
                             if(download.shouldTestIntegrity()) download.setIntegrityTested(true);
+                        }else if(firsIncompleteDownload == -1){
+                            firsIncompleteDownload = i;
                         }
                     }
                 }
+                initialDownloadInfo.setRunningDownloadIndex(firsIncompleteDownload);
                 DownloaderTools.addDownloadGroupInfoPreference(this, initialDownloadInfo);
                 global.setFirstStart(true);
                 return true;
