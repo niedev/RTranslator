@@ -178,7 +178,7 @@ This is an open-source and completely ad-free app, I don't make any money from i
 
 So, if you like the app and want to say thank you and support the project, you can make a donation by clicking on one of the the buttons below (any amount is well accepted).
 
-[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/niedev)
+<a href='https://ko-fi.com/niedev'><img alt='Donate' src='https://github.com/niedev/RTranslator/blob/v3.00/images/support_me_on_kofi_beige.png?raw=true' style="width: 230px; " /></a>
 
 <a href='https://www.paypal.com/donate/?business=3VBKS3WC6AFHN&no_recurring=0&currency_code=EUR'><img alt='Donate' src='https://raw.githubusercontent.com/niedev/RTranslator/v2.00/images/Paypal.png' style="width: 190px; height: 80px;" /></a>
 
