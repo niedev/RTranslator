@@ -76,7 +76,7 @@ Main changes of this version:
 - The final version of the app will be released on Play Store and F-Droid.
 - A self-hosted web version of the app for text translation using Mozilla models will be made available in the future (probably around November).
 
-The first beta of this version has been released; go check it [here](https://github.com/niedev/RTranslator/releases)! 🚀
+The first beta of this version has been released; go check it [here](https://github.com/niedev/RTranslator/releases/tag/3.0.0-beta1)! 🚀
 
 <img src="https://nlnet.nl/logo/banner.svg" width="200px">
 <br />
