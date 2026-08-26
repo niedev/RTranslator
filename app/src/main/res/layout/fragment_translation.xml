@@ -114,7 +114,7 @@
             app:layout_constraintGuide_percent="0.87" />
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/firstLanguageSelectorContainer"
+            android:id="@+id/cancelButtonCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
@@ -131,14 +131,14 @@
             app:layout_constraintVertical_bias="0">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/firstLanguageSelector"
+                android:id="@+id/cancelButtonLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal">
 
                 <nie.translator.rtranslator.tools.gui.AnimatedTextView
-                    android:id="@+id/firstLanguageName"
+                    android:id="@+id/cancelButtonText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
@@ -167,13 +167,13 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="1.0"
-                    app:layout_constraintStart_toEndOf="@+id/firstLanguageName"
+                    app:layout_constraintStart_toEndOf="@+id/cancelButtonText"
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/secondLanguageSelectorContainer"
+            android:id="@+id/okButtonCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
@@ -190,14 +190,14 @@
             app:layout_constraintVertical_bias="0">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/secondLanguageSelector"
+                android:id="@+id/okButtonLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal">
 
                 <nie.translator.rtranslator.tools.gui.AnimatedTextView
-                    android:id="@+id/secondLanguageName"
+                    android:id="@+id/okButtonText"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
@@ -238,10 +238,10 @@
             android:backgroundTint="@android:color/transparent"
             android:tint="@color/primary_very_dark"
             android:elevation="0dp"
-            app:layout_constraintBottom_toBottomOf="@+id/firstLanguageSelectorContainer"
+            app:layout_constraintBottom_toBottomOf="@+id/cancelButtonCard"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/firstLanguageSelectorContainer"
+            app:layout_constraintTop_toTopOf="@+id/cancelButtonCard"
             app:srcCompat="@drawable/invert_arrows" />
 
         <androidx.appcompat.widget.AppCompatImageButton

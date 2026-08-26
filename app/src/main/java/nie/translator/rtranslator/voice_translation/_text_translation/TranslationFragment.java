@@ -152,8 +152,8 @@ public class TranslationFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        firstLanguageSelector = view.findViewById(R.id.firstLanguageSelectorContainer);
-        secondLanguageSelector = view.findViewById(R.id.secondLanguageSelectorContainer);
+        firstLanguageSelector = view.findViewById(R.id.cancelButtonCard);
+        secondLanguageSelector = view.findViewById(R.id.okButtonCard);
         invertLanguagesButton = view.findViewById(R.id.invertLanguages);
         translateButton = view.findViewById(R.id.buttonTranslate);
         walkieTalkieButton = view.findViewById(R.id.buttonMicLeft);
@@ -200,7 +200,7 @@ public class TranslationFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if(!Global.ONLY_TEXT_TRANSLATION_MODE) {
-                    activity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
+                    activity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT, true);
                 }else{
                     Toast.makeText(global, "'Only text translation mode' is active", Toast.LENGTH_SHORT).show();
                 }
@@ -210,7 +210,7 @@ public class TranslationFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if(!Global.ONLY_TEXT_TRANSLATION_MODE) {
-                    activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT);
+                    activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT, true);
                 }else{
                     Toast.makeText(global, "'Only text translation mode' is active", Toast.LENGTH_SHORT).show();
                 }
@@ -231,11 +231,10 @@ public class TranslationFragment extends Fragment {
                         if(animationResultType != null) {
                             animationResultType.cancel();
                         }
-                        //todo: sostituire le stringhe con delle risorse e tradurle
                         if(resultType == ResultType.DICTIONARY){
-                            resultTypeText.setText("Dictionary");
+                            resultTypeText.setText(getString(R.string.dictionary));
                         }else if(resultType == ResultType.TATOEBA){
-                            resultTypeText.setText("Tatoeba");
+                            resultTypeText.setText("Tatoeba");  //this will not be a resource because the name is the same for all languages
                         }
                         animationResultType = animator.animateViewAppearance(activity, resultTypeText, new CustomAnimator.Listener() {
                             @Override
@@ -289,7 +288,7 @@ public class TranslationFragment extends Fragment {
                     //we deactivate translate button
                     deactivateTranslationButton();  //todo: implement stop button instead of deactivation
                     //we start the translation
-                    global.getTranslator().translate(text, firstLanguage, secondLanguage, global.getBeamSize(), true);
+                    global.getTranslator().translate(text, firstLanguage, secondLanguage, global.getBeamSize(), true, Global.RTranslatorMode.TEXT_TRANSLATION_MODE);
                 }
             }
         });
@@ -824,7 +823,7 @@ public class TranslationFragment extends Fragment {
     }
 
     private void showLanguageListDialog(final int languageNumber) {
-        //when the dialog is shown at the beginning the loading is shown, then once the list of languages​is obtained (within the showList)
+        //when the dialog is shown at the beginning the loading is shown, then once the list of languages is obtained (within the showList)
         //the loading is replaced with the list of languages
         String title = "";
         switch (languageNumber) {
@@ -867,7 +866,7 @@ public class TranslationFragment extends Fragment {
         reloadButton.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
 
-        final ArrayList<CustomLocale> languages = global.getTranslatorLanguages(true);
+        final ArrayList<CustomLocale> languages = global.getTranslatorLanguages(Global.RTranslatorMode.TEXT_TRANSLATION_MODE, true);
         progressBar.setVisibility(View.GONE);
         listViewGui.setVisibility(View.VISIBLE);
 
@@ -938,12 +937,12 @@ public class TranslationFragment extends Fragment {
 
     private void setDisplayedFirstLanguage(CustomLocale language){
         // change language displayed
-        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.firstLanguageName)).setText(language.getDisplayNameWithoutTTS(), false);
+        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.cancelButtonText)).setText(language.getDisplayNameWithoutTTS(), false);
     }
 
     private void setDisplayedSecondLanguage(CustomLocale language){
         // change language displayed
-        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.secondLanguageName)).setText(language.getDisplayNameWithoutTTS(), false);
+        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(language.getDisplayNameWithoutTTS(), false);
     }
 
     private void switchLanguages(){
@@ -955,8 +954,8 @@ public class TranslationFragment extends Fragment {
             }
         });
         // change language displayed
-        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.firstLanguageName)).setText(global.getFirstTextLanguage(true).getDisplayNameWithoutTTS(), false);
-        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.secondLanguageName)).setText(global.getSecondTextLanguage(true).getDisplayNameWithoutTTS(), false);
+        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.cancelButtonText)).setText(global.getFirstTextLanguage(true).getDisplayNameWithoutTTS(), false);
+        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(global.getSecondTextLanguage(true).getDisplayNameWithoutTTS(), false);
     }
 
     private void onFailureShowingList(int[] reasons, long value) {

@@ -9,3 +9,6 @@
 /dataSources.ids
 /datasources.xml
 /modules.xml
+/assetWizardSettings.xml
+/deploymentTargetSelector.xml
+/inspectionProfiles/*

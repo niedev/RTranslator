@@ -16,6 +16,7 @@
 
 package nie.translator.rtranslator;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.app.Application;
 import android.app.NotificationChannel;
@@ -34,14 +35,21 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 
-import com.downloader.PRDownloader;
-import com.downloader.PRDownloaderConfig;
+import com.konovalov.vad.silero.Vad;
+import com.konovalov.vad.silero.VadSilero;
+import com.konovalov.vad.silero.config.FrameSize;
+import com.konovalov.vad.silero.config.Mode;
+import com.konovalov.vad.silero.config.SampleRate;
 
 import java.io.File;
 import java.util.ArrayList;
 
 import nie.translator.rtranslator.access.AccessActivity;
+import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader2.DownloadInfo;
+import nie.translator.rtranslator.downloader2.DownloadManager;
 import nie.translator.rtranslator.tools.CustomLocale;
+import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.TTS;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
@@ -57,6 +65,18 @@ import nie.translator.rtranslator.voice_translation.neural_networks.voice.Record
 
 public class Global extends Application implements DefaultLifecycleObserver {
     public static final boolean ONLY_TEXT_TRANSLATION_MODE = false;
+    public static final boolean USE_EXTERNAL_MEMORY_FOR_RESOURCES = false;
+
+    public static final int REQUEST_CODE_PERMISSIONS_NOTIFICATIONS = 5;
+    public static String[] REQUIRED_PERMISSIONS_NOTIFICATIONS;
+    public static final int REQUEST_CODE_PERMISSIONS_PAIRING = 2;
+    public static String[] REQUIRED_PERMISSIONS_PAIRING;
+    public static final int REQUEST_CODE_PERMISSIONS_CONVERSATION = 3;
+    public static final int REQUEST_CODE_PERMISSIONS_WALKIETALKIE = 4;
+    public static final String[] REQUIRED_PERMISSIONS_VOICE = new String[]{
+            Manifest.permission.RECORD_AUDIO,
+    };
+
     public enum RTranslatorMode {
         TEXT_TRANSLATION_MODE,
         WALKIE_TALKIE_MODE,
@@ -64,6 +84,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
     private ArrayList<CustomLocale> languages = new ArrayList<>();
     private ArrayList<CustomLocale> translatorLanguages = new ArrayList<>();
+    private ArrayList<Translator.MozillaLanguageInfo> mozillaLanguages = new ArrayList<>();
+    private ArrayList<CustomLocale> mozillaInstalledLanguages = new ArrayList<>();
     private ArrayList<CustomLocale> ttsLanguages = new ArrayList<>();
     private CustomLocale language;
     private CustomLocale firstLanguage;
@@ -72,7 +94,9 @@ public class Global extends Application implements DefaultLifecycleObserver {
     private CustomLocale secondTextLanguage;
     private RecentPeersDataManager recentPeersDataManager;
     private ConversationBluetoothCommunicator bluetoothCommunicator;
+    @Nullable
     private Translator translator;
+    @Nullable
     private Recognizer speechRecognizer;
     private String name = "";
     private int micSensitivity = -1;
@@ -88,29 +112,52 @@ public class Global extends Application implements DefaultLifecycleObserver {
     private final Object lock = new Object();
     private boolean useTatoeba;
     private boolean useTranslationDictionaries;
+    private boolean useMozillaForVoiceTranslation;
+    private boolean whisperReducedRam;
+    private int translationMode;
+    private VadSilero vad;
+    private boolean modelsLoaded = false;
 
     @Override
     public void onCreate() {
         super.onCreate();
         mainHandler = new Handler(Looper.getMainLooper());
         recentPeersDataManager = new RecentPeersDataManager(this);
-        PRDownloaderConfig config = PRDownloaderConfig.newBuilder()
-                .setDatabaseEnabled(false)
-                .build();
-        PRDownloader.initialize(getApplicationContext(), config);
         //initializeBluetoothCommunicator();
         getMicSensitivity();
         createNotificationChannel();
         SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
         useTatoeba = sharedPreferences.getBoolean("useTatoeba", false);
         useTranslationDictionaries = sharedPreferences.getBoolean("useTranslationDictionaries", false);
+        useMozillaForVoiceTranslation = sharedPreferences.getBoolean("useMozillaForVoiceTranslation", false);
+        whisperReducedRam = sharedPreferences.getBoolean("whisperReducedRam", getTotalRamSize() <= 7000);
+        translationMode = sharedPreferences.getInt("selectedTranslationModel", Translator.MOZILLA);
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+            REQUIRED_PERMISSIONS_PAIRING = new String[]{
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+            };
+        }else{
+            REQUIRED_PERMISSIONS_PAIRING = new String[]{
+                    Manifest.permission.BLUETOOTH_ADVERTISE,
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_CONNECT
+            };
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            REQUIRED_PERMISSIONS_NOTIFICATIONS = new String[]{
+                    Manifest.permission.POST_NOTIFICATIONS
+            };
+        }else{
+            REQUIRED_PERMISSIONS_NOTIFICATIONS = new String[0];
+        }
     }
 
     public void initializeTranslator(Translator.GeneralListener initListener){
         if(translator == null) {
-            SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
-            int mode = sharedPreferences.getInt("selectedTranslationModel", Translator.MOZILLA);
-            translator = new Translator(this, mode, initListener);
+            translator = new Translator(this, getTranslationMode(), isUseMozillaForVoiceTranslation(), isUseTatoeba(), isUseTranslationDictionaries(), initListener);
         }else{
             initListener.onSuccess();
         }
@@ -118,6 +165,14 @@ public class Global extends Application implements DefaultLifecycleObserver {
 
     public void initializeSpeechRecognizer(NeuralNetworkApi.InitListener initListener){
         if(speechRecognizer == null) {
+            vad = Vad.builder()
+                    .setContext(this)
+                    .setSampleRate(SampleRate.SAMPLE_RATE_16K)
+                    .setFrameSize(FrameSize.FRAME_SIZE_512)
+                    .setMode(Mode.NORMAL)
+                    .setSilenceDurationMs(300)
+                    .setSpeechDurationMs(50)
+                    .build();
             speechRecognizer = new Recognizer(this, true, initListener);
         }else{
             initListener.onInitializationFinished();
@@ -130,22 +185,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
     }
 
-    public void restartTranslator(Translator.GeneralListener listener){
-        getLanguages(false);
-        SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
-        int mode = sharedPreferences.getInt("selectedTranslationModel", Translator.MOZILLA);
-        translator.restart(mode, new Translator.GeneralListener() {
-            @Override
-            public void onSuccess() {
-                getTranslatorLanguages(false);  //refresh languages
-                listener.onSuccess();
-            }
-
-            @Override
-            public void onFailure(int[] reasons, long value) {
-                listener.onFailure(reasons, value);
-            }
-        });
+    public VadSilero getVad() {
+        return vad;
     }
 
     @Nullable
@@ -162,6 +203,14 @@ public class Global extends Application implements DefaultLifecycleObserver {
         });
     }
 
+    public boolean areModelsLoaded() {
+        return modelsLoaded;
+    }
+
+    public void setModelsLoaded(boolean areModelsLoaded) {
+        this.modelsLoaded = areModelsLoaded;
+    }
+
     public void getLanguagesAndCheckTTS(final boolean recycleResult, boolean ignoreTTSError, final GetLocalesListListener responseListener) {
         if (recycleResult && !languages.isEmpty()) {
             responseListener.onSuccess(languages);
@@ -169,7 +218,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             TTS.getSupportedLanguages(this, new TTS.SupportedLanguagesListener() {    //we load TTS languages to catch eventual TTS errors
                 @Override
                 public void onLanguagesListAvailable(ArrayList<CustomLocale> ttsLanguages) {
-                    responseListener.onSuccess(getLanguages(recycleResult));
+                    responseListener.onSuccess(getLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, recycleResult));
                 }
 
                 @Override
@@ -180,8 +229,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
     }
 
-    public ArrayList<CustomLocale> getLanguages(final boolean recycleResult) {
-        ArrayList<CustomLocale> translatorLanguages = getTranslatorLanguages(recycleResult);
+    public ArrayList<CustomLocale> getLanguages(RTranslatorMode rtranslatorMode, final boolean recycleResult) {
+        ArrayList<CustomLocale> translatorLanguages = getTranslatorLanguages(rtranslatorMode, recycleResult);
         ArrayList<CustomLocale> speechRecognizerLanguages = Recognizer.getSupportedLanguages(Global.this);
         //we return only the languages compatible with the speech recognizer and the translator (without loading TTS languages)
         final ArrayList<CustomLocale> compatibleLanguages = new ArrayList<>();
@@ -194,19 +243,74 @@ public class Global extends Application implements DefaultLifecycleObserver {
         return compatibleLanguages;
     }
 
-    public ArrayList<CustomLocale> getTranslatorLanguages(final boolean recycleResult) {
-        if (recycleResult && !translatorLanguages.isEmpty()) {
-            return translatorLanguages;
-        } else {
-            int mode;
-            if(translator != null){
-                mode = translator.getMode();
+    public ArrayList<CustomLocale> getTranslatorLanguages(RTranslatorMode rtranslatorMode, final boolean recycleResult) {
+        if (recycleResult) {
+            if(isUseMozillaForVoiceTranslation() && (rtranslatorMode == RTranslatorMode.CONVERSATION_MODE || rtranslatorMode == RTranslatorMode.WALKIE_TALKIE_MODE)) {
+                return getMozillaLanguages(true);
             }else{
-                SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
-                mode = sharedPreferences.getInt("selectedTranslationModel", Translator.MOZILLA);
+                if(!translatorLanguages.isEmpty()) return translatorLanguages;
             }
-            ArrayList<CustomLocale> languages = Translator.getSupportedLanguages(Global.this, mode);
+        }
+
+        // recycleResult is false
+        SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
+        int mode;
+        if(translator != null){
+            mode = translator.getMode();
+        }else{
+            mode = sharedPreferences.getInt("selectedTranslationModel", Translator.MOZILLA);
+        }
+        boolean qualityLow = sharedPreferences.getBoolean("languagesNNQualityLow", false);
+        ArrayList<CustomLocale> languages = Translator.getSupportedLanguages(Global.this, qualityLow, mode);  //in the case of mozilla, this method will return all the supported languages, not only the installed ones, so for mozilla we will use the getMozillaLanguages method
+        ArrayList<CustomLocale> mozillaLanguages = getMozillaLanguages(false);
+        if(mode == Translator.MOZILLA) {
+            translatorLanguages = mozillaLanguages;
+            return mozillaLanguages;
+        }else{
             translatorLanguages = languages;
+            if(isUseMozillaForVoiceTranslation() && (rtranslatorMode == RTranslatorMode.CONVERSATION_MODE || rtranslatorMode == RTranslatorMode.WALKIE_TALKIE_MODE)) {
+                return mozillaLanguages;
+            }else{
+                return languages;
+            }
+        }
+    }
+
+    /**
+     * getMozillaLanguages
+     * @param recycleResult decides if recycle the result or not
+     * @return the list of installed Mozilla languages
+     */
+    private ArrayList<CustomLocale> getMozillaLanguages(final boolean recycleResult){
+        if (recycleResult && !mozillaInstalledLanguages.isEmpty()) {
+            return mozillaInstalledLanguages;
+        } else {
+            ArrayList<DownloadGroupInfo> downloads = DownloadManager.getSavedDownloadStatus(this);
+            ArrayList<MozillaLanguageDownloadInfo> mozillaLanguageDownloadInfos = getMozillaLanguagesDownloadInfo(recycleResult);
+            ArrayList<CustomLocale> mozillaInstalledLanguages = new ArrayList<>();
+            for (Global.MozillaLanguageDownloadInfo langDownloadInfo : mozillaLanguageDownloadInfos) {
+                int index = downloads.indexOf(langDownloadInfo.downloadGroupInfo);
+                if (index != -1 && downloads.get(index).isAllDownloadCompleted()) {
+                    mozillaInstalledLanguages.add(langDownloadInfo.lang);
+                }
+            }
+            mozillaInstalledLanguages.add(new CustomLocale("en"));  //English is always present, but it isn't present in the getMozillaLanguagesDownloadInfo list, so we add it manually
+            this.mozillaInstalledLanguages = mozillaInstalledLanguages;
+            return mozillaInstalledLanguages;
+        }
+    }
+
+    /**
+     * getMozillaLanguages
+     * @param recycleResult decides if recycle the result or not
+     * @return the list of all supported Mozilla languages (installed and not) with also the size of each language model
+     */
+    public ArrayList<Translator.MozillaLanguageInfo> getMozillaLanguagesInfo(final boolean recycleResult) {
+        if (recycleResult && !mozillaLanguages.isEmpty()) {
+            return mozillaLanguages;
+        } else {
+            ArrayList<Translator.MozillaLanguageInfo> languages = Translator.getMozillaLanguagesInfo(this);
+            mozillaLanguages = languages;
             return languages;
         }
     }
@@ -230,6 +334,220 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
     }
 
+
+    public ArrayList<MozillaLanguageDownloadInfo> getMozillaLanguagesDownloadInfo(final boolean recycleResult){
+        String downloadFolder = getFilesDir().getAbsolutePath()+"/Translation/Mozilla/";
+        String baseUrl = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
+        ArrayList<MozillaLanguageDownloadInfo> languageDownloadInfos = new ArrayList<>();
+        for(Translator.MozillaLanguageInfo langInfo : getMozillaLanguagesInfo(recycleResult)){
+            String fileName = "Mozilla_"+langInfo.lang.getLanguage()+".zip";
+            languageDownloadInfos.add(new MozillaLanguageDownloadInfo(
+                    langInfo.lang,
+                    new DownloadGroupInfo(new DownloadInfo[]{new DownloadInfo(fileName, baseUrl+fileName, downloadFolder, langInfo.sizeKb, false, true)})
+            ));
+        }
+        return languageDownloadInfos;
+    }
+
+    public static class MozillaLanguageDownloadInfo {
+        public CustomLocale lang;
+        public DownloadGroupInfo downloadGroupInfo;
+
+        public MozillaLanguageDownloadInfo(CustomLocale lang, DownloadGroupInfo downloadGroupInfo) {
+            this.lang = lang;
+            this.downloadGroupInfo = downloadGroupInfo;
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if(obj instanceof CustomLocale){
+                return lang.equals(obj);
+            }
+            return super.equals(obj);
+        }
+    }
+
+    public DownloadGroupInfo getHyMtDownloadInfo(){
+        String downloadFolder = getFilesDir().getAbsolutePath();
+        String baseUrl = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
+        return new DownloadGroupInfo(new DownloadInfo[]{
+                new DownloadInfo(
+                        "HY-MT.zip",
+                        baseUrl + "HY-MT.zip",
+                        downloadFolder + "/Translation/",
+                        1790000,
+                        true,
+                        true)
+        });
+    }
+
+    public DownloadGroupInfo getMadladDownloadInfo(){
+        String downloadFolder = getFilesDir().getAbsolutePath();
+        String baseUrl = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
+        return new DownloadGroupInfo(new DownloadInfo[]{
+                new DownloadInfo(
+                        "Madlad.zip",
+                        baseUrl + "Madlad.zip",
+                        downloadFolder + "/Translation/",
+                        1380000,
+                        true,
+                        true)
+
+        });
+    }
+
+    public DownloadGroupInfo getTatoebaDownloadInfo(){
+        String downloadFolder = getFilesDir().getAbsolutePath();
+        String baseUrl = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
+        return new DownloadGroupInfo(new DownloadInfo[]{
+                new DownloadInfo(
+                        "Tatoeba.zip",
+                        baseUrl + "Tatoeba.zip",
+                        downloadFolder + "/Translation/",
+                        596000,
+                        false,
+                        true)
+
+        });
+    }
+
+    public DownloadGroupInfo getNllbDownloadInfo(){
+        String downloadFolder = getFilesDir().getAbsolutePath();
+        String baseUrl = "https://github.com/niedev/RTranslator/releases/download/2.0.0/";
+        return new DownloadGroupInfo(new DownloadInfo[]{
+                new DownloadInfo(
+                        "NLLB_cache_initializer.onnx",
+                        baseUrl + "NLLB_cache_initializer.onnx",
+                        downloadFolder,
+                        24000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "NLLB_decoder.onnx",
+                        baseUrl + "NLLB_decoder.onnx",
+                        downloadFolder,
+                        171000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "NLLB_embed_and_lm_head.onnx",
+                        baseUrl + "NLLB_embed_and_lm_head.onnx",
+                        downloadFolder,
+                        500000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "NLLB_encoder.onnx",
+                        baseUrl + "NLLB_encoder.onnx",
+                        downloadFolder,
+                        254000,
+                        true,
+                        false
+                ),
+        });
+    }
+
+    public DownloadGroupInfo getInitialDownloadInfo(){
+        String downloadFolder = getFilesDir().getAbsolutePath();
+        String baseUrl = "https://github.com/niedev/RTranslator/releases/download/2.0.0/";
+        String baseUrlAlt = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
+        return new DownloadGroupInfo(new DownloadInfo[]{
+                /*new DownloadInfo(
+                        "NLLB_cache_initializer.onnx",
+                        baseUrl + "NLLB_cache_initializer.onnx",
+                        downloadFolder,
+                        24000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "NLLB_decoder.onnx",
+                        baseUrl + "NLLB_decoder.onnx",
+                        downloadFolder,
+                        171000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "NLLB_embed_and_lm_head.onnx",
+                        baseUrl + "NLLB_embed_and_lm_head.onnx",
+                        downloadFolder,
+                        500000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "NLLB_encoder.onnx",
+                        baseUrl + "NLLB_encoder.onnx",
+                        downloadFolder,
+                        254000,
+                        true,
+                        false
+                ),*/
+                new DownloadInfo(
+                        "Whisper_cache_initializer.onnx",
+                        baseUrl + "Whisper_cache_initializer.onnx",
+                        downloadFolder,
+                        14000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "Whisper_cache_initializer_batch.onnx",
+                        baseUrl + "Whisper_cache_initializer_batch.onnx",
+                        downloadFolder,
+                        14000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "Whisper_decoder.onnx",
+                        baseUrl + "Whisper_decoder.onnx",
+                        downloadFolder,
+                        173000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "Whisper_detokenizer.onnx",
+                        baseUrl + "Whisper_detokenizer.onnx",
+                        downloadFolder,
+                        461,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "Whisper_encoder.onnx",
+                        baseUrl + "Whisper_encoder.onnx",
+                        downloadFolder,
+                        88000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "Whisper_initializer.onnx",
+                        baseUrl + "Whisper_initializer.onnx",
+                        downloadFolder,
+                        69,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "TranslationDictionaries.zip",
+                        baseUrlAlt + "TranslationDictionaries.zip",
+                        downloadFolder + "/Translation/",
+                        108000,
+                        false,
+                        true
+                ),
+        });
+    }
+
+
+    @Nullable
     public Translator getTranslator() {
         return translator;
     }
@@ -238,6 +556,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         translator = null;
     }
 
+    @Nullable
     public Recognizer getSpeechRecognizer() {
         return speechRecognizer;
     }
@@ -280,7 +599,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
 
     public CustomLocale getLanguage(final boolean recycleResult) {
-        ArrayList<CustomLocale> languages = getLanguages(true);
+        ArrayList<CustomLocale> languages = getLanguages(RTranslatorMode.CONVERSATION_MODE, true);
         CustomLocale predefinedLanguage = CustomLocale.getDefault();
         CustomLocale language = null;
         if (recycleResult && Global.this.language != null) {
@@ -310,7 +629,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
 
     public CustomLocale getFirstLanguage(final boolean recycleResult) {
-        final ArrayList<CustomLocale> languages = getLanguages(true);
+        final ArrayList<CustomLocale> languages = getLanguages(RTranslatorMode.WALKIE_TALKIE_MODE, true);
         CustomLocale predefinedLanguage = getLanguage(true);
         CustomLocale language = null;
         if (recycleResult && Global.this.firstLanguage != null) {
@@ -330,6 +649,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
             int index2 = CustomLocale.search(languages, predefinedLanguage);
             if (index2 != -1) {
                 language = predefinedLanguage;
+            } else if(!languages.isEmpty()) {
+                language = languages.get(0);  //we pick the first language of the list
             } else {
                 language = new CustomLocale("en");
             }
@@ -340,7 +661,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
 
     public CustomLocale getSecondLanguage(final boolean recycleResult) {
-        ArrayList<CustomLocale> languages = getLanguages(true);
+        ArrayList<CustomLocale> languages = getLanguages(RTranslatorMode.WALKIE_TALKIE_MODE, true);
         CustomLocale predefinedLanguage = CustomLocale.getDefault();
         CustomLocale language = null;
         if (recycleResult && Global.this.secondLanguage != null) {
@@ -365,7 +686,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
 
     public CustomLocale getFirstTextLanguage(final boolean recycleResult) {
-        final ArrayList<CustomLocale> languages = getTranslatorLanguages(true);
+        final ArrayList<CustomLocale> languages = getTranslatorLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, true);
         CustomLocale predefinedLanguage = getLanguage(true);
         CustomLocale language = null;
         if (recycleResult && Global.this.firstTextLanguage != null) {
@@ -385,6 +706,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
             int index2 = CustomLocale.search(languages, predefinedLanguage);
             if (index2 != -1) {
                 language = predefinedLanguage;
+            } else if(!languages.isEmpty()) {
+                language = languages.get(0);  //we pick the first language of the list
             } else {
                 language = new CustomLocale("en");
             }
@@ -395,7 +718,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
 
     public CustomLocale getSecondTextLanguage(final boolean recycleResult) {
-        ArrayList<CustomLocale> languages = getTranslatorLanguages(true);
+        ArrayList<CustomLocale> languages = getTranslatorLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, true);
         CustomLocale language = null;
         if (recycleResult && Global.this.secondTextLanguage != null) {
             language = Global.this.secondTextLanguage;
@@ -436,7 +759,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("language", language.getCode());
         editor.apply();
-        if(ConversationService.isRunning){
+        if(ConversationService.isRunning && translator != null){
             translator.loadTgtLangResourcesForConversation(language, null);
             if(getBluetoothCommunicator() != null){
                 getBluetoothCommunicator().sendLanguage(language);
@@ -579,36 +902,124 @@ public class Global extends Application implements DefaultLifecycleObserver {
         return useTatoeba;
     }
 
-    public void setUseTatoeba(boolean useTatoeba) {
-        this.useTatoeba = useTatoeba;
-        final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("useTatoeba", useTatoeba);
-        editor.apply();
-        // loading of tatoeba
-        if(useTatoeba) {
-            translator.loadAllTatoebaResources(null);
-        }else{
-            translator.unloadAllTatoebaResources();
-        }
-    }
-
     public boolean isUseTranslationDictionaries(){
         return useTranslationDictionaries;
     }
 
-    public void setUseTranslationDictionaries(boolean useTranslationDictionaries) {
-        this.useTranslationDictionaries = useTranslationDictionaries;
-        final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("useTranslationDictionaries", useTranslationDictionaries);
-        editor.apply();
-        // loading of translation dictionaries
-        if(useTranslationDictionaries) {
-            translator.loadAllTranslationDictionariesResources(null);
+    public boolean isUseMozillaForVoiceTranslation() {
+        return useMozillaForVoiceTranslation;
+    }
+
+    public boolean isWhisperReducedRam() {
+        return whisperReducedRam;
+    }
+
+    public void setWhisperReducedRam(boolean whisperReducedRam, @Nullable Translator.GeneralListener listener) {
+        boolean changed = this.whisperReducedRam != whisperReducedRam;
+        if(changed){
+            this.whisperReducedRam = whisperReducedRam;
+            final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("whisperReducedRam", whisperReducedRam);
+            editor.apply();
+            // restart of encoder session with the new option
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if(speechRecognizer != null) speechRecognizer.initializeEncoderSession();
+                        mainHandler.post(() -> {
+                            if(listener != null) listener.onSuccess();
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        mainHandler.post(() -> {
+                            if (listener != null) listener.onFailure(new int[]{ErrorCodes.ERROR}, 0);
+                        });
+                    }
+                }
+            }).start();
         }else{
-            translator.unloadAllTranslationDictionariesResources();
+            if(listener != null) listener.onSuccess();
         }
+    }
+
+    public int getTranslationMode() {
+        return translationMode;
+    }
+
+    public void setTranslationStatus(int translationMode, boolean useMozillaForVoiceTranslation, boolean useTatoeba, boolean useTranslationDicts, @NonNull Translator.GeneralListener listener) {
+        boolean changed = this.translationMode != translationMode
+                || this.useMozillaForVoiceTranslation != useMozillaForVoiceTranslation
+                || this.useTatoeba != useTatoeba
+                || this.useTranslationDictionaries != useTranslationDicts;
+        if(changed) {
+            this.translationMode = translationMode;
+            this.useMozillaForVoiceTranslation = useMozillaForVoiceTranslation;
+            this.useTatoeba = useTatoeba;
+            this.useTranslationDictionaries = useTranslationDicts;
+            final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt("selectedTranslationModel", translationMode);
+            editor.putBoolean("useMozillaForVoiceTranslation", useMozillaForVoiceTranslation);
+            editor.putBoolean("useTatoeba", useTatoeba);
+            editor.putBoolean("useTranslationDictionaries", useTranslationDicts);
+            editor.apply();
+            // update of the translator status (if the translator is already initialized)
+            if (translator != null) {
+                translator.setTranslationStatus(translationMode, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts, listener);
+            }else{
+                listener.onSuccess();
+            }
+        }else{
+            listener.onSuccess();
+        }
+    }
+
+    /**
+     * This method will update the languages selected for all rtranslator modes (text, walkieTalkie, conversation),
+     * usually it is called after a model change for some modes, because the selected languages could be not compatible anymore with the new model.
+     * In that case, this method will select a compatible language for the selected model in that rtranslator mode.
+     * This method will also update the lists of languages available to each rtranslator mode based on the new selected models.
+     * But it won't update the resources associated with the new languages.
+     */
+    public void updateLanguages() {
+        getLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, false);  //this will update the recognizer langs, the translator langs and also the mozilla langs (for all the RTranslator modes)
+        getFirstTextLanguage(false);
+        getSecondTextLanguage(false);
+        getFirstLanguage(false);
+        getSecondLanguage(false);
+        getLanguage(false);
+    }
+
+    /**
+     * This method does the same thing as updateLanguages() but it also updates the preferences and resources of the new languages.
+     * @param listener
+     */
+    public void updateLanguagesAndResources(Translator.GeneralListener listener){
+        getLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, false);  //this will update the recognizer langs, the translator langs and also the mozilla langs (for all the RTranslator modes)
+        setFirstTextLanguage(getFirstTextLanguage(false), new Translator.GeneralListener() {
+            @Override
+            public void onSuccess() {
+                setSecondTextLanguage(getSecondTextLanguage(false), new Translator.GeneralListener() {
+                    @Override
+                    public void onSuccess() {
+                        setFirstLanguage(getFirstLanguage(false), new Translator.GeneralListener() {
+                            @Override
+                            public void onSuccess() {
+                                setSecondLanguage(getSecondLanguage(false), new Translator.GeneralListener() {
+                                    @Override
+                                    public void onSuccess() {
+                                        setLanguage(getLanguage(false));
+                                        mainHandler.post(() -> listener.onSuccess());
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 
     public String getName() {
@@ -691,25 +1102,59 @@ public class Global extends Application implements DefaultLifecycleObserver {
     /**
      * Returns the total RAM size of the device in MB
      */
-    public long getTotalRamSize(){
+    public int getTotalRamSize(){
         ActivityManager actManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
         actManager.getMemoryInfo(memInfo);
         long totalMemory = memInfo.totalMem / 1000000L;
         android.util.Log.i("memory", "Total memory: " + totalMemory);
-        return totalMemory;
+        return (int) totalMemory;
     }
 
     /**
      * Returns the available RAM size of the device in MB
      */
-    public long getAvailableRamSize(){
+    public int getAvailableRamSize(){
         ActivityManager actManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
         actManager.getMemoryInfo(memInfo);
-        long totalMemory = memInfo.availMem;
-        android.util.Log.i("memory", "Total memory: " + totalMemory);
-        return totalMemory / 1000000L;
+        long availableMemory = memInfo.availMem;
+        android.util.Log.i("memory", "Total memory: " + availableMemory);
+        return (int) (availableMemory / 1000000);
+    }
+
+    /**
+     * Returns (in MB) the absolute maximum native RAM allocatable by forcing the OS
+     * to kill all other killable processes.
+     */
+    public int getMaxAllocatableRAM() {
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        if (activityManager == null) return 0;
+
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        activityManager.getMemoryInfo(memoryInfo);
+
+        // Total physical RAM available to the OS (already excludes GPU-reserved RAM)
+        long totalRam = memoryInfo.totalMem;
+
+        // Android doesn't have an API that shows the max amount of RAM available for native allocations before a crash occurs,
+        // so the best way (also hinted here https://developer.android.com/games/optimize/memory-allocation#conservative-memory-budgets)
+        // is to use a percentage of the total RAM between 50% and 25% as a hard limit of native RAM usage for a single app.
+        double maxPercentage = 0.45;
+
+        // The absolute theoretical maximum you can allocate before the OS targets YOU
+        long maxAllocatable = (long) (totalRam - (totalRam*maxPercentage)) / 1000000L;
+
+        // Return the result, ensuring we don't return a negative number on heavily constrained devices
+        return (int) Math.max(0, maxAllocatable);
+    }
+
+    public int getRamThreshold(){
+        ActivityManager actManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
+        actManager.getMemoryInfo(memInfo);
+        long threshold = memInfo.threshold;
+        return (int) (threshold / 1000000);
     }
 
     /**
@@ -752,7 +1197,11 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
 
     private void loadLanguagesResources(CustomLocale firstLanguage, CustomLocale secondLanguage, RTranslatorMode mode, Translator.GeneralListener listener){
-        translator.loadLanguageResources(firstLanguage, secondLanguage, mode, listener);
+        if(translator != null) {
+            translator.loadLanguageResources(firstLanguage, secondLanguage, mode, listener);
+        }else{
+            listener.onSuccess();  //if the translator is not initialized yet we do not load the language resources
+        }
     }
 }
 

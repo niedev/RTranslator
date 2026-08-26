@@ -6,71 +6,80 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
-import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
+import java.util.ArrayList;
+
+import nie.translator.rtranslator.tools.DownloaderTools;
 
 public class DownloadManager implements ServiceConnection {
     private final Context context;
-    private final DownloadInfo[] downloadInfos;
     @Nullable
-    private Downloader2.Callback callback;
+    private Callback callback;
     @Nullable
     private DownloaderService downloaderService;
-    private final DownloaderService.ClientCallback serviceCallback;
-    private boolean serviceStarted = false;
+    private final Downloader2.ClientCallback serviceCallback;
+    private ArrayList<DownloadGroupInfo> downloadsToStart = new ArrayList<>();
+    private boolean shouldStartAllDownloads = false;
+    private Handler mainHandler;
 
 
-
-    public DownloadManager(Context context, DownloadInfo[] downloadInfos) {
+    public DownloadManager(Context context) {
         this.context = context;
-        this.downloadInfos = downloadInfos;
-        this.serviceCallback = new DownloaderService.ClientCallback() {
+        this.mainHandler = new android.os.Handler(Looper.getMainLooper());
+        this.serviceCallback = new Downloader2.ClientCallback() {
             @Override
-            public void onProgress(Downloader2 download, DownloadInfo downloadInfo, int progress, boolean testingIntegrity) {
-                if(callback != null && isThisDownload(download)){
-                    callback.onProgress(downloadInfo, progress, testingIntegrity);
-                }
+            public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
+                mainHandler.post(() -> {
+                    if(callback != null) callback.onProgress(downloadGroup, download, totalProgress, progress, unzipping, testingIntegrity);
+                });
             }
 
             @Override
-            public void onCompleted(Downloader2 download, DownloadInfo downloadInfo) {
-                if(callback != null && isThisDownload(download)){
-                    callback.onDownloadComplete(downloadInfo);
-                }
+            public void onCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download) {
+                mainHandler.post(() -> {
+                    if(callback != null) callback.onCompleted(downloadGroup, download);
+                });
             }
 
             @Override
-            public void onAllCompleted(Downloader2 download) {
-                if(callback != null && isThisDownload(download)){
-                    callback.onAllDownloadComplete();
-                }
+            public void onAllCompleted(DownloadGroupInfo downloadGroup) {
+                mainHandler.post(() -> {
+                    if(callback != null) callback.onAllCompleted(downloadGroup);
+                });
             }
 
             @Override
-            public void onError(Downloader2 download, DownloadInfo downloadInfo, int reason) {
-                if(callback != null && isThisDownload(download)){
-                    callback.onError(downloadInfo, reason);
-                }
+            public void onError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
+                mainHandler.post(() -> {
+                    if(callback != null) callback.onError(downloadGroup, download, reason);
+                });
             }
         };
     }
 
-    public void subscribe(@Nullable Downloader2.Callback callback) {
+    /**
+     * This method will start the download service (if there are downloads to resume) and resume all the unfinished downloads
+     */
+    public boolean subscribeAndResumeDownload(@Nullable Callback callback) {
         if(this.callback == null) {
             this.callback = callback;
-            if(serviceStarted) {  //if we have not started yet the service, we will bind after starting it, not now (this way the service will not stop when we unbind)
-                boolean result = context.bindService(new Intent(context, DownloaderService.class), this, BIND_ABOVE_CLIENT);
-                Log.d("bind download", result ? "success" : "failed");
+            boolean shouldStartService = areDownloadsRunning(true);
+            if(shouldStartService) {
+                startAndBindService();
+                return true;
             }
         }
+        return false;
     }
 
     public void unsubscribe() {
@@ -78,33 +87,157 @@ public class DownloadManager implements ServiceConnection {
             if (downloaderService != null) {
                 downloaderService.unregisterClient(serviceCallback);
             }
-            context.unbindService(this);
+            boolean shouldStopService = !areDownloadsRunning(false);
+            if(shouldStopService) {
+                stopAndUnbindService();
+            }else{
+                //we just unbind from the service
+                context.unbindService(this);
+                downloaderService = null;
+            }
             this.callback = null;
         }
     }
 
-    public void startDownloads() {
-        if(!serviceStarted) {
-            final Intent intent = new Intent(context, DownloaderService.class);
-            //intent.putExtra("notification", notification);
-            intent.putParcelableArrayListExtra(DownloaderService.DOWNLOAD_INFOS, new ArrayList<>(Arrays.asList(downloadInfos)));
-            context.startService(intent);
-            this.serviceStarted = true;
-            if (callback != null) {   //if we have previously called subscribe before starting the service we will bind here
-                boolean result = context.bindService(new Intent(context, DownloaderService.class), this, BIND_ABOVE_CLIENT);
-                Log.d("bind download", result ? "success" : "failed");
+    public void startDownload(DownloadGroupInfo downloadGroup){
+        DownloadGroupInfo downloadGroupCopy = downloadGroup.clone();
+        if(downloaderService == null && !downloadsToStart.contains(downloadGroup)){
+            downloadsToStart.add(downloadGroupCopy);
+            if(!DownloaderService.running){
+                startAndBindService();
             }
+        }else if(downloaderService != null) {
+            downloaderService.startDownload(downloadGroupCopy);
         }
     }
 
-    public boolean stopDownload() {
-        if(serviceStarted) {
-            if (downloaderService != null) {
-                ArrayList<Downloader2> downloaders = downloaderService.getDownloaders();
-                for (Downloader2 download : downloaders) {
-                    if (isThisDownload(download)) {
-                        downloaderService.pauseDownload(download);
-                        serviceStarted = false;
+    public boolean pauseDownload(DownloadGroupInfo downloadGroup){
+        if(downloaderService != null) {
+            downloaderService.pauseDownload(downloadGroup);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean cancelDownload(DownloadGroupInfo downloadGroup){
+        if(downloaderService != null) {
+            downloaderService.cancelDownload(downloadGroup);
+            return true;
+        }else{
+            ArrayList<DownloadGroupInfo> savedDownloadStatus = getSavedDownloadStatus();
+            int index = savedDownloadStatus.indexOf(downloadGroup);
+            if(index != -1) {
+                // we delete the already downloaded files of this group of download
+                DownloaderTools.deleteDownloadedFiles(savedDownloadStatus.get(index));
+                // we delete the download status from the preferences
+                DownloaderTools.deleteDownloadGroupInfoPreference(context, savedDownloadStatus.get(index));
+            }
+        }
+        return false;
+    }
+
+    public boolean startAllDownloads() {
+        if(downloaderService == null && !shouldStartAllDownloads){
+            shouldStartAllDownloads = true;
+            if(!DownloaderService.running){
+                startAndBindService();
+            }
+        } else if(downloaderService != null) {
+            downloaderService.startAllDownloads();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean pauseAllDownloads() {
+        if(downloaderService != null) {
+            downloaderService.pauseAllDownloads();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean cancelAllDownloads() {
+        if(downloaderService != null) {
+            downloaderService.cancelAllDownloads();
+            return true;
+        }
+        return false;
+    }
+
+    public ArrayList<DownloadGroupInfo> getDownloadsStatus() {
+        if (downloaderService != null) {
+            ArrayList<DownloadGroupInfo> serviceDownloadStatus = downloaderService.getDownloadsStatus();  //this contains the status of only the incompleted downloads
+            ArrayList<DownloadGroupInfo> savedDownloadStatus = getSavedDownloadStatus();    //this contains the status of all the downloads, even the completed ones
+            //we add the completed downloads status to the status of the running downloads from the service
+            for(DownloadGroupInfo savedDownloadGroup: savedDownloadStatus){
+                if(!serviceDownloadStatus.contains(savedDownloadGroup)){
+                    serviceDownloadStatus.add(savedDownloadGroup);
+                }
+            }
+            return serviceDownloadStatus;
+        }
+        return null;
+    }
+
+    public ArrayList<DownloadGroupInfo> getSavedDownloadStatus(){
+        return getSavedDownloadStatus(context);
+    }
+
+    public static ArrayList<DownloadGroupInfo> getSavedDownloadStatus(Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        if (!downloadsStatusString.isEmpty()) {
+            //we check if there are unfinished downloads that are not paused (or also paused ones if includePaused is true)
+            Gson gson = new Gson();
+            return gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
+        }
+        return new ArrayList<>();
+    }
+
+    public boolean checkDownloadCompleted(DownloadGroupInfo downloadGroupInfo){
+        boolean found = false;
+        for(DownloadGroupInfo downloadGroupInfoItem : getSavedDownloadStatus()){
+            if(downloadGroupInfoItem.equals(downloadGroupInfo)){
+                if(downloadGroupInfoItem.isAllDownloadCompleted()){
+                    found = true;
+                }
+                break;
+            }
+        }
+        return found;
+    }
+
+    private void startAndBindService(){
+        // start the service
+        final Intent intent = new Intent(context, DownloaderService.class);
+        context.startService(intent);
+        //we bind to the service
+        boolean result = context.bindService(new Intent(context, DownloaderService.class), this, BIND_ABOVE_CLIENT);
+        Log.d("bind download", result ? "success" : "failed");
+    }
+
+    private void stopAndUnbindService(){
+        if (downloaderService != null) {
+            //we unbind from the service
+            context.unbindService(this);
+            downloaderService = null;
+            // stop the service
+            final Intent intent = new Intent(context, DownloaderService.class);
+            context.stopService(intent);
+        }
+    }
+
+    private boolean areDownloadsRunning(boolean includePaused){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        if (!downloadsStatusString.isEmpty()) {
+            //we check if there are unfinished downloads that are not paused (or also paused ones if includePaused is true)
+            Gson gson = new Gson();
+            ArrayList<DownloadGroupInfo> downloadGroupInfos = gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
+            if (downloadGroupInfos != null) {
+                for (DownloadGroupInfo groupInfo : downloadGroupInfos) {
+                    if (!groupInfo.isAllDownloadCompleted() && (includePaused || groupInfo.getRunningDownloadIndex() != -1)) {
                         return true;
                     }
                 }
@@ -113,23 +246,21 @@ public class DownloadManager implements ServiceConnection {
         return false;
     }
 
-    @Nullable
-    public DownloadInfoExtended getRunningDownloadStatus() {
-        if (downloaderService != null) {
-            ArrayList<Downloader2> downloaders = downloaderService.getDownloaders();
-            for (Downloader2 download : downloaders) {
-                if (isThisDownload(download)) {
-                    return downloaderService.getRunningDownloadStatus(download);
-                }
-            }
-        }
-        return null;
-    }
-
     @Override
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
         this.downloaderService = ((DownloaderService.LocalBinder) iBinder).getService();
         downloaderService.registerClient(serviceCallback);
+        mainHandler.post(() -> {
+            if(callback != null) callback.onServiceConnected();
+        });
+        for(DownloadGroupInfo downloadGroup: downloadsToStart) {
+            downloaderService.startDownload(downloadGroup);
+        }
+        downloadsToStart.clear();
+        if(shouldStartAllDownloads){
+            downloaderService.startAllDownloads();
+            shouldStartAllDownloads = false;
+        }
     }
 
     @Override
@@ -137,9 +268,7 @@ public class DownloadManager implements ServiceConnection {
         this.downloaderService = null;
     }
 
-    private boolean isThisDownload(Downloader2 download){
-        //we check if the download is the one started by this manager
-        //(based on how the downloaderService is implemented if one of the downloadInfos match they all match)
-        return Arrays.stream(download.getDownloadInfos()).anyMatch((item -> Objects.equals(item.getDestinationCompletePath(), downloadInfos[0].getDestinationCompletePath())));
+    public static abstract class Callback extends Downloader2.ClientCallback {
+        public abstract void onServiceConnected();
     }
 }

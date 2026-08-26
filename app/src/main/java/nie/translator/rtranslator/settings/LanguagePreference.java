@@ -130,7 +130,7 @@ public class LanguagePreference extends Preference {
         progressBar.setVisibility(View.GONE);
         reloadButton.setVisibility(View.GONE);
 
-        final ArrayList<CustomLocale> languages = global.getLanguages(true);
+        final ArrayList<CustomLocale> languages = global.getLanguages(Global.RTranslatorMode.CONVERSATION_MODE, true);
         CustomLocale selectedLanguage = global.getLanguage(false);
         listViewGui.setVisibility(View.VISIBLE);
 
@@ -139,7 +139,7 @@ public class LanguagePreference extends Preference {
         listViewGui.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                ArrayList<CustomLocale> result = global.getLanguages(true);
+                ArrayList<CustomLocale> result = global.getLanguages(Global.RTranslatorMode.CONVERSATION_MODE, true);
                 global.getTTSLanguages(true, new Global.GetLocalesListListener() {
                     @Override
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {

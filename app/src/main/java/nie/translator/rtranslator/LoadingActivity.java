@@ -16,22 +16,28 @@
 
 package nie.translator.rtranslator;
 
+import static nie.translator.rtranslator.tools.DownloaderTools.checkMozillaModelsPresence;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
+import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
+
+import java.io.File;
 import java.util.ArrayList;
 import nie.translator.rtranslator.access.AccessActivity;
+import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader2.DownloadInfo;
+import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.CustomLocale;
+import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.ImageActivity;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
@@ -57,7 +63,7 @@ public class LoadingActivity extends GeneralActivity {
     protected void onCreate(Bundle savedInstanceState) {
         String previousActivity = getIntent().getStringExtra("activity");
         SplashScreen splashScreen = null;
-        if(previousActivity == null || !previousActivity.equals("download")) {  //if this activity is called by the DownloadFragment we don't use the splash screen
+        if(previousActivity == null) {  //if this activity is called by another activity (instead of on launch), we don't use the splash screen
             // Handle the splash screen transition (it must remain before the super.onCreate() call).
             splashScreen = SplashScreen.installSplashScreen(this);
         }
@@ -83,17 +89,16 @@ public class LoadingActivity extends GeneralActivity {
         super.onResume();
         isVisible = true;
         global = (Global) getApplication();
-        if (global.isFirstStart()) {
-            Intent intent = new Intent(this, AccessActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            finish();
+        if (isFirstStart()) {
+            startAccessActivity();
         } else if (global.getTranslator() != null && (Global.ONLY_TEXT_TRANSLATION_MODE || global.getSpeechRecognizer() != null)) {
-            startVoiceTranslationActivity();
+            if(checkIfResourcesPreferencesRespectDownloads()) {
+                startVoiceTranslationActivity();
+            }else{
+                startSettingsActivityWithModelManager();
+            }
         } else {
             initializeApp(false);
-            //onFailure(new int[]{ErrorCodes.GOOGLE_TTS_ERROR}, 0);
         }
     }
 
@@ -103,7 +108,52 @@ public class LoadingActivity extends GeneralActivity {
         isVisible = false;
     }
 
+    private boolean isFirstStart(){
+        if(!global.isFirstStart()){  //if first start == false, we check if it's the first start after an update from the version 2.0
+            // we check if there are some nllb files, if so we delete those and set foundNllb = true (this confirms that it's the first start after an update from the version 2.0)
+            boolean foundNllb = false;
+            DownloadGroupInfo nllbDownloadInfo = global.getNllbDownloadInfo();
+            for(DownloadInfo download : nllbDownloadInfo.downloadsInfo){
+                File file = new File(download.getDestinationCompletePath());
+                if(file.exists()){
+                    if(file.delete()) {
+                        foundNllb = true;
+                    }
+                }
+            }
+            // if foundNllb == true we add the initial download status to the saved download status in the preferences and then we set first start to true and return true,
+            // so the access activity will be started with the fragment started that will depend on the missing data.
+            if(foundNllb){
+                DownloadGroupInfo initialDownloadInfo = global.getInitialDownloadInfo();
+                int firsIncompleteDownload = -1;
+                if(!DownloadManager.getSavedDownloadStatus(this).contains(initialDownloadInfo)) {
+                    for (int i = 0; i < initialDownloadInfo.downloadsInfo.length; i++) {
+                        DownloadInfo download = initialDownloadInfo.downloadsInfo[i];
+                        File file = new File(download.getDestinationCompletePath());
+                        if (file.exists()) {
+                            download.setDownloadCompleted(true);
+                            if(download.shouldUnzip()) download.setUnzipped(true);
+                            if(download.shouldTestIntegrity()) download.setIntegrityTested(true);
+                        }else if(firsIncompleteDownload == -1){
+                            firsIncompleteDownload = i;
+                        }
+                    }
+                }
+                initialDownloadInfo.setRunningDownloadIndex(firsIncompleteDownload);
+                DownloaderTools.addDownloadGroupInfoPreference(this, initialDownloadInfo);
+                global.setFirstStart(true);
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return true;
+        }
+    }
+
     private void initializeApp(boolean ignoreTTSError) {
+        Log.i("app", "App initialization");
+        adaptResourcesPreferencesToDownloads();
         global.getLanguagesAndCheckTTS(false, ignoreTTSError, new Global.GetLocalesListListener() {
             @Override
             public void onSuccess(ArrayList<CustomLocale> result) {
@@ -113,6 +163,7 @@ public class LoadingActivity extends GeneralActivity {
                         NeuralNetworkApi.InitListener speechRecognizerInitListener = new NeuralNetworkApi.InitListener() {
                             @Override
                             public void onInitializationFinished() {
+                                global.setModelsLoaded(true);
                                 if (isVisible) {
                                     startVoiceTranslationActivity();
                                 }
@@ -146,6 +197,14 @@ public class LoadingActivity extends GeneralActivity {
         });
     }
 
+    private void startAccessActivity(){
+        Intent intent = new Intent(this, AccessActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        finish();
+    }
+
     private void startVoiceTranslationActivity() {
         if(!START_IMAGE) {
             startingActivity = true;
@@ -159,6 +218,15 @@ public class LoadingActivity extends GeneralActivity {
         }
     }
 
+    private void startSettingsActivityWithModelManager(){
+        Intent intent = new Intent(this, SettingsActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("startWithModelManager", true);
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        finish();
+    }
+
     private void startImageActivity() {
         startingActivity = true;
         Intent intent = new Intent(LoadingActivity.this, ImageActivity.class);
@@ -166,7 +234,99 @@ public class LoadingActivity extends GeneralActivity {
         startActivity(intent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
+    }
 
+    private boolean checkIfResourcesPreferencesRespectDownloads(){
+        long initTime = System.currentTimeMillis();
+        // check of translation model preference
+        DownloadManager downloadManager = new DownloadManager(this);
+        int translationMode = global.getTranslationMode();
+        switch (translationMode) {
+            case Translator.MOZILLA:
+                if(!checkMozillaModelsPresence(downloadManager)){
+                    return false;
+                }
+                break;
+            case Translator.HY_MT:
+                if(!downloadManager.checkDownloadCompleted(global.getHyMtDownloadInfo())){
+                    return false;
+                }
+                break;
+            case Translator.MADLAD_CACHE:
+                if(!downloadManager.checkDownloadCompleted(global.getMadladDownloadInfo())){
+                    return false;
+                }
+                break;
+        }
+        // check of Mozilla for voice translation modes preference
+        if(translationMode != Translator.MOZILLA && global.isUseMozillaForVoiceTranslation() && !checkMozillaModelsPresence(downloadManager)){
+            return false;
+        }
+        // check of Tatoeba preference
+        if(global.isUseTatoeba() && !downloadManager.checkDownloadCompleted(global.getTatoebaDownloadInfo())){
+            return false;
+        }
+        android.util.Log.i("performance", "checkIfResourcesPreferencesRespectDownloads done in: " + (System.currentTimeMillis() - initTime) + "ms");
+        return true;
+    }
+
+    /**
+     * This method must be called before the app initialization (initializeApp()).
+     * In the case the user has deleted some resources in the ModelManagerFragment and then
+     * terminated the app before applying the settings (with the relative checks).
+     * When the app is restarted there can be some preferences that require some resources that
+     * have been deleted. This method will restore the correct settings to match the downloaded resource.
+     * <p>
+     * Note: When deleting the resource the user cannot cancel all the translation models downloaded,
+     * so this method can always change the preferences to make the app work (the app needs at least
+     * a downloaded translation model, and nothing else)
+     */
+    private void adaptResourcesPreferencesToDownloads(){
+        long initTime = System.currentTimeMillis();
+        // eventual adaptation of translation model preference
+        DownloadManager downloadManager = new DownloadManager(this);
+        int translationMode = global.getTranslationMode();
+        ArrayList<Integer> availableModels = new ArrayList<>();
+        if(checkMozillaModelsPresence(downloadManager)){
+            availableModels.add(Translator.MOZILLA);
+        }
+        if(downloadManager.checkDownloadCompleted(global.getHyMtDownloadInfo())){
+            availableModels.add(Translator.HY_MT);
+        }
+        if(downloadManager.checkDownloadCompleted(global.getMadladDownloadInfo())){
+            availableModels.add(Translator.MADLAD_CACHE);
+        }
+        if(!availableModels.contains(translationMode)){
+            int newTranslationMode = -1;
+            if(availableModels.contains(Translator.MOZILLA)){
+                newTranslationMode = Translator.MOZILLA;
+            }else if(availableModels.contains(Translator.HY_MT)){
+                newTranslationMode = Translator.HY_MT;
+            }else if(availableModels.contains(Translator.MADLAD_CACHE)){
+                newTranslationMode = Translator.MADLAD_CACHE;
+            }
+            if(newTranslationMode != -1) {
+                final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putInt("selectedTranslationModel", newTranslationMode);
+                editor.apply();
+            }
+        }
+        // eventual adaptation of Mozilla for voice translation modes preference
+        if(!availableModels.contains(Translator.MOZILLA)){
+            final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("useMozillaForVoiceTranslation", false);
+            editor.apply();
+        }
+        // eventual adaptation of Tatoeba preference
+        if(!downloadManager.checkDownloadCompleted(global.getTatoebaDownloadInfo())){
+            final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("useTatoeba", false);
+            editor.apply();
+        }
+        android.util.Log.i("performance", "adaptResourcesPreferencesToDownloads done in: " + (System.currentTimeMillis() - initTime) + "ms");
     }
 
     private void notifyGoogleTTSErrorDialog() {

@@ -76,6 +76,31 @@ public class LanguageResourcesIndicator {
         return pairs;
     }
 
+    public ArrayList<CustomLocale> getUniqueSrcConversationResources(){
+        ArrayList<CustomLocale> resources = new ArrayList<>();
+        for (CustomLocale resource : conversationSrcResources.values()) {
+            if (resource != null && !resources.contains(resource)) {
+                resources.add(resource);
+            }
+        }
+        return resources;
+    }
+
+    public ArrayList<String> getUniqueSrcConversationResourcePairs(){
+        ArrayList<String> pairs = new ArrayList<>();
+        if(conversationTgtResource != null) {
+            for (CustomLocale srcResource : conversationSrcResources.values()) {
+                if (srcResource != null) {
+                    String pairCode = srcResource.getISO3Language()+"-"+conversationTgtResource.getISO3Language();
+                    if(!pairs.contains(pairCode)){
+                        pairs.add(pairCode);
+                    }
+                }
+            }
+        }
+        return pairs;
+    }
+
     public boolean isResourceContainedInOtherModes(CustomLocale lang, Global.RTranslatorMode currentMode){
         if(currentMode != Global.RTranslatorMode.TEXT_TRANSLATION_MODE && Arrays.asList(textTranslationResources).contains(lang)){
             return true;
@@ -153,27 +178,6 @@ public class LanguageResourcesIndicator {
                     return true;
                 }
             }
-        }
-        return false;
-    }
-
-    public boolean isResourceTypeLoaded(Global.RTranslatorMode rtranslatorMode, ResourceType resourceType){
-        switch (rtranslatorMode){
-            case TEXT_TRANSLATION_MODE:
-                if(textTranslationResourcesLoaded.contains(resourceType)){
-                    return true;
-                }
-                break;
-            case WALKIE_TALKIE_MODE:
-                if(walkieTalkieResourcesLoaded.contains(resourceType)){
-                    return true;
-                }
-                break;
-            case CONVERSATION_MODE:
-                if(conversationResourcesLoaded.contains(resourceType)){
-                    return true;
-                }
-                break;
         }
         return false;
     }

@@ -31,8 +31,8 @@ android {
         applicationId "nie.translator.rtranslator"
         targetSdkVersion 36   //32
         compileSdk 36
-        versionCode 24
-        versionName '2.1.4'
+        versionName '3.0.0-beta1'
+        versionCode 26
         minSdkVersion 28
         externalNativeBuild {
             cmake {
@@ -116,6 +116,7 @@ android {
 dependencies {
     //implementation fileTree(include: ['*.jar'], dir: 'libs')
     // Support libraries
+    implementation 'com.google.code.gson:gson:2.14.0'
     implementation "com.google.android.material:material:1.9.0"  //1.9.0
     implementation "androidx.cardview:cardview:1.0.0"
     implementation "androidx.recyclerview:recyclerview:1.0.0"
@@ -123,6 +124,7 @@ dependencies {
     implementation "androidx.preference:preference:1.1.0-alpha02"  //prima era 1.1.0-alpha02
     implementation "androidx.core:core-splashscreen:1.0.1"
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+    implementation "com.github.worker8:RadioGroupPlus:1.0.1"
     //Download library
     implementation 'com.github.amitshekhariitbhu:PRDownloader:1.0.2'
     // DJL HuggingFace tokenizers wrapper
@@ -133,7 +135,10 @@ dependencies {
     implementation "com.google.protobuf:protobuf-javalite:4.33.5"
     // bouncycastle crypto lib
     implementation "org.bouncycastle:bcprov-jdk15to18:1.83"
-
+    //lingua
+    implementation "com.github.pemistahl:lingua:1.2.2"
+    // VAD
+    implementation 'com.github.gkonovalov.android-vad:silero:2.0.10'
     //implementation 'androidx.core:core-ktx:1.10.0'
     implementation 'androidx.work:work-runtime:2.7.1'
     implementation 'androidx.exifinterface:exifinterface:1.3.7'
@@ -144,8 +149,6 @@ dependencies {
     //ONNX Runtime
     implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.23.2'  //latest.release
     implementation 'com.microsoft.onnxruntime:onnxruntime-extensions-android:0.13.0'   //latest.release
-    //Ml-Kit
-    implementation 'com.google.mlkit:language-id:17.0.5'
     //JWS parser
     implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '5.1'
     implementation files('libs/sqlite4java-android-release.aar')

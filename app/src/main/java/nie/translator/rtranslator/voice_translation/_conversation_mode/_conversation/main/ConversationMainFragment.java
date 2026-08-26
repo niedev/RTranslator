@@ -40,8 +40,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
+import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.ErrorCodes;
+import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.ButtonKeyboard;
 import nie.translator.rtranslator.tools.gui.ButtonMic;
 import nie.translator.rtranslator.tools.gui.ButtonSound;
@@ -50,6 +52,7 @@ import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.gui.messages.MessagesAdapter;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicator;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicatorListener;
+import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationFragment;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationService;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
@@ -69,6 +72,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
     //connection
     protected VoiceTranslationService.VoiceTranslationServiceCommunicator conversationServiceCommunicator;
     protected VoiceTranslationService.VoiceTranslationServiceCallback conversationServiceCallback;
+
 
     public ConversationMainFragment() {
         //an empty constructor is always needed for fragments
@@ -213,7 +217,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                     conversationServiceCommunicator.setEditTextOpen(false);
                     microphone.deleteEditText(activity, ConversationMainFragment.this, keyboard, editText, micPlaceHolder);
                 } else {
-                    Toast.makeText(activity, R.string.error_missing_mic_permissions, Toast.LENGTH_SHORT).show();
+                    activity.showPermissionDialog(VoiceTranslationActivity.CONVERSATION_FRAGMENT);
                 }
             }
         });
@@ -283,14 +287,26 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
     public void restoreAttributesFromService() {
         conversationServiceCommunicator.getAttributes(new VoiceTranslationService.AttributesListener() {
             @Override
-            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, int listeningMic) {
+            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic) {
                 container.setVisibility(View.VISIBLE);
                 // initialization with service values
-                mAdapter = new MessagesAdapter(messages, global, new MessagesAdapter.Callback() {
+                mAdapter = new MessagesAdapter(messages, global, speakingUtteranceId, new MessagesAdapter.Callback() {
                     @Override
                     public void onFirstItemAdded() {
                         description.setVisibility(View.GONE);
                         mRecyclerView.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onTTSButtonClick(final GuiMessage message, final boolean play) {
+                        if(play){
+                            final String textToSpeak = message.getMessage().getText();
+                            final String utteranceId = String.valueOf(message.getMessageID());
+                            String localeCode = global.getLanguage(true).getCode();
+                            conversationServiceCommunicator.speakText(textToSpeak, localeCode, utteranceId);
+                        }else{
+                            conversationServiceCommunicator.stopSpeakingText();
+                        }
                     }
                 });
                 mRecyclerView.setAdapter(mAdapter);
@@ -320,14 +336,18 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                     conversationServiceCallback.onBluetoothHeadsetDisconnected();
                 }
 
-                if(isMicActivated){
-                    if (!microphone.isMute() && !isEditTextOpen) {
-                        activateInputs(true);
+                if(!Tools.hasPermissions(activity, Global.REQUIRED_PERMISSIONS_VOICE)){
+                    deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_MIC_PERMISSION);
+                } else {
+                    if (isMicActivated) {
+                        if (!microphone.isMute() && !isEditTextOpen) {
+                            activateInputs(true);
+                        } else {
+                            activateInputs(false);
+                        }
                     } else {
-                        activateInputs(false);
+                        deactivateInputs(DeactivableButton.DEACTIVATED);
                     }
-                }else{
-                    deactivateInputs(DeactivableButton.DEACTIVATED);
                 }
             }
         });
@@ -395,8 +415,9 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
 
     /**
      * Handles user acceptance (or denial) of our permission request.
+     * //todo: old method, remove in the future
      */
-    @CallSuper
+    /*@CallSuper
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -417,7 +438,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
         if (!microphone.isMute() && microphone.getActivationStatus() == DeactivableButton.ACTIVATED) {
             startMicrophone(false);
         }
-    }
+    }*/
 
     @Override
     public void onStop() {
@@ -435,6 +456,23 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
 
 
     public class ConversationServiceCallback extends VoiceTranslationService.VoiceTranslationServiceCallback {
+        @Override
+        public void onTTSStarted(String utteranceId) {
+            super.onTTSStarted(utteranceId);
+            if(utteranceId != null) {
+                long id = Long.parseLong(utteranceId);
+                mAdapter.setPlayingMessageID(id);
+            }
+        }
+
+        @Override
+        public void onTTSDone(String utteranceId) {
+            super.onTTSDone(utteranceId);
+            if (utteranceId != null) {
+                mAdapter.setPlayingMessageID(-1);
+            }
+        }
+
         @Override
         public void onVoiceStarted(int mode) {
             super.onVoiceStarted(mode);
@@ -516,12 +554,12 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                         sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
                         //activity.showGoogleTTSErrorDialog();
                         break;
-                    case VoiceTranslationService.MISSING_MIC_PERMISSION: {
+                    /*case ErrorCodes.MISSING_MIC_PERMISSION: {
                         if(getContext() != null) {
                             requestPermissions(VoiceTranslationService.REQUIRED_PERMISSIONS, VoiceTranslationService.REQUEST_CODE_REQUIRED_PERMISSIONS);
                         }
                         break;
-                    }
+                    }*/
                     default: {
                         activity.onError(aReason, value);
                         break;
@@ -530,6 +568,4 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
             }
         }
     }
-
-
 }

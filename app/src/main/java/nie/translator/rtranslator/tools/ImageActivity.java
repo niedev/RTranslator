@@ -1,7 +1,5 @@
 package nie.translator.rtranslator.tools;
 
-//This activity is used only to create the images of the conversation mode in the readme
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -21,6 +19,8 @@ import nie.translator.rtranslator.bluetooth.Message;
 import nie.translator.rtranslator.bluetooth.Peer;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.gui.messages.MessagesAdapter;
+
+//This activity is used only to create the images of the conversation mode in the readme
 
 public class ImageActivity extends Activity {
     protected MessagesAdapter mAdapter;
@@ -53,10 +53,14 @@ public class ImageActivity extends Activity {
         messages.add(new GuiMessage(new Message(this, new Peer(null, "Carlos11", true), "m", "Je vais bien"), false, true));
         messages.add(new GuiMessage(new Message(this, "m", "Moi aussi"), true, true));*/
 
-        mAdapter = new MessagesAdapter(messages, this.getApplication(), new MessagesAdapter.Callback() {
+        mAdapter = new MessagesAdapter(messages, this.getApplication(),  -1, new MessagesAdapter.Callback() {
             @Override
             public void onFirstItemAdded() {
                 mRecyclerView.setVisibility(View.VISIBLE);
+            }
+            @Override
+            public void onTTSButtonClick(GuiMessage message, boolean play) {
+                // Do nothing for ImageActivity
             }
         });
         mRecyclerView.setAdapter(mAdapter);

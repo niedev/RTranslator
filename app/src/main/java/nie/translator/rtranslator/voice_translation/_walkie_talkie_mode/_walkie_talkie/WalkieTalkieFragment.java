@@ -17,7 +17,6 @@
 package nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -33,7 +32,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
-import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -42,6 +40,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import java.util.ArrayList;
+
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.settings.SettingsActivity;
@@ -57,9 +56,9 @@ import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.gui.messages.MessagesAdapter;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicator;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicatorListener;
+import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationFragment;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationService;
-import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
 
 
 public class WalkieTalkieFragment extends VoiceTranslationFragment {
@@ -115,8 +114,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         super.onViewCreated(view, savedInstanceState);
         constraintLayout = view.findViewById(R.id.container);
         container = view.findViewById(R.id.walkie_talkie_main_container);
-        firstLanguageSelector = view.findViewById(R.id.firstLanguageSelector);
-        secondLanguageSelector = view.findViewById(R.id.secondLanguageSelector);
+        firstLanguageSelector = view.findViewById(R.id.cancelButtonLayout);
+        secondLanguageSelector = view.findViewById(R.id.okButtonLayout);
         exitButton = view.findViewById(R.id.exitButton);
         sound = view.findViewById(R.id.soundButton);
         microphone = view.findViewById(R.id.buttonMic);
@@ -145,7 +144,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         final View.OnClickListener micMissingClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(activity, R.string.error_missing_mic_permissions, Toast.LENGTH_SHORT).show();
+                activity.showPermissionDialog(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
             }
         };
         Toolbar toolbar = activity.findViewById(R.id.toolbarWalkieTalkie);
@@ -363,14 +362,26 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
     public void restoreAttributesFromService() {
         walkieTalkieServiceCommunicator.getAttributes(new VoiceTranslationService.AttributesListener() {
             @Override
-            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, int listeningMic) {
+            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic) {
                 // initialization with service values
                 //container.setVisibility(View.VISIBLE);
-                mAdapter = new MessagesAdapter(messages, global, new MessagesAdapter.Callback() {
+                mAdapter = new MessagesAdapter(messages, global, speakingUtteranceId, new MessagesAdapter.Callback() {
                     @Override
                     public void onFirstItemAdded() {
                         description.setVisibility(View.GONE);
                         mRecyclerView.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onTTSButtonClick(final GuiMessage message, final boolean play) {
+                        if(play){
+                            final String textToSpeak = message.getMessage().getText();
+                            final String utteranceId = String.valueOf(message.getMessageID());
+                            String localeCode = message.isMine() ? global.getSecondLanguage(true).getCode() : global.getFirstLanguage(true).getCode();
+                            walkieTalkieServiceCommunicator.speakText(textToSpeak, localeCode, utteranceId);
+                        }else{
+                            walkieTalkieServiceCommunicator.stopSpeakingText();
+                        }
                     }
                 });
                 mRecyclerView.setAdapter(mAdapter);
@@ -418,14 +429,18 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                     sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
                 }
 
-                if(isMicActivated){
-                    if (!microphone.isMute()) {
-                        activateInputs(true);
+                if(!Tools.hasPermissions(activity, Global.REQUIRED_PERMISSIONS_VOICE)){
+                    deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_MIC_PERMISSION);
+                } else {
+                    if (isMicActivated) {
+                        if (!microphone.isMute()) {
+                            activateInputs(true);
+                        } else {
+                            activateInputs(false);
+                        }
                     } else {
-                        activateInputs(false);
+                        deactivateInputs(DeactivableButton.DEACTIVATED);
                     }
-                }else{
-                    deactivateInputs(DeactivableButton.DEACTIVATED);
                 }
             }
         });
@@ -466,7 +481,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         if (cause == DeactivableButton.DEACTIVATED) {
             sound.deactivate(DeactivableButton.DEACTIVATED);
         } else {
-            sound.activate(false);  // to activate the button sound which otherwise remains deactivated and when clicked it shows the message "wait for initialisation"
+            sound.activate(false);  // to activate the button sound which otherwise remains deactivated and when clicked it shows the message "wait for initialization"
         }
     }
 
@@ -547,7 +562,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         reloadButton.setVisibility(View.GONE);
         //progressBar.setVisibility(View.VISIBLE);
 
-        final ArrayList<CustomLocale> languages = global.getLanguages(true);
+        final ArrayList<CustomLocale> languages = global.getLanguages(Global.RTranslatorMode.WALKIE_TALKIE_MODE, true);
         //progressBar.setVisibility(View.GONE);
         listViewGui.setVisibility(View.VISIBLE);
 
@@ -588,7 +603,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // save firstLanguage selected
         global.setFirstLanguage(language, null);
         // change language displayed
-        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.firstLanguageName)).setText(language.getDisplayNameWithoutTTS(), true);
+        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.cancelButtonText)).setText(language.getDisplayNameWithoutTTS(), true);
         leftMicLanguage.setText(language.getDisplayNameWithoutTTS(), true);
     }
 
@@ -598,7 +613,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // save secondLanguage selected
         global.setSecondLanguage(language, null);
         // change language displayed
-        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.secondLanguageName)).setText(language.getDisplayNameWithoutTTS(), true);
+        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(language.getDisplayNameWithoutTTS(), true);
         rightMicLanguage.setText(language.getDisplayNameWithoutTTS(), true);
     }
 
@@ -621,8 +636,9 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
 
     /**
      * Handles user acceptance (or denial) of our permission request.
+     * //todo: old method, remove in the future
      */
-    @CallSuper
+    /*@CallSuper
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -643,11 +659,28 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         if (!microphone.isMute() && microphone.getActivationStatus() == DeactivableButton.ACTIVATED) {
             startMicrophone(false);
         }
-    }
+    }*/
 
 
 
     public class WalkieTalkieServiceCallback extends VoiceTranslationService.VoiceTranslationServiceCallback {
+        @Override
+        public void onTTSStarted(String utteranceId) {
+            super.onTTSStarted(utteranceId);
+            if(utteranceId != null) {
+                long id = Long.parseLong(utteranceId);
+                mAdapter.setPlayingMessageID(id);
+            }
+        }
+
+        @Override
+        public void onTTSDone(String utteranceId) {
+            super.onTTSDone(utteranceId);
+            if (utteranceId != null) {
+                mAdapter.setPlayingMessageID(-1);
+            }
+        }
+
         @Override
         public void onVoiceStarted(int mode) {
             super.onVoiceStarted(mode);
@@ -755,12 +788,12 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                         sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
                         //activity.showGoogleTTSErrorDialog();
                         break;
-                    case VoiceTranslationService.MISSING_MIC_PERMISSION: {
+                    /*case ErrorCodes.MISSING_MIC_PERMISSION: {
                         if(getContext() != null) {
                             requestPermissions(VoiceTranslationService.REQUIRED_PERMISSIONS, VoiceTranslationService.REQUEST_CODE_REQUIRED_PERMISSIONS);
                         }
                         break;
-                    }
+                    }*/
                     default: {
                         activity.onError(aReason, value);
                         break;

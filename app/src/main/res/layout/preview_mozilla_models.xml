@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <include layout="@layout/component_row_models_installed" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="150"
+        app:modelTitle="English"
+        app:state="downloaded" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="120"
+        app:modelTitle="Italian"
+        app:state="downloaded" />
+    <include layout="@layout/component_row_models_available" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="80"
+        app:modelTitle="Chinese" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="90"
+        app:modelTitle="Japanese" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="73"
+        app:modelTitle="German" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="100"
+        app:modelTitle="Korean" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="80"
+        app:modelTitle="Chinese" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="90"
+        app:modelTitle="Japanese" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="73"
+        app:modelTitle="German" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="100"
+        app:modelTitle="Korean" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="80"
+        app:modelTitle="Chinese" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="90"
+        app:modelTitle="Japanese" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="73"
+        app:modelTitle="German" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="100"
+        app:modelTitle="Korean" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="80"
+        app:modelTitle="Chinese" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="90"
+        app:modelTitle="Japanese" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="73"
+        app:modelTitle="German" />
+    <nie.translator.rtranslator.tools.gui.ResourceManagerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMadlad"
+        app:layout_constraintTop_toTopOf="parent"
+        app:modelDescription=""
+        app:modelSize="100"
+        app:modelTitle="Korean" />
+
+</LinearLayout>

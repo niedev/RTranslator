@@ -21,15 +21,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toolbar;
 import androidx.appcompat.app.AlertDialog;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import nie.translator.rtranslator.GeneralActivity;
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.tools.Tools;
+import nie.translator.rtranslator.tools.gui.ResourceManagerView;
 
 
 public class SettingsActivity extends GeneralActivity {
     public static final String SETTINGS_FRAGMENT = "startSettings";
     public static final String MODEL_MANAGER = "startModelManager";
+    public static final String MOZILLA_MANAGER = "startMozillaManager";
     private Fragment fragment;
 
     @Override
@@ -45,10 +52,14 @@ public class SettingsActivity extends GeneralActivity {
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
+        Bundle b = getIntent().getExtras();
+        boolean startWithModelManager = b != null && b.getBoolean("startWithModelManager");
         if (savedInstanceState != null) {
             //Restore the fragment's instance
             fragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment_inizialization");
-        } else {
+        } else if(startWithModelManager){
+            startFragment(MODEL_MANAGER, null);
+        }else {
             startFragment(SETTINGS_FRAGMENT, null);
         }
     }
@@ -68,6 +79,7 @@ public class SettingsActivity extends GeneralActivity {
                 break;
             }
             case MODEL_MANAGER: {
+                //ModelManagerFragmentOld modelManagerFragment = new ModelManagerFragmentOld();
                 ModelManagerFragment modelManagerFragment = new ModelManagerFragment();
                 if (bundle != null) {
                     modelManagerFragment.setArguments(bundle);
@@ -77,6 +89,19 @@ public class SettingsActivity extends GeneralActivity {
                 transaction.replace(R.id.fragment_settings_container, modelManagerFragment);
                 transaction.commit();
                 fragment = modelManagerFragment;
+                break;
+            }
+            case MOZILLA_MANAGER: {
+                MozillaManagerFragment mozillaManagerFragment = new MozillaManagerFragment();
+                if (bundle != null) {
+                    mozillaManagerFragment.setArguments(bundle);
+                }
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
+                transaction.replace(R.id.fragment_settings_container, mozillaManagerFragment);
+                transaction.commit();
+                fragment = mozillaManagerFragment;
+                break;
             }
         }
     }
@@ -110,7 +135,13 @@ public class SettingsActivity extends GeneralActivity {
                     super.onBackPressed();
                 }
             }else if (fragment instanceof ModelManagerFragment) {
-                startFragment(SETTINGS_FRAGMENT, null);
+                if(((ModelManagerFragment) fragment).checkSettingsChanged()){
+                    showConfirmApplyDialog();
+                }else {
+                    ((ModelManagerFragment) fragment).applySettings();
+                }
+            }else if (fragment instanceof MozillaManagerFragment) {
+                startFragment(MODEL_MANAGER, null);
             }else{
                 super.onBackPressed();
             }
@@ -128,5 +159,35 @@ public class SettingsActivity extends GeneralActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    public void showConfirmApplyDialog(){
+        final View editDialogLayout = getLayoutInflater().inflate(R.layout.dialog_apply, null);
+
+        final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MyThemeOverlay_MaterialComponents_MaterialAlertDialog);
+        builder.setCancelable(true);
+
+        AlertDialog dialog = builder.create();
+        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(this, 16), 0, 0);
+        dialog.show();
+
+        CardView applyButton = editDialogLayout.findViewById(R.id.okButtonCard);
+        CardView cancelButton = editDialogLayout.findViewById(R.id.cancelButtonCard);
+
+        applyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                ((ModelManagerFragment) fragment).applySettings();
+            }
+        });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                ((ModelManagerFragment) fragment).restoreGuiPreferenceState();
+                ((ModelManagerFragment) fragment).applySettings();
+            }
+        });
     }
 }

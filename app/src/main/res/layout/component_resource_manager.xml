@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/titleResource"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:text="HY-MT"
+        android:textColor="@color/very_very_dark_gray"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/descriptionResource"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="Middleweigth model, it has the best quality, comparable to Deepseek."
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleResource"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressBarDownload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:max="100"
+        android:progress="0"
+        tools:progress="70"
+        android:visibility="invisible"
+        app:indicatorSize="33dp"
+        app:trackThickness="4dp"
+        app:layout_constraintBottom_toBottomOf="@+id/titleResource"
+        app:layout_constraintEnd_toStartOf="@+id/buttonDelete"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/titleResource"
+        app:layout_constraintTop_toTopOf="@+id/titleResource" />
+
+    <ImageView
+        android:id="@+id/buttonDownload"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:visibility="visible"
+        android:padding="2dp"
+        app:layout_constraintBottom_toBottomOf="@+id/progressBarDownload"
+        app:layout_constraintEnd_toEndOf="@+id/progressBarDownload"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/progressBarDownload"
+        app:layout_constraintTop_toTopOf="@+id/progressBarDownload"
+        android:src="@drawable/download_icon"
+        android:tint="@color/very_very_dark_gray" />
+
+    <ImageView
+        android:id="@+id/buttonDelete"
+        android:layout_width="8dp"
+        android:layout_height="32dp"
+        android:src="@drawable/delete_icon"
+        android:tint="@color/very_very_dark_gray"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/titleResource"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/titleResource"
+        app:layout_constraintTop_toTopOf="@+id/titleResource" />
+
+    <TextView
+        android:id="@+id/textDownload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="2 GB"
+        app:layout_constraintBottom_toBottomOf="@+id/titleResource"
+        app:layout_constraintEnd_toStartOf="@+id/progressBarDownload"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/titleResource"
+        app:layout_constraintTop_toTopOf="@+id/titleResource" />
+
+    <ImageView
+        android:id="@+id/pauseImage"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:visibility="invisible"
+        android:tint="@color/very_very_dark_gray"
+        app:layout_constraintBottom_toBottomOf="@+id/progressBarDownload"
+        app:layout_constraintEnd_toEndOf="@+id/progressBarDownload"
+        app:layout_constraintStart_toStartOf="@+id/progressBarDownload"
+        app:layout_constraintTop_toTopOf="@+id/progressBarDownload"
+        android:src="@drawable/pause_icon" />
+
+    <ImageView
+        android:id="@+id/playImage"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:tint="@color/very_very_dark_gray"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/progressBarDownload"
+        app:layout_constraintEnd_toEndOf="@+id/progressBarDownload"
+        app:layout_constraintStart_toStartOf="@+id/progressBarDownload"
+        app:layout_constraintTop_toTopOf="@+id/progressBarDownload"
+        android:src="@drawable/play_icon" />
+
+    <ImageView
+        android:id="@+id/errorIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/titleResource"
+        app:layout_constraintEnd_toStartOf="@+id/textDownload"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/titleResource"
+        app:layout_constraintTop_toTopOf="@+id/titleResource"
+        android:src="@drawable/error_icon"
+        android:tint="@color/red"
+        android:visibility="invisible"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

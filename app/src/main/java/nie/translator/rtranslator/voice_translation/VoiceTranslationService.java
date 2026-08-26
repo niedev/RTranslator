@@ -21,6 +21,8 @@ import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,10 +31,15 @@ import android.os.Messenger;
 import android.os.PowerManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+
 import java.util.ArrayList;
 import nie.translator.rtranslator.GeneralService;
+import nie.translator.rtranslator.Global;
+import nie.translator.rtranslator.bluetooth.Message;
 import nie.translator.rtranslator.bluetooth.tools.Timer;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.TTS;
@@ -40,11 +47,15 @@ import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.services_communication.ServiceCallback;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicator;
+import nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieService;
+import nie.translator.rtranslator.voice_translation.neural_networks.voice.Recognizer;
 import nie.translator.rtranslator.voice_translation.neural_networks.voice.RecognizerListener;
 import nie.translator.rtranslator.voice_translation.neural_networks.voice.Recorder;
 
 
 public abstract class VoiceTranslationService extends GeneralService {
+    private static final int TIME_BEFORE_REACTIVATING_MIC_AFTER_TTS = 500;
+
     public static final int AUTO_LANGUAGE = 0;
     public static final int FIRST_LANGUAGE = 1;
     public static final int SECOND_LANGUAGE = 2;
@@ -56,7 +67,11 @@ public abstract class VoiceTranslationService extends GeneralService {
     public static final int STOP_SOUND = 3;
     public static final int SET_EDIT_TEXT_OPEN = 7;
     public static final int RECEIVE_TEXT = 4;
+    public static final int SPEAK_TEXT = 18;
+    public static final int STOP_SPEAKING_TEXT = 19;
     // callbacks
+    public static final int ON_TTS_STARTED = 25;
+    public static final int ON_TTS_DONE = 26;
     public static final int ON_ATTRIBUTES = 5;
     public static final int ON_VOICE_STARTED = 0;
     public static final int ON_VOICE_ENDED = 1;
@@ -68,12 +83,6 @@ public abstract class VoiceTranslationService extends GeneralService {
     public static final int ON_DISCONNECTED_BLUETOOTH_HEADSET = 16;
     public static final int ON_STOPPED = 6;
 
-    // permissions
-    public static final int REQUEST_CODE_REQUIRED_PERMISSIONS = 3;
-    public static final String[] REQUIRED_PERMISSIONS = new String[]{
-            Manifest.permission.RECORD_AUDIO,
-    };
-
     // errors
     public static final int MISSING_MIC_PERMISSION = 400;
 
@@ -83,10 +92,11 @@ public abstract class VoiceTranslationService extends GeneralService {
     protected Handler clientHandler;
     @Nullable
     protected Recorder mVoiceRecorder;   //this will be null if the user has not granted mic permission
-    protected UtteranceProgressListener ttsListener;
+    protected TTSEngine.TTSEngineListener ttsListener;
     @Nullable
-    protected TTS tts;
+    protected TTSEngine ttsEngine;
     protected Handler mainHandler;
+    protected Handler mainTTSHandler;
     private static final long WAKELOCK_TIMEOUT = 600 * 1000L;  // 10 minutes, so if the service stopped without calling onDestroyed the wakeLock would still be released within 10 minutes (the wakeLock will be reacquired before the 10 minutes if the service is still running)
     private Timer wakeLockTimer;  // to reactivate the timer every 10 minutes, so as long as the service is active the wakelock will never expire
     private PowerManager.WakeLock screenWakeLock;
@@ -96,7 +106,6 @@ public abstract class VoiceTranslationService extends GeneralService {
     protected boolean isMicMute = false;
     protected boolean isAudioMute = false;
     protected boolean isEditTextOpen = false;
-    protected int utterancesCurrentlySpeaking = 0;
     protected final Object mLock = new Object();
     protected boolean isMicActivated = true;
     protected boolean isMicAutomatic = true;
@@ -109,6 +118,7 @@ public abstract class VoiceTranslationService extends GeneralService {
     public void onCreate() {
         super.onCreate();
         mainHandler = new Handler(this.getMainLooper());
+        mainTTSHandler = new Handler(this.getMainLooper());
         //reset translator last input and last output text
         /*if(((Global) getApplication())!=null){
             Translator translator = ((Global) getApplication()).getTranslator();
@@ -119,70 +129,75 @@ public abstract class VoiceTranslationService extends GeneralService {
         // wake lock initialization (to keep the process active when the phone is on standby)
         acquireWakeLock();
         // tts initialization
-        ttsListener = new UtteranceProgressListener() {
+        ttsListener = new TTSEngine.TTSEngineListener() {
             @Override
-            public void onStart(String s) {
-            }
-
-            @Override
-            public void onDone(String s) {
-                synchronized (mLock) {
-                    if (utterancesCurrentlySpeaking > 0) {
-                        utterancesCurrentlySpeaking--;
-                    }
-                    if (utterancesCurrentlySpeaking == 0) {
-                        /*
-                        // start the task because this thread is not allowed to start the Recorder
-                        StartVoiceRecorderTask startVoiceRecorderTask = new StartVoiceRecorderTask();
-                        startVoiceRecorderTask.execute(VoiceTranslationService.this);*/
-                        mainHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (shouldDeactivateMicDuringTTS()) {
-                                    if(!isMicMute) {
-                                        startVoiceRecorder();
-                                    }
-                                    notifyMicActivated();
-                                }
-                            }
-                        }, 500);  //4000
-                    }
+            void onUtteranceStarting(GuiMessage message, boolean first) {
+                //if (ttsEngine != null && shouldDeactivateMicDuringTTS() && ttsEngine.isEmpty() && !ttsEngine.isPaused()) {
+                notifyTTSStarted(String.valueOf(message.getMessageID()));
+                if(first) {
+                    if (isMicAutomatic) stopVoiceRecorder();
+                    notifyMicDeactivated();   // we notify the client
                 }
             }
 
             @Override
-            public void onError(String s) {
+            void onUtteranceFinished(GuiMessage message, boolean last) {
+                if(message != null) {
+                    notifyTTSDone(String.valueOf(message.getMessageID()));
+                }
+                if(last) {
+                    // start the task because this thread is not allowed to start the Recorder
+                    mainHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (shouldDeactivateMicDuringTTS()) {
+                                if (!isMicMute) {
+                                    startVoiceRecorder();
+                                }
+                                notifyMicActivated();
+                            }
+                        }
+                    }, TIME_BEFORE_REACTIVATING_MIC_AFTER_TTS);  //4000
+                }
+            }
+
+            @Override
+            void onInitError(int reason) {
+                ttsEngine = null;
+                notifyError(new int[]{reason}, -1);
+                isAudioMute = true;
             }
         };
         initializeTTS();
     }
 
     private void initializeTTS() {
-        tts = new TTS(this, new TTS.InitListener() {  // tts initialization (to be improved, automatic package installation)
-            @Override
-            public void onInit() {
-                if(tts != null) {
-                    tts.setOnUtteranceProgressListener(ttsListener);
-                }
-            }
-
-            @Override
-            public void onError(int reason) {
-                tts = null;
-                notifyError(new int[]{reason}, -1);
-                isAudioMute = true;
-            }
-        });
+        ttsEngine = new TTSEngine(this, ttsListener);
     }
 
     public abstract void initializeVoiceRecorder();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if(intent == null){  //this means that the process has been restarted automatically by Android
+            stopForeground(STOP_FOREGROUND_REMOVE);
+            stopSelf(startId);
+            return super.onStartCommand(null, flags, startId);
+        }
         if (notification == null) {
             notification = intent.getParcelableExtra("notification");
         }
-        if (notification != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            int serviceType;
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+            } else {
+                serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
+            }
+            if (notification != null) {
+                startForeground(11, notification, serviceType);
+            }
+        }else{
             startForeground(11, notification);
         }
         return super.onStartCommand(intent, flags, startId);
@@ -213,7 +228,8 @@ public abstract class VoiceTranslationService extends GeneralService {
     }*/
 
     public void startVoiceRecorder() {
-        if (!Tools.hasPermissions(this, REQUIRED_PERMISSIONS)) {
+        Log.i("recorder", "recorder started");
+        if (!Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_VOICE)) {
             notifyError(new int[]{MISSING_MIC_PERMISSION}, -1);
         } else if(isMicAutomatic){
             if(mVoiceRecorder == null){
@@ -226,6 +242,7 @@ public abstract class VoiceTranslationService extends GeneralService {
     }
 
     public void stopVoiceRecorder() {
+        Log.i("recorder", "recorder stopped");
         if (mVoiceRecorder != null && isMicAutomatic) {
             mVoiceRecorder.stop();
         }
@@ -246,6 +263,7 @@ public abstract class VoiceTranslationService extends GeneralService {
     }
 
     protected boolean isMetaText(String text){
+        if(text.equals(Recognizer.UNDEFINED_TEXT)) return true;
         //returns true if one of the first 3 characters is a '[' or a '('
         if(text.length() >= 3) {
             return (text.charAt(0) == '[' || text.charAt(0) == '(') || (text.charAt(1) == '[' || text.charAt(1) == '(') || (text.charAt(2) == '[' || text.charAt(2) == '(');
@@ -255,21 +273,10 @@ public abstract class VoiceTranslationService extends GeneralService {
     }
 
     // tts
-
-    public synchronized void speak(String result, CustomLocale language) {
+    public synchronized void speak(GuiMessage message, CustomLocale language) {
         synchronized (mLock) {
-            if (tts != null && tts.isActive() && !isAudioMute) {
-                utterancesCurrentlySpeaking++;
-                if (shouldDeactivateMicDuringTTS()) {
-                    stopVoiceRecorder();
-                    notifyMicDeactivated();   // we notify the client
-                }
-                if (tts.getVoice() != null && language.equals(new CustomLocale(tts.getVoice().getLocale()))) {
-                    tts.speak(result, TextToSpeech.QUEUE_ADD, null, "c01");
-                } else {
-                    tts.setLanguage(language,this);
-                    tts.speak(result, TextToSpeech.QUEUE_ADD, null, "c01");
-                }
+            if (ttsEngine != null && ttsEngine.isActive()) {
+                ttsEngine.speak(message, language);
             }
         }
     }
@@ -344,9 +351,9 @@ public abstract class VoiceTranslationService extends GeneralService {
             mVoiceRecorder = null;
         }
         //stop tts
-        if(tts != null) {
-            tts.stop();
-            tts.shutdown();
+        if(ttsEngine != null) {
+            ttsEngine.stop();
+            ttsEngine.shutdown();
         }
         //stop foreground
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -408,24 +415,24 @@ public abstract class VoiceTranslationService extends GeneralService {
                     }
                     stopVoiceRecorder();
                     return true;
-                case START_SOUND:
-                    isAudioMute = false;
-                    if (tts != null && !tts.isActive()) {
-                        initializeTTS();
-                    }
-                    return true;
-                case STOP_SOUND:
-                    isAudioMute = true;
-                    if (utterancesCurrentlySpeaking > 0) {
-                        utterancesCurrentlySpeaking = 0;
-                        if(tts != null) {
-                            tts.stop();
-                        }
-                        ttsListener.onDone("");
-                    }
-                    return true;
                 case SET_EDIT_TEXT_OPEN:
                     isEditTextOpen = data.getBoolean("value");
+                    return true;
+                case SPEAK_TEXT:
+                    if (ttsEngine != null) {
+                        ttsEngine.stop();
+                    }
+                    String text = data.getString("text");
+                    CustomLocale language = nie.translator.rtranslator.tools.CustomLocale.getInstance(data.getString("languageCode"));
+                    String id = data.getString("utteranceId");
+                    if(id == null) id = String.valueOf(System.currentTimeMillis());
+                    GuiMessage message = new GuiMessage(new Message(text, this, text), Long.parseLong(id), true, true);
+                    speak(message, language);
+                    return true;
+                case STOP_SPEAKING_TEXT:
+                    if (ttsEngine != null) {
+                        ttsEngine.stop();
+                    }
                     return true;
                 case GET_ATTRIBUTES:
                     Bundle bundle = new Bundle();
@@ -433,11 +440,12 @@ public abstract class VoiceTranslationService extends GeneralService {
                     bundle.putParcelableArrayList("messages", messages);
                     bundle.putBoolean("isMicMute", isMicMute);
                     bundle.putBoolean("isAudioMute", isAudioMute);
-                    bundle.putBoolean("isTTSError", tts == null);
+                    bundle.putBoolean("isTTSError", ttsEngine == null);
                     bundle.putBoolean("isEditTextOpen", isEditTextOpen);
                     bundle.putBoolean("isBluetoothHeadsetConnected", isBluetoothHeadsetConnected());
                     bundle.putBoolean("isMicAutomatic", isMicAutomatic);
                     bundle.putBoolean("isMicActivated", isMicActivated);
+                    bundle.putLong("speakingUtteranceId", ttsEngine != null && ttsEngine.getExecutingMessage() != null ? ttsEngine.getExecutingMessage().getMessageID() : -1);
                     if(mVoiceRecorder != null && mVoiceRecorder.isRecording()){
                         if(manualRecognizingFirstLanguage) {
                             bundle.putInt("listeningMic", FIRST_LANGUAGE);
@@ -511,12 +519,25 @@ public abstract class VoiceTranslationService extends GeneralService {
 
     public void notifyError(int[] reasons, long value) {
         super.notifyError(reasons, value);
-        if (mVoiceRecorder != null) {
-            mVoiceCallback.onVoiceEnd();
-        }
     }
 
     // connection with clients
+    protected void notifyTTSStarted(String utteranceId) {
+        Bundle bundle = new Bundle();
+        bundle.clear();
+        bundle.putInt("callback", ON_TTS_STARTED);
+        bundle.putString("utteranceId", utteranceId);
+        super.notifyToClient(bundle);
+    }
+
+    protected void notifyTTSDone(String utteranceId) {
+        Bundle bundle = new Bundle();
+        bundle.clear();
+        bundle.putInt("callback", ON_TTS_DONE);
+        bundle.putString("utteranceId", utteranceId);
+        super.notifyToClient(bundle);
+    }
+
     public static abstract class VoiceTranslationServiceCommunicator extends ServiceCommunicator {
         private ArrayList<VoiceTranslationServiceCallback> clientCallbacks = new ArrayList<>();
         private ArrayList<AttributesListener> attributesListeners = new ArrayList<>();
@@ -537,9 +558,10 @@ public abstract class VoiceTranslationService extends GeneralService {
                         boolean isBluetoothHeadsetConnected = data.getBoolean("isBluetoothHeadsetConnected");
                         boolean isMicAutomatic = data.getBoolean("isMicAutomatic");
                         boolean isMicActivated = data.getBoolean("isMicActivated");
+                        long speakingUtteranceId = data.getLong("speakingUtteranceId");
                         int listeningMic = data.getInt("listeningMic");
                         while (!attributesListeners.isEmpty()) {
-                            attributesListeners.remove(0).onSuccess(messages, isMicMute, isAudioMute, isTTSError, isEditTextOpen, isBluetoothHeadsetConnected, isMicAutomatic, isMicActivated, listeningMic);
+                            attributesListeners.remove(0).onSuccess(messages, isMicMute, isAudioMute, isTTSError, isEditTextOpen, isBluetoothHeadsetConnected, isMicAutomatic, isMicActivated, speakingUtteranceId, listeningMic);
                         }
                         return true;
                     }
@@ -572,6 +594,20 @@ public abstract class VoiceTranslationService extends GeneralService {
                     case ON_MIC_DEACTIVATED: {
                         for (int i = 0; i < clientCallbacks.size(); i++){
                             clientCallbacks.get(i).onMicDeactivated();
+                        }
+                        return true;
+                    }
+                    case ON_TTS_STARTED: {
+                        String utteranceId = data.getString("utteranceId");
+                        for (int i = 0; i < clientCallbacks.size(); i++) {
+                            clientCallbacks.get(i).onTTSStarted(utteranceId);
+                        }
+                        return true;
+                    }
+                    case ON_TTS_DONE: {
+                        String utteranceId = data.getString("utteranceId");
+                        for (int i = 0; i < clientCallbacks.size(); i++) {
+                            clientCallbacks.get(i).onTTSDone(utteranceId);
                         }
                         return true;
                     }
@@ -667,6 +703,21 @@ public abstract class VoiceTranslationService extends GeneralService {
             super.sendToService(bundle);
         }
 
+        public void speakText(String text, String languageCode, String utteranceId) {
+            Bundle bundle = new Bundle();
+            bundle.putInt("command", SPEAK_TEXT);
+            bundle.putString("text", text);
+            bundle.putString("languageCode", languageCode);
+            bundle.putString("utteranceId", utteranceId);
+            super.sendToService(bundle);
+        }
+
+        public void stopSpeakingText() {
+            Bundle bundle = new Bundle();
+            bundle.putInt("command", STOP_SPEAKING_TEXT);
+            super.sendToService(bundle);
+        }
+
         public void addCallback(ServiceCallback callback) {
             clientCallbacks.add((VoiceTranslationServiceCallback) callback);
         }
@@ -682,6 +733,12 @@ public abstract class VoiceTranslationService extends GeneralService {
         }
 
         public void onVoiceEnded() {
+        }
+
+        public void onTTSStarted(String utteranceId) {
+        }
+
+        public void onTTSDone(String utteranceId) {
         }
 
         public void onVolumeLevel(float volumeLevel) {
@@ -704,7 +761,7 @@ public abstract class VoiceTranslationService extends GeneralService {
     }
 
     public interface AttributesListener {
-        void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, int listeningMic);
+        void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic);
     }
 
     protected abstract class VoiceTranslationServiceRecognizerListener implements RecognizerListener {

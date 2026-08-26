@@ -2,12 +2,14 @@ package nie.translator.rtranslator.voice_translation.neural_networks.translation
 
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.tools.CustomLocale;
 
 //default config:
@@ -71,11 +73,17 @@ public class BergamotTranslator {
 
     //todo: aggiungere una vera gestione degli errori (basata sulle eccezioni)
     private static String modelConfigGeneration(Context context, String lang, ModelType modelType) throws Exception{
+        String basePath;
+        if(Global.USE_EXTERNAL_MEMORY_FOR_RESOURCES){
+            basePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/models/" + "Translation/Mozilla/";
+        }else{
+            basePath = context.getFilesDir().getAbsolutePath() + "/Translation/Mozilla/";
+        }
         File modelFolder;
         if(modelType == ModelType.TO_ENGLISH){
-            modelFolder = new File(Environment.getExternalStorageDirectory(),"/models/" + "Translation/Mozilla/" + lang +"/"+lang+"en");
+            modelFolder = new File( basePath + lang +"/"+lang+"en");
         }else{
-            modelFolder = new File(Environment.getExternalStorageDirectory(),"/models/" + "Translation/Mozilla/" + lang +"/en"+lang);
+            modelFolder = new File(basePath + lang +"/en"+lang);
         }
         File[] modelFiles = modelFolder.listFiles();
         File model = null;

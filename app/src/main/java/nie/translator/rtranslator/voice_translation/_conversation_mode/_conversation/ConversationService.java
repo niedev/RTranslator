@@ -17,6 +17,7 @@
 package nie.translator.rtranslator.voice_translation._conversation_mode._conversation;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -54,7 +55,6 @@ public class ConversationService extends VoiceTranslationService {
     public static final int CHANGE_LANGUAGE = 15;
 
     //others
-    private String textRecognized = "";
     private Translator translator;
     private String myPeerName;
     private Recognizer mVoiceRecognizer;
@@ -73,6 +73,8 @@ public class ConversationService extends VoiceTranslationService {
         isRunning = true;
         global = (Global) getApplication();
         mainHandler = new Handler(Looper.getMainLooper());
+        SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+        isAudioMute = !sharedPreferences.getBoolean("conversationAutoTTS", true);
         //startBluetoothSco
         //mBluetoothHelper = new BluetoothHelper(this);
         mVoiceCallback = new Recorder.Callback() {
@@ -102,11 +104,6 @@ public class ConversationService extends VoiceTranslationService {
             public void onVoiceEnd() {
                 if (mVoiceRecognizer != null) {
                     super.onVoiceEnd();
-                    Log.e("recorder","onVoiceEnd");
-                    // if the textRecognizer is not empty then it means that we have a result that has not been correctly recognized as final
-                    if (!textRecognized.equals("")) {
-                        textRecognized = "";
-                    }
                     // the client is notified
                     ConversationService.super.notifyVoiceEnd();
                 }
@@ -127,6 +124,22 @@ public class ConversationService extends VoiceTranslationService {
                 if (command != -1) {
                     if (!ConversationService.super.executeCommand(command, message.getData())) {
                         switch (command) {
+                            case START_SOUND: {
+                                isAudioMute = false;
+                                SharedPreferences sharedPreferences = ConversationService.this.getSharedPreferences("default", Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putBoolean("conversationAutoTTS", true);
+                                editor.apply();
+                                break;
+                            }
+                            case STOP_SOUND: {
+                                isAudioMute = true;
+                                SharedPreferences sharedPreferences = ConversationService.this.getSharedPreferences("default", Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putBoolean("conversationAutoTTS", false);
+                                editor.apply();
+                                break;
+                            }
                             case RECEIVE_TEXT:
                                 CustomLocale language = global.getLanguage(true);
                                 if (text != null) {
@@ -161,11 +174,13 @@ public class ConversationService extends VoiceTranslationService {
                         global.getTTSLanguages(true, new Global.GetLocalesListListener() {
                             @Override
                             public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
-                                if(isFinal && CustomLocale.containsLanguage(ttsLanguages, conversationMessage.getPayload().getLanguage())) { // check if the language can be speak
-                                    speak(conversationMessage.getPayload().getText(), conversationMessage.getPayload().getLanguage());
-                                }
-                                message.setText(conversationMessage.getPayload().getText());   // updating the text with the new translated text (and without the language code)
+                                // updating the text with the new translated and the new transcribed text (and without the language code)
+                                message.setTextToTranslate(text);
+                                message.setText(conversationMessage.getPayload().getText());
                                 GuiMessage guiMessage = new GuiMessage(message, messageID, false, isFinal);
+                                if(isFinal && CustomLocale.containsLanguage(ttsLanguages, conversationMessage.getPayload().getLanguage()) && !isAudioMute) { // check if the language can be spoken
+                                    speak(guiMessage, conversationMessage.getPayload().getLanguage());
+                                }
                                 notifyMessage(guiMessage);
                                 // we save every new message in the exchanged messages so that the fragment can restore them
                                 addOrUpdateMessage(guiMessage);
@@ -180,6 +195,8 @@ public class ConversationService extends VoiceTranslationService {
 
                     @Override
                     public void onFailure(int[] reasons, long value) {
+                        //todo: improve the error handling for missing languages, if the error is ERROR_LANGUAGE_NOT_SUPPORTED, create a GuiMessage like above (onTranslatedMessage)
+                        // but with an indication of the error. Update the Adapter of the messages to show the error (something like "Language not supported" as the content of the message, shown in red)
                         ConversationService.super.notifyError(reasons, value);
                     }
                 });
@@ -214,7 +231,6 @@ public class ConversationService extends VoiceTranslationService {
                     CustomLocale language = CustomLocale.getInstance(languageCode);
                     GuiMessage guiMessage = new GuiMessage(new Message(global, text), global.getTranslator().incrementCurrentResultID(), true, isFinal);
                     if (isFinal) {
-                        textRecognized = "";  // to ensure that we continue to listen since in this case the result is automatically extracted
                         // send the message
                         sendMessage(new ConversationMessage(new NeuralNetworkApiText(text, language)));
 
@@ -223,13 +239,15 @@ public class ConversationService extends VoiceTranslationService {
                         addOrUpdateMessage(guiMessage);
                     } else {
                         notifyMessage(guiMessage);
-                        textRecognized = text;  // if it equals something then when calling voiceEnd we stop recognition
                     }
                 }
             }
 
             @Override
             public void onError(int[] reasons, long value) {
+                if (mVoiceRecorder != null) {
+                    mVoiceRecorder.end();
+                }
                 ConversationService.super.notifyError(reasons, value);
             }
         };
@@ -254,9 +272,9 @@ public class ConversationService extends VoiceTranslationService {
     }
 
     public void initializeVoiceRecorder() {
-        if (Tools.hasPermissions(this, REQUIRED_PERMISSIONS)) {
+        if (Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_VOICE)) {
             //voice recorder initialization
-            super.mVoiceRecorder = new Recorder((Global) getApplication(), true, mVoiceCallback, new BluetoothHeadsetCallback());
+            super.mVoiceRecorder = new Recorder((Global) getApplication(), true, mVoiceCallback, new BluetoothHeadsetCallback(), global.getVad());
         }
     }
 
@@ -287,6 +305,7 @@ public class ConversationService extends VoiceTranslationService {
         // Stop SpeechRecognizer
         //mVoiceRecognizer.destroy();
         mVoiceRecognizer.removeCallback(mVoiceRecognizerCallback);
+        mVoiceRecognizer.stop();
         mVoiceRecognizer = null;
         //stop Bluetooth helper
         //mBluetoothHelper.stop();

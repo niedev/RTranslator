@@ -281,7 +281,7 @@ public class ButtonMic extends DeactivableButton {
     private Animator updateVolumeLevel(float volumeLevel, CustomAnimator.EndListener listener){
         if(leftLine != null && centerLine != null && rightLine != null && leftLine.getVisibility() == VISIBLE && centerLine.getVisibility() == VISIBLE && rightLine.getVisibility() == VISIBLE && volumeLevel > 0) {
             int duration_ms = 70;
-            Log.d("volume", "volume: " + volumeLevel);
+            //Log.d("volume", "volume: " + volumeLevel);
             float maxLengthLeft = Tools.convertDpToPixels(context, MAX_LENGTH_LEFT_LINE_DP);
             float maxLengthCenter = Tools.convertDpToPixels(context, MAX_LENGTH_CENTER_LINE_DP);
             float maxLengthRight = Tools.convertDpToPixels(context, MAX_LENGTH_RIGHT_LINE_DP);

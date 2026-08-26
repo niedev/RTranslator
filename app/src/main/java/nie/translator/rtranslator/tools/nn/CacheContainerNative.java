@@ -112,8 +112,7 @@ public class CacheContainerNative {
             Constructor<OrtSession.Result> constructor = OrtSession.Result.class.getDeclaredConstructor(names.getClass(), values.getClass(), ownedByResult.getClass());
             constructor.setAccessible(true);
             return constructor.newInstance(names, values, ownedByResult);
-        } catch (IllegalAccessException | InstantiationException | InvocationTargetException |
-                 NoSuchMethodException | OrtException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }

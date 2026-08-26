@@ -39,6 +39,7 @@ public class ErrorCodes {
     //neural networks
     public static final int ERROR_LOADING_MODEL = 34;
     public static final int ERROR_EXECUTING_MODEL = 35;
+    public static final int ERROR_LANGUAGE_NOT_SUPPORTED = 36;
 
     //language identification
     public static final int LANGUAGE_UNKNOWN = 15;
@@ -46,4 +47,10 @@ public class ErrorCodes {
     public static final int SECOND_RESULT_FAIL = 17;
     public static final int BOTH_RESULTS_FAIL = 18;
     public static final int BOTH_RESULTS_SUCCESS = 19;
+
+    //permissions
+    public static final int NO_PERMISSIONS = -10;
+
+    // model manager
+    public static final int NO_DOWNLOADED_RESOURCE = 110;
 }

@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.FileLog;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.RequestDialog;
@@ -334,7 +335,7 @@ public class PeersInfoFragment extends Fragment {
         initializePeerList();
         activity.addCallback(communicatorCallback);
         // if you have the permission for the search it is activated from here, otherwise the permission will be requested at the time of the click or selection
-        if (selected && Tools.hasPermissions(activity, VoiceTranslationActivity.REQUIRED_PERMISSIONS)) {
+        if (selected && Tools.hasPermissions(activity, Global.REQUIRED_PERMISSIONS_PAIRING)) {
             startSearch();
         }
     }
@@ -371,7 +372,7 @@ public class PeersInfoFragment extends Fragment {
                 listViewGui.setVisibility(View.GONE);
                 discoveryDescription.setVisibility(View.GONE);
                 noBluetoothLe.setVisibility(View.VISIBLE);
-            } else if (result != VoiceTranslationActivity.NO_PERMISSIONS && result != BluetoothCommunicator.ALREADY_STARTED) {
+            } else if (result != ErrorCodes.NO_PERMISSIONS && result != BluetoothCommunicator.ALREADY_STARTED) {
                 Toast.makeText(activity, getResources().getString(R.string.error_starting_search), Toast.LENGTH_SHORT).show();
             }
         }
@@ -479,7 +480,7 @@ public class PeersInfoFragment extends Fragment {
                                     public void onClick(DialogInterface dialog, int which) {
                                         activity.disconnect(peer);
                                         if (activity.getConnectedPeersList().size() == 0 && global.getBluetoothCommunicator() != null) {
-                                            activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT);
+                                            activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT, true);
                                         }else{
                                             activity.setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
                                         }

@@ -32,7 +32,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.material.progressindicator.LinearProgressIndicator;
@@ -122,7 +121,7 @@ public class DownloadFragment extends Fragment {
         downloadErrorText = view.findViewById(R.id.text_error_download);
         transferErrorText = view.findViewById(R.id.text_error_transfer);
         storageWarningText = view.findViewById(R.id.text_error_storage);
-        progressBar = view.findViewById(R.id.progressBar);
+        progressBar = view.findViewById(R.id.barRam);
         progressDescriptionText = view.findViewById(R.id.progress_description);
         pauseButton = view.findViewById(R.id.pauseButton);
         pauseButton.setTag("iconCancel");
