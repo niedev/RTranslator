@@ -65,18 +65,18 @@ The initial download will get the models from GitHub, however <a href="https://w
 If you have a GitHub account and want to be notified when a new release comes out you can do so by clicking, at the top of the page, on "Watch" -> "Custom" -> "Releases" -> "Apply".
 <br /><br />
 
-<h3>RTranslator 3.0 Coming Soon!</h3>
+<h3>RTranslator 3.0 First Beta is Out!</h3>
 
-The 3.0 version of RTranslator will be funded through the [NGI Mobifree Fund](https://nlnet.nl/mobifree), a fund established by [NLnet](https://nlnet.nl).
+The 3.0 version of RTranslator is currently funded through the [NGI Mobifree Fund](https://nlnet.nl/mobifree), a fund established by [NLnet](https://nlnet.nl).
 
 Main changes of this version:
-- The NLLB translation model will be replaced with the option to choose between: Mozilla Bergamot models, Madlad 400 3B, and HY-MT 1.5 1.8B. All these models have better translation quality than NLLB 54B, similar to Google Translate (with HY-MT 1.5 1.8B having much better scores than Google Translate).
-- MLKit will be replaced, making RTranslator 100% open source.
-- Various techniques will be added to improve translation quality, including: beam search, multilingual dictionaries, Tatoeba integration, and more.
-- The app will be released on Play Store and F-Droid.
-- A self-hosted web version of the app for text translation using Mozilla models will be made available.
+- The NLLB translation model has been replaced with the option to choose between: Mozilla Bergamot models, Madlad 400 3B, and HY-MT 1.5 1.8B. All these models have better translation quality than NLLB 54B, similar to Google Translate, with HY-MT 1.5 1.8B having much better scores than Google Translate, similar to DeepSeek v3 and Gemini 3.0.
+- MLKit has been replaced with open-source alternatives (FastText and Lingua), making RTranslator 100% open source.
+- Various techniques have been added to improve translation quality, including: beam search, multilingual dictionaries, Tatoeba integration, and more.
+- The final version of the app will be released on Play Store and F-Droid.
+- A self-hosted web version of the app for text translation using Mozilla models will be made available in the future (probably around November).
 
-The first beta of this version will be released between June and August 2026. Stay tuned 🚀
+The first beta of this version has been released; go check [here](https://github.com/niedev/RTranslator/releases)! 🚀
 
 <img src="https://nlnet.nl/logo/banner.svg" width="200px">
 <br />
