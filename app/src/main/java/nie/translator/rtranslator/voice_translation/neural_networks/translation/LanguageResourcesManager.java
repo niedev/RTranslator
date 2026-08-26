@@ -176,6 +176,7 @@ public class LanguageResourcesManager {
      * @throws Exception
      */
     public void setLanguageResources(@NonNull CustomLocale srcLang, @NonNull CustomLocale tgtLang, Global.RTranslatorMode rtranslatorMode) throws Exception {
+        Log.i("language_resource", "setLanguageResources for "+srcLang.getDisplayLanguage()+", "+tgtLang.getDisplayLanguage()+", "+rtranslatorMode.name());
         CustomLocale[] currentModeResources = null;
         switch (rtranslatorMode) {
             case TEXT_TRANSLATION_MODE:
@@ -233,6 +234,7 @@ public class LanguageResourcesManager {
      * @throws Exception
      */
     public void setTgtLangResourcesForConversation(CustomLocale tgtLang) throws Exception {
+        Log.i("language_resource", "setTgtLangResourcesForConversation for "+tgtLang.getDisplayLanguage());
         //we unload the resources of this mode that will no longer be used by this mode or the others
         CustomLocale resource = languageResourcesIndicator.conversationTgtResource;
         if(resource != null && !resource.equals(tgtLang)){
@@ -281,6 +283,7 @@ public class LanguageResourcesManager {
      * @throws Exception
      */
     public void setSrcLangResourcesForPeer(CustomLocale srcLang, Peer peer) throws Exception {
+        Log.i("language_resource", "setSrcLangResourcesForPeer for "+srcLang.getDisplayLanguage()+", "+peer.getName());
         CustomLocale tgtLang = languageResourcesIndicator.conversationTgtResource != null ? languageResourcesIndicator.conversationTgtResource : global.getLanguage(true);
         HashMap<String, CustomLocale> conversationSrcModels = languageResourcesIndicator.conversationSrcResources;
         //we unload the resources of this peer and mode that will no longer be used by this peer and mode or the others
@@ -325,6 +328,7 @@ public class LanguageResourcesManager {
      * @param peer
      */
     public void unloadSrcLangResourcesForPeer(Peer peer){
+        Log.i("language_resource", "unloadSrcLangResourcesForPeer for "+peer.getName());
         CustomLocale tgtLang = languageResourcesIndicator.conversationTgtResource != null ? languageResourcesIndicator.conversationTgtResource : global.getLanguage(true);
         HashMap<String, CustomLocale> conversationSrcResources = languageResourcesIndicator.conversationSrcResources;
         //we unload from bergamot the model of this peer and mode that will no longer be used by this peer and mode or the others
@@ -351,6 +355,7 @@ public class LanguageResourcesManager {
      * Also note that the language resources will be transparently recycled between all the different languages, language combos and modes of this manager.
      */
     public void unloadAllLangResourcesForConversation(){
+        Log.i("language_resource", "unloadAllLangResourcesForConversation");
         // unload of all the resources of the conversationSrcResources
         CustomLocale tgtLang = languageResourcesIndicator.conversationTgtResource != null ? languageResourcesIndicator.conversationTgtResource : global.getLanguage(true);
         HashMap<String, CustomLocale> conversationSrcResources = languageResourcesIndicator.conversationSrcResources;

@@ -667,6 +667,7 @@ public class Translator extends NeuralNetworkApi {
             //check if the input and output languages are compatible with the translation model
             ArrayList<CustomLocale> supportedLanguages = global.getTranslatorLanguages(rtranslatorMode, true);
             if(!supportedLanguages.contains(inputLanguage) || !supportedLanguages.contains(outputLanguage)){
+                Log.w("translation_error", "Languages "+inputLanguage.getDisplayLanguage()+", "+outputLanguage.getDisplayLanguage()+" not supported");
                 //if we are using mozilla for a voice mode we can try to fall back to the bigger multilingual model (because it is also loaded in memory)
                 boolean fallback = false;
                 if(mode != performMode && performMode == MOZILLA){
@@ -674,9 +675,11 @@ public class Translator extends NeuralNetworkApi {
                     if(supportedLanguagesFallback.contains(inputLanguage) && supportedLanguagesFallback.contains(outputLanguage)){
                         fallback = true;
                         performMode = mode;   //we fall back to the bigger multilingual model (only for this translation)
+                        Log.i("translation_error", "fallback to the bigger model");
                     }
                 }
                 if(!fallback){
+                    Log.e("translation_error", "languages not supported");
                     // if the performMode and mode models don't support the input or output language we interrupt the translation and launch an error
                     if (responseListener != null) {
                         mainHandler.post(() -> responseListener.onFailure(new int[]{ErrorCodes.ERROR_LANGUAGE_NOT_SUPPORTED}, 0));

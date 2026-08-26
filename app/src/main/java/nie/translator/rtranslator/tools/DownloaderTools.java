@@ -57,6 +57,47 @@ public class DownloaderTools {
         return index;
     }
 
+    public static void updateDownloadGroupInfoPreference(Context context, DownloadGroupInfo downloadGroup){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        ArrayList<DownloadGroupInfo> downloadGroupInfos = null;
+        if(!downloadsStatusString.isEmpty()) {
+            Gson gson = new Gson();
+            downloadGroupInfos = gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
+            int index = downloadGroupInfos.indexOf(downloadGroup);
+            if(index != -1) {
+                downloadGroupInfos.set(index, downloadGroup);
+                String newDownloadsStatusString = gson.toJson(downloadGroupInfos);
+                SharedPreferences.Editor editor;
+                editor = sharedPreferences.edit();
+                editor.putString("downloadsStatus", newDownloadsStatusString);
+                editor.apply();
+            }
+        }
+    }
+
+    public static void addDownloadGroupInfoPreference(Context context, DownloadGroupInfo downloadGroup){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        ArrayList<DownloadGroupInfo> downloadGroupInfos = null;
+        Gson gson = new Gson();
+        if(!downloadsStatusString.isEmpty()) {
+            downloadGroupInfos = gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {}.getType());
+        }
+        if(downloadGroupInfos == null) {
+            downloadGroupInfos = new ArrayList<>();
+        }
+        int index = downloadGroupInfos.indexOf(downloadGroup);
+        if(index == -1) {
+            downloadGroupInfos.add(downloadGroup);
+            String newDownloadsStatusString = gson.toJson(downloadGroupInfos);
+            SharedPreferences.Editor editor;
+            editor = sharedPreferences.edit();
+            editor.putString("downloadsStatus", newDownloadsStatusString);
+            editor.apply();
+        }
+    }
+
     public static void deleteDownloadGroupInfoPreference(Context context, DownloadGroupInfo downloadGroup){
         SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
         String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");

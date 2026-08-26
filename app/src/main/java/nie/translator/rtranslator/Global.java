@@ -411,12 +411,11 @@ public class Global extends Application implements DefaultLifecycleObserver {
         });
     }
 
-    public DownloadGroupInfo getInitialDownloadInfo(){
+    public DownloadGroupInfo getNllbDownloadInfo(){
         String downloadFolder = getFilesDir().getAbsolutePath();
         String baseUrl = "https://github.com/niedev/RTranslator/releases/download/2.0.0/";
-        String baseUrlAlt = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
         return new DownloadGroupInfo(new DownloadInfo[]{
-                /*new DownloadInfoExtended(
+                new DownloadInfo(
                         "NLLB_cache_initializer.onnx",
                         baseUrl + "NLLB_cache_initializer.onnx",
                         downloadFolder,
@@ -424,7 +423,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                         true,
                         false
                 ),
-                new DownloadInfoExtended(
+                new DownloadInfo(
                         "NLLB_decoder.onnx",
                         baseUrl + "NLLB_decoder.onnx",
                         downloadFolder,
@@ -432,7 +431,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                         true,
                         false
                 ),
-                new DownloadInfoExtended(
+                new DownloadInfo(
                         "NLLB_embed_and_lm_head.onnx",
                         baseUrl + "NLLB_embed_and_lm_head.onnx",
                         downloadFolder,
@@ -440,7 +439,47 @@ public class Global extends Application implements DefaultLifecycleObserver {
                         true,
                         false
                 ),
-                new DownloadInfoExtended(
+                new DownloadInfo(
+                        "NLLB_encoder.onnx",
+                        baseUrl + "NLLB_encoder.onnx",
+                        downloadFolder,
+                        254000,
+                        true,
+                        false
+                ),
+        });
+    }
+
+    public DownloadGroupInfo getInitialDownloadInfo(){
+        String downloadFolder = getFilesDir().getAbsolutePath();
+        String baseUrl = "https://github.com/niedev/RTranslator/releases/download/2.0.0/";
+        String baseUrlAlt = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
+        return new DownloadGroupInfo(new DownloadInfo[]{
+                /*new DownloadInfo(
+                        "NLLB_cache_initializer.onnx",
+                        baseUrl + "NLLB_cache_initializer.onnx",
+                        downloadFolder,
+                        24000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "NLLB_decoder.onnx",
+                        baseUrl + "NLLB_decoder.onnx",
+                        downloadFolder,
+                        171000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
+                        "NLLB_embed_and_lm_head.onnx",
+                        baseUrl + "NLLB_embed_and_lm_head.onnx",
+                        downloadFolder,
+                        500000,
+                        true,
+                        false
+                ),
+                new DownloadInfo(
                         "NLLB_encoder.onnx",
                         baseUrl + "NLLB_encoder.onnx",
                         downloadFolder,

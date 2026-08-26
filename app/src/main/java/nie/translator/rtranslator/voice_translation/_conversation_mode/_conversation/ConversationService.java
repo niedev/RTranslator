@@ -104,7 +104,6 @@ public class ConversationService extends VoiceTranslationService {
             public void onVoiceEnd() {
                 if (mVoiceRecognizer != null) {
                     super.onVoiceEnd();
-                    Log.e("recorder","onVoiceEnd");
                     // the client is notified
                     ConversationService.super.notifyVoiceEnd();
                 }
@@ -247,7 +246,7 @@ public class ConversationService extends VoiceTranslationService {
             @Override
             public void onError(int[] reasons, long value) {
                 if (mVoiceRecorder != null) {
-                    mVoiceCallback.onVoiceEnd();
+                    mVoiceRecorder.end();
                 }
                 ConversationService.super.notifyError(reasons, value);
             }

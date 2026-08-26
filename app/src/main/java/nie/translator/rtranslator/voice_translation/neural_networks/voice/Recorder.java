@@ -28,7 +28,6 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,7 +35,7 @@ import androidx.annotation.Nullable;
 import com.konovalov.vad.silero.VadSilero;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
@@ -55,9 +54,10 @@ import nie.translator.rtranslator.voice_translation._conversation_mode._conversa
  */
 @SuppressLint("MissingPermission")
 public class Recorder {
+    private static final String TAG = "recorder";
     private final Global global;
-    private boolean isRecording;
-    private boolean isManualMode = false;
+    private volatile boolean isRecording;
+    private volatile boolean isManualMode = false;
     public static final int[] SAMPLE_RATE_CANDIDATES = new int[]{16000};
     private static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
     private static int ENCODING;
@@ -76,7 +76,6 @@ public class Recorder {
     private int sampleRate;
     @Nullable
     private final AudioRecord mAudioRecord;
-    private Thread mThread;
     private int mPrevBufferMaxSize;   //the size of the mPrevBuffer (It depends on the settings of the app (prevVoiceDuration))
     private float[] mBuffer;  //PCM FLOAT data, used for Speech recognition and volume level notification
     private short[] mBufferShort;  //PCM 16bit data, used for VAD
@@ -98,6 +97,16 @@ public class Recorder {
     private AudioDeviceCallback audioDeviceCallback;
     AudioManager audioManager;
     private VadSilero vad;
+    /** How long stop() waits for the audio thread before escalating to interrupt(). */
+    private static final long STOP_JOIN_TIMEOUT_MILLIS = 500;
+
+    // ---- lifecycle: guarded by lifecycleLock, or volatile for lock-free reads ----
+    private final Object lifecycleLock = new Object();
+    private final ConcurrentLinkedQueue<Runnable> commands = new ConcurrentLinkedQueue<>();
+    private volatile Thread mThread;
+    private volatile boolean running;
+    private volatile boolean destroyed;
+    private boolean pendingStart;
 
 
     public Recorder(Global global, boolean useBluetoothHeadset, @NonNull Callback callback, @Nullable ConversationService.BluetoothHeadsetCallback bluetoothHeadsetCallback, VadSilero vad) {
@@ -109,7 +118,6 @@ public class Recorder {
         global.getSpeechTimeout();
         global.getPrevVoiceDuration();
         mCallback = callback;
-        mCallback.setRecorder(this);
         this.vad = vad;
 
         // set the encoding
@@ -170,94 +178,201 @@ public class Recorder {
         }
     }
 
-    /**
-     * Starts recording audio.
-     *
-     * <p>The caller is responsible for calling {@link #stop()} later.</p>
-     */
+    // =====================================================================================
+    //  Public API
+    //
+    //  To manage concurrency and avoid to synchronize the process voice thread
+    //  (it's not recommended since it executes blocking readings), we execute public commands
+    //  with a queue, executed at every start of the loop of the process voice thread, by that
+    //  thread itself.
+    // =====================================================================================
+
     public void start() {
-        // Stop recording if it is currently ongoing.
-        stop();
-        // Start recording.
-        if(mAudioRecord != null) {
-            mAudioRecord.startRecording();  // here doesn't work with callback
+        if (destroyed) return;
+        synchronized (lifecycleLock) {
+            stop();   // Stop recording if it is currently ongoing.
+            if (mThread != null) {
+                // A session is still unwinding. Defer instead of skipping: the exit hook
+                // will run startLocked() the moment it releases the buffers.
+                pendingStart = true;
+            }else {
+                executeStart();
+            }
         }
-        // Start processing the captured audio.
-        mThread = new Thread(new ProcessVoice(), "processVoice");
-        mThread.start();
     }
 
-    /**
-     * Stops recording audio.
-     */
     public void stop() {
-        if (mThread != null) {
-            mThread.interrupt();
-            mThread = null;
+        synchronized (lifecycleLock) {
+            if(mThread != null) {
+                pendingStart = false;    // cancels a deferred start
+                running = false;      //this will stop the process voice (at the end of a cycle)
+                executeStopAudioRecord();
+            }
         }
-        if (mAudioRecord != null) {
-            mAudioRecord.stop();
-        }
-        //mBuffer = null;
-        dismiss();
-        headIndex = 0;
-        tailIndex = 0;
     }
 
     /**
-     * Dismisses the currently ongoing utterance.
+     * Dismisses the currently ongoing utterance without emitting it.
+     * Asynchronous: takes effect on the next audio thread iteration.
      */
     public void dismiss() {
-        if (mLastVoiceHeardMillis != Long.MAX_VALUE) {
-            mLastVoiceHeardMillis = Long.MAX_VALUE;
-            //mCallback.onVoiceEnd();
-        }
+        post(this::executeDismiss);
     }
 
+    /**
+     * Closes the current utterance and delivers it through {@link Recorder.Callback#onVoice}.
+     * Asynchronous: takes effect on the next audio thread iteration.
+     */
     public void end() {
-        //convert the relevant portion of the circular mBuffer to a normal array
-        int voiceLength = getMBufferRangeSize(startVoiceIndex, tailIndex);
-        float[] data = new float[voiceLength];
-        int circularIndex = startVoiceIndex;
-        for(int i=0; i<voiceLength; i++){
-            data[i] = mBuffer[circularIndex];
-            if (circularIndex < mBuffer.length-1){
-                circularIndex++;
-            }else{
-                circularIndex = 0;
-            }
-        }
-        mCallback.onVoice(data, voiceLength);
-        //reset relevant variables
-        startVoiceIndex = 0;  //is not necessary
-        mLastVoiceHeardMillis = Long.MAX_VALUE;
-        mCallback.onVoiceEnd();
+        post(this::executeEnd);
     }
 
-    public void destroy(){
-        if(useBluetoothHeadset) {
-            audioManager.unregisterAudioDeviceCallback(audioDeviceCallback);
-            if(connectedBleHeadset != null){
-                audioManager.stopBluetoothSco();
+    public boolean isManualMode() {
+        return isManualMode;
+    }
+
+    /**
+     * Switches between VAD-driven and manual capture. In manual mode the recorder is idle until
+     * {@link #startRecording()} is called; outside it, capture runs continuously.
+     */
+    public void setManualMode(boolean manualMode) {
+        synchronized (lifecycleLock) {
+            if (isManualMode == manualMode) {
+                return;
             }
+            isManualMode = manualMode;
         }
-        if (mAudioRecord != null) {
-            mAudioRecord.stop();
-            mAudioRecord.release();
-            //mAudioRecord = null;
+        // Both branches tear down the current session first, and the audio thread emits
+        // onVoiceEnd() on its way out if an utterance was in progress. No callback is
+        // invoked from this thread, so there is no cross-thread callback race.
+        if (manualMode) {
+            Log.d(TAG, "manual mode activating");
+            stop();
+            Log.d(TAG, "manual mode activated");
+        } else {
+            start();
+            Log.d(TAG, "manual mode deactivated");
         }
+    }
+
+    public boolean isOnHeadsetSco() {
+        return connectedBleHeadset != null;
+    }
+
+    public void startRecording() {
+        start();
+    }
+
+    public void stopRecording() {
+        // Posted before running is cleared, so the final drain in the run loop's finally block
+        // delivers the utterance even though stop() is about to kill the thread.
+        end();
+        stop();
+    }
+
+    public boolean isRecording() {
+        return isRecording;
     }
 
     /**
      * Retrieves the sample rate currently used to record audio.
-     *
-     * @return The sample rate of recorded audio.
+     * Reads a cached value, so it stays valid after {@link #destroy()}.
      */
     public int getSampleRate() {
-        if (mAudioRecord != null) {
-            return mAudioRecord.getSampleRate();
+        return sampleRate;
+    }
+
+    /**
+     * Stops capture, releases the {@link AudioRecord} and unregisters the audio device callback.
+     * Idempotent. Safe to call from any thread except the audio thread itself.
+     */
+    public void destroy() {
+        synchronized (lifecycleLock) {
+            if (destroyed) return;
+            pendingStart = false;
+            running = false;
+            executeStopAudioRecord();      // call before setting destroyed, it checks that flag
+            destroyed = true;
+            if (useBluetoothHeadset && audioManager != null) {
+                if (audioDeviceCallback != null) audioManager.unregisterAudioDeviceCallback(audioDeviceCallback);
+                if (connectedBleHeadset != null) { audioManager.stopBluetoothSco(); connectedBleHeadset = null; }
+            }
+            if (mThread == null && mAudioRecord != null) mAudioRecord.release();
+            commands.clear();
         }
-        return 0;
+    }
+
+    // =====================================================================================
+    //  Command plumbing
+    // =====================================================================================
+
+    private void post(Runnable command) {
+        if (!running) {
+            // Nothing is alive to drain it. A command posted in the narrow window between this
+            // check and a concurrent stop() is discarded by the commands.clear() in start().
+            return;
+        }
+        commands.add(command);
+    }
+
+    /** Runs on the audio thread only. */
+    private void drainCommands() {
+        Runnable command;
+        while ((command = commands.poll()) != null) {
+            try {
+                command.run();
+            } catch (Throwable t) {
+                Log.e(TAG, "command failed", t);
+            }
+        }
+    }
+
+    // =====================================================================================
+    //  Audio thread, Voice Process
+    // =====================================================================================
+
+    /** Caller must hold lifecycleLock. */
+    private void executeStopAudioRecord() {
+        if (mAudioRecord == null || destroyed) {
+            return;
+        }
+        try {
+            if (mAudioRecord.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
+                mAudioRecord.stop();
+            }
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "AudioRecord.stop() failed", e);
+        }
+    }
+
+    /** Caller must hold lifecycleLock. */
+    private void executeStart() {
+        pendingStart = false;
+        if (destroyed || mAudioRecord == null || mThread != null) return;
+        commands.clear();
+        running = true;
+        try {
+            mAudioRecord.startRecording();
+        } catch (IllegalStateException e) {
+            running = false;
+            Log.e(TAG, "startRecording() failed", e);
+            return;
+        }
+        if (mAudioRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
+            running = false;
+            Log.e(TAG, "AudioRecord did not enter RECORDING state");
+            return;
+        }
+        final ProcessVoice processVoice = new ProcessVoice();
+        Thread t = new Thread(() -> {
+            try {
+                processVoice.run();
+            } finally {
+                onProcessVoiceExit();     // runs after its own finally block
+            }
+        }, "processVoice");
+        mThread = t;
+        t.start();
     }
 
     /**
@@ -288,40 +403,6 @@ public class Recorder {
         return null;
     }
 
-    public boolean isManualMode() {
-        return isManualMode;
-    }
-
-    public void setManualMode(boolean manualMode) {
-        if(isManualMode != manualMode) {
-            isManualMode = manualMode;
-            if(isRecording){
-                mCallback.onVoiceEnd();
-            }
-            if(isManualMode){
-                Log.d("mic", "manual mode activating");
-                stop();
-                Log.d("mic", "manual mode activated");
-            }else{
-                start();
-                Log.d("mic", "manual mode deactivated");
-            }
-        }
-    }
-
-    public void startRecording(){
-        start();
-    }
-
-    public void stopRecording(){
-        end();
-        stop();
-    }
-
-    public boolean isRecording() {
-        return isRecording;
-    }
-
     /**
      * Continuously processes the captured audio and notifies {@link #mCallback} of corresponding
      * events.
@@ -331,71 +412,141 @@ public class Recorder {
     private class ProcessVoice implements Runnable {
         @Override
         public void run() {
-            while (!Thread.currentThread().isInterrupted()) {
-                if (mAudioRecord != null) {
-                    int prevVoiceLength;
-                    if (isManualMode) {
-                        prevVoiceLength = (int) (0.1 * sampleRate);  //if we are using manual mode we use a reduced prev voice duration
-                    } else {
-                        prevVoiceLength = (global.getPrevVoiceDuration() / 1000) * sampleRate;
+            resetAudioState();
+            try {
+                while (running) {
+                    drainCommands();
+                    if (!running) {
+                        break;
                     }
-                    int size;
-                    int oldTailIndex = tailIndex;
-                    boolean jumped;
-                    if (tailIndex + readSize < mBuffer.length) {
-                        size = readAudio(tailIndex, readSize);
-                        tailIndex = tailIndex + size;
-                        jumped = false;
-                    } else {
-                        size = readAudio(tailIndex, mBuffer.length - tailIndex);
-                        tailIndex = 0;
-                        int size2 = readAudio(tailIndex, readSize - size);
-                        tailIndex = size2;
-                        size = size + size2;
-                        jumped = true;
-                    }
-                    if ((oldTailIndex < headIndex && tailIndex > headIndex) || (oldTailIndex > headIndex && tailIndex > headIndex && jumped)) {  //if we overwrote the oldest data
-                        headIndex = tailIndex + 1;  //we adjust the headIndex accordingly
-                    }
-                    //we notify volume level
-                    notifyVolumeLevel(mBuffer, oldTailIndex, tailIndex);
-                    //we do the rest of voice processing
-                    final long now = System.currentTimeMillis();
-                    if (isHearingVoice(mBufferShort, oldTailIndex, tailIndex)) {
-                        if (mLastVoiceHeardMillis == Long.MAX_VALUE) {    // use Long's maximum limit to indicate that we have no voice
-                            mVoiceStartedMillis = now;
-                            if(!Thread.currentThread().isInterrupted()) {
+                    // process of voice
+                    if (mAudioRecord != null) {
+                        int prevVoiceLength;
+                        if (isManualMode) {
+                            prevVoiceLength = (int) (0.1 * sampleRate);  //if we are using manual mode we use a reduced prev voice duration
+                        } else {
+                            prevVoiceLength = (global.getPrevVoiceDuration() * sampleRate) / 1000;
+                        }
+                        int size;
+                        int oldTailIndex = tailIndex;
+                        boolean jumped;
+                        if (tailIndex + readSize < mBuffer.length) {
+                            size = readAudio(tailIndex, readSize);
+                            if (size <= 0) break;  // Break thread on error or closed stream
+                            tailIndex = tailIndex + size;
+                            jumped = false;
+                        } else {
+                            size = readAudio(tailIndex, mBuffer.length - tailIndex);
+                            if (size <= 0) break;  // Break thread on error or closed stream
+                            tailIndex = 0;
+                            int remaining = readSize - size;
+                            if (remaining > 0) {
+                                int size2 = readAudio(tailIndex, remaining);
+                                if (size2 <= 0) break;  // Break thread on error or closed stream
+                                tailIndex = size2;
+                                size = size + size2;
+                            }
+                            jumped = true;
+                        }
+                        if ((oldTailIndex < headIndex && tailIndex > headIndex) || (oldTailIndex > headIndex && tailIndex > headIndex && jumped)) {  //if we overwrote the oldest data
+                            headIndex = (tailIndex + 1) % mBuffer.length;  //we adjust the headIndex accordingly
+                        }
+                        //we notify volume level
+                        notifyVolumeLevel(mBuffer, oldTailIndex, tailIndex);
+                        //we do the rest of voice processing
+                        final long now = System.currentTimeMillis();
+                        if (isHearingVoice(mBufferShort, oldTailIndex, tailIndex)) {
+                            if (mLastVoiceHeardMillis == Long.MAX_VALUE) {    // use Long's maximum limit to indicate that we have no voice
+                                mVoiceStartedMillis = now;
+                                isRecording = true;
                                 mCallback.onVoiceStart();
-                            }
-                            if (getMBufferSize() > prevVoiceLength) {
-                                if (tailIndex - prevVoiceLength >= 0) {
-                                    startVoiceIndex = tailIndex - prevVoiceLength;
+                                if (getMBufferSize() > prevVoiceLength) {
+                                    if (tailIndex - prevVoiceLength >= 0) {
+                                        startVoiceIndex = tailIndex - prevVoiceLength;
+                                    } else {
+                                        startVoiceIndex = mBuffer.length + (tailIndex - prevVoiceLength);  //we do a jump
+                                    }
                                 } else {
-                                    startVoiceIndex = mBuffer.length + (tailIndex - prevVoiceLength);  //we do a jump
+                                    startVoiceIndex = headIndex;
                                 }
-                            } else {
-                                startVoiceIndex = headIndex;
                             }
-                        }
-                        mLastVoiceHeardMillis = now;
-                        if (now - (mVoiceStartedMillis - global.getPrevVoiceDuration()) > MAX_SPEECH_LENGTH_MILLIS) {
-                            if(!Thread.currentThread().isInterrupted()) {
-                                end();
+                            mLastVoiceHeardMillis = now;
+                            if (now - (mVoiceStartedMillis - global.getPrevVoiceDuration()) > MAX_SPEECH_LENGTH_MILLIS) {  //if we are listening voice for more than MAX_SPEECH_LENGTH_MILLIS
+                                executeEnd();
                             }
-                        }
-                    } else if (mLastVoiceHeardMillis != Long.MAX_VALUE) {
-                        if (now - mLastVoiceHeardMillis > global.getSpeechTimeout()) {
-                            if(!Thread.currentThread().isInterrupted()) {
-                                end();
+                        } else if (mLastVoiceHeardMillis != Long.MAX_VALUE) {
+                            if (now - mLastVoiceHeardMillis > global.getSpeechTimeout()) {  //if we had not heard voice for global.getSpeechTimeout() ms
+                                executeEnd();
                             }
                         }
                     }
                 }
+            } catch (Throwable t) {
+                Log.e(TAG, "processVoice aborted", t);
+            } finally {
+                drainCommands();          // deliver a pending end() from stopRecording()
+                if (isRecording) {        // never leave isRecording stuck true
+                    isRecording = false;
+                    mCallback.onVoiceEnd();
+                }
+                resetAudioState();
+                running = false;
             }
-            dismiss();
-            headIndex = 0;
-            tailIndex = 0;
         }
+    }
+
+    /** Audio thread only. */
+    private void resetAudioState() {
+        headIndex = 0;
+        tailIndex = 0;
+        startVoiceIndex = 0;
+        //vadChunkFill = 0;
+        mLastVoiceHeardMillis = Long.MAX_VALUE;
+    }
+
+    /** Runs on the dying audio thread, after ProcessVoice has released everything. */
+    private void onProcessVoiceExit() {
+        synchronized (lifecycleLock) {
+            if (mThread != Thread.currentThread()) return;
+            mThread = null;
+            running = false;
+            if (destroyed) {
+                if (mAudioRecord != null) mAudioRecord.release();
+            } else if (pendingStart) {
+                executeStart();
+            } else {
+                executeStopAudioRecord();   // the loop may have exited without anyone calling stop(), so we stop mAudioRecord here
+            }
+        }
+    }
+
+    /**
+     * Closes the current utterance and hands it to the callback. Audio thread only —
+     * public callers reach this through {@link #end()}.
+     */
+    private void executeEnd() {
+        if (mLastVoiceHeardMillis == Long.MAX_VALUE) {
+            return; // no utterance in progress; emitting here would ship stale buffer contents
+        }
+        final int voiceLength = getMBufferRangeSize(startVoiceIndex, tailIndex);
+        final float[] data = new float[voiceLength];
+        int circularIndex = startVoiceIndex;
+        for (int i = 0; i < voiceLength; i++) {
+            data[i] = mBuffer[circularIndex];
+            circularIndex = (circularIndex + 1 == mBuffer.length) ? 0 : circularIndex + 1;
+        }
+
+        mLastVoiceHeardMillis = Long.MAX_VALUE;
+        startVoiceIndex = 0;
+
+        mCallback.onVoice(data, voiceLength);
+        isRecording = false;
+        mCallback.onVoiceEnd();
+    }
+
+    /** Audio thread only — public callers reach this through {@link #dismiss()}. */
+    private void executeDismiss() {
+        mLastVoiceHeardMillis = Long.MAX_VALUE;
     }
 
     private int getMBufferSize(){
@@ -415,7 +566,7 @@ public class Recorder {
             int outputSize = mAudioRecord.read(mBuffer, offset, size, AudioRecord.READ_BLOCKING);
             // Using the values just read in mBuffer we convert the values to mBufferShort in the ENCODING_PCM_16BIT format (used for VAD)
             // To do this, we iterate the section just wrote of mBuffer, convert each value from ENCODING_PCM_FLOAT to ENCODING_PCM_16BIT and insert these values in the corresponding section of mBufferShort.
-            for(int i=offset; i<offset+size; i++){
+            for(int i=offset; i<offset+outputSize; i++){
                 //The range with ENCODING_PCM_16BIT is [-32768, 32767], while with ENCODING_PCM_FLOAT it is [-1, 1], so we convert accordingly
                 mBufferShort[i] = (short) (mBuffer[i] * 32768);
             }
@@ -424,7 +575,7 @@ public class Recorder {
             int outputSize = mAudioRecord.read(mBufferShort, offset, size, AudioRecord.READ_BLOCKING);
             // Using the values just read in mBufferShort we convert the values to mBuffer in the ENCODING_PCM_FLOAT format (used for Speech recognition)
             // Tod do this we iterate the section just wrote of mBufferShort, convert each value from ENCODING_PCM_16BIT to ENCODING_PCM_FLOAT and insert these value in the corresponding section of mBuffer.
-            for(int i=offset; i<offset+size; i++){
+            for(int i=offset; i<offset+outputSize; i++){
                 //The range with ENCODING_PCM_16BIT is [-32768, 32767], while with ENCODING_PCM_FLOAT it is [-1, 1], so we convert accordingly
                 mBuffer[i] = (float) mBufferShort[i] / 32768;
             }
@@ -573,10 +724,6 @@ public class Recorder {
         }
     }
 
-    public boolean isOnHeadsetSco(){
-        return connectedBleHeadset != null;
-    }
-
     private boolean setBLEHeadsetConnection(){
         AudioDeviceInfo[] allDeviceInfo = audioManager.getDevices(GET_DEVICES_INPUTS);
         for (AudioDeviceInfo device : allDeviceInfo) {
@@ -603,19 +750,10 @@ public class Recorder {
 
 
     public static abstract class Callback {
-        private Recorder recorder;
-
-        void setRecorder(Recorder recorder) {
-            this.recorder = recorder;
-        }
-
         /**
          * Called when the recorder starts hearing voice.
          */
         public void onVoiceStart() {
-            if (recorder != null) {
-                recorder.isRecording = true;
-            }
             Log.e("recorder","onVoiceStart");
         }
 
@@ -633,9 +771,6 @@ public class Recorder {
          * Called when the recorder stops hearing voice.
          */
         public void onVoiceEnd() {
-            if (recorder != null) {
-                recorder.isRecording = false;
-            }
             Log.e("recorder","onVoiceEnd");
         }
 
@@ -647,11 +782,6 @@ public class Recorder {
     }
 
     public static abstract class SimpleCallback extends Callback {
-        @Override
-        void setRecorder(Recorder recorder) {
-            super.setRecorder(recorder);
-        }
-
         @Override
         public void onVoiceStart() {
             super.onVoiceStart();

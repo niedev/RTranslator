@@ -28,11 +28,16 @@ import android.os.Looper;
 import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
+
+import java.io.File;
 import java.util.ArrayList;
 import nie.translator.rtranslator.access.AccessActivity;
+import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader2.DownloadInfo;
 import nie.translator.rtranslator.downloader2.DownloadManager;
 import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.CustomLocale;
+import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.ImageActivity;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
@@ -84,7 +89,7 @@ public class LoadingActivity extends GeneralActivity {
         super.onResume();
         isVisible = true;
         global = (Global) getApplication();
-        if (global.isFirstStart()) {
+        if (isFirstStart()) {
             startAccessActivity();
         } else if (global.getTranslator() != null && (Global.ONLY_TEXT_TRANSLATION_MODE || global.getSpeechRecognizer() != null)) {
             if(checkIfResourcesPreferencesRespectDownloads()) {
@@ -101,6 +106,44 @@ public class LoadingActivity extends GeneralActivity {
     protected void onPause() {
         super.onPause();
         isVisible = false;
+    }
+
+    private boolean isFirstStart(){
+        if(!global.isFirstStart()){  //if first start == false, we check if it's the first start after an update from the version 2.0
+            // we check if there are some nllb files, if so we delete those and set foundNllb = true (this confirms that it's the first start after an update from the version 2.0)
+            boolean foundNllb = false;
+            DownloadGroupInfo nllbDownloadInfo = global.getNllbDownloadInfo();
+            for(DownloadInfo download : nllbDownloadInfo.downloadsInfo){
+                File file = new File(download.getDestinationCompletePath());
+                if(file.exists()){
+                    if(file.delete()) {
+                        foundNllb = true;
+                    }
+                }
+            }
+            // if foundNllb == true we add the initial download status to the saved download status in the preferences and then we set first start to true and return true,
+            // so the access activity will be started with the fragment started that will depend on the missing data.
+            if(foundNllb){
+                DownloadGroupInfo initialDownloadInfo = global.getInitialDownloadInfo();
+                if(!DownloadManager.getSavedDownloadStatus(this).contains(initialDownloadInfo)) {
+                    for (DownloadInfo download : initialDownloadInfo.downloadsInfo) {
+                        File file = new File(download.getDestinationCompletePath());
+                        if (file.exists()) {
+                            download.setDownloadCompleted(true);
+                            if(download.shouldUnzip()) download.setUnzipped(true);
+                            if(download.shouldTestIntegrity()) download.setIntegrityTested(true);
+                        }
+                    }
+                }
+                DownloaderTools.addDownloadGroupInfoPreference(this, initialDownloadInfo);
+                global.setFirstStart(true);
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return true;
+        }
     }
 
     private void initializeApp(boolean ignoreTTSError) {
