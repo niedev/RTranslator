@@ -17,15 +17,15 @@
 package nie.translator.rtranslator.tools;
 
 import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Set;
-
-import nie.translator.rtranslator.Global;
 
 public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     @NonNull

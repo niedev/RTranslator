@@ -1,4 +1,4 @@
-package nie.translator.rtranslator.downloader2;
+package nie.translator.rtranslator.downloader;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -56,8 +56,8 @@ public class DownloadGroupInfo implements Parcelable{
     @Override
     public boolean equals(@Nullable Object obj) {
         DownloadInfo[] downloadsInfoTarget = null;
-        if(obj instanceof Downloader2){
-            downloadsInfoTarget = ((Downloader2) obj).getDownloadGroupInfo().downloadsInfo;
+        if(obj instanceof Downloader){
+            downloadsInfoTarget = ((Downloader) obj).getDownloadGroupInfo().downloadsInfo;
         } else if(obj instanceof DownloadGroupInfo){
             downloadsInfoTarget = ((DownloadGroupInfo) obj).downloadsInfo;
         } else if(obj instanceof ResourceManager){

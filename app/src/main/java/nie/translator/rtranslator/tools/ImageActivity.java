@@ -1,14 +1,10 @@
 package nie.translator.rtranslator.tools;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.view.View;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 

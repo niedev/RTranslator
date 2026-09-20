@@ -1330,69 +1330,6 @@ public class CustomAnimator {
         createAnimatorHeight(view,view.getHeight(),1,view.getResources().getInteger(R.integer.durationShort)).start();
     }
 
-    public void appearSecurityLevel(Context context, int duration, final TextView textSecurity, ImageButton securityInfo, final EditText inputRepeatPassword){
-        AnimatorSet animatorSet= new AnimatorSet();
-        // textSecurity animation
-        int finalTextHeight= Tools.convertSpToPixels(context,18);
-        int finalTextMargin= Tools.convertDpToPixels(context,12);
-        Animator textSecurityAnimation= createAppearFromTopAnimator(duration/2,finalTextHeight,finalTextMargin,textSecurity,new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-                if(inputRepeatPassword!=null) {
-                    ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) inputRepeatPassword.getLayoutParams();
-                    layoutParams.topToBottom = textSecurity.getId();
-                    inputRepeatPassword.setLayoutParams(layoutParams);
-                }
-            }
-            @Override
-            public void onAnimationEnd(Animator animator) {}
-            @Override
-            public void onAnimationCancel(Animator animator) {}
-            @Override
-            public void onAnimationRepeat(Animator animator) {}
-        });
-
-        // securityInfo animation
-        int finalInfoHeight= Tools.convertSpToPixels(context,16);
-        int finalInfoMargin= 0;
-        Animator securityInfoAnimation= createAppearFromTopAnimator(duration/2,finalInfoHeight,finalInfoMargin,securityInfo,null);
-
-        animatorSet.play(textSecurityAnimation).with(securityInfoAnimation);
-        animatorSet.start();
-
-    }
-
-    public void disappearSecurityLevel(Context context, int duration, TextView textSecurity, ImageButton securityInfo, final EditText inputPassword, final EditText inputRepeatPassword){
-        AnimatorSet animatorSet= new AnimatorSet();
-        int initialTextMargin=Tools.convertDpToPixels(context,12);
-        // textSecurity animation
-        Animator textSecurityAnimation= createDisappearFromTopAnimator(context,duration/2,initialTextMargin,View.GONE,textSecurity);
-
-        // securityInfo animation
-        int initialInfoMargin=0;
-        Animator securityInfoAnimation= createDisappearFromTopAnimator(context,duration/2,initialInfoMargin,View.GONE,securityInfo);
-
-        animatorSet.play(textSecurityAnimation).with(securityInfoAnimation);
-        animatorSet.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {}
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                if(inputRepeatPassword!=null) {
-                    ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) inputRepeatPassword.getLayoutParams();
-                    layoutParams.topToBottom = inputPassword.getId();
-                    inputRepeatPassword.setLayoutParams(layoutParams);
-                }
-            }
-            @Override
-            public void onAnimationCancel(Animator animator) {}
-            @Override
-            public void onAnimationRepeat(Animator animator) {}
-        });
-        animatorSet.start();
-
-    }
-
     public void appearFromBottom(Context context, int duration, int finalSize, View...view){
         AnimatorSet animatorSet= new AnimatorSet();
         Animator[] animators= new Animator[view.length];

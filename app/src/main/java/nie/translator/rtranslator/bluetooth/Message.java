@@ -23,10 +23,10 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
+
+import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
 
 /**
  * Message is used to send and receive messages using BluetoothCommunicator, in practice this class is a container for the messages that will be sent and received.

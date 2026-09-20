@@ -16,10 +16,8 @@
 
 package nie.translator.rtranslator.settings;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -39,10 +37,10 @@ import androidx.preference.PreferenceGroupAdapter;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import nie.translator.rtranslator.tools.GalleryImageSelector;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.ErrorCodes;
+import nie.translator.rtranslator.tools.GalleryImageSelector;
 
 
 public class SettingsFragment extends PreferenceFragmentCompat {
@@ -150,12 +148,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         // user name initialization
         userNamePreference = (UserNamePreference) findPreference("changeName");
         userNamePreference.setActivity(activity);
-        /*userNamePreference.getEditTextHeight(new UserNamePreference.DateCallback() {
-            @Override
-            public void onViewHeightMeasured(int height) {
-                creditPreference.setButtonHeight(activity,height);
-            }
-        });*/
 
         // change microphone sensibility initialization
         SeekBarPreference micSensibilityPreference = (SeekBarPreference) findPreference("micSensibilitySetting");

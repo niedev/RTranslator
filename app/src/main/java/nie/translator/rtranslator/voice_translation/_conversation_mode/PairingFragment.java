@@ -32,6 +32,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageButton;
@@ -40,8 +41,12 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
+import nie.translator.rtranslator.bluetooth.Peer;
+import nie.translator.rtranslator.bluetooth.tools.Timer;
 import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.FileLog;
@@ -53,10 +58,6 @@ import nie.translator.rtranslator.tools.gui.peers.Listable;
 import nie.translator.rtranslator.tools.gui.peers.PeerListAdapter;
 import nie.translator.rtranslator.tools.gui.peers.array.PairingArray;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
-import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
-import nie.translator.rtranslator.bluetooth.Peer;
-import nie.translator.rtranslator.bluetooth.tools.Timer;
-
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.recent_peer.RecentPeersDataManager;
 

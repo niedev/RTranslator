@@ -17,7 +17,6 @@
 package nie.translator.rtranslator.bluetooth;
 
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattServer;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -26,10 +25,10 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import nie.translator.rtranslator.bluetooth.tools.Timer;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+
+import nie.translator.rtranslator.bluetooth.tools.Timer;
 
 abstract class Channel {
     //timeouts of timers

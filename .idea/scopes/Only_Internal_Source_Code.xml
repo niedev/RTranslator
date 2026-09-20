@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Only Internal Source Code" pattern="file[RTranslator.app.main]:*/&amp;&amp;!file[RTranslator.app.main]:cpp/src//*||file[RTranslator.app.main]:cpp/src/CacheContainerNative.cpp||file[RTranslator.app.main]:cpp/src/CMakeLists.txt||file[RTranslator.app.main]:cpp/src/DictionaryTranslator.cpp||file[RTranslator.app.main]:cpp/src/SentencePieceProcessorInterface.cpp" />
+</component>

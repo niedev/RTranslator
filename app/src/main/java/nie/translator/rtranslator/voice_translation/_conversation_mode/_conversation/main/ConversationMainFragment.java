@@ -17,7 +17,6 @@
 package nie.translator.rtranslator.voice_translation._conversation_mode._conversation.main;
 
 
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -30,13 +29,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.LinearSmoothScroller;
-import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
@@ -412,33 +408,6 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
     public void setInputActive(boolean inputActive) {
         isInputActive = inputActive;
     }
-
-    /**
-     * Handles user acceptance (or denial) of our permission request.
-     * //todo: old method, remove in the future
-     */
-    /*@CallSuper
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode != VoiceTranslationService.REQUEST_CODE_REQUIRED_PERMISSIONS) {
-            return;
-        }
-
-        for (int grantResult : grantResults) {
-            if (grantResult == PackageManager.PERMISSION_DENIED) {
-                Toast.makeText(activity, R.string.error_missing_mic_permissions, Toast.LENGTH_LONG).show();
-                deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_MIC_PERMISSION);
-                return;
-            }
-        }
-
-        // possible activation of the mic
-        if (!microphone.isMute() && microphone.getActivationStatus() == DeactivableButton.ACTIVATED) {
-            startMicrophone(false);
-        }
-    }*/
 
     @Override
     public void onStop() {

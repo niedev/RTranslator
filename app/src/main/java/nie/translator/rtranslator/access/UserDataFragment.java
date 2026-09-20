@@ -33,7 +33,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
-import nie.translator.rtranslator.tools.GalleryImageSelector;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
@@ -41,6 +40,7 @@ import java.util.ArrayList;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
+import nie.translator.rtranslator.tools.GalleryImageSelector;
 
 
 public class UserDataFragment extends Fragment {

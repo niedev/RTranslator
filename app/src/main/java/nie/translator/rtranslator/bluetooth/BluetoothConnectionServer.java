@@ -31,12 +31,12 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
-import nie.translator.rtranslator.bluetooth.tools.Timer;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.UUID;
+
+import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
+import nie.translator.rtranslator.bluetooth.tools.Timer;
 
 
 @SuppressLint("MissingPermission")

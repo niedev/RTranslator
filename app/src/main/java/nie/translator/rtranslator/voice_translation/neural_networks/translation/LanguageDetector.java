@@ -7,9 +7,7 @@ import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 import ai.djl.ModelException;

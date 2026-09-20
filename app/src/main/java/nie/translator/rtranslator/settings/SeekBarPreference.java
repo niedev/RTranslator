@@ -17,7 +17,6 @@
 package nie.translator.rtranslator.settings;
 
 import android.content.Context;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;

@@ -634,33 +634,6 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         }
     }
 
-    /**
-     * Handles user acceptance (or denial) of our permission request.
-     * //todo: old method, remove in the future
-     */
-    /*@CallSuper
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode != VoiceTranslationService.REQUEST_CODE_REQUIRED_PERMISSIONS) {
-            return;
-        }
-
-        for (int grantResult : grantResults) {
-            if (grantResult == PackageManager.PERMISSION_DENIED) {
-                Toast.makeText(activity, R.string.error_missing_mic_permissions, Toast.LENGTH_LONG).show();
-                deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_MIC_PERMISSION);
-                return;
-            }
-        }
-
-        // possible activation of the mic
-        if (!microphone.isMute() && microphone.getActivationStatus() == DeactivableButton.ACTIVATED) {
-            startMicrophone(false);
-        }
-    }*/
-
 
 
     public class WalkieTalkieServiceCallback extends VoiceTranslationService.VoiceTranslationServiceCallback {

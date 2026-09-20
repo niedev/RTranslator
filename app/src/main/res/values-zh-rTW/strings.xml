@@ -11,7 +11,6 @@
     <string name="not_available">不可用</string>
     <string name="loading">載入中…</string>
     <string name="forward">轉送</string>
-    <string name="no_graph_data">無使用資料</string>
     <string name="conversation">對話</string>
     <string name="connection">連接</string>
     <string name="translate">翻譯</string>
@@ -43,7 +42,6 @@
 
     <string name="notification_channel_name">背景通知</string>
 
-    <string name="age_check_box">我聲明我已滿 14 歲</string>
     <string name="privacy_check_box">我聲明我已閱讀 <a href="https://github.com/niedev/RTranslator/blob/v2.00/privacy/Privacy_Policy_en.md">隱私政策</a></string>
 
     <string name="toast_working_background">RTranslator 將在背景中運行</string>
@@ -57,7 +55,6 @@
     <string name="dialog_confirm_disconnection">確定要斷開連接嗎&#160;</string>
     <string name="dialog_confirm_connection">確定要連接嗎&#160;</string>
     <string name="dialog_confirm_connection_request">接受來自&#160;的連接請求</string>
-    <string name="dialog_select_file">選擇檔案</string>
     <string name="dialog_select_personal_language">選擇個人語言</string>
     <string name="dialog_select_first_language">選擇主要語言</string>
     <string name="dialog_select_second_language">選擇次要語言</string>
@@ -78,8 +75,6 @@
     <string name="error_tts_toast">缺少 TTS</string>
     <string name="error_tts">TTS 初始化時出現錯誤，是否要在沒有 TTS 的情況下繼續？</string>
     <string name="error_missing_tts">此裝置上沒有 Google TTS 引擎，請下載以使用 TTS</string>
-    <string name="error_wrong_api_key_file">用於 API 的金鑰檔案無效，請插入有效的金鑰檔案</string>
-    <string name="error_missing_api_key_file">請輸入金鑰檔案以使用 API</string>
     <string name="error_missing_bluetooth_le">此裝置不支援低功耗藍牙，無法使用對話模式</string>
     <string name="error_internet_lack_loading">啟動 RTranslator 需要網際網路連線，請檢查您的連線</string>
     <string name="error_internet_lack_accessing">執行此操作需要網際網路連線，請檢查您的連線</string>
@@ -91,8 +86,6 @@
     <string name="error_cannot_interact_connection">連接期間無法與設備互動</string>
     <string name="error_cannot_interact_disconnection">斷開連接期間無法與設備互動</string>
     <string name="error_wait_initialization">請等待初始化</string>
-    <string name="error_invalid_key">請輸入有效的金鑰檔案</string>
-    <string name="error_picking_file">選取檔案時出錯，請重試</string>
     <string name="error_selecting_image">選擇圖片時出錯，請使用另一個相簿選擇</string>
     <string name="error_wait_download_end">請等待下載完成</string>
     <string name="error_age_unchecked">您必須年滿 14 歲才能使用此應用程式</string>
@@ -114,7 +107,6 @@
     <string name="error_apply_unknown">未知錯誤，請重試。</string>
     <string name="error_delete_last_download">這是最後一個已下載的翻譯模型，無法刪除所有翻譯模型。請先下載另一個翻譯模型，再刪除此模型。</string>
 
-    <string name="title_graph">每小時花費的美元 (USD)</string>
     <string name="title_image_selector">用户頭像</string>
 
     <string name="home_walkietalkie_mode">對講機模式</string>
@@ -133,11 +125,8 @@
     <string name="header_recents_peers">最近</string>
     <string name="header_found_peers">找到的</string>
     <string name="header_connected_peers">已連接</string>
-    <string name="header_key">API 金鑰</string>
 
-    <string name="description_cost">語音辨識將每次請求的成本四捨五入到最接近的 15 秒的倍數，平均總成本（包括翻譯和語音辨識），不考慮四捨五入，是每小時 2.5 美元，對於對講機還必須將語言識別成本加到翻譯中，了解更多請閱讀<a href="https://github.com/niedev/RTranslator">教學</a></string>
     <string name="description_discovery">此畫面將搜尋並使我們對其他使用 RTranslator 的設備可見，以便能夠與它們建立連接並開始對話</string>
-    <string name="description_key">要了解如何獲取金鑰檔案，請閱讀 <a href="https://github.com/niedev/RTranslator">教學</a></string>
     <string name="description_fragment_user_data">您的名字將顯示給所有附近的設備，而您的個人資料照片僅顯示在您已經進行過對話的設備上</string>
     <string name="description_fragment_download">現在 RTranslator 將下載翻譯和語音辨識所需的神經網路模型，完成後您可以開始使用應用程式（即使是離線狀態下）。</string>
     <string name="description_conversation">對話模式是 RTranslator 的主要功能，它允許您實時翻譯多個人之間的對話，為了更好的體驗，建議將藍牙耳機連接到手機，此外應用程式在背景運行和手機待機時也會繼續工作（然而，一些手機在應用程式背景運行時可能會有性能問題）</string>

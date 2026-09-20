@@ -26,16 +26,22 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
+import nie.translator.rtranslator.bluetooth.Peer;
+import nie.translator.rtranslator.bluetooth.tools.Timer;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.FileLog;
 import nie.translator.rtranslator.tools.Tools;
@@ -47,9 +53,6 @@ import nie.translator.rtranslator.tools.gui.peers.array.InfoArray;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation._conversation_mode.PairingFragment;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationFragment;
-import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
-import nie.translator.rtranslator.bluetooth.Peer;
-import nie.translator.rtranslator.bluetooth.tools.Timer;
 
 
 public class PeersInfoFragment extends Fragment {

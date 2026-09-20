@@ -23,10 +23,10 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+
+import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
 
 class BluetoothMessage implements Parcelable {
     public static final int ID_LENGTH = 4;

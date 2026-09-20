@@ -26,7 +26,6 @@ import android.widget.ImageButton;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.animations.CustomAnimator;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
-import nie.translator.rtranslator.voice_translation.VoiceTranslationFragment;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.main.ConversationMainFragment;
 
 public class ButtonKeyboard extends DeactivableButton {

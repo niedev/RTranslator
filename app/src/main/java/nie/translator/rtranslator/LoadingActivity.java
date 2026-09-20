@@ -28,13 +28,15 @@ import android.os.Looper;
 import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.splashscreen.SplashScreen;
 
 import java.io.File;
 import java.util.ArrayList;
+
 import nie.translator.rtranslator.access.AccessActivity;
-import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
-import nie.translator.rtranslator.downloader2.DownloadInfo;
-import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.downloader.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader.DownloadInfo;
+import nie.translator.rtranslator.downloader.DownloadManager;
 import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.DownloaderTools;
@@ -43,8 +45,6 @@ import nie.translator.rtranslator.tools.ImageActivity;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
 import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
-
-import androidx.core.splashscreen.SplashScreen;
 
 
 public class LoadingActivity extends GeneralActivity {

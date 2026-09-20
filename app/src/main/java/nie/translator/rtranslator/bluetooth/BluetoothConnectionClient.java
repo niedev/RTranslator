@@ -30,14 +30,13 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
-import nie.translator.rtranslator.bluetooth.tools.Timer;
 
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+
+import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
+import nie.translator.rtranslator.bluetooth.tools.Timer;
 
 @SuppressLint("MissingPermission")
 class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.BluetoothConnection {

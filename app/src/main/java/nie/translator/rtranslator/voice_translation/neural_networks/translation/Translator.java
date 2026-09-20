@@ -17,7 +17,6 @@
 package nie.translator.rtranslator.voice_translation.neural_networks.translation;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.icu.text.BreakIterator;
 import android.os.Environment;
 import android.os.Looper;

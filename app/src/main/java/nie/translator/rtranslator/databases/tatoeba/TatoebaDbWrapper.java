@@ -1,20 +1,12 @@
 package nie.translator.rtranslator.databases.tatoeba;
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.niedev.sqlite4java.SQLiteBlob;
 import com.niedev.sqlite4java.SQLiteConnection;
-
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.niedev.sqlite4java.SQLiteException;
 import com.niedev.sqlite4java.SQLiteStatement;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 

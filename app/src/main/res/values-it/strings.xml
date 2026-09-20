@@ -27,7 +27,6 @@
     <string name="not_available">non disponibile</string>
     <string name="loading">caricamento…</string>
     <string name="forward">avanti</string>
-    <string name="no_graph_data">Nessun dato sull\' utilizzo presente</string>
     <string name="conversation">Conversazione</string>
     <string name="connection">Connessione</string>
     <string name="translate">Traduci</string>
@@ -59,7 +58,6 @@
 
     <string name="notification_channel_name">notifica uso in background</string>
 
-    <string name="age_check_box">Dichiaro di avere almeno 14 anni</string>
     <string name="privacy_check_box">Dichiaro di aver letto la <a href="https://github.com/niedev/RTranslator/blob/v2.00/privacy/Privacy_Policy_it.md">privacy policy</a></string>
 
     <string name="toast_working_background">RTranslator funzionerà in background</string>
@@ -72,7 +70,6 @@
     <string name="dialog_confirm_disconnection">Sei sicuro di volerti disconnettere da&#160;</string>
     <string name="dialog_confirm_connection">Sei sicuro di volerti connettere con&#160;</string>
     <string name="dialog_confirm_connection_request">Accetti la richiesta di connessione da&#160;</string>
-    <string name="dialog_select_file">Seleziona il file</string>
     <string name="dialog_select_personal_language">Seleziona la lingua personale</string>
     <string name="dialog_select_first_language">Seleziona la lingua primaria</string>
     <string name="dialog_select_second_language">Seleziona la lingua secondaria</string>
@@ -93,8 +90,6 @@
     <string name="error_tts_toast">TTS mancante</string>
     <string name="error_tts">C\'è stato un errore con l\'inizializzazione del tts, vuoi continuare senza tts?</string>
     <string name="error_missing_tts">In questo device non è presente il motore di sintesi vocale di google, scaricalo per poter usare il tts</string>
-    <string name="error_wrong_api_key_file">Il file chiave per usare l\'API non funziona, inserire un file chiave funzionante</string>
-    <string name="error_missing_api_key_file">Inserire il file chiave per usare l\'API</string>
     <string name="error_missing_bluetooth_le">Non é possibile eseguire la modalità Conversazione perché questo dispositivo non ha il Bluetooth Low Energy</string>
     <string name="error_internet_lack_loading">Per avviare RTranslator è necessaria una connessione a internet, controllare la propria connessione</string>
     <string name="error_internet_lack_accessing">Per eseguire l\'operazione è necessaria una connessione a internet, controllare la propria connessione</string>
@@ -106,8 +101,6 @@
     <string name="error_cannot_interact_connection">Non si può interagire con i dispositivi durante la connessione</string>
     <string name="error_cannot_interact_disconnection">Non si può interagire con i dispositivi durante la disconnessione</string>
     <string name="error_wait_initialization">Attendere inizializzazione</string>
-    <string name="error_invalid_key">Inserire un file chiave valido</string>
-    <string name="error_picking_file">Errore durante il prelevamento del file, riprovare</string>
     <string name="error_selecting_image">Errore durante la selezione dell\' immagine, usa un\' altra galleria per selezionarla</string>
     <string name="error_wait_download_end">Aspetta che il download finisca</string>
     <string name="error_age_unchecked">Devi avere almeno 14 anni per usare l\'app</string>
@@ -129,7 +122,6 @@
     <string name="error_apply_unknown">Errore sconosciuto, riprova.</string>
     <string name="error_delete_last_download">Questo è l\'ultimo modello di traduzione scaricato. Non puoi eliminare tutti i modelli di traduzione: scaricane un altro prima di eliminare questo.</string>
 
-    <string name="title_graph">DOLLARI (USD) SPESI OGNI ORA</string>
     <string name="title_image_selector">immagine del profilo</string>
 
     <string name="home_walkietalkie_mode">Modalità WalkieTalkie</string>
@@ -148,12 +140,9 @@
     <string name="header_recents_peers">recenti</string>
     <string name="header_found_peers">trovati</string>
     <string name="header_connected_peers">connessi</string>
-    <string name="header_key">Chiave APIs</string>
 
-    <string name="description_cost">Il riconoscimento vocale arrotonda il costo di ogni richiesta al più vicino multiplo di 15 secondi, il costo medio totale (sia traduttore che riconoscimento vocale), senza tenere conto dell\' arrotondamento, è di 2,5 dollari l\' ora, inoltre per WalkieTalkie bisogna aggiungere ai costi di traduzione anche quelli del rilevamento della lingua, per approfondire leggere il <a href="https://github.com/niedev/RTranslator">tutorial</a></string>
     <string name="description_discovery">In questa schermata si cercano e ci rendiamo visibili ad altri dispositivi che usano RTranslator
         per poter stabilire una connessione con loro e iniziare la conversazione</string>
-    <string name="description_key">Per sapere come procurarsi il file chiave leggere il <a href="https://github.com/niedev/RTranslator">tutorial</a></string>
     <string name="description_fragment_user_data">Il tuo nome verrà visualizzato da tutti i dispositivi nelle vicinanze, mentre la tua immagine del profilo solo dai dispositivi con cui hai già avuto conversazioni</string>
     <string name="description_fragment_download">Adesso RTranslator scaricherà i modelli di reti neurali necessari per la traduzione e il riconoscimento vocale, una volta finito potrai iniziare a usare l\'app (anche offline).</string>
     <string name="description_conversation">La modalità Conversazione è la funzionalità principale di RTranslator, permette di tradurre una conversazione tra più persone in tempo reale, per un\' esperienza migliore si consiglia di collegare delle cuffie bluetooth al telefono, inoltre l\' applicazione continuerà a funzionare anche in background e con il telefono in standby (alcuni telefoni però potrebbero avere problemi di prestazioni quando l\'app gira in background)</string>

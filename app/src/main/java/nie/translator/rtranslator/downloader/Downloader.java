@@ -1,4 +1,4 @@
-package nie.translator.rtranslator.downloader2;
+package nie.translator.rtranslator.downloader;
 
 
 import android.content.Context;
@@ -32,7 +32,7 @@ import java.util.zip.ZipInputStream;
 import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
 
-public class Downloader2 {
+public class Downloader {
     public static final int GENERAL_ERROR = 1;
     public static final int UNZIP_FAILED = 2;
     public static final int INTEGRITY_CHECK_FAILED = 3;
@@ -48,7 +48,7 @@ public class Downloader2 {
     @Nullable
     private Thread testIntegrityThread = null;
 
-    public Downloader2(DownloadGroupInfo downloadGroupInfo, Context context, int id, ClientCallback callback) {
+    public Downloader(DownloadGroupInfo downloadGroupInfo, Context context, int id, ClientCallback callback) {
         this.downloadGroupInfo = downloadGroupInfo;
         this.mainHandler = new android.os.Handler(Looper.getMainLooper());
         //this.downloadGroupInfo.setRunningDownloadIndex(-1);

@@ -24,17 +24,17 @@ import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 
 import nie.translator.rtranslator.Global;
+import nie.translator.rtranslator.bluetooth.Message;
+import nie.translator.rtranslator.bluetooth.Peer;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationService;
-import nie.translator.rtranslator.bluetooth.Message;
-import nie.translator.rtranslator.bluetooth.Peer;
-import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApiResult;
 import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
 import nie.translator.rtranslator.voice_translation.neural_networks.voice.Recognizer;

@@ -22,15 +22,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import java.util.ArrayList;
+
+import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
 import nie.translator.rtranslator.bluetooth.Message;
 import nie.translator.rtranslator.bluetooth.Peer;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.GalleryImageSelector;
-
-import java.util.ArrayList;
-
-import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.peers.GuiPeer;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;

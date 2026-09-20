@@ -1,6 +1,5 @@
 package nie.translator.rtranslator.settings;
 
-import static nie.translator.rtranslator.tools.DownloaderTools.checkMozillaModelsPresence;
 import static nie.translator.rtranslator.tools.DownloaderTools.isMozillaDownload;
 
 import android.app.Activity;
@@ -13,17 +12,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.common.collect.Lists;
-
-import java.util.ArrayList;
 
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
-import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
-import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.downloader.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader.DownloadManager;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.ResourceManagerView;
-import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
 
 public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerItem {
     @Nullable

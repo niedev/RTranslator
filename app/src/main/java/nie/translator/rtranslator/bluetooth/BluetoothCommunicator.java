@@ -39,12 +39,12 @@ import android.os.ParcelUuid;
 
 import androidx.annotation.Nullable;
 
-import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
 
 /**
  * This class allows you to communicate in P2P mode between two or more android devices.

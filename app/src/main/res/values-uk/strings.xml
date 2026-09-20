@@ -13,7 +13,6 @@
     <string name="not_available">не доступний</string>
     <string name="loading">завантаження…</string>
     <string name="forward">вперед</string>
-    <string name="no_graph_data">Відсутні дані використання</string>
     <string name="conversation">Розмова</string>
     <string name="connection">З\'єднання</string>
     <string name="translate">Переклад</string>
@@ -45,7 +44,6 @@
 
     <string name="notification_channel_name">використання у фоновому режимі</string>
 
-    <string name="age_check_box">Я підтверджую, що мені щонайменше 14 років</string>
     <string name="privacy_check_box">Я підтверджую, що я прочитав <a href="https://github.com/niedev/RTranslator/blob/v2.00/privacy/Privacy_Policy_en.md">політику конфіденційності</a></string>
 
     <string name="toast_working_background">RTranslator буде працювати у фоновому режимі</string>
@@ -58,7 +56,6 @@
     <string name="dialog_confirm_disconnection">Ви впевнені, що хочете відключитися від&#160;</string>
     <string name="dialog_confirm_connection">Ви впевнені, що хочете підключитися до&#160;</string>
     <string name="dialog_confirm_connection_request">Прийняти запит на підключення від&#160;</string>
-    <string name="dialog_select_file">Виберіть файл</string>
     <string name="dialog_select_personal_language">Виберіть особисту мову</string>
     <string name="dialog_select_first_language">Виберіть основну мову</string>
     <string name="dialog_select_second_language">Виберіть другу мову</string>
@@ -79,8 +76,6 @@
     <string name="error_tts_toast">Відсутній tts</string>
     <string name="error_tts">Виникла помилка при ініціалізації tts, хочете продовжити без tts?</string>
     <string name="error_missing_tts">На цьому пристрої відсутній голосовий двигун Google TTS, завантажте його, щоб мати змогу використовувати tts</string>
-    <string name="error_wrong_api_key_file">Файл ключа для використання API не працює, вставте робочий файл ключа</string>
-    <string name="error_missing_api_key_file">Введіть файл ключа для використання API</string>
     <string name="error_missing_bluetooth_le">Неможливо використовувати режим Розмови, оскільки цей пристрій не має Bluetooth Low Energy</string>
     <string name="error_internet_lack_loading">Для запуску RTranslator потрібне підключення до Інтернету, перевірте ваше підключення</string>
     <string name="error_internet_lack_accessing">Для виконання операції потрібне підключення до Інтернету, перевірте ваше підключення</string>
@@ -92,8 +87,6 @@
     <string name="error_cannot_interact_connection">не можна взаємодіяти з пристроями під час підключення</string>
     <string name="error_cannot_interact_disconnection">не можна взаємодіяти з пристроями під час відключення</string>
     <string name="error_wait_initialization">Зачекайте на ініціалізацію</string>
-    <string name="error_invalid_key">Введіть дійсний файл ключа</string>
-    <string name="error_picking_file">Помилка під час вибору файлу, спробуйте ще раз</string>
     <string name="error_selecting_image">Помилка під час вибору зображення, використовуйте іншу галерею для вибору</string>
     <string name="error_wait_download_end">Зачекайте завершення завантаження</string>
     <string name="error_age_unchecked">Вам повинно бути щонайменше 14 років для використання додатка</string>
@@ -115,7 +108,6 @@
     <string name="error_apply_unknown">Невідома помилка, спробуйте ще раз.</string>
     <string name="error_delete_last_download">Це остання завантажена модель перекладу. Не можна видалити всі моделі перекладу — завантажте іншу, перш ніж видаляти цю.</string>
 
-    <string name="title_graph">ДОЛАРІВ (USD) ВИТРАЧАЮТЬ КОЖНУ ГОДИНУ</string>
     <string name="title_image_selector">зображення користувача</string>
 
     <string name="home_walkietalkie_mode">Режим WalkieTalkie</string>
@@ -134,11 +126,8 @@
     <string name="header_recents_peers">недавні</string>
     <string name="header_found_peers">знайдені</string>
     <string name="header_connected_peers">підключені</string>
-    <string name="header_key">Ключі API</string>
 
-    <string name="description_cost">Розпізнавання мови округлює вартість кожного запиту до найближчого кратного 15 секундам, середня вартість (як для перекладу, так і для розпізнавання мови), без врахування округлення, становить 2,5 доларів на годину, також для WalkieTalkie необхідно додатково врахувати витрати на виявлення мови для перекладу, щоб дізнатися більше, прочитайте <a href="https://github.com/niedev/RTranslator">посібник</a></string>
     <string name="description_discovery">На цьому екрані буде виконано пошук та ми будемо видимі для інших пристроїв, які використовують RTranslator, щоб зможемо встановити з\'єднання з ними та почати розмову</string>
-    <string name="description_key">Для того щоб дізнатися, як отримати файл ключа, прочитайте <a href="https://github.com/niedev/RTranslator">посібник</a></string>
     <string name="description_fragment_user_data">Ваше ім\'я буде відображено на всіх навколишніх пристроях, тоді як ваше фото профілю покажуть лише на пристроях, з якими ви вже мали розмови</string>
     <string name="description_fragment_download">Тепер RTranslator завантажить необхідні нейромережеві моделі для перекладу та розпізнавання мови, коли завершите, ви зможете почати використовувати додаток (навіть офлайн).</string>
     <string name="description_conversation">Режим Розмови - основна функція RTranslator, вона дозволяє перекладати розмову між кількома людьми в реальному часі, для кращого враження рекомендується підключити блютуз-гарнітуру до телефону,

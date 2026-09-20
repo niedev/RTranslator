@@ -64,9 +64,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
-import nie.translator.rtranslator.R;
-import nie.translator.rtranslator.tools.gui.peers.GuiPeer;
 import nie.translator.rtranslator.bluetooth.Peer;
+import nie.translator.rtranslator.tools.gui.peers.GuiPeer;
 
 public class Tools {
     public static final int CONNECTION_SERVICE = 0;

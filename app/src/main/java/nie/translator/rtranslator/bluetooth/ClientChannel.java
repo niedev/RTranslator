@@ -26,9 +26,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import nie.translator.rtranslator.bluetooth.tools.Timer;
-
 import java.nio.charset.StandardCharsets;
+
+import nie.translator.rtranslator.bluetooth.tools.Timer;
 
 @SuppressLint("MissingPermission")
 class ClientChannel extends nie.translator.rtranslator.bluetooth.Channel {

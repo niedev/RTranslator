@@ -1,4 +1,4 @@
-package nie.translator.rtranslator.downloader2;
+package nie.translator.rtranslator.downloader;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -6,8 +6,8 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.IBinder;
 import android.os.Binder;
+import android.os.IBinder;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -23,14 +23,14 @@ import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.DownloaderTools;
 
 public class DownloaderService extends Service {
-    public static final String DOWNLOAD_INFOS = "nie.translator.rtranslator.downloader2.DOWNLOAD_INFOS";
-    private final ArrayList<Downloader2> downloaders = new ArrayList<>();
+    public static final String DOWNLOAD_INFOS = "nie.translator.rtranslator.downloader.DOWNLOAD_INFOS";
+    private final ArrayList<Downloader> downloaders = new ArrayList<>();
     private final IBinder binder = new LocalBinder();
-    private ArrayList<Downloader2.ClientCallback> clients = new ArrayList<>();
+    private ArrayList<Downloader.ClientCallback> clients = new ArrayList<>();
     private static final String GROUP_KEY_DOWNLOADS = "com.example.downloadapp.DOWNLOAD_GROUP";
     private static final String CHANNEL_ID = "service_background_notification";
     private static final int SUMMARY_ID = 1000; // Fixed ID for the overall average notification
-    private Downloader2.ClientCallback downloaderCallback;
+    private Downloader.ClientCallback downloaderCallback;
     private NotificationManager notificationManager;
     private NotificationCompat.Builder summaryBuilder;
     private NotificationCompat.Builder subDownloadBuilder;
@@ -57,7 +57,7 @@ public class DownloaderService extends Service {
                 .setDatabaseEnabled(true)
                 .build();
         PRDownloader.initialize(getApplicationContext(), config);
-        downloaderCallback = new Downloader2.ClientCallback() {
+        downloaderCallback = new Downloader.ClientCallback() {
             @Override
             public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
                 if(downloadGroup.getRunningDownload() != null) updateDownloadProgress(downloadGroup, downloadGroup.getRunningDownload().name, totalProgress, downloadGroup.getRunningDownloadIndex() == -1, unzipping, testingIntegrity);
@@ -146,7 +146,7 @@ public class DownloaderService extends Service {
                             }else{
                                 // in this case the download is paused so we add it to the downloaders but without starting it (plus we create its notification)
                                 int index;
-                                Downloader2 downloader = new Downloader2(groupInfo, this, nextNotificationId++, downloaderCallback);
+                                Downloader downloader = new Downloader(groupInfo, this, nextNotificationId++, downloaderCallback);
                                 downloaders.add(downloader);
                                 int runningDownloadIndex = downloader.findFirstIncompletedDownload();
                                 if(runningDownloadIndex < downloader.getDownloadGroupInfo().downloadsInfo.length) {
@@ -173,17 +173,17 @@ public class DownloaderService extends Service {
         return binder;
     }
 
-    public void registerClient(Downloader2.ClientCallback client) {
+    public void registerClient(Downloader.ClientCallback client) {
         if (!clients.contains(client)) {
             clients.add(client);
         }
     }
 
-    public void unregisterClient(Downloader2.ClientCallback client) {
+    public void unregisterClient(Downloader.ClientCallback client) {
         clients.remove(client);
     }
 
-    public ArrayList<Downloader2> getDownloaders() {
+    public ArrayList<Downloader> getDownloaders() {
         return downloaders;
     }
 
@@ -196,7 +196,7 @@ public class DownloaderService extends Service {
     public void startDownload(DownloadGroupInfo download) {
         int index = downloaders.indexOf(download);
         if(index == -1) {
-            final Downloader2 newDownloader = new Downloader2(download, this, nextNotificationId++, downloaderCallback);
+            final Downloader newDownloader = new Downloader(download, this, nextNotificationId++, downloaderCallback);
             downloaders.add(newDownloader);
             index = downloaders.size()-1;
             addDownloadGroupInfoPreference(download);
@@ -242,7 +242,7 @@ public class DownloaderService extends Service {
 
     public ArrayList<DownloadGroupInfo> getDownloadsStatus() {
         ArrayList<DownloadGroupInfo> downloadGroupInfos = new ArrayList<>();
-        for(Downloader2 downloader : downloaders){
+        for(Downloader downloader : downloaders){
             downloadGroupInfos.add(downloader.getDownloadGroupInfo());
         }
         ArrayList<DownloadGroupInfo> clone = new ArrayList<DownloadGroupInfo>(downloadGroupInfos.size());
@@ -355,7 +355,7 @@ public class DownloaderService extends Service {
         }
     }
 
-    private void removeDownload(Downloader2 downloader){
+    private void removeDownload(Downloader downloader){
         int index = downloaders.indexOf(downloader);
         if(index != -1){
             removeDownload(index);
@@ -371,29 +371,29 @@ public class DownloaderService extends Service {
         }
     }
 
-    // Implementation of Downloader2.Callback methods
-    // These methods will be called by individual Downloader2 instances
+    // Implementation of Downloader.Callback methods
+    // These methods will be called by individual Downloader instances
 
     public void notifyProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
-        for (Downloader2.ClientCallback client : new ArrayList<>(clients)) { // Iterate over a copy to avoid ConcurrentModificationException
+        for (Downloader.ClientCallback client : new ArrayList<>(clients)) { // Iterate over a copy to avoid ConcurrentModificationException
             client.onProgress(downloadGroup, download, totalProgress, progress, unzipping, testingIntegrity);
         }
     }
 
     public void notifyCompleted(DownloadGroupInfo downloadGroup, DownloadInfo download) {
-        for (Downloader2.ClientCallback client : new ArrayList<>(clients)) {
+        for (Downloader.ClientCallback client : new ArrayList<>(clients)) {
             client.onCompleted(downloadGroup, download);
         }
     }
 
     public void notifyAllCompleted(DownloadGroupInfo downloadGroup) {
-        for (Downloader2.ClientCallback client : new ArrayList<>(clients)) {
+        for (Downloader.ClientCallback client : new ArrayList<>(clients)) {
             client.onAllCompleted(downloadGroup);
         }
     }
 
     public void notifyError(DownloadGroupInfo downloadGroup, DownloadInfo download, int reason) {
-        for (Downloader2.ClientCallback client : new ArrayList<>(clients)) {
+        for (Downloader.ClientCallback client : new ArrayList<>(clients)) {
             client.onError(downloadGroup, download, reason);
         }
     }

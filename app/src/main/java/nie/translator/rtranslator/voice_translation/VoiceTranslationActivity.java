@@ -27,8 +27,6 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -51,11 +49,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import nie.translator.rtranslator.GeneralActivity;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
-import nie.translator.rtranslator.settings.SettingsActivity;
+import nie.translator.rtranslator.bluetooth.Peer;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.CustomServiceConnection;
 import nie.translator.rtranslator.tools.Tools;
@@ -66,8 +65,6 @@ import nie.translator.rtranslator.voice_translation._conversation_mode._conversa
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.main.ConversationMainFragment;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
-import nie.translator.rtranslator.bluetooth.Peer;
-
 import nie.translator.rtranslator.voice_translation._text_translation.TranslationFragment;
 import nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieFragment;
 import nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieService;
@@ -142,25 +139,6 @@ public class VoiceTranslationActivity extends GeneralActivity {
         if(getResources() != null) {
             config = getResources().getConfiguration();
         }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.settings: {
-                Intent intent = new Intent(this, SettingsActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                break;
-            }
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        //getMenuInflater().inflate(R.menu.toolbar_menu, menu);
-        return true;
     }
 
     public void setFragment(int fragmentName) {

@@ -29,25 +29,22 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.os.PowerManager;
-import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
+
 import nie.translator.rtranslator.GeneralService;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.bluetooth.Message;
 import nie.translator.rtranslator.bluetooth.tools.Timer;
 import nie.translator.rtranslator.tools.CustomLocale;
-import nie.translator.rtranslator.tools.TTS;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.services_communication.ServiceCallback;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicator;
-import nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieService;
 import nie.translator.rtranslator.voice_translation.neural_networks.voice.Recognizer;
 import nie.translator.rtranslator.voice_translation.neural_networks.voice.RecognizerListener;
 import nie.translator.rtranslator.voice_translation.neural_networks.voice.Recorder;
