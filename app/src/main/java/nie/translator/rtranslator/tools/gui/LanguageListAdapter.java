@@ -21,6 +21,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -29,29 +31,16 @@ import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.CustomLocale;
 
-public class LanguageListAdapter extends BaseAdapter {
+public class LanguageListAdapter extends BaseAdapter implements Filterable {
     private ArrayList<CustomLocale> languages;
+    private ArrayList<CustomLocale> filteredLanguages;
+    private LanguageFilter filter;
     private CustomLocale selectedLanguage;
     private Activity activity;
     private LayoutInflater inflater;
-    private boolean showTTSInfo = true;
+    private boolean showTTSInfo;
     private ArrayList<CustomLocale> ttsLanguages = new ArrayList<>();
     private boolean ttsLanguagesInitialized = false;
-
-    public LanguageListAdapter(Activity activity, ArrayList<CustomLocale> languages, CustomLocale selectedLanguage) {
-        this.activity = activity;
-        languages.sort(new Comparator<CustomLocale>(){
-            @Override
-            public int compare(final CustomLocale locale1, CustomLocale locale2){
-                return locale1.getDisplayNameWithoutTTS().compareTo(locale2.getDisplayNameWithoutTTS());
-            }
-        });
-        this.languages = languages;
-        this.selectedLanguage = selectedLanguage;
-        notifyDataSetChanged();
-        inflater = activity.getLayoutInflater();
-        initializeTTSLanguageList(activity);
-    }
 
     public LanguageListAdapter(Activity activity, boolean showTTSInfo, ArrayList<CustomLocale> languages, CustomLocale selectedLanguage) {
         this.activity = activity;
@@ -63,6 +52,7 @@ public class LanguageListAdapter extends BaseAdapter {
             }
         });
         this.languages = languages;
+        this.filteredLanguages = languages;
         this.selectedLanguage = selectedLanguage;
         notifyDataSetChanged();
         inflater = activity.getLayoutInflater();
@@ -71,12 +61,12 @@ public class LanguageListAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return languages.size();
+        return filteredLanguages.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return languages.get(position);
+        return filteredLanguages.get(position);
     }
 
     /*public String getItemCode(int position) {
@@ -94,7 +84,27 @@ public class LanguageListAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return position;
+        CustomLocale item = filteredLanguages.get(position);
+
+        // Use the unique language code's hash as the ID  (we use the code, not the name, because names might be identical in rare cases)
+        if (item != null && item.getISO3Language() != null) {
+            return item.getISO3Language().hashCode();
+        }
+        return position; // Fallback
+    }
+
+    @Override
+    public boolean hasStableIds() {
+        // This makes filtering smoother and prevents selection glitches
+        return true;
+    }
+
+    @Override
+    public Filter getFilter() {
+        if (filter == null) {
+            filter = new LanguageFilter();
+        }
+        return filter;
     }
 
     @Override
@@ -131,5 +141,38 @@ public class LanguageListAdapter extends BaseAdapter {
                 //never called in this case
             }
         });
+    }
+
+    //this class is used to apply filters to the language list (for now it is used for search)
+    private class LanguageFilter extends Filter {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            FilterResults results = new FilterResults();
+
+            // If search is empty, show original list
+            if (constraint == null || constraint.length() == 0) {
+                results.values = languages;
+                results.count = languages.size();
+            } else {
+                ArrayList<CustomLocale> filteredItems = new ArrayList<>();
+                String filterPattern = constraint.toString().toLowerCase().trim();
+
+                for (CustomLocale item : languages) {
+                    if (item.getDisplayNameWithoutTTS().toLowerCase().contains(filterPattern)) {
+                        filteredItems.add(item);
+                    }
+                }
+                results.values = filteredItems;
+                results.count = filteredItems.size();
+            }
+            return results; // Runs on background thread automatically!
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            // This runs on the UI thread automatically
+            filteredLanguages = (ArrayList<CustomLocale>) results.values;
+            notifyDataSetChanged(); // Refresh the ListView
+        }
     }
 }

@@ -78,6 +78,8 @@
     <string name="dialog_insert_name">Insert your name</string>
     <string name="dialog_confirm_apply_quit">Are you sure you want to quit without applying the new settings?</string>
     <string name="dialog_confirm_delete_resource">Are you sure you want to delete this resource?</string>
+    <string name="dialog_search_hint">Search language...</string>
+    <string name="dialog_no_languages">No languages found</string>
 
     <string name="menu_image_select_from_gallery">Select from gallery</string>
     <string name="menu_image_remove">Remove</string>

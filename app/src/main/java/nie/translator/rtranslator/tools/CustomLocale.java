@@ -30,21 +30,29 @@ import java.util.Set;
 public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     @NonNull
     private Locale locale;
+    @Nullable
+    private String cachedDisplayName;
+    @Nullable
+    private String cachedIso3Language = null;
 
     public CustomLocale(String language, String country, String variant) {
         locale = new Locale(language, country, variant);
+        initCacheValues();
     }
 
     public CustomLocale(String languageCode, String countryCode) {
         locale = new Locale(languageCode, countryCode);
+        initCacheValues();
     }
 
     public CustomLocale(String languageCode){
         locale = new Locale(languageCode);
+        initCacheValues();
     }
 
     public CustomLocale(@NonNull Locale locale) {
         this.locale = locale;
+        initCacheValues();
     }
 
     public static CustomLocale getInstance(String code) {
@@ -106,7 +114,15 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     }
 
     public String getISO3Language() throws MissingResourceException {
-        return locale.getISO3Language();
+        /**
+         * This method is cached because locale.getISO3Language() is a relatively heavy operation (circa 0.5 ms),
+         * and without cache this can impact the performance where this method
+         * is called for operations regarding a lot of languages (> 400), for example in the languages list dialogs.
+         */
+        if (cachedIso3Language == null) {
+            cachedIso3Language = locale.getISO3Language();
+        }
+        return cachedIso3Language;
     }
 
     public String getISO3Country() throws MissingResourceException {
@@ -156,9 +172,8 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     }
 
     public String getDisplayName(ArrayList<CustomLocale> ttsLanguages) {
-        String name = locale.getDisplayName();
-        name = name.substring(0,1).toUpperCase(locale) + name.substring(1);  //we convert the first letter to uppercase
-        if (containsLanguage(ttsLanguages, CustomLocale.getInstance(locale.getLanguage()))) {
+        String name = getDisplayNameWithoutTTS();
+        if (containsLanguage(ttsLanguages, this)) {
             return name;
         } else {
             return name + " (no TTS)";    // Notice that users cannot use TTS for this language.
@@ -166,8 +181,23 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     }
 
     public String getDisplayNameWithoutTTS() {
+        /**
+         * This method is cached because locale.getDisplayName() and the conversion of the first letter to uppercase, together,
+         * are relatively heavy operations (circa 1 ms), and without cache this can impact the performance where this method
+         * is called for operations regarding a lot of languages (> 400), for example in the languages list dialogs.
+         */
+        if (cachedDisplayName != null) {
+            return cachedDisplayName;
+        }
+
         String name = locale.getDisplayName();
-        return name.substring(0,1).toUpperCase(locale) + name.substring(1);  //we convert the first letter to uppercase
+        if (!name.isEmpty()) {
+            cachedDisplayName = name.substring(0, 1).toUpperCase(locale) + name.substring(1);   //we convert the first letter to uppercase
+        } else {
+            cachedDisplayName = "";
+        }
+
+        return cachedDisplayName;
     }
 
     public String getDisplayName(Locale locale) {
@@ -245,5 +275,10 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
 
     public static CustomLocale getDefault() {
         return new CustomLocale(Locale.getDefault().getLanguage());
+    }
+
+    private void initCacheValues(){
+        getDisplayNameWithoutTTS();
+        getISO3Language();
     }
 }

@@ -26,15 +26,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.AdapterView;
-import android.widget.ImageButton;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -51,7 +47,7 @@ import nie.translator.rtranslator.tools.gui.AnimatedTextView;
 import nie.translator.rtranslator.tools.gui.ButtonMic;
 import nie.translator.rtranslator.tools.gui.ButtonSound;
 import nie.translator.rtranslator.tools.gui.DeactivableButton;
-import nie.translator.rtranslator.tools.gui.LanguageListAdapter;
+import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.gui.messages.MessagesAdapter;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicator;
@@ -79,18 +75,10 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
     private ButtonSound sound;
     private long lastPressedLeftMic = -1;
     private long lastPressedRightMic = -1;
+    private Handler mHandler = new Handler();
     //connection
     protected WalkieTalkieService.WalkieTalkieServiceCommunicator walkieTalkieServiceCommunicator;
     protected VoiceTranslationService.VoiceTranslationServiceCallback walkieTalkieServiceCallback;
-
-    //languageListDialog
-    private LanguageListAdapter listView;
-    private ListView listViewGui;
-    private ProgressBar progressBar;
-    private ImageButton reloadButton;
-    private String selectedLanguageCode;
-    private AlertDialog dialog;
-    private Handler mHandler = new Handler();
 
     public WalkieTalkieFragment() {
         // Required empty public constructor
@@ -514,8 +502,6 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
 
 
     private void showLanguageListDialog(final int languageNumber) {
-        //when the dialog is shown at the beginning the loading is shown, then once the list of languages​is obtained (within the showList)
-        //the loading is replaced with the list of languages
         String title = "";
         switch (languageNumber) {
             case 1: {
@@ -528,62 +514,29 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
             }
         }
 
-        final View editDialogLayout = activity.getLayoutInflater().inflate(R.layout.dialog_languages, null);
-
-        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setCancelable(true);
-        builder.setTitle(title);
-
-        dialog = builder.create();
-        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(activity, 16), 0, 0);
-        dialog.show();
-
-        listViewGui = editDialogLayout.findViewById(R.id.list_view_dialog);
-        progressBar = editDialogLayout.findViewById(R.id.progressBar3);
-        reloadButton = editDialogLayout.findViewById(R.id.reloadButton);
-
-        CustomLocale result;
+        final ArrayList<CustomLocale> languages = global.getLanguages(Global.RTranslatorMode.WALKIE_TALKIE_MODE, true);
+        CustomLocale selectedLanguage;
         if (languageNumber == 1) {
-            result = global.getFirstLanguage(false);
+            selectedLanguage = global.getFirstLanguage(false);
         } else {  //languageNumber == 2
-            result = global.getSecondLanguage(false);
+            selectedLanguage = global.getSecondLanguage(false);
         }
 
-        reloadButton.setOnClickListener(new View.OnClickListener() {
+        GuiTools.showLanguageListDialog(activity, title, languages, selectedLanguage, true, new GuiTools.OnLanguageClickListener() {
             @Override
-            public void onClick(View v) {
-                showList(languageNumber, result);
-            }
-        });
-        showList(languageNumber, result);
-    }
-
-    private void showList(final int languageNumber, final CustomLocale selectedLanguage) {
-        reloadButton.setVisibility(View.GONE);
-        //progressBar.setVisibility(View.VISIBLE);
-
-        final ArrayList<CustomLocale> languages = global.getLanguages(Global.RTranslatorMode.WALKIE_TALKIE_MODE, true);
-        //progressBar.setVisibility(View.GONE);
-        listViewGui.setVisibility(View.VISIBLE);
-
-        listView = new LanguageListAdapter(activity, languages, selectedLanguage);
-        listViewGui.setAdapter(listView);
-        listViewGui.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                if (languages.contains((CustomLocale) listView.getItem(position))) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id, CustomLocale item) {
+                if (item != null && languages.contains(item)) {
                     switch (languageNumber) {
                         case 1: {
-                            setFirstLanguage((CustomLocale) listView.getItem(position));
+                            setFirstLanguage(item);
                             break;
                         }
                         case 2: {
-                            setSecondLanguage((CustomLocale) listView.getItem(position));
+                            setSecondLanguage(item);
                             break;
                         }
                     }
                 }
-                dialog.dismiss();
             }
         });
     }
@@ -615,23 +568,6 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // change language displayed
         ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(language.getDisplayNameWithoutTTS(), true);
         rightMicLanguage.setText(language.getDisplayNameWithoutTTS(), true);
-    }
-
-    private void onFailureShowingList(int[] reasons, long value) {
-        progressBar.setVisibility(View.GONE);
-        reloadButton.setVisibility(View.VISIBLE);
-        for (int aReason : reasons) {
-            switch (aReason) {
-                case ErrorCodes.MISSED_ARGUMENT:
-                case ErrorCodes.SAFETY_NET_EXCEPTION:
-                case ErrorCodes.MISSED_CONNECTION:
-                    Toast.makeText(activity, getResources().getString(R.string.error_internet_lack_loading_languages), Toast.LENGTH_LONG).show();
-                    break;
-                default:
-                    activity.onError(aReason, value);
-                    break;
-            }
-        }
     }
 
 

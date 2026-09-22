@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">RTranslator</string>
-
     <string name="mic">мікрофон</string>
     <string name="btHeadset">бт-гарнітура</string>
     <string name="exit">вихід</string>
@@ -62,6 +60,8 @@
     <string name="dialog_insert_name">Введіть ваше ім\'я</string>
     <string name="dialog_confirm_apply_quit">Ви впевнені, що хочете вийти без застосування нових налаштувань?</string>
     <string name="dialog_confirm_delete_resource">Ви впевнені, що хочете видалити цей ресурс?</string>
+    <string name="dialog_search_hint">Пошук мови...</string>
+    <string name="dialog_no_languages">Мови не знайдено</string>
 
     <string name="menu_image_select_from_gallery">Вибрати з галереї</string>
     <string name="menu_image_remove">Видалити</string>

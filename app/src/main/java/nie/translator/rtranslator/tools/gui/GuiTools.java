@@ -19,13 +19,27 @@ package nie.translator.rtranslator.tools.gui;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SearchView;
+
 import com.google.android.material.textfield.TextInputLayout;
+
+import java.util.ArrayList;
 import java.util.Objects;
+
+import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.tools.CustomLocale;
+import nie.translator.rtranslator.tools.Tools;
 
 public class GuiTools {
     public static EditTextDialog createEditTextDialog(Activity activity, String text, String title, int layout) {
@@ -73,20 +87,76 @@ public class GuiTools {
         }
     }
 
-    public static AlertDialog createDialog(Activity activity, String title, String text) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle(title);
-        builder.setMessage(text);
-        builder.setPositiveButton(android.R.string.ok, null);
-
-        return builder.create();
-    }
-
     public static int getColor(Context context, int colorCode) {
         return context.getResources().getColor(colorCode, null);
     }
 
     public static ColorStateList getColorStateList(Context context, int colorCode) {
         return context.getResources().getColorStateList(colorCode, null);
+    }
+
+
+    public static void showLanguageListDialog(Activity activity, String title, ArrayList<CustomLocale> languages, CustomLocale selectedLanguage, boolean showTTSInfo, OnLanguageClickListener clickListener) {
+        LanguageListAdapter listViewAdapter;
+        ListView listView;
+        AlertDialog dialog;
+
+        //initialize and show dialog
+        final View editDialogLayout = activity.getLayoutInflater().inflate(R.layout.dialog_languages, null);
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.MyThemeOverlay_MaterialComponents_MaterialAlertDialogWithTitle);
+        builder.setCancelable(true);
+
+        dialog = builder.create();
+        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(activity, 22), 0, 0);
+        dialog.show();
+
+        //initialize dialog gui
+        TextView titleView = editDialogLayout.findViewById(R.id.title);
+        listView = editDialogLayout.findViewById(R.id.list_view_dialog);
+        SearchView searchView = editDialogLayout.findViewById(R.id.search);
+        TextView emptyTextView = editDialogLayout.findViewById(R.id.empty_text_view);
+
+        titleView.setText(title);
+
+        //initialize and show dialog list
+        listViewAdapter = new LanguageListAdapter(activity, showTTSInfo, languages, selectedLanguage);
+        listView.setEmptyView(emptyTextView);
+        listView.setAdapter(listViewAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                CustomLocale language = null;
+                Object item = listViewAdapter.getItem(position);
+                if(item instanceof CustomLocale){
+                    language = (CustomLocale) item;
+                }
+                clickListener.onItemClick(parent, view, position, id, language);
+                dialog.dismiss();
+            }
+        });
+
+        //initialize search bar
+        searchView.setOnClickListener(v -> searchView.setIconified(false));   //make the whole search bar clickable
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // We don't need to do anything on submit, because we filter as the user types
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // Call the built-in filter method on the adapter
+                listViewAdapter.getFilter().filter(newText);
+                return true;
+            }
+        });
+
+        Log.i("languages_list", "List Showed");
+    }
+
+    public  interface OnLanguageClickListener {
+        void onItemClick(AdapterView<?> parent, View view, final int position, long id, @Nullable CustomLocale item);
     }
 }

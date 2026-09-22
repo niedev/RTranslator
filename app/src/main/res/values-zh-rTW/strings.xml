@@ -61,6 +61,8 @@
     <string name="dialog_insert_name">輸入您的名字</string>
     <string name="dialog_confirm_apply_quit">確定要退出而不套用新設定嗎？</string>
     <string name="dialog_confirm_delete_resource">確定要刪除此資源嗎？</string>
+    <string name="dialog_search_hint">搜尋語言…</string>
+    <string name="dialog_no_languages">找不到語言</string>
 
     <string name="menu_image_select_from_gallery">從相簿選擇</string>
     <string name="menu_image_remove">刪除</string>

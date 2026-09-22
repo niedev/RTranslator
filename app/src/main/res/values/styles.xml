@@ -84,6 +84,12 @@
         <item name="colorSurface">@color/primary_very_lite</item>
     </style>
 
+    <style name="MyThemeOverlay.MaterialComponents.MaterialAlertDialogWithTitle" parent="@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/accent_white</item>
+        <item name="android:windowBackground">@drawable/bg_custom_material_dialog</item>
+        <item name="android:backgroundDimAmount">0.7</item>
+    </style>
+
     <style name="ShapeAppearanceOverlay.RTranslator.Dialog.Rounded" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">24dp</item>

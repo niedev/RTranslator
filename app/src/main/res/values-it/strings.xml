@@ -76,6 +76,8 @@
     <string name="dialog_insert_name">Inserisci il tuo nome</string>
     <string name="dialog_confirm_apply_quit">Sei sicuro di voler uscire senza applicare le nuove impostazioni?</string>
     <string name="dialog_confirm_delete_resource">Sei sicuro di voler eliminare questa risorsa?</string>
+    <string name="dialog_search_hint">Cerca lingua...</string>
+    <string name="dialog_no_languages">Nessuna lingua trovata</string>
 
     <string name="menu_image_select_from_gallery">Seleziona dalla galleria</string>
     <string name="menu_image_remove">Rimuovi</string>

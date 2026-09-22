@@ -21,16 +21,12 @@ import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -46,12 +42,10 @@ import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.bluetooth.Message;
 import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.CustomLocale;
-import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.TTS;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.AnimatedTextView;
 import nie.translator.rtranslator.tools.gui.GuiTools;
-import nie.translator.rtranslator.tools.gui.LanguageListAdapter;
 import nie.translator.rtranslator.tools.gui.animations.CustomAnimator;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
@@ -109,13 +103,6 @@ public class TranslationFragment extends Fragment {
     ViewTreeObserver.OnGlobalLayoutListener layoutListener;
     private static final int REDUCED_GUI_THRESHOLD_DP = 550;
     private static final int synonymsTopMargin = 4;
-
-    //languageListDialog
-    private LanguageListAdapter listView;
-    private ListView listViewGui;
-    private ProgressBar progressBar;
-    private ImageButton reloadButton;
-    private AlertDialog dialog;
 
     //animations
     private int textActionButtonHeight;
@@ -823,8 +810,6 @@ public class TranslationFragment extends Fragment {
     }
 
     private void showLanguageListDialog(final int languageNumber) {
-        //when the dialog is shown at the beginning the loading is shown, then once the list of languages is obtained (within the showList)
-        //the loading is replaced with the list of languages
         String title = "";
         switch (languageNumber) {
             case 1: {
@@ -837,57 +822,29 @@ public class TranslationFragment extends Fragment {
             }
         }
 
-        final View editDialogLayout = activity.getLayoutInflater().inflate(R.layout.dialog_languages, null);
-
-        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setCancelable(true);
-        builder.setTitle(title);
-
-        dialog = builder.create();
-        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(activity, 16), 0, 0);
-        dialog.show();
-
-        listViewGui = editDialogLayout.findViewById(R.id.list_view_dialog);
-        progressBar = editDialogLayout.findViewById(R.id.progressBar3);
-        reloadButton = editDialogLayout.findViewById(R.id.reloadButton);
-
-        CustomLocale result;
+        final ArrayList<CustomLocale> languages = global.getTranslatorLanguages(Global.RTranslatorMode.TEXT_TRANSLATION_MODE, true);
+        CustomLocale selectedLanguage;
         if (languageNumber == 1) {
-            result = global.getFirstTextLanguage(false);
+            selectedLanguage = global.getFirstTextLanguage(false);
         } else {
-            result = global.getSecondTextLanguage(false);
+            selectedLanguage = global.getSecondTextLanguage(false);
         }
 
-        reloadButton.setOnClickListener(v -> showList(languageNumber, result));
-        showList(languageNumber, result);
-    }
-
-    private void showList(final int languageNumber, final CustomLocale selectedLanguage) {
-        reloadButton.setVisibility(View.GONE);
-        progressBar.setVisibility(View.VISIBLE);
-
-        final ArrayList<CustomLocale> languages = global.getTranslatorLanguages(Global.RTranslatorMode.TEXT_TRANSLATION_MODE, true);
-        progressBar.setVisibility(View.GONE);
-        listViewGui.setVisibility(View.VISIBLE);
-
-        listView = new LanguageListAdapter(activity, true, languages, selectedLanguage);
-        listViewGui.setAdapter(listView);
-        listViewGui.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        GuiTools.showLanguageListDialog(activity, title, languages, selectedLanguage, false, new GuiTools.OnLanguageClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                if (languages.contains((CustomLocale) listView.getItem(position))) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id, CustomLocale item) {
+                if (item != null && languages.contains(item)) {
                     switch (languageNumber) {
                         case 1: {
-                            setFirstLanguage((CustomLocale) listView.getItem(position));
+                            setFirstLanguage(item);
                             break;
                         }
                         case 2: {
-                            setSecondLanguage((CustomLocale) listView.getItem(position));
+                            setSecondLanguage(item);
                             break;
                         }
                     }
                 }
-                dialog.dismiss();
             }
         });
     }
@@ -945,7 +902,7 @@ public class TranslationFragment extends Fragment {
         ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(language.getDisplayNameWithoutTTS(), false);
     }
 
-    private void switchLanguages(){
+    private void switchLanguages() {
         deactivateTranslationButton();
         global.switchTextLanguages(new Translator.GeneralListener() {
             @Override
@@ -956,23 +913,6 @@ public class TranslationFragment extends Fragment {
         // change language displayed
         ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.cancelButtonText)).setText(global.getFirstTextLanguage(true).getDisplayNameWithoutTTS(), false);
         ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(global.getSecondTextLanguage(true).getDisplayNameWithoutTTS(), false);
-    }
-
-    private void onFailureShowingList(int[] reasons, long value) {
-        progressBar.setVisibility(View.GONE);
-        reloadButton.setVisibility(View.VISIBLE);
-        for (int aReason : reasons) {
-            switch (aReason) {
-                case ErrorCodes.MISSED_ARGUMENT:
-                case ErrorCodes.SAFETY_NET_EXCEPTION:
-                case ErrorCodes.MISSED_CONNECTION:
-                    Toast.makeText(activity, getResources().getString(R.string.error_internet_lack_loading_languages), Toast.LENGTH_LONG).show();
-                    break;
-                default:
-                    activity.onError(aReason, value);
-                    break;
-            }
-        }
     }
 
     public int getTextActionButtonHeight() {

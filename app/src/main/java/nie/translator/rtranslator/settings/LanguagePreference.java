@@ -20,31 +20,19 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ImageButton;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 import java.util.ArrayList;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.CustomLocale;
-import nie.translator.rtranslator.tools.ErrorCodes;
-import nie.translator.rtranslator.tools.Tools;
-import nie.translator.rtranslator.tools.gui.LanguageListAdapter;
+import nie.translator.rtranslator.tools.gui.GuiTools;
 
 public class LanguagePreference extends Preference {
     private SettingsFragment fragment;
     private SettingsActivity activity;
     private Global global;
-    private LanguageListAdapter listView;
-    private ListView listViewGui;
-    private ProgressBar progressBar;
-    private ImageButton reloadButton;
-    private AlertDialog dialog;
 
     public LanguagePreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
@@ -98,54 +86,21 @@ public class LanguagePreference extends Preference {
         });
     }
 
-    /**
-     *  when the dialog is shown at the beginning the loading is shown, then once the list of languages is obtained (within the showList)
-     *  the loading is replaced with the list of languages
-     */
     private void showListDialog() {
-        final View editDialogLayout = activity.getLayoutInflater().inflate(R.layout.dialog_languages, null);
-
-        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setCancelable(true);
-        builder.setTitle(global.getResources().getString(R.string.dialog_select_personal_language));
-
-        dialog = builder.create();
-        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(activity, 16), 0, 0);
-        dialog.show();
-
-        listViewGui = editDialogLayout.findViewById(R.id.list_view_dialog);
-        progressBar = editDialogLayout.findViewById(R.id.progressBar3);
-        reloadButton = editDialogLayout.findViewById(R.id.reloadButton);
-
-        reloadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showList();
-            }
-        });
-        showList();
-    }
-
-    private void showList() {
-        progressBar.setVisibility(View.GONE);
-        reloadButton.setVisibility(View.GONE);
-
-        final ArrayList<CustomLocale> languages = global.getLanguages(Global.RTranslatorMode.CONVERSATION_MODE, true);
+        String title = global.getResources().getString(R.string.dialog_select_personal_language);
+        //todo: evaluate if here we need recycleResult = false to update language in case of changes to the preferences outside of model management that change the languages list
+        // (in model management we update the languages list when we exit, in the other options I need to verify it).
+        ArrayList<CustomLocale> languages = global.getLanguages(Global.RTranslatorMode.CONVERSATION_MODE, true);
         CustomLocale selectedLanguage = global.getLanguage(false);
-        listViewGui.setVisibility(View.VISIBLE);
 
-        listView = new LanguageListAdapter(activity, languages, selectedLanguage);
-        listViewGui.setAdapter(listView);
-        listViewGui.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        GuiTools.showLanguageListDialog(activity, title, languages, selectedLanguage, true, new GuiTools.OnLanguageClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                ArrayList<CustomLocale> result = global.getLanguages(Global.RTranslatorMode.CONVERSATION_MODE, true);
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id, CustomLocale item) {
                 global.getTTSLanguages(true, new Global.GetLocalesListListener() {
                     @Override
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
-                        if (result.contains((CustomLocale) listView.getItem(position))) {
-                            global.setLanguage((CustomLocale) listView.getItem(position));
-                            CustomLocale item=(CustomLocale) listView.getItem(position);
+                        if (item != null && languages.contains(item)) {
+                            global.setLanguage(item);
                             setSummary(item.getDisplayName(ttsLanguages));
                         }
                     }
@@ -155,33 +110,14 @@ public class LanguagePreference extends Preference {
                         //never called in this case
                     }
                 });
-                dialog.dismiss();
             }
         });
     }
-
 
     public void setFragment(@NonNull SettingsFragment fragment) {
         this.activity = (SettingsActivity) fragment.requireActivity();
         this.fragment = fragment;
         this.global = (Global) activity.getApplication();
-    }
-
-    private void onFailureShowingList(int[] reasons, long value) {
-        progressBar.setVisibility(View.GONE);
-        reloadButton.setVisibility(View.VISIBLE);
-        for (int aReason : reasons) {
-            switch (aReason) {
-                case ErrorCodes.MISSED_ARGUMENT:
-                case ErrorCodes.SAFETY_NET_EXCEPTION:
-                case ErrorCodes.MISSED_CONNECTION:
-                    Toast.makeText(activity, activity.getResources().getString(R.string.error_internet_lack_loading_languages), Toast.LENGTH_LONG).show();
-                    break;
-                default:
-                    activity.onError(aReason, value);
-                    break;
-            }
-        }
     }
 
     private void onFailureUpdatingSummary(int[] reasons, long value) {
