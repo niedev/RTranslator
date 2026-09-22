@@ -24,6 +24,12 @@
     android:paddingStart="0dp"
     android:paddingEnd="80dp">
 
+    <!-- The length of the relative layout will stretch its width based on the content,
+         filling the entire screen as its maximum.
+         The cardView will stretch based on its content, to a maximum that is the
+         width of the screen -80dp (thanks to the relative layout paddingEnd).
+     -->
+
     <androidx.cardview.widget.CardView
         android:id="@+id/card1"
         android:layout_width="wrap_content"
@@ -31,141 +37,98 @@
         android:theme="@style/ThemeOverlay.AppCompat.Light"
         android:backgroundTint="@color/very_very_light_gray"
         android:visibility="visible"
-        app:cardCornerRadius="18sp"
-        app:cardElevation="1dp"
+        app:cardCornerRadius="24sp"
+        app:cardElevation="0dp"
         app:cardUseCompatPadding="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.037"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <!-- In Linear Layout, when the parent has wrap_content width and the
+             children have match_parent width, the width will behave in this way:
+             The parent will stretch to the width of the longest children or to its maximum
+             possible width based on the surrounding constraints.
+             All the children will stretch to the width of the parent (except for the one with
+             max length, which will grow based on its content (or the parent max length).
+        -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
+
             <TextView
-                android:id="@+id/original_text_to_be_translated"
-                android:layout_width="wrap_content"
+                android:id="@+id/text_sender"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginEnd="16dp"
-                android:layout_marginBottom="8dp"
+                android:fontFamily="@font/nunito_sans"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="visible"
+                tool:text="Alice" />
+
+            <TextView
+                android:id="@+id/original_text_to_be_translated"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="12dp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textIsSelectable="true"
                 android:textSize="16sp"
-                android:textColor="@color/secondary"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                android:textColor="@color/very_dark_gray"
+                android:visibility="visible"
                 tool:text="Original text to be translated"/>
+
             <LinearLayout
-                android:id="@+id/no_sender_container"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginBottom="0dp"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                tool:visibility="gone">
+                android:visibility="visible">
+
+                <!-- 0dp and weight=1 pushes the button to the edge -->
                 <TextView
-                    android:id="@+id/text_content"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:id="@+id/text"
+                    android:layout_width="0dp"
                     android:layout_weight="1"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="16dp"
                     android:layout_marginBottom="8dp"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                    android:textColor="@color/black"
                     android:textIsSelectable="true"
                     android:textSize="16sp"
-                    android:visibility="visible"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tool:text="Ciao, come stai?" />
-                <ImageView
-                    android:id="@+id/tts_button_content"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginStart="0dp"
-                    android:src="@drawable/sound_icon"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:tint="@color/primary" />
-            </LinearLayout>
-            <LinearLayout
-                android:id="@+id/sender_container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:visibility="gone"
-                tool:visibility="visible">
+                    tool:text="Ciao, come stai?"
+                    android:layout_gravity="center_vertical"/>
 
-                <TextView
-                    android:id="@+id/text_sender"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="4dp"
-                    android:fontFamily="@font/nunito_sans"
-                    android:textColor="@color/primary"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0"
-                    tool:text="Alice" />
-
-                <LinearLayout
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/tts_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-                    <TextView
-                        android:id="@+id/text_content2"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="0dp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_marginBottom="4dp"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                        android:textColor="@color/light_black"
-                        android:textIsSelectable="true"
-                        android:textSize="16sp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/text_sender"
-                        tool:text="Ciao, come stai?"/>
-                    <ImageView
-                        android:id="@+id/tts_button_content2"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="12dp"
-                        android:layout_marginStart="0dp"
-                        android:src="@drawable/sound_icon"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:tint="@color/primary"/>
-                </LinearLayout>
+                    android:backgroundTint="@color/very_very_light_gray"
+                    android:src="@drawable/sound_icon"
+                    app:borderWidth="0dp"
+                    app:elevation="0dp"
+                    app:fabSize="mini"
+                    android:alpha="1"
+                    android:visibility="visible"
+                    app:rippleColor="@color/gray"
+                    app:tint="@color/very_very_dark_gray"
+                    android:layout_gravity="center_vertical"/>
             </LinearLayout>
         </LinearLayout>
-
     </androidx.cardview.widget.CardView>
-
-
 </RelativeLayout>

@@ -160,7 +160,7 @@ public class TranslationFragment extends Fragment {
         copyInputButton = view.findViewById(R.id.copyButtonInput);
         copyOutputButton = view.findViewById(R.id.copyButtonOutput);
         cancelTextButton = view.findViewById(R.id.cancelButtonInput);
-        ttsInputButton = view.findViewById(R.id.ttsButtonInput);
+        ttsInputButton = view.findViewById(R.id.tts_button);
         ttsOutputButton = view.findViewById(R.id.ttsButtonOutput);
         outputContainer = view.findViewById(R.id.outputContainer);
         resultTypeText = view.findViewById(R.id.resultTypeText);

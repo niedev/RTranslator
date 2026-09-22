@@ -22,7 +22,10 @@
     <color name="primary_lite">#66bb6a</color>
     <color name="primary_very_lite">#E6F8E6</color>   <!-- #DEF8E0 -->  <!-- #E9FFE9-->
     <color name="accent">#36b024</color>
-    <color name="secondary">#ff0099cc</color>
+    <color name="secondary">#3785C3</color>
+    <color name="secondary_dark">#2F72A8</color>
+    <color name="secondary_very_dark">#1D4C71</color>
+    <color name="secondary_very_lite">#E0F2F1</color>
     <color name="secondaryTransparent">#320099cc</color>
     <color name="background_discover">#5a43a047</color>
     <color name="background_advertize">#5a43a047</color>
@@ -31,6 +34,7 @@
     <color name="light_black">#404040</color>
     <color name="very_very_dark_gray">#5A5A5A</color>
     <color name="very_dark_gray">#757575</color>
+    <color name="very_dark_gray_plus">#686868</color>
     <color name="dark_gray">#8C8C8C</color>
     <color name="gray">#9e9e9e</color>
     <color name="light_gray">#bdbdbd</color>

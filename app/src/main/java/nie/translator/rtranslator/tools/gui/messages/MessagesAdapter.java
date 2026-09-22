@@ -75,10 +75,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof MessageHolder) {
             final GuiMessage message = mResults.get(position);
-            if (holder instanceof ReceivedHolder && message.getMessage().getSender() != null) {
-                ((ReceivedHolder) holder).containerNoSender.setVisibility(View.GONE);
-                ((ReceivedHolder) holder).containerSender.setVisibility(View.VISIBLE);
-                ((ReceivedHolder) holder).sender.setText(message.getMessage().getSender().getName());
+            if (holder instanceof ReceivedHolder) {
+                if(message.getMessage().getSender() != null) {
+                    ((ReceivedHolder) holder).sender.setText(message.getMessage().getSender().getName());
+                }else{
+                    ((ReceivedHolder) holder).sender.setVisibility(View.GONE);
+                }
                 Log.d("recyclerview", "RecyclerView bind sender");
             }
             ((MessageHolder) holder).setText(message.getMessage().getTextToTranslate(), message.getMessage().getText());
@@ -88,7 +90,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 ((MessageHolder) holder).setIsPlayingTTS(false);
             }
             Log.d("recyclerview", "RecyclerView bind text");
-            //holder.itemView.requestLayout();
             
             // Bind audio playback listener
             View.OnClickListener playListener = new View.OnClickListener() {
@@ -103,12 +104,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             };
             View ttsBtnSend = holder.itemView.findViewById(R.id.tts_button);
             if(ttsBtnSend != null) ttsBtnSend.setOnClickListener(playListener);
-
-            View ttsBtnRecv = holder.itemView.findViewById(R.id.tts_button_content);
-            if(ttsBtnRecv != null) ttsBtnRecv.setOnClickListener(playListener);
-
-            View ttsBtnRecv2 = holder.itemView.findViewById(R.id.tts_button_content2);
-            if(ttsBtnRecv2 != null) ttsBtnRecv2.setOnClickListener(playListener);
         }
     }
 
@@ -211,12 +206,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static class ReceivedHolder extends RecyclerView.ViewHolder implements MessageHolder {
         TextView originalTextToBeTranslated;
         TextView text;
-        LinearLayout containerNoSender;
-        LinearLayout containerSender;
-        TextView textSender;
         TextView sender;
         ImageView ttsButton;
-        ImageView ttsButton2;
 
         ReceivedHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.component_message_received, parent, false));
@@ -224,14 +215,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             if (!showOriginalTranscriptionMsg) {
                 originalTextToBeTranslated.setVisibility(View.GONE);
             }
-            containerNoSender = itemView.findViewById(R.id.no_sender_container);
-            text = itemView.findViewById(R.id.text_content);
-            ttsButton = itemView.findViewById(R.id.tts_button_content);
-
-            containerSender = itemView.findViewById(R.id.sender_container);
-            textSender = itemView.findViewById(R.id.text_content2);
+            text = itemView.findViewById(R.id.text);
             sender = itemView.findViewById(R.id.text_sender);
-            ttsButton2 = itemView.findViewById(R.id.tts_button_content2);
+            ttsButton = itemView.findViewById(R.id.tts_button);
         }
 
         @Override
@@ -241,7 +227,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }else{
                 this.originalTextToBeTranslated.setVisibility(View.GONE);
             }
-            this.textSender.setText(text);
             this.text.setText(text);
         }
 
@@ -255,13 +240,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             if(playingTTS) {
                 ttsButton.setImageResource(R.drawable.stop_icon);
                 ttsButton.setTag(R.drawable.stop_icon);
-                ttsButton2.setImageResource(R.drawable.stop_icon);
-                ttsButton2.setTag(R.drawable.stop_icon);
             }else{
                 ttsButton.setImageResource(R.drawable.sound_icon);
                 ttsButton.setTag(R.drawable.sound_icon);
-                ttsButton2.setImageResource(R.drawable.sound_icon);
-                ttsButton2.setTag(R.drawable.sound_icon);
             }
         }
     }
@@ -270,7 +251,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static class SendHolder extends RecyclerView.ViewHolder implements MessageHolder {
         TextView originalTextToBeTranslated;
         TextView text;
-        CardView card;
         ImageView ttsButton;
 
         SendHolder(LayoutInflater inflater, ViewGroup parent) {
@@ -280,7 +260,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 originalTextToBeTranslated.setVisibility(View.GONE);
             }
             text = itemView.findViewById(R.id.text);
-            card = itemView.findViewById(R.id.card);
             ttsButton = itemView.findViewById(R.id.tts_button);
         }
 

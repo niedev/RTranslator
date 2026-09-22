@@ -30,45 +30,48 @@
         android:id="@+id/card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="#E0F2F1"
         android:theme="@style/ThemeOverlay.AppCompat.Dark"
-        app:cardCornerRadius="18sp"
-        app:cardElevation="1dp"
+        android:backgroundTint="@color/secondary_very_lite"
+        app:cardCornerRadius="24sp"
+        app:cardElevation="0dp"
         app:cardUseCompatPadding="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1">
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
             <TextView
                 android:id="@+id/original_text_to_be_translated"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:layout_marginEnd="16dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="12dp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textIsSelectable="true"
                 android:textSize="16sp"
-                android:textColor="@color/secondary"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                android:textColor="@color/very_dark_gray_plus"
+                android:visibility="visible"
                 tool:text="Original text to be translated"/>
+
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="0dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
+
+                <!-- 0dp and weight=1 pushes the button to the edge -->
                 <TextView
                     android:id="@+id/text"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="16dp"
@@ -79,22 +82,24 @@
                     android:textIsSelectable="true"
                     android:textSize="16sp"
                     android:textColor="@color/black"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_gravity="center_vertical"
                     tool:text="Ciao, come stai?"/>
-                <ImageView
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/tts_button"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginStart="0dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/secondary_very_lite"
                     android:src="@drawable/sound_icon"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:tint="@color/primary"/>
+                    app:borderWidth="0dp"
+                    app:elevation="0dp"
+                    app:fabSize="mini"
+                    android:alpha="1"
+                    android:visibility="visible"
+                    app:rippleColor="@color/gray"
+                    app:tint="@color/very_very_dark_gray"
+                    android:layout_gravity="center_vertical"/>
+
             </LinearLayout>
         </LinearLayout>
 

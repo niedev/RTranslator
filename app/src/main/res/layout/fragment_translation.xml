@@ -421,7 +421,7 @@
                             app:layout_constraintVertical_bias="0.0" />
 
                         <com.google.android.material.floatingactionbutton.FloatingActionButton
-                            android:id="@+id/ttsButtonInput"
+                            android:id="@+id/tts_button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
