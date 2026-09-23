@@ -35,7 +35,7 @@
     <string name="chat">Chat</string>
     <string name="select_tts">Seleziona TTS</string>
     <string name="unzipping">Decompressione...</string>
-    <string name="testing_integrity">Verifica integrità...</string>
+    <string name="testing_integrity">Verifica...</string>
     <string name="paused">"In pausa: "</string>
     <string name="applying_settings">Applicazione nuove impostazioni...</string>
     <string name="dictionary">Dizionario</string>

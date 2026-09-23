@@ -19,7 +19,7 @@
     <string name="chat">聊天</string>
     <string name="select_tts">選擇 TTS</string>
     <string name="unzipping">正在解壓縮...</string>
-    <string name="testing_integrity">正在檢查完整性...</string>
+    <string name="testing_integrity">測試中…</string>
     <string name="paused">已暫停：</string>
     <string name="applying_settings">正在套用新設定...</string>
     <string name="dictionary">詞典</string>

@@ -42,7 +42,7 @@ public class ButtonMic extends DeactivableButton {
     public static final int SIZE_MUTED_DP = 56;
     public static final int SIZE_NORMAL_DP = 66;
     public static final int SIZE_LISTENING_DP = 76;
-    public static final float SIZE_ICON_DP = 42;
+    public static final float SIZE_ICON_DP = 48;
 
     public static final int MAX_LENGTH_LEFT_LINE_DP = 21;
     public static final int MAX_LENGTH_CENTER_LINE_DP = 26;

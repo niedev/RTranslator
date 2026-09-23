@@ -134,6 +134,7 @@
             android:src="@drawable/reload_icon"
             android:tint="@color/dark_gray"
             android:visibility="gone"
+            android:padding="16dp"
             app:layout_constraintBottom_toTopOf="@+id/progress_description"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.498"
@@ -143,7 +144,7 @@
 
         <ImageButton
             android:id="@+id/pauseButton"
-            android:layout_width="wrap_content"
+            android:layout_width="48dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="48dp"
@@ -151,6 +152,7 @@
             android:backgroundTint="@android:color/transparent"
             android:src="@drawable/pause_icon"
             android:tint="@color/primary_dark"
+            android:padding="12dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/progress_numbers"

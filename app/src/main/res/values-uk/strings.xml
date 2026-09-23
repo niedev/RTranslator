@@ -19,7 +19,7 @@
     <string name="chat">Чат</string>
     <string name="select_tts">Виберіть TTS</string>
     <string name="unzipping">Розпакування...</string>
-    <string name="testing_integrity">Перевірка цілісності...</string>
+    <string name="testing_integrity">тестування...</string>
     <string name="paused">"Призупинено: "</string>
     <string name="applying_settings">Застосування нових налаштувань...</string>
     <string name="dictionary">Словник</string>

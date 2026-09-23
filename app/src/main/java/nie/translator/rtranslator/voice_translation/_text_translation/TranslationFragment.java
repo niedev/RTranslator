@@ -21,6 +21,7 @@ import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
@@ -30,6 +31,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
@@ -86,6 +88,8 @@ public class TranslationFragment extends Fragment {
     private FloatingActionButton cancelTextButton;
     private FloatingActionButton ttsInputButton;
     private FloatingActionButton ttsOutputButton;
+    private LinearLayout mainContainer;
+    private ConstraintLayout inputContainer;
     private ConstraintLayout outputContainer;
     private TextView resultTypeText;
     private TextView synonymsText;
@@ -162,6 +166,8 @@ public class TranslationFragment extends Fragment {
         cancelTextButton = view.findViewById(R.id.cancelButtonInput);
         ttsInputButton = view.findViewById(R.id.tts_button);
         ttsOutputButton = view.findViewById(R.id.ttsButtonOutput);
+        mainContainer = view.findViewById(R.id.mainContainer);
+        inputContainer = view.findViewById(R.id.inputContainer);
         outputContainer = view.findViewById(R.id.outputContainer);
         resultTypeText = view.findViewById(R.id.resultTypeText);
         synonymsText = view.findViewById(R.id.synonymsText);
@@ -474,6 +480,22 @@ public class TranslationFragment extends Fragment {
             }
         };
         outputText.addTextChangedListener(outputTextListener);
+
+        mainContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (outputContainer.getVisibility() != View.VISIBLE) {
+                    focusAndShowKeyboard(inputText);
+                }
+            }
+        });
+
+        inputContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                focusAndShowKeyboard(inputText);
+            }
+        });
 
         //we restore the last input and output text
         if(lastInputText != null){
@@ -913,6 +935,18 @@ public class TranslationFragment extends Fragment {
         // change language displayed
         ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.cancelButtonText)).setText(global.getFirstTextLanguage(true).getDisplayNameWithoutTTS(), false);
         ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(global.getSecondTextLanguage(true).getDisplayNameWithoutTTS(), false);
+    }
+
+    // Helper method to handle focus and keyboard visibility
+    private void focusAndShowKeyboard(EditText editText) {
+        // Request focus for the EditText
+        editText.requestFocus();
+
+        // Summon the soft keyboard
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+        }
     }
 
     public int getTextActionButtonHeight() {

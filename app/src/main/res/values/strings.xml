@@ -37,7 +37,7 @@
     <string name="chat">Chat</string>
     <string name="select_tts">Select TTS</string>
     <string name="unzipping">Unzipping...</string>
-    <string name="testing_integrity">Testing integrity...</string>
+    <string name="testing_integrity">Testing...</string>
     <string name="paused">Paused: </string>
     <string name="applying_settings">Applying new settings...</string>
     <string name="dictionary">Dictionary</string>
