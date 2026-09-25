@@ -537,12 +537,12 @@ public class TranslationFragment extends Fragment {
         }else{
             activateTranslationButton();
         }
-        //we set some buttons to not clickable (it is done here as well as in the xml because android set clickable to true when we set an onClickListener)
+        //we set some buttons to not clickable (it is done here as well as in the xml because Android sets clickable to true when we set an onClickListener)
         backButton.setClickable(false);
         settingsButtonReduced.setClickable(false);
         walkieTalkieButtonSmall.setClickable(false);
         conversationButtonSmall.setClickable(false);
-        //we set the listener for the keyboard opening
+        //we set the listener for the keyboard opening or changes in virtual screen size (rotation or window resize)
         layoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -555,7 +555,9 @@ public class TranslationFragment extends Fragment {
                     ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) walkieTalkieButton.getLayoutParams();
                     actionButtonTopMargin = layoutParams.topMargin;
                     actionButtonBottomMargin = layoutParams.bottomMargin;
-                } else if(getView() != null) {  //we start detecting keyboard only when the view is rendered (we use the translateButtonHeight to detect that)
+                }
+
+                if(getView() != null && translateButtonHeight > 0) {  //we start detecting keyboard only when the view is rendered (we use the translateButtonHeight to detect that)
                     int screenHeight = getView().getRootView().getHeight();
                     int screenHeightDp = (int) Tools.convertPixelsToDp(activity, screenHeight);
 
