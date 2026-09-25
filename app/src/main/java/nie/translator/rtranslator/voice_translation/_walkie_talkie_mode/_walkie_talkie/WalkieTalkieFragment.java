@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.AdapterView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
@@ -35,6 +36,8 @@ import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.material.button.MaterialButton;
+
 import java.util.ArrayList;
 
 import nie.translator.rtranslator.Global;
@@ -43,7 +46,7 @@ import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.Tools;
-import nie.translator.rtranslator.tools.gui.AnimatedTextView;
+import nie.translator.rtranslator.tools.gui.AutoScrollTextView;
 import nie.translator.rtranslator.tools.gui.ButtonMic;
 import nie.translator.rtranslator.tools.gui.ButtonSound;
 import nie.translator.rtranslator.tools.gui.DeactivableButton;
@@ -65,12 +68,12 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
     protected ButtonMic microphone;
     private ButtonMic leftMicrophone;
     private ButtonMic rightMicrophone;
-    private AnimatedTextView leftMicLanguage;
-    private AnimatedTextView rightMicLanguage;
+    private AutoScrollTextView leftMicLanguage;
+    private AutoScrollTextView rightMicLanguage;
     private ConstraintLayout constraintLayout;
     private AppCompatImageButton exitButton;
-    private ConstraintLayout firstLanguageSelector;
-    private ConstraintLayout secondLanguageSelector;
+    private MaterialButton firstLanguageSelector;
+    private MaterialButton secondLanguageSelector;
     private AppCompatImageButton settingsButton;
     private ButtonSound sound;
     private long lastPressedLeftMic = -1;
@@ -102,8 +105,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         super.onViewCreated(view, savedInstanceState);
         constraintLayout = view.findViewById(R.id.container);
         container = view.findViewById(R.id.walkie_talkie_main_container);
-        firstLanguageSelector = view.findViewById(R.id.cancelButtonLayout);
-        secondLanguageSelector = view.findViewById(R.id.okButtonLayout);
+        firstLanguageSelector = view.findViewById(R.id.first_lang_selector);
+        secondLanguageSelector = view.findViewById(R.id.second_lang_selector);
         exitButton = view.findViewById(R.id.exitButton);
         sound = view.findViewById(R.id.soundButton);
         microphone = view.findViewById(R.id.buttonMic);
@@ -143,6 +146,10 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         if (windowInsets != null) {
             constraintLayout.dispatchApplyWindowInsets(windowInsets.replaceSystemWindowInsets(windowInsets.getSystemWindowInsetLeft(),windowInsets.getSystemWindowInsetTop(),windowInsets.getSystemWindowInsetRight(),0));
         }
+
+        // setting of the selected languages
+        setFirstLanguage(global.getFirstLanguage(true));
+        setSecondLanguage(global.getSecondLanguage(true));
 
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -324,7 +331,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                     }
                 });
 
-                // setting of the selected languages
+                // setting of the selected languages (redundant, todo: decide if I can remove it safely)
                 walkieTalkieServiceCommunicator.getFirstLanguage(new WalkieTalkieService.LanguageListener() {
                     @Override
                     public void onLanguage(CustomLocale language) {
@@ -356,7 +363,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                 mAdapter = new MessagesAdapter(messages, global, speakingUtteranceId, new MessagesAdapter.Callback() {
                     @Override
                     public void onFirstItemAdded() {
-                        description.setVisibility(View.GONE);
+                        descriptionContainer.setVisibility(View.GONE);
                         mRecyclerView.setVisibility(View.VISIBLE);
                     }
 
@@ -556,8 +563,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // save firstLanguage selected
         global.setFirstLanguage(language, null);
         // change language displayed
-        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.cancelButtonText)).setText(language.getDisplayNameWithoutTTS(), true);
-        leftMicLanguage.setText(language.getDisplayNameWithoutTTS(), true);
+        firstLanguageSelector.setText(language.getDisplayNameWithoutTTS());
+        leftMicLanguage.setText(language.getDisplayNameWithoutTTS());
     }
 
     private void setSecondLanguage(CustomLocale language) {
@@ -566,8 +573,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // save secondLanguage selected
         global.setSecondLanguage(language, null);
         // change language displayed
-        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(language.getDisplayNameWithoutTTS(), true);
-        rightMicLanguage.setText(language.getDisplayNameWithoutTTS(), true);
+        secondLanguageSelector.setText(language.getDisplayNameWithoutTTS());
+        rightMicLanguage.setText(language.getDisplayNameWithoutTTS());
     }
 
 

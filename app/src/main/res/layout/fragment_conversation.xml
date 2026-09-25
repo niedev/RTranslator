@@ -60,7 +60,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -194,7 +194,7 @@
                 android:gravity="center"
                 android:orientation="horizontal">
 
-                <TextView
+                <nie.translator.rtranslator.tools.gui.AutoScrollTextView
                     android:id="@+id/tabConversationName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -239,7 +239,7 @@
                 android:gravity="center"
                 android:orientation="horizontal">
 
-                <TextView
+                <nie.translator.rtranslator.tools.gui.AutoScrollTextView
                     android:id="@+id/tabConnectionName"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

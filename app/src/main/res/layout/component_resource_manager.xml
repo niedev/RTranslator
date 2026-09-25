@@ -5,13 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <TextView
+    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
         android:id="@+id/titleResource"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
         android:text="HY-MT"
+        app:layout_constraintWidth_percent="0.35"
         android:textColor="@color/very_very_dark_gray"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -83,12 +84,15 @@
         app:layout_constraintStart_toStartOf="@+id/titleResource"
         app:layout_constraintTop_toTopOf="@+id/titleResource" />
 
-    <TextView
+    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
         android:id="@+id/textDownload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
+
         android:text="2 GB"
+        app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="@+id/titleResource"
         app:layout_constraintEnd_toStartOf="@+id/buttonDownload"
         app:layout_constraintHorizontal_bias="1.0"

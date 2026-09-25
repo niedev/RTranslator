@@ -24,6 +24,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
@@ -368,7 +369,7 @@ public class ModelManagerFragment extends Fragment {
         dialog.show();
 
         TextView textView = editDialogLayout.findViewById(R.id.textView);
-        CardView okButton = editDialogLayout.findViewById(R.id.okButtonCard);
+        MaterialButton okButton = editDialogLayout.findViewById(R.id.ok_button);
 
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -424,7 +425,7 @@ public class ModelManagerFragment extends Fragment {
 
     private void notifyApplyError(ApplySettingsStage stage, int error, long value, View dialogLayout){
         TextView textView = dialogLayout.findViewById(R.id.textView);
-        CardView okButton = dialogLayout.findViewById(R.id.okButtonCard);
+        MaterialButton okButton = dialogLayout.findViewById(R.id.ok_button);
         android.widget.ProgressBar progressBar = dialogLayout.findViewById(R.id.progressBar);
 
         progressBar.setVisibility(View.INVISIBLE);

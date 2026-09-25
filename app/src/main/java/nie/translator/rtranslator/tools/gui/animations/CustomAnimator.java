@@ -869,7 +869,7 @@ public class CustomAnimator {
         return animatorSet;
     }
 
-    public void animateSwitchLanguages(Context context, CardView firstLanguageContainer, CardView secondLanguageContainer, AppCompatImageButton invertLanguagesButton, Listener listener){
+    public void animateSwitchLanguages(Context context, MaterialButton firstLanguageContainer, MaterialButton secondLanguageContainer, AppCompatImageButton invertLanguagesButton, Listener listener){
         int duration = context.getResources().getInteger(R.integer.durationStandard);
 
         firstLanguageContainer.setClickable(false);

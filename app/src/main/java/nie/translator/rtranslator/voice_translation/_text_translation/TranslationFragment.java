@@ -46,7 +46,6 @@ import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.TTS;
 import nie.translator.rtranslator.tools.Tools;
-import nie.translator.rtranslator.tools.gui.AnimatedTextView;
 import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.tools.gui.animations.CustomAnimator;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
@@ -74,8 +73,8 @@ public class TranslationFragment extends Fragment {
     private TextView conversationButtonText;
     private EditText inputText;
     private EditText outputText;
-    private CardView firstLanguageSelector;
-    private CardView secondLanguageSelector;
+    private MaterialButton firstLanguageSelector;
+    private MaterialButton secondLanguageSelector;
     private AppCompatImageButton invertLanguagesButton;
     private View lineSeparator;
     private ConstraintLayout toolbarContainer;
@@ -143,8 +142,8 @@ public class TranslationFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        firstLanguageSelector = view.findViewById(R.id.cancelButtonCard);
-        secondLanguageSelector = view.findViewById(R.id.okButtonCard);
+        firstLanguageSelector = view.findViewById(R.id.first_lang_selector);
+        secondLanguageSelector = view.findViewById(R.id.second_lang_selector);
         invertLanguagesButton = view.findViewById(R.id.invertLanguages);
         translateButton = view.findViewById(R.id.buttonTranslate);
         walkieTalkieButton = view.findViewById(R.id.buttonMicLeft);
@@ -916,12 +915,12 @@ public class TranslationFragment extends Fragment {
 
     private void setDisplayedFirstLanguage(CustomLocale language){
         // change language displayed
-        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.cancelButtonText)).setText(language.getDisplayNameWithoutTTS(), false);
+        firstLanguageSelector.setText(language.getDisplayNameWithoutTTS());
     }
 
     private void setDisplayedSecondLanguage(CustomLocale language){
         // change language displayed
-        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(language.getDisplayNameWithoutTTS(), false);
+        secondLanguageSelector.setText(language.getDisplayNameWithoutTTS());
     }
 
     private void switchLanguages() {
@@ -933,8 +932,8 @@ public class TranslationFragment extends Fragment {
             }
         });
         // change language displayed
-        ((AnimatedTextView) firstLanguageSelector.findViewById(R.id.cancelButtonText)).setText(global.getFirstTextLanguage(true).getDisplayNameWithoutTTS(), false);
-        ((AnimatedTextView) secondLanguageSelector.findViewById(R.id.okButtonText)).setText(global.getSecondTextLanguage(true).getDisplayNameWithoutTTS(), false);
+        firstLanguageSelector.setText(global.getFirstTextLanguage(true).getDisplayNameWithoutTTS());
+        secondLanguageSelector.setText(global.getSecondTextLanguage(true).getDisplayNameWithoutTTS());
     }
 
     // Helper method to handle focus and keyboard visibility

@@ -208,7 +208,7 @@
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <TextView
+                    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
                         android:id="@+id/inputMicType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

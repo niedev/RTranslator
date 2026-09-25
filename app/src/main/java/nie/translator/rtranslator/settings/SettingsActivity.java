@@ -26,6 +26,7 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import nie.translator.rtranslator.GeneralActivity;
@@ -170,8 +171,8 @@ public class SettingsActivity extends GeneralActivity {
         dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(this, 16), 0, 0);
         dialog.show();
 
-        CardView applyButton = editDialogLayout.findViewById(R.id.okButtonCard);
-        CardView cancelButton = editDialogLayout.findViewById(R.id.cancelButtonCard);
+        MaterialButton applyButton = editDialogLayout.findViewById(R.id.apply_button);
+        MaterialButton cancelButton = editDialogLayout.findViewById(R.id.exit_button);
 
         applyButton.setOnClickListener(new View.OnClickListener() {
             @Override

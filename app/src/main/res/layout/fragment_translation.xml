@@ -40,7 +40,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0" />
 
-        <TextView
+        <nie.translator.rtranslator.tools.gui.AutoScrollTextView
             android:id="@+id/title2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -113,123 +113,61 @@
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.87" />
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cancelButtonCard"
+        <nie.translator.rtranslator.tools.gui.AutoScrollMaterialButton
+            android:id="@+id/first_lang_selector"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="21dp"
+            android:layout_marginBottom="21dp"
             android:backgroundTint="@color/primary_very_dark"
-            android:elevation="2dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
+            android:outlineProvider="none"
+            android:paddingStart="8dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="12dp"
+            android:text="@string/loading"
+            android:textColor="@color/white"
+            android:fontFamily="@font/nunito_semibold"
+            android:theme="@style/Theme.MaterialComponents"
+            android:visibility="visible"
+            app:cornerRadius="24dp"
+            app:elevation="0dp"
+            app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/guideline11"
             app:layout_constraintHorizontal_bias="0.55"
             app:layout_constraintStart_toStartOf="@+id/guideline10"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0">
+            app:layout_constraintVertical_bias="0.0"
+            tools:text="English"/>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/cancelButtonLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <nie.translator.rtranslator.tools.gui.AnimatedTextView
-                    android:id="@+id/cancelButtonText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="11dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="11dp"
-                    android:fontFamily="@font/nunito_sans_semibold"
-                    android:text="@string/loading"
-                    android:textAlignment="center"
-                    android:textColor="@color/accent_white"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.101" />
-
-                <ImageView
-                    android:id="@+id/imageView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:src="@drawable/dropdown_icon"
-                    android:tint="@color/accent_white"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="1.0"
-                    app:layout_constraintStart_toEndOf="@+id/cancelButtonText"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/okButtonCard"
+        <nie.translator.rtranslator.tools.gui.AutoScrollMaterialButton
+            android:id="@+id/second_lang_selector"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="21dp"
+            android:layout_marginBottom="21dp"
             android:backgroundTint="@color/primary_very_dark"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            android:elevation="1dp"
+            android:outlineProvider="none"
+            android:paddingStart="8dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="12dp"
+            android:text="@string/loading"
+            android:textColor="@color/white"
+            android:fontFamily="@font/nunito_semibold"
+            android:theme="@style/Theme.MaterialComponents"
+            android:visibility="visible"
+            app:cornerRadius="24dp"
+            app:elevation="0dp"
+            app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/guideline13"
             app:layout_constraintHorizontal_bias="0.45"
             app:layout_constraintStart_toStartOf="@+id/guideline12"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/okButtonLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <nie.translator.rtranslator.tools.gui.AnimatedTextView
-                    android:id="@+id/okButtonText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="11dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="11dp"
-                    android:fontFamily="@font/nunito_semibold"
-                    android:text="@string/loading"
-                    android:textAlignment="center"
-                    android:textColor="@color/accent_white"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.101" />
-
-                <ImageView
-                    android:id="@+id/imageView3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:layout_weight="1"
-                    android:src="@drawable/dropdown_icon"
-                    android:tint="@color/accent_white"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="1.0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
+            app:layout_constraintVertical_bias="0"
+            tools:text="Italian"/>
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/invertLanguages"
@@ -238,10 +176,10 @@
             android:backgroundTint="@android:color/transparent"
             android:tint="@color/primary_very_dark"
             android:elevation="0dp"
-            app:layout_constraintBottom_toBottomOf="@+id/cancelButtonCard"
+            app:layout_constraintBottom_toBottomOf="@+id/first_lang_selector"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/cancelButtonCard"
+            app:layout_constraintTop_toTopOf="@+id/first_lang_selector"
             app:srcCompat="@drawable/invert_arrows" />
 
         <androidx.appcompat.widget.AppCompatImageButton
@@ -665,7 +603,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="1.0">
 
-                    <com.google.android.material.button.MaterialButton
+                    <nie.translator.rtranslator.tools.gui.AutoScrollMaterialButton
                         android:id="@+id/buttonTranslate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -676,7 +614,6 @@
                         android:theme="@style/Theme.MaterialComponents"
                         android:visibility="visible"
                         android:outlineProvider="none"
-                        android:lines="1"
                         app:elevation="0dp"
                         app:cornerRadius="20dp"
                         app:layout_constraintBottom_toBottomOf="@+id/buttonMicLeft"
@@ -747,16 +684,13 @@
                         app:rippleColor="@color/light_gray"
                         app:tint="@color/primary_very_dark" />
 
-                    <TextView
+                    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
                         android:id="@+id/textButton1"
                         android:layout_width="90dp"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:ellipsize="end"
                         android:fontFamily="@font/nunito_sans_light"
                         android:gravity="center"
-                        android:lines="1"
-                        android:scrollHorizontally="true"
                         android:text="@string/title_fragment_walkie_talkie"
                         android:textSize="12sp"
                         android:visibility="visible"
@@ -788,16 +722,13 @@
                         app:rippleColor="@color/light_gray"
                         app:tint="@color/primary_very_dark" />
 
-                    <TextView
+                    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
                         android:id="@+id/textButton2"
                         android:layout_width="90dp"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:ellipsize="end"
                         android:fontFamily="@font/nunito_sans_light"
                         android:gravity="center"
-                        android:lines="1"
-                        android:scrollHorizontally="true"
                         android:text="@string/title_fragment_conversation"
                         android:textSize="12sp"
                         android:visibility="visible"

@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import nie.translator.rtranslator.Global;
@@ -219,10 +220,10 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
         dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(activity, 16), 0, 0);
         dialog.show();
 
-        CardView continueButton = editDialogLayout.findViewById(R.id.okButtonCard);
-        CardView cancelButton = editDialogLayout.findViewById(R.id.cancelButtonCard);
+        MaterialButton yesButton = editDialogLayout.findViewById(R.id.yes_button);
+        MaterialButton noButton = editDialogLayout.findViewById(R.id.no_button);
 
-        continueButton.setOnClickListener(new View.OnClickListener() {
+        yesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
@@ -231,7 +232,7 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
                 if(clientListener != null) clientListener.onResourceDeleted();
             }
         });
-        cancelButton.setOnClickListener(new View.OnClickListener() {
+        noButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dialog.cancel();
@@ -250,7 +251,7 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
         dialog.show();
 
         TextView textView = editDialogLayout.findViewById(R.id.textView);
-        CardView okButton = editDialogLayout.findViewById(R.id.okButtonCard);
+        MaterialButton okButton = editDialogLayout.findViewById(R.id.ok_button);
 
         textView.setText(activity.getString(R.string.error_delete_last_download));
 
@@ -273,7 +274,7 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
         dialog.show();
 
         TextView textView = editDialogLayout.findViewById(R.id.textView);
-        CardView okButton = editDialogLayout.findViewById(R.id.okButtonCard);
+        MaterialButton okButton = editDialogLayout.findViewById(R.id.ok_button);
 
         textView.setText(activity.getResources().getText(R.string.error_download));
 

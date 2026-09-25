@@ -59,54 +59,34 @@
                 android:gravity="center"
                 android:text=""
                 tools:text="@string/applying_settings"
-                app:layout_constraintBottom_toTopOf="@+id/okButtonCard"
+                app:layout_constraintBottom_toTopOf="@+id/ok_button"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0" />
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/okButtonCard"
-                android:layout_width="150dp"
+            <nie.translator.rtranslator.tools.gui.AutoScrollMaterialButton
+                android:id="@+id/ok_button"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 android:backgroundTint="@color/primary_very_dark"
+                android:maxWidth="200dp"
+                android:minWidth="150dp"
+                android:outlineProvider="none"
+                android:padding="12dp"
+                android:text="@string/ok"
+                android:textColor="@color/white"
+                android:theme="@style/Theme.MaterialComponents"
                 android:visibility="invisible"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
+                app:cornerRadius="24dp"
+                app:elevation="0dp"
+                app:layout_constrainedWidth="true"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="1.0">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/okButtonLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <nie.translator.rtranslator.tools.gui.AnimatedTextView
-                        android:id="@+id/okButtonText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="11dp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_marginBottom="11dp"
-                        android:fontFamily="@font/nunito_semibold"
-                        android:text="@string/ok"
-                        android:textAlignment="center"
-                        android:textColor="@color/accent_white"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_bias="0.101" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.cardview.widget.CardView>
+                app:layout_constraintVertical_bias="1.0" />
 
             <ProgressBar
                 android:id="@+id/progressBar"
@@ -114,6 +94,7 @@
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_marginBottom="16dp"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

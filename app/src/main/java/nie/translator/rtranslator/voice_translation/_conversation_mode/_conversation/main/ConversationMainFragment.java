@@ -289,7 +289,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                 mAdapter = new MessagesAdapter(messages, global, speakingUtteranceId, new MessagesAdapter.Callback() {
                     @Override
                     public void onFirstItemAdded() {
-                        description.setVisibility(View.GONE);
+                        descriptionContainer.setVisibility(View.GONE);
                         mRecyclerView.setVisibility(View.VISIBLE);
                     }
 

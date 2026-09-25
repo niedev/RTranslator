@@ -34,6 +34,7 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
@@ -245,8 +246,8 @@ public class AccessActivity extends GeneralActivity {
 
         ImageView icon = editDialogLayout.findViewById(R.id.dialogIcon);
         TextView text = editDialogLayout.findViewById(R.id.textView);
-        CardView continueButton = editDialogLayout.findViewById(R.id.okButtonCard);
-        CardView cancelButton = editDialogLayout.findViewById(R.id.cancelButtonCard);
+        MaterialButton continueButton = editDialogLayout.findViewById(R.id.continue_button);
+        MaterialButton cancelButton = editDialogLayout.findViewById(R.id.cancel_button);
 
         //set icon
         icon.setImageDrawable(getResources().getDrawable(R.drawable.notification_icon));
