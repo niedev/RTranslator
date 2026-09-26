@@ -27,7 +27,7 @@
 
     <!-- android:backgroundTint="#D8F0E9" -->
     <androidx.cardview.widget.CardView
-        android:id="@+id/card"
+        android:id="@+id/cardContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Dark"
@@ -55,7 +55,6 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="12dp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:textIsSelectable="true"
                 android:textSize="16sp"
                 android:textColor="@color/very_dark_gray_plus"
                 android:visibility="visible"
@@ -79,7 +78,6 @@
                     android:layout_marginEnd="16dp"
                     android:layout_marginBottom="8dp"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                    android:textIsSelectable="true"
                     android:textSize="16sp"
                     android:textColor="@color/black"
                     android:layout_gravity="center_vertical"

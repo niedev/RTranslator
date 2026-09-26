@@ -31,7 +31,7 @@
      -->
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/card1"
+        android:id="@+id/cardContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Light"
@@ -81,7 +81,6 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="12dp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:textIsSelectable="true"
                 android:textSize="16sp"
                 android:textColor="@color/very_dark_gray"
                 android:visibility="visible"
@@ -109,7 +108,6 @@
                     android:layout_marginBottom="8dp"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large"
                     android:textColor="@color/black"
-                    android:textIsSelectable="true"
                     android:textSize="16sp"
                     tool:text="Ciao, come stai?"
                     android:layout_gravity="center_vertical"/>

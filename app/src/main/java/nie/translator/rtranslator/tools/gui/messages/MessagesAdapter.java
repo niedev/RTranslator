@@ -16,24 +16,34 @@
 
 package nie.translator.rtranslator.tools.gui.messages;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.core.view.GestureDetectorCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
+import androidx.core.view.accessibility.AccessibilityViewCommand;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.voice_translation.FullScreenTextActivity;
 
 /** Is used to connect to the RecycleView, which functions as a ListView, a list of strings, which will be inserted in the ViewHolder layout and this will be inserted in the list**/
 public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -76,19 +86,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if (holder instanceof MessageHolder) {
             MessageHolder messageHolder = (MessageHolder) holder;
             final GuiMessage message = mResults.get(position);
-
-            // Bind eventual sender text (only for ReceiverHolder)
-            if (messageHolder instanceof ReceivedHolder) {
-                if(message.getMessage().getSender() != null) {
-                    ((ReceivedHolder) messageHolder).sender.setText(message.getMessage().getSender().getName());
-                }else{
-                    ((ReceivedHolder) messageHolder).sender.setVisibility(View.GONE);
-                }
-            }
-            // Bind message text
-            messageHolder.setText(message.getMessage().getTextToTranslate(), message.getMessage().getText());
-            // Bind tts button status and listener
-            messageHolder.setIsPlayingTTS(message.getMessageID() == playingMessageID);
             View.OnClickListener playListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -99,7 +96,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     }
                 }
             };
-            messageHolder.ttsButton.setOnClickListener(playListener);
+            messageHolder.bind(message, playingMessageID, playListener);
         }
     }
 
@@ -206,32 +203,101 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             super(inflater.inflate(R.layout.component_message_received, parent, false));
             sender = itemView.findViewById(R.id.text_sender);
         }
+
+        @Override
+        public void bind(GuiMessage message, long playingMessageID, View.OnClickListener playListener) {
+            super.bind(message, playingMessageID, playListener);
+            // Bind eventual sender text
+            if(message.getMessage().getSender() != null) {
+                sender.setText(message.getMessage().getSender().getName());
+            }else{
+                sender.setVisibility(View.GONE);
+            }
+        }
     }
 
     /** The layout for each item in the RecycleView list*/
     private static class SendHolder extends MessageHolder {
         SendHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.component_message_send, parent, false));
-
         }
     }
 
-    private static abstract class MessageHolder extends RecyclerView.ViewHolder{
+    private static abstract class MessageHolder extends RecyclerView.ViewHolder {
+        @Nullable
+        protected GuiMessage message;
         protected TextView originalTextToBeTranslated;
         protected TextView text;
         protected ImageView ttsButton;
+        protected CardView container;
 
+        @SuppressLint("ClickableViewAccessibility")
         public MessageHolder(@NonNull View itemView) {
             super(itemView);
+            container = itemView.findViewById(R.id.cardContainer);
             originalTextToBeTranslated = itemView.findViewById(R.id.original_text_to_be_translated);
             if (!showOriginalTranscriptionMsg) {
                 originalTextToBeTranslated.setVisibility(View.GONE);
             }
             text = itemView.findViewById(R.id.text);
             ttsButton = itemView.findViewById(R.id.tts_button);
+
+            // Gesture Detector for sighted users
+            GestureDetectorCompat gestureDetector = new GestureDetectorCompat(itemView.getContext(), new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapConfirmed(MotionEvent e) {
+                    Toast.makeText(itemView.getContext(), "Double tap to open in full screen", Toast.LENGTH_SHORT).show();  //todo: convert the text to resource and translate it
+                    return true;
+                }
+
+                @Override
+                public boolean onDoubleTap(MotionEvent e) {
+                    if(message != null) {
+                        startFullScreenTextActivity(itemView.getContext(), message.getMessage().getText());
+                    }
+                    return true;
+                }
+
+                @Override
+                public boolean onDown(MotionEvent e) {
+                    // Must return true to consume the initial touch and detect subsequent taps
+                    return true;
+                }
+            });
+
+            // Attach touch listener to the container
+            container.setOnTouchListener((v, event) -> {
+                // Let the gesture detector handle the touch events
+                return gestureDetector.onTouchEvent(event);
+            });
+
+            // Accessibility configuration for TalkBack users
+            ViewCompat.replaceAccessibilityAction(
+                    container,
+                    AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
+                    "open message in fullscreen", // Determines what Talkback TTS says   todo: convert the text to resource and translate it + test Talkback here
+                    new AccessibilityViewCommand() {
+                        @Override
+                        public boolean perform(@NonNull View view, @Nullable CommandArguments arguments) {
+                            if(message != null) {
+                                startFullScreenTextActivity(itemView.getContext(), message.getMessage().getText());
+                            }
+                            return true;
+                        }
+                    }
+            );
         }
 
-        public void setText(String originalTextToBeTranslated, String text){
+        public void bind(GuiMessage message, long playingMessageID, View.OnClickListener playListener){
+            this.message = message;
+            // Bind message text
+            setText(message.getMessage().getTextToTranslate(), message.getMessage().getText());
+            // Bind tts button status and listener
+            setIsPlayingTTS(message.getMessageID() == playingMessageID);
+            ttsButton.setOnClickListener(playListener);
+        }
+
+        private void setText(String originalTextToBeTranslated, String text){
             if(originalTextToBeTranslated != null && !originalTextToBeTranslated.isEmpty()){
                 this.originalTextToBeTranslated.setText(originalTextToBeTranslated);
             }else{
@@ -253,6 +319,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 ttsButton.setTag(R.drawable.sound_icon);
             }
         }
+    }
+
+    private static void startFullScreenTextActivity(Context context, String text) {
+        Intent intent = new Intent(context, FullScreenTextActivity.class);
+        intent.putExtra(FullScreenTextActivity.EXTRA_TEXT, text);
+        context.startActivity(intent);
     }
 
     public interface Callback {
