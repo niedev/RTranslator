@@ -97,6 +97,10 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Speech"/>
+        <activity
+            android:name="nie.translator.rtranslator.voice_translation.FullScreenTextActivity"
+            android:theme="@style/Theme.MaterialComponents.NoActionBar"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
 
         <service android:name="nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService"
             android:foregroundServiceType="dataSync|microphone"/>

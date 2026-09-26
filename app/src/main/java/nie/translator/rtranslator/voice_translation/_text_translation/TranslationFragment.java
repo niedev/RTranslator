@@ -49,6 +49,7 @@ import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.tools.gui.animations.CustomAnimator;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
+import nie.translator.rtranslator.voice_translation.FullScreenTextActivity;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
 
@@ -84,6 +85,7 @@ public class TranslationFragment extends Fragment {
     private AppCompatImageButton backButton;
     private FloatingActionButton copyInputButton;
     private FloatingActionButton copyOutputButton;
+    private FloatingActionButton fullScreenOutputButton;
     private FloatingActionButton cancelTextButton;
     private FloatingActionButton ttsInputButton;
     private FloatingActionButton ttsOutputButton;
@@ -162,6 +164,7 @@ public class TranslationFragment extends Fragment {
         backButton = view.findViewById(R.id.backButton);
         copyInputButton = view.findViewById(R.id.copyButtonInput);
         copyOutputButton = view.findViewById(R.id.copyButtonOutput);
+        fullScreenOutputButton = view.findViewById(R.id.fullscreenButtonOutput);
         cancelTextButton = view.findViewById(R.id.cancelButtonInput);
         ttsInputButton = view.findViewById(R.id.tts_button);
         ttsOutputButton = view.findViewById(R.id.ttsButtonOutput);
@@ -342,6 +345,12 @@ public class TranslationFragment extends Fragment {
                 inputText.setText("");
                 outputText.setText("");
                 global.getTranslator().resetLastOutput();
+            }
+        });
+        fullScreenOutputButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startFullScreenTextActivity(outputText.getText().toString());
             }
         });
     }
@@ -948,6 +957,12 @@ public class TranslationFragment extends Fragment {
         if (imm != null) {
             imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
         }
+    }
+
+    private void startFullScreenTextActivity(String text) {
+        Intent intent = new Intent(activity, FullScreenTextActivity.class);
+        intent.putExtra(FullScreenTextActivity.EXTRA_TEXT, text);
+        startActivity(intent);
     }
 
     public int getTextActionButtonHeight() {

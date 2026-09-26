@@ -74,24 +74,21 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof MessageHolder) {
+            MessageHolder messageHolder = (MessageHolder) holder;
             final GuiMessage message = mResults.get(position);
-            if (holder instanceof ReceivedHolder) {
+
+            // Bind eventual sender text (only for ReceiverHolder)
+            if (messageHolder instanceof ReceivedHolder) {
                 if(message.getMessage().getSender() != null) {
-                    ((ReceivedHolder) holder).sender.setText(message.getMessage().getSender().getName());
+                    ((ReceivedHolder) messageHolder).sender.setText(message.getMessage().getSender().getName());
                 }else{
-                    ((ReceivedHolder) holder).sender.setVisibility(View.GONE);
+                    ((ReceivedHolder) messageHolder).sender.setVisibility(View.GONE);
                 }
-                Log.d("recyclerview", "RecyclerView bind sender");
             }
-            ((MessageHolder) holder).setText(message.getMessage().getTextToTranslate(), message.getMessage().getText());
-            if(message.getMessageID() == playingMessageID){
-                ((MessageHolder) holder).setIsPlayingTTS(true);
-            }else{
-                ((MessageHolder) holder).setIsPlayingTTS(false);
-            }
-            Log.d("recyclerview", "RecyclerView bind text");
-            
-            // Bind audio playback listener
+            // Bind message text
+            messageHolder.setText(message.getMessage().getTextToTranslate(), message.getMessage().getText());
+            // Bind tts button status and listener
+            messageHolder.setIsPlayingTTS(message.getMessageID() == playingMessageID);
             View.OnClickListener playListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -102,8 +99,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     }
                 }
             };
-            View ttsBtnSend = holder.itemView.findViewById(R.id.tts_button);
-            if(ttsBtnSend != null) ttsBtnSend.setOnClickListener(playListener);
+            messageHolder.ttsButton.setOnClickListener(playListener);
         }
     }
 
@@ -202,59 +198,31 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    /** The layout for each item in the RecicleView list*/
-    private static class ReceivedHolder extends RecyclerView.ViewHolder implements MessageHolder {
-        TextView originalTextToBeTranslated;
-        TextView text;
+    /** The layout for each item in the RecycleView list*/
+    private static class ReceivedHolder extends MessageHolder {
         TextView sender;
-        ImageView ttsButton;
 
         ReceivedHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.component_message_received, parent, false));
-            originalTextToBeTranslated = itemView.findViewById(R.id.original_text_to_be_translated);
-            if (!showOriginalTranscriptionMsg) {
-                originalTextToBeTranslated.setVisibility(View.GONE);
-            }
-            text = itemView.findViewById(R.id.text);
             sender = itemView.findViewById(R.id.text_sender);
-            ttsButton = itemView.findViewById(R.id.tts_button);
-        }
-
-        @Override
-        public void setText(String originalTextToBeTranslated, String text) {
-            if(originalTextToBeTranslated != null && !originalTextToBeTranslated.isEmpty()){
-                this.originalTextToBeTranslated.setText(originalTextToBeTranslated);
-            }else{
-                this.originalTextToBeTranslated.setVisibility(View.GONE);
-            }
-            this.text.setText(text);
-        }
-
-        @Override
-        public boolean isPlayingTTS() {
-            return ((int) ttsButton.getTag() == R.drawable.stop_icon);
-        }
-
-        @Override
-        public void setIsPlayingTTS(boolean playingTTS) {
-            if(playingTTS) {
-                ttsButton.setImageResource(R.drawable.stop_icon);
-                ttsButton.setTag(R.drawable.stop_icon);
-            }else{
-                ttsButton.setImageResource(R.drawable.sound_icon);
-                ttsButton.setTag(R.drawable.sound_icon);
-            }
         }
     }
 
-    /** The layout for each item in the RecicleView list*/
-    private static class SendHolder extends RecyclerView.ViewHolder implements MessageHolder {
-        TextView originalTextToBeTranslated;
-        TextView text;
-        ImageView ttsButton;
-
+    /** The layout for each item in the RecycleView list*/
+    private static class SendHolder extends MessageHolder {
         SendHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.component_message_send, parent, false));
+
+        }
+    }
+
+    private static abstract class MessageHolder extends RecyclerView.ViewHolder{
+        protected TextView originalTextToBeTranslated;
+        protected TextView text;
+        protected ImageView ttsButton;
+
+        public MessageHolder(@NonNull View itemView) {
+            super(itemView);
             originalTextToBeTranslated = itemView.findViewById(R.id.original_text_to_be_translated);
             if (!showOriginalTranscriptionMsg) {
                 originalTextToBeTranslated.setVisibility(View.GONE);
@@ -263,8 +231,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ttsButton = itemView.findViewById(R.id.tts_button);
         }
 
-        @Override
-        public void setText(String originalTextToBeTranslated, String text) {
+        public void setText(String originalTextToBeTranslated, String text){
             if(originalTextToBeTranslated != null && !originalTextToBeTranslated.isEmpty()){
                 this.originalTextToBeTranslated.setText(originalTextToBeTranslated);
             }else{
@@ -273,12 +240,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             this.text.setText(text);
         }
 
-        @Override
         public boolean isPlayingTTS() {
             return ((int) ttsButton.getTag() == R.drawable.stop_icon);
         }
 
-        @Override
         public void setIsPlayingTTS(boolean playingTTS) {
             if(playingTTS) {
                 ttsButton.setImageResource(R.drawable.stop_icon);
@@ -288,12 +253,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 ttsButton.setTag(R.drawable.sound_icon);
             }
         }
-    }
-
-    interface MessageHolder {
-        void setText(String originalTextToBeTranslated, String text);
-        boolean isPlayingTTS();
-        void setIsPlayingTTS(boolean playingTTS);
     }
 
     public interface Callback {
