@@ -23,11 +23,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -121,6 +123,15 @@ public class PeerListAdapter extends BaseAdapter {
             if (view == null) {
                 view = inflater.inflate(R.layout.component_row_header, container, false);
             }
+            view.setClickable(false);
+            view.setAccessibilityDelegate(new View.AccessibilityDelegate() {  //to disable the state clickable for accessibility (this is triggered by setOnItemClickListener on the adapter)
+                @Override
+                public void onInitializeAccessibilityNodeInfo(@NonNull View host, @NonNull AccessibilityNodeInfo info) {
+                    super.onInitializeAccessibilityNodeInfo(host, info);
+                    info.setClickable(false);
+                    info.removeAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK);
+                }
+            });
             ((TextView) view.findViewById(R.id.header_text)).setText(headerText);
         } else if (itemType == HOST_CONNECTED) {
             GuiPeer guiPeer = (GuiPeer) item;

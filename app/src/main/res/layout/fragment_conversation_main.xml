@@ -54,6 +54,7 @@
                     android:padding="12dp"
                     android:src="@drawable/sound_auto_icon"
                     android:tint="@color/gray"
+                    android:contentDescription="manual message reading"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.926"
@@ -92,6 +93,7 @@
                     android:src="@drawable/keyboard_icon"
                     android:tint="@color/gray"
                     android:padding="12dp"
+                    android:contentDescription="open text input mode"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.069"
@@ -163,6 +165,7 @@
                             android:background="@drawable/circle"
                             android:backgroundTint="@color/primary"
                             android:src="@drawable/mic_icon"
+                            android:contentDescription="stop microphone"
                             app:tint="@color/white"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -219,7 +222,8 @@
                         android:textAlignment="center"
                         android:textColor="@color/very_dark_gray"
                         android:textSize="12sp"
-                        android:visibility="visible" />
+                        android:visibility="visible"
+                        android:importantForAccessibility="no"/>
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>

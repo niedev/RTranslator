@@ -19,24 +19,32 @@ package nie.translator.rtranslator.tools.gui;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.LocaleSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.view.AccessibilityDelegateCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
-import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.Tools;
@@ -158,5 +166,82 @@ public class GuiTools {
 
     public  interface OnLanguageClickListener {
         void onItemClick(AdapterView<?> parent, View view, final int position, long id, @Nullable CustomLocale item);
+    }
+
+    /**
+     * This method intercepts TalkBack interaction with the descriptionView and instead of reading the
+     * long description directly it reads a placeholder.
+     * It also defines a click listener only for TalkBack that if clicked, makes TalkBack read the full description.
+     * This way the user will not listen the long description during TalkBack navigation directly, but only with a click.
+     * @param descriptionView a TextView that contains a long description
+     */
+    public static void setDescriptionOptimizationForAccessibility(TextView descriptionView){
+        ViewCompat.setAccessibilityDelegate(descriptionView, new AccessibilityDelegateCompat() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(@NonNull View host, @NonNull AccessibilityNodeInfoCompat info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+
+                // Override what TalkBack reads when it lands on the view
+                info.setContentDescription("Mode description");  //todo: convert the text to resource and translate it
+
+                // Add a custom action hint ("Double-tap to read full description")
+                AccessibilityNodeInfoCompat.AccessibilityActionCompat readAction =
+                        new AccessibilityNodeInfoCompat.AccessibilityActionCompat(
+                                AccessibilityNodeInfoCompat.ACTION_CLICK,
+                                "read full description"  //todo: convert the text to resource and translate it
+                        );
+                info.addAction(readAction);
+            }
+
+            @Override
+            public boolean performAccessibilityAction(@NonNull View host, int action, Bundle args) {
+                // 3. Handle the double-tap to read the text
+                if (action == AccessibilityNodeInfoCompat.ACTION_CLICK) {
+                    CharSequence textToRead = ((TextView) host).getText();
+                    host.announceForAccessibility(textToRead);
+                    return true;
+                }
+                return super.performAccessibilityAction(host, action, args);
+            }
+        });
+    }
+
+    /**
+     * Intercepts TalkBack interaction with the passed view and adds the language info to the text read by it.
+     * This way, if the system TTS supports the language, TalkBack with read it with that language (otherwise it will use the default system language).
+     * @param view
+     * @param language
+     */
+    public static void setTextLanguageInfoForAccessibility(View view, CustomLocale language){
+        ViewCompat.setAccessibilityDelegate(view, new AccessibilityDelegateCompat() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(@NonNull View host, @NonNull AccessibilityNodeInfoCompat info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+
+                // Grab whatever text is currently inside the view
+                CharSequence currentText = info.getText();
+
+                if (currentText != null && currentText.length() > 0) {
+                    SpannableString accessibleText = new SpannableString(currentText);
+
+                    // Tell TalkBack to read this specific node in the source language
+                    accessibleText.setSpan(
+                            new LocaleSpan(language.getLocale()),
+                            0,
+                            accessibleText.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    );
+
+                    info.setText(accessibleText);
+                }
+            }
+        });
+    }
+
+    public static boolean isTalkBackActive(Context context){
+        AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        boolean isAccessibilityEnabled = am.isEnabled();
+        boolean isExploreByTouchEnabled = am.isTouchExplorationEnabled();
+        return isAccessibilityEnabled && isExploreByTouchEnabled;
     }
 }

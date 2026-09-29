@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
     android:background="@color/primary_very_lite"
     android:elevation="0dp"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:accessibilityPaneTitle="Text Translation">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolbarTranslatorContainer"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:translationY="0dp"
+        android:importantForAccessibility="no"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
@@ -32,6 +34,7 @@
             android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             android:theme="@style/Theme.Toolbar"
             android:title=" "
+            android:importantForAccessibility="noHideDescendants"
             android:titleTextColor="@color/primary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -67,6 +70,7 @@
             android:layout_marginEnd="8dp"
             android:backgroundTint="@android:color/transparent"
             android:tint="@color/primary_very_dark"
+            android:contentDescription="@string/title_activity_settings"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/toolbarTranslator"
             app:layout_constraintHorizontal_bias="1.0"
@@ -79,6 +83,7 @@
         android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:importantForAccessibility="no"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -176,6 +181,7 @@
             android:backgroundTint="@android:color/transparent"
             android:tint="@color/primary_very_dark"
             android:elevation="0dp"
+            android:contentDescription="switch languages"
             app:layout_constraintBottom_toBottomOf="@+id/first_lang_selector"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -190,6 +196,7 @@
             android:backgroundTint="@android:color/transparent"
             android:clickable="false"
             android:tint="@color/primary_very_dark"
+            android:contentDescription="@string/title_activity_settings"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.9"
@@ -207,6 +214,7 @@
             android:backgroundTint="@android:color/transparent"
             android:clickable="false"
             android:tint="@color/primary_very_dark"
+            android:contentDescription="back"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/guideline10"
             app:layout_constraintHorizontal_bias="0.0"
@@ -221,6 +229,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="4dp"
+        android:importantForAccessibility="no"
         app:cardBackgroundColor="@color/accent_white"
         app:cardElevation="0dp"
         app:cardPreventCornerOverlap="false"
@@ -231,91 +240,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <!--<LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="0dp"
-                android:orientation="vertical"
-                app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-
-                <EditText
-                    android:id="@+id/multiAutoCompleteTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="12dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="@android:color/transparent"
-                    android:gravity="start|top"
-                    android:hint="Insert text"
-                    android:inputType="textCapSentences|textMultiLine|textAutoCorrect"
-                    android:textSize="18sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.0" />
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <androidx.constraintlayout.widget.Guideline
-                        android:id="@+id/guideline8"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        app:layout_constraintGuide_percent="0.20" />
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="2dp"
-                        android:background="?android:attr/listDivider"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="@id/guideline9"
-                        app:layout_constraintStart_toStartOf="@+id/guideline8"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <androidx.constraintlayout.widget.Guideline
-                        android:id="@+id/guideline9"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        app:layout_constraintGuide_percent="0.80" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <TextView
-                    android:id="@+id/multiAutoCompleteTextView2"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginStart="18dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="0dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="@android:color/transparent"
-                    android:enabled="true"
-                    android:focusable="true"
-                    android:gravity="start|top"
-                    android:longClickable="true"
-                    android:scrollbars="vertical"
-                    android:textColor="@color/black"
-                    android:textIsSelectable="true"
-                    android:textSize="18sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.0"
-                    tools:text="Input text" />
-            </LinearLayout>-->
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no">
 
             <androidx.core.widget.NestedScrollView
                 android:id="@+id/nestedScrollView"
@@ -325,19 +251,21 @@
                 app:layout_constraintBottom_toTopOf="@+id/cardView8"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                android:importantForAccessibility="no">
 
                 <LinearLayout
                     android:id="@+id/mainContainer"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:importantForAccessibility="no">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/inputContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:focusable="true">
+                        android:importantForAccessibility="no">
 
                         <EditText
                             android:id="@+id/multiAutoCompleteTextView"
@@ -370,6 +298,7 @@
                             android:layout_marginBottom="4dp"
                             android:backgroundTint="@color/accent_white"
                             android:src="@drawable/sound_icon"
+                            android:importantForAccessibility="no"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
@@ -393,6 +322,7 @@
                             android:layout_marginBottom="4dp"
                             android:backgroundTint="@color/accent_white"
                             android:src="@drawable/copy_icon"
+                            android:contentDescription="copy input text"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
@@ -418,6 +348,7 @@
                             android:backgroundTint="@color/accent_white"
                             android:src="@drawable/cancel_icon"
                             android:visibility="invisible"
+                            android:contentDescription="clear text"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
@@ -469,7 +400,7 @@
                         android:layout_height="wrap_content"
                         android:alpha="0"
                         android:visibility="invisible"
-                        android:focusable="true"
+                        android:importantForAccessibility="no"
                         tools:alpha="1"
                         tools:visibility="invisible">
 
@@ -527,6 +458,7 @@
                             android:layout_marginBottom="4dp"
                             android:backgroundTint="@color/accent_white"
                             android:src="@drawable/sound_icon"
+                            android:importantForAccessibility="no"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
@@ -549,6 +481,7 @@
                             android:layout_marginBottom="4dp"
                             android:backgroundTint="@color/accent_white"
                             android:src="@drawable/copy_icon"
+                            android:contentDescription="copy translated text"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
@@ -571,6 +504,7 @@
                             android:layout_marginBottom="4dp"
                             android:backgroundTint="@color/accent_white"
                             android:src="@drawable/fullscreen_icon"
+                            android:contentDescription="translated text full screen"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
@@ -645,10 +579,10 @@
                         android:outlineProvider="none"
                         app:elevation="0dp"
                         app:cornerRadius="20dp"
-                        app:layout_constraintBottom_toBottomOf="@+id/buttonMicLeft"
-                        app:layout_constraintEnd_toStartOf="@+id/buttonMicRight"
-                        app:layout_constraintStart_toEndOf="@+id/buttonMicLeft"
-                        app:layout_constraintTop_toTopOf="@+id/buttonMicLeft" />
+                        app:layout_constraintBottom_toBottomOf="@+id/buttonMicFirst"
+                        app:layout_constraintEnd_toStartOf="@+id/buttonMicSecond"
+                        app:layout_constraintStart_toEndOf="@+id/buttonMicFirst"
+                        app:layout_constraintTop_toTopOf="@+id/buttonMicFirst" />
 
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/buttonWalkieTalkieSmall"
@@ -658,6 +592,7 @@
                         android:alpha="0"
                         android:clickable="false"
                         android:src="@drawable/walkie_talkie_icon_reduced"
+                        android:contentDescription="@string/title_fragment_walkie_talkie"
                         app:elevation="0dp"
                         app:backgroundTint="@color/primary_very_lite"
                         app:rippleColor="@color/light_gray"
@@ -679,6 +614,7 @@
                         android:clickable="false"
                         android:theme="@style/Theme.MaterialComponents"
                         android:src="@drawable/conversation_icon_reduced"
+                        android:contentDescription="@string/title_fragment_conversation"
                         app:backgroundTint="@color/primary_very_lite"
                         app:fabSize="mini"
                         app:elevation="0dp"
@@ -691,7 +627,7 @@
                         app:layout_constraintVertical_bias="0.50" />
 
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/buttonMicLeft"
+                        android:id="@+id/buttonMicFirst"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="24dp"
@@ -701,6 +637,7 @@
                         android:focusable="true"
                         android:src="@drawable/walkie_talkie_icon"
                         android:visibility="visible"
+                        android:contentDescription="@string/title_fragment_walkie_talkie"
                         app:backgroundTint="@color/primary_very_lite"
                         app:elevation="0dp"
                         app:layout_constraintBottom_toTopOf="@+id/textButton1"
@@ -723,14 +660,15 @@
                         android:text="@string/title_fragment_walkie_talkie"
                         android:textSize="12sp"
                         android:visibility="visible"
+                        android:importantForAccessibility="no"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="@+id/buttonMicLeft"
-                        app:layout_constraintStart_toStartOf="@+id/buttonMicLeft"
+                        app:layout_constraintEnd_toEndOf="@+id/buttonMicFirst"
+                        app:layout_constraintStart_toStartOf="@+id/buttonMicFirst"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintVertical_bias="0.998" />
 
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/buttonMicRight"
+                        android:id="@+id/buttonMicSecond"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="24dp"
@@ -739,6 +677,7 @@
                         android:focusable="true"
                         android:src="@drawable/conversation_icon"
                         android:visibility="visible"
+                        android:contentDescription="@string/title_fragment_conversation"
                         app:backgroundTint="@color/primary_very_lite"
                         app:elevation="0dp"
                         app:layout_constraintBottom_toTopOf="@+id/textButton2"
@@ -761,9 +700,10 @@
                         android:text="@string/title_fragment_conversation"
                         android:textSize="12sp"
                         android:visibility="visible"
+                        android:importantForAccessibility="no"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="@+id/buttonMicRight"
-                        app:layout_constraintStart_toStartOf="@+id/buttonMicRight"
+                        app:layout_constraintEnd_toEndOf="@+id/buttonMicSecond"
+                        app:layout_constraintStart_toStartOf="@+id/buttonMicSecond"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintVertical_bias="0.998" />
 

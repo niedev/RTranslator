@@ -45,6 +45,7 @@ import nie.translator.rtranslator.bluetooth.tools.Timer;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.FileLog;
 import nie.translator.rtranslator.tools.Tools;
+import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.tools.gui.RequestDialog;
 import nie.translator.rtranslator.tools.gui.peers.GuiPeer;
 import nie.translator.rtranslator.tools.gui.peers.Listable;
@@ -323,6 +324,7 @@ public class PeersInfoFragment extends Fragment {
         discoveryDescription = view.findViewById(R.id.discoveryDescription);
         noPermissions = view.findViewById(R.id.noPermission);
         noBluetoothLe = view.findViewById(R.id.noBluetoothLe);
+        GuiTools.setDescriptionOptimizationForAccessibility(discoveryDescription);
     }
 
     @Override

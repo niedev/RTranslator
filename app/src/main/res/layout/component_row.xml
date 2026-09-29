@@ -49,6 +49,7 @@
         android:layout_marginBottom="10dp"
         android:src="@drawable/user_icon"
         android:tint="#5F5F5F"
+        android:importantForAccessibility="no"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"

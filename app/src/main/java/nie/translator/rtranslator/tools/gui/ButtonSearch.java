@@ -64,7 +64,7 @@ public class ButtonSearch extends AppCompatImageButton {
                             @Override
                             public void onAnimationEnd() {
                                 animating = false;
-                                drawableId = R.drawable.cancel_icon;
+                                setIconInfo(R.drawable.cancel_icon);
                                 // restore visible
                                 setVisible(visible, null);
                             }
@@ -81,7 +81,7 @@ public class ButtonSearch extends AppCompatImageButton {
                             @Override
                             public void onAnimationEnd() {
                                 animating = false;
-                                drawableId = R.drawable.search_icon;
+                                setIconInfo(R.drawable.search_icon);
                                 // restore visible
                                 setVisible(visible, null);
                             }
@@ -94,12 +94,22 @@ public class ButtonSearch extends AppCompatImageButton {
             } else {
                 if (this.isSearching()) {
                     setImageDrawable(getDrawable(R.drawable.cancel_icon));
-                    drawableId = R.drawable.cancel_icon;
+                    setIconInfo(R.drawable.cancel_icon);
                 } else {
                     setImageDrawable(getDrawable(R.drawable.search_icon));
-                    drawableId = R.drawable.search_icon;
+                    setIconInfo(R.drawable.search_icon);
                 }
             }
+        }
+    }
+
+    private void setIconInfo(int id){
+        drawableId = id;
+        //todo: convert the text to resource and translate it
+        if(id == R.drawable.cancel_icon){
+            setContentDescription("stop search");
+        }else{  //id == R.drawable.search_icon
+            setContentDescription("start search");
         }
     }
 

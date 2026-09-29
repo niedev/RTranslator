@@ -16,13 +16,15 @@
     *-->
 
 
+<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/primary_very_lite"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:accessibilityPaneTitle="Connection">
 
     <android.widget.Toolbar
         android:id="@+id/toolbarPairing"
@@ -33,6 +35,7 @@
         android:theme="@style/Theme.Toolbar"
         android:title=" "
         android:titleTextColor="@color/primary"
+        android:importantForAccessibility="noHideDescendants"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
@@ -54,6 +57,7 @@
         android:src="@drawable/back_arrow_icon2"
         android:tint="@color/primary_very_dark"
         android:visibility="visible"
+        android:contentDescription="back"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -88,6 +92,7 @@
         android:src="@drawable/cancel_icon"
         android:tint="@color/primary_very_dark"
         android:visibility="visible"
+        android:contentDescription="stop search"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
         app:layout_constraintEnd_toStartOf="@+id/settingsButton"
         app:layout_constraintHorizontal_bias="1.0"
@@ -102,6 +107,7 @@
         android:layout_marginEnd="8dp"
         android:backgroundTint="@android:color/transparent"
         android:tint="@color/primary_very_dark"
+        android:contentDescription="@string/title_activity_settings"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -124,6 +130,7 @@
         android:maxWidth="190dp"
         android:scrollHorizontally="true"
         android:ellipsize="end"
+
         app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
         app:layout_constraintEnd_toEndOf="@+id/toolbarPairing"
         app:layout_constraintHorizontal_bias="0"

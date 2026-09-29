@@ -157,6 +157,12 @@ public class ButtonMic extends DeactivableButton {
                     animator.animateIconToMicAndIconChange(context, this, icon);
                 }
             }
+            // change accessibility description  (//todo: convert the text to resource and translate it)
+            if(isMute){
+                setContentDescription("start microphone");
+            }else{
+                setContentDescription("stop microphone");
+            }
         } else if (state == STATE_RETURN) {
             if (oldState == STATE_NORMAL) {
                 if(fragment != null) {
@@ -176,11 +182,15 @@ public class ButtonMic extends DeactivableButton {
                 icon.setColorFilter(currentColor.iconColor.getDefaultColor(), PorterDuff.Mode.SRC_IN);
                 animator.animateIconChange(this, icon);
             }
+            // change accessibility description  (//todo: convert the text to resource and translate it)
+            setContentDescription("close text input mode");
         } else if (state == STATE_SEND) {
             // change icon animation
             Drawable icon = getDrawable(R.drawable.send_icon);
             icon.setColorFilter(currentColor.iconColor.getDefaultColor(), PorterDuff.Mode.SRC_IN);
             animator.animateIconChange(this, icon);
+            // change accessibility description  (//todo: convert the text to resource and translate it)
+            setContentDescription("send text message");
         }
     }
 
@@ -213,10 +223,12 @@ public class ButtonMic extends DeactivableButton {
                     volumeLevel = -1;
                 }
                 animator.animateMute(context, this, !animate);
-                currentColor = colorMutedActivated;   //setMute can be called only when the mic is activate
+                currentColor = colorMutedActivated;   //setMute can be called only when the mic is activated
+                setContentDescription("start microphone"); // change accessibility description  (//todo: convert the text to resource and translate it)
             } else {
                 animator.animateUnmute(context, this, !animate);
-                currentColor = colorActivated;     //setMute can be called only when the mic is activate
+                currentColor = colorActivated;     //setMute can be called only when the mic is activated
+                setContentDescription("stop microphone");  // change accessibility description  (//todo: convert the text to resource and translate it)
             }
         }
     }

@@ -51,6 +51,7 @@ import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.FileLog;
 import nie.translator.rtranslator.tools.Tools;
+import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.tools.gui.RequestDialog;
 import nie.translator.rtranslator.tools.gui.animations.CustomAnimator;
 import nie.translator.rtranslator.tools.gui.peers.GuiPeer;
@@ -338,6 +339,9 @@ public class PairingFragment extends PairingToolbarFragment {
                 }
             }
         });
+
+        GuiTools.setDescriptionOptimizationForAccessibility(discoveryDescription);
+        GuiTools.setDescriptionOptimizationForAccessibility(discoveryDescriptionBottom);
     }
 
     @Override

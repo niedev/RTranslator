@@ -20,20 +20,22 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.LocaleSpan;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.core.view.AccessibilityDelegateCompat;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
@@ -41,16 +43,19 @@ import androidx.core.view.accessibility.AccessibilityViewCommand;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
+import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.tools.CustomLocale;
+import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.voice_translation.FullScreenTextActivity;
 
 /** Is used to connect to the RecycleView, which functions as a ListView, a list of strings, which will be inserted in the ViewHolder layout and this will be inserted in the list**/
 public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int MINE = 0;
     private static final int NON_MINE = 1;
-    //private static final int PREVIEW = 2;
-    private ArrayList<GuiMessage> mResults = new ArrayList<>();
+    private ArrayList<GuiMessage> messages = new ArrayList<>();
     private Callback callback;
     private long playingMessageID = -1;
 
@@ -60,10 +65,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         this.callback = callback;
         this.playingMessageID = playingMessageID;
         if (messages != null) {
-            if (messages.size() > 0) {
+            if (!messages.isEmpty()) {
                 callback.onFirstItemAdded();
             }
-            mResults.addAll(messages);
+            this.messages.addAll(messages);
             notifyItemRangeInserted(0, messages.size() - 1);
         }
         showOriginalTranscriptionMsg = application.getSharedPreferences("default", Context.MODE_PRIVATE).getBoolean("ShowOriginalTranscriptionMsgPreference", false);
@@ -85,7 +90,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof MessageHolder) {
             MessageHolder messageHolder = (MessageHolder) holder;
-            final GuiMessage message = mResults.get(position);
+            final GuiMessage message = messages.get(position);
             View.OnClickListener playListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -102,7 +107,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemViewType(int position) {
-        GuiMessage message = mResults.get(position);
+        GuiMessage message = messages.get(position);
         if (message.isMine()) {
             return MINE;
         } else {
@@ -117,7 +122,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemCount() {
-        return mResults.size();
+        return messages.size();
     }
 
     @Override
@@ -134,19 +139,19 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if (getItemCount() == 0) {
             callback.onFirstItemAdded();
         }
-        mResults.add(message);
+        messages.add(message);
         notifyItemInserted(getItemCount() - 1);
     }
 
     public void setMessage(int index, GuiMessage message) {
-        mResults.set(index, message);
+        messages.set(index, message);
         //notifyItemRangeChanged(0, getItemCount());
         notifyItemChanged(index);
     }
 
     public int getMessageIndex(long messageID){
-        for(int i = 0; i < mResults.size(); i++){
-            if(mResults.get(i).getMessageID() == messageID){
+        for(int i = 0; i < messages.size(); i++){
+            if(messages.get(i).getMessageID() == messageID){
                 return i;
             }
         }
@@ -155,24 +160,24 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Nullable
     public GuiMessage getMessage(long messageID){
-        for(int i = 0; i < mResults.size(); i++){
-            if(mResults.get(i).getMessageID() == messageID){
-                return mResults.get(i);
+        for(int i = 0; i < messages.size(); i++){
+            if(messages.get(i).getMessageID() == messageID){
+                return messages.get(i);
             }
         }
         return null;
     }
 
     public GuiMessage getMessage(int index) {
-        return mResults.get(index);
+        return messages.get(index);
     }
 
     public int indexOf(GuiMessage message) {
-        return mResults.indexOf(message);
+        return messages.indexOf(message);
     }
 
     public ArrayList<GuiMessage> getMessages() {
-        return mResults;
+        return messages;
     }
 
     public long getPlayingMessageID() {
@@ -245,21 +250,21 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             // Gesture Detector for sighted users
             GestureDetectorCompat gestureDetector = new GestureDetectorCompat(itemView.getContext(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
-                public boolean onSingleTapConfirmed(MotionEvent e) {
+                public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
                     Toast.makeText(itemView.getContext(), "Double tap to open in full screen", Toast.LENGTH_SHORT).show();  //todo: convert the text to resource and translate it
                     return true;
                 }
 
                 @Override
-                public boolean onDoubleTap(MotionEvent e) {
+                public boolean onDoubleTap(@NonNull MotionEvent e) {
                     if(message != null) {
-                        startFullScreenTextActivity(itemView.getContext(), message.getMessage().getText());
+                        startFullScreenTextActivity(itemView.getContext(), message.getMessage().getText(), message.getContentLanguage());
                     }
                     return true;
                 }
 
                 @Override
-                public boolean onDown(MotionEvent e) {
+                public boolean onDown(@NonNull MotionEvent e) {
                     // Must return true to consume the initial touch and detect subsequent taps
                     return true;
                 }
@@ -280,7 +285,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         @Override
                         public boolean perform(@NonNull View view, @Nullable CommandArguments arguments) {
                             if(message != null) {
-                                startFullScreenTextActivity(itemView.getContext(), message.getMessage().getText());
+                                startFullScreenTextActivity(itemView.getContext(), message.getMessage().getText(), message.getContentLanguage());
                             }
                             return true;
                         }
@@ -295,6 +300,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             // Bind tts button status and listener
             setIsPlayingTTS(message.getMessageID() == playingMessageID);
             ttsButton.setOnClickListener(playListener);
+            // insert language infos in the views for accessibility
+            GuiTools.setTextLanguageInfoForAccessibility(originalTextToBeTranslated, message.getSourceLanguage());
+            GuiTools.setTextLanguageInfoForAccessibility(text, message.getContentLanguage());
         }
 
         private void setText(String originalTextToBeTranslated, String text){
@@ -321,9 +329,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    private static void startFullScreenTextActivity(Context context, String text) {
+    private static void startFullScreenTextActivity(Context context, String text, CustomLocale language) {
         Intent intent = new Intent(context, FullScreenTextActivity.class);
         intent.putExtra(FullScreenTextActivity.EXTRA_TEXT, text);
+        intent.putExtra(FullScreenTextActivity.EXTRA_LANGUAGE, language);
         context.startActivity(intent);
     }
 

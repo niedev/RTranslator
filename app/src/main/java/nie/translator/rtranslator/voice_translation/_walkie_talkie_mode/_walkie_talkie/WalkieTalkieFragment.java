@@ -19,14 +19,17 @@ package nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.LocaleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
@@ -34,11 +37,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.AccessibilityDelegateCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
+import androidx.core.view.accessibility.AccessibilityViewCommand;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
@@ -61,6 +69,7 @@ import nie.translator.rtranslator.voice_translation.VoiceTranslationService;
 
 
 public class WalkieTalkieFragment extends VoiceTranslationFragment {
+    public static final int ACCESSIBILITY_ACTIVATE_INPUTS_DELAY = 5000;
     public static final int INITIALIZE = 0;
     public static final long LONG_PRESS_THRESHOLD_MS = 700;
     private boolean isMicAutomatic = true;
@@ -111,9 +120,9 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         sound = view.findViewById(R.id.soundButton);
         microphone = view.findViewById(R.id.buttonMic);
         microphone.initialize(this, view.findViewById(R.id.leftLine), view.findViewById(R.id.centerLine), view.findViewById(R.id.rightLine));
-        leftMicrophone = view.findViewById(R.id.buttonMicLeft);
+        leftMicrophone = view.findViewById(R.id.buttonMicFirst);
         leftMicrophone.initialize(null, view.findViewById(R.id.leftLineL), view.findViewById(R.id.centerLineL), view.findViewById(R.id.rightLineL));
-        rightMicrophone = view.findViewById(R.id.buttonMicRight);
+        rightMicrophone = view.findViewById(R.id.buttonMicSecond);
         rightMicrophone.initialize(null, view.findViewById(R.id.leftLineR), view.findViewById(R.id.centerLineR), view.findViewById(R.id.rightLineR));
         leftMicLanguage = view.findViewById(R.id.textButton1);
         rightMicLanguage = view.findViewById(R.id.textButton2);
@@ -121,6 +130,87 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         description.setText(R.string.description_walkie_talkie);
         deactivateInputs(DeactivableButton.DEACTIVATED);
         //container.setVisibility(View.INVISIBLE);  //we make the UI invisible until the restore of the attributes from the service (to avoid instant changes of the UI).
+        Global globalApp = (Global) requireActivity().getApplication();
+        //Set TalkBack initial brief
+        String accessibilityBrief = getResources().getString(R.string.title_fragment_walkie_talkie) + ", from "
+                + globalApp.getFirstLanguage(true).getDisplayNameWithoutTTS() + " to " +
+                globalApp.getSecondLanguage(true).getDisplayNameWithoutTTS();  //todo: convert the text to resource and translate it
+        view.setAccessibilityPaneTitle(accessibilityBrief);
+
+        ViewCompat.setAccessibilityDelegate(
+                exitButton,
+                new AccessibilityDelegateCompat() {
+                    @Override
+                    public boolean performAccessibilityAction(
+                            @NonNull View host,
+                            int action,
+                            @Nullable Bundle args) {
+
+                        if (action ==
+                                AccessibilityNodeInfoCompat.ACTION_ACCESSIBILITY_FOCUS) {
+
+                            Log.d(
+                                    "A11Y_FOCUS",
+                                    "Accessibility focus requested on exitButton",
+                                    new Throwable("Focus request stack")
+                            );
+                        }
+
+                        return super.performAccessibilityAction(
+                                host,
+                                action,
+                                args
+                        );
+                    }
+                }
+        );
+    }
+
+    private void installToolbarAccessibilityDebug(View root) {
+        ViewCompat.setAccessibilityDelegate(
+                root,
+                new AccessibilityDelegateCompat() {
+                    @Override
+                    public boolean onRequestSendAccessibilityEvent(
+                            @NonNull ViewGroup host,
+                            @NonNull View child,
+                            @NonNull AccessibilityEvent event) {
+
+                        Log.d(
+                                "A11Y_EVENT",
+                                "child=" + getViewName(child)
+                                        + " type="
+                                        + AccessibilityEvent.eventTypeToString(
+                                        event.getEventType())
+                                        + " contentChanges="
+                                        + event.getContentChangeTypes()
+                                        + " text="
+                                        + event.getText()
+                                        + " description="
+                                        + event.getContentDescription()
+                        );
+
+                        return super.onRequestSendAccessibilityEvent(
+                                host,
+                                child,
+                                event
+                        );
+                    }
+                }
+        );
+    }
+
+    private String getViewName(View view) {
+        if (view.getId() == View.NO_ID) {
+            return view.getClass().getSimpleName();
+        }
+
+        try {
+            return getResources()
+                    .getResourceEntryName(view.getId());
+        } catch (Exception e) {
+            return view.getClass().getSimpleName();
+        }
     }
 
     @Override
@@ -196,6 +286,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         });
         microphone.setOnClickListenerForDeactivatedForMissingMicPermission(micMissingClickListener);
         microphone.setOnClickListenerForDeactivated(deactivatedClickListener);
+        setAutoMicDescriptionHandlerForAccessibility(microphone);
 
         leftMicrophone.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -220,7 +311,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                         if(leftMicrophone.getActivationStatus() == DeactivableButton.ACTIVATED){
                             if(leftMicrophone.getState() == ButtonMic.STATE_NORMAL && lastPressedLeftMic != -1){
                                 if(System.currentTimeMillis() - lastPressedLeftMic <= LONG_PRESS_THRESHOLD_MS){  //short click release
-
+                                    //we already started the recording in the ACTION_DOWN, so we do nothing here (the stop will be done in the next click in ACTION_DOWN)
                                 }else{   //long click release
                                     if(leftMicrophone.isListening()){
                                         //leftMicrophone.onVoiceEnded();
@@ -239,6 +330,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         });
         leftMicrophone.setOnClickListenerForDeactivatedForMissingMicPermission(micMissingClickListener);
         leftMicrophone.setOnClickListenerForDeactivated(deactivatedClickListener);
+        setManualMicClickListenerForAccessibility(leftMicrophone, Global.LanguageNumber.FIRST);
+        setManualMicDescriptionHandlerForAccessibility(leftMicrophone, Global.LanguageNumber.FIRST);
 
         rightMicrophone.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -280,6 +373,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         });
         rightMicrophone.setOnClickListenerForDeactivatedForMissingMicPermission(micMissingClickListener);
         rightMicrophone.setOnClickListenerForDeactivated(deactivatedClickListener);
+        setManualMicClickListenerForAccessibility(rightMicrophone, Global.LanguageNumber.SECOND);
+        setManualMicDescriptionHandlerForAccessibility(rightMicrophone, Global.LanguageNumber.SECOND);
 
         exitButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -321,18 +416,19 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                 firstLanguageSelector.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        showLanguageListDialog(1);
+                        showLanguageListDialog(Global.LanguageNumber.FIRST);
                     }
                 });
                 secondLanguageSelector.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        showLanguageListDialog(2);
+                        showLanguageListDialog(Global.LanguageNumber.SECOND);
                     }
                 });
+                Log.d("restore_attributes", "language selector listeners");
 
                 // setting of the selected languages (redundant, todo: decide if I can remove it safely)
-                walkieTalkieServiceCommunicator.getFirstLanguage(new WalkieTalkieService.LanguageListener() {
+                /*walkieTalkieServiceCommunicator.getFirstLanguage(new WalkieTalkieService.LanguageListener() {
                     @Override
                     public void onLanguage(CustomLocale language) {
                         setFirstLanguage(language);
@@ -343,7 +439,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                     public void onLanguage(CustomLocale language) {
                         setSecondLanguage(language);
                     }
-                });
+                });*/
             }
 
             @Override
@@ -380,6 +476,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                     }
                 });
                 mRecyclerView.setAdapter(mAdapter);
+                Log.d("restore_attributes", "adapter");
                 // restore microphone and sound status
                 if(isMicAutomatic) {
                     microphone.setMute(isMicMute, false);
@@ -418,18 +515,27 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                     }
                     microphone.onVoiceEnded(false);
                 }
+                Log.d("restore_attributes", "mics");
 
                 sound.setMute(isAudioMute);
                 if(isTTSError){
                     sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
                 }
+                Log.d("restore_attributes", "sound");
 
                 if(!Tools.hasPermissions(activity, Global.REQUIRED_PERMISSIONS_VOICE)){
                     deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_MIC_PERMISSION);
                 } else {
                     if (isMicActivated) {
                         if (!microphone.isMute()) {
-                            activateInputs(true);
+                            if(GuiTools.isTalkBackActive(global)) {
+                                // if talkBack is used we delay the inputs and mic activations to have the time to read the initial brief.
+                                // Only in this mode, system animation of the mic recording interrupts the initial brief, so this is necessary.
+                                // Plus a user wouldn't speak when he/she hears the initia brief, so this shouldn't be a problem.
+                                mHandler.postDelayed(() -> activateInputs(true), ACCESSIBILITY_ACTIVATE_INPUTS_DELAY);
+                            }else{
+                                activateInputs(true);
+                            }
                         } else {
                             activateInputs(false);
                         }
@@ -498,7 +604,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                 leftMicrophone.setMute(false);
                 rightMicrophone.setMute(false);
                 walkieTalkieServiceCommunicator.startManualRecognition();
-            }else{
+            }else{  //we switched from manual to automatic
                 walkieTalkieServiceCommunicator.stopManualRecognition();
                 microphone.setMute(false);
                 leftMicrophone.setMute(true);
@@ -508,14 +614,14 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
     }
 
 
-    private void showLanguageListDialog(final int languageNumber) {
+    private void showLanguageListDialog(final Global.LanguageNumber languageNumber) {
         String title = "";
         switch (languageNumber) {
-            case 1: {
+            case FIRST: {
                 title = global.getResources().getString(R.string.dialog_select_first_language);
                 break;
             }
-            case 2: {
+            case SECOND: {
                 title = global.getResources().getString(R.string.dialog_select_second_language);
                 break;
             }
@@ -523,7 +629,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
 
         final ArrayList<CustomLocale> languages = global.getLanguages(Global.RTranslatorMode.WALKIE_TALKIE_MODE, true);
         CustomLocale selectedLanguage;
-        if (languageNumber == 1) {
+        if (languageNumber == Global.LanguageNumber.FIRST) {
             selectedLanguage = global.getFirstLanguage(false);
         } else {  //languageNumber == 2
             selectedLanguage = global.getSecondLanguage(false);
@@ -534,11 +640,11 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id, CustomLocale item) {
                 if (item != null && languages.contains(item)) {
                     switch (languageNumber) {
-                        case 1: {
+                        case FIRST: {
                             setFirstLanguage(item);
                             break;
                         }
-                        case 2: {
+                        case SECOND: {
                             setSecondLanguage(item);
                             break;
                         }
@@ -575,6 +681,88 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // change language displayed
         secondLanguageSelector.setText(language.getDisplayNameWithoutTTS());
         rightMicLanguage.setText(language.getDisplayNameWithoutTTS());
+    }
+
+    private void setManualMicClickListenerForAccessibility(ButtonMic buttonMic, Global.LanguageNumber languageNumber){
+        // Accessibility click listener for TalkBack users (overwrites the default touch listener when the user uses TalkBack)
+        // That's because onTouchListener doesn't work with Talkback (only onClickListener does).
+        ViewCompat.replaceAccessibilityAction(
+                buttonMic,
+                AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
+                null,
+                new AccessibilityViewCommand() {
+                    @Override
+                    public boolean perform(@NonNull View view, @Nullable CommandArguments arguments) {
+                        if (buttonMic.getActivationStatus() == DeactivableButton.ACTIVATED && buttonMic.getState() == ButtonMic.STATE_NORMAL) {
+                            if(isMicAutomatic) {
+                                switchMicMode(false);
+                            }
+                            if(!buttonMic.isListening()){
+                                if(languageNumber == Global.LanguageNumber.FIRST) {
+                                    walkieTalkieServiceCommunicator.startRecognizingFirstLanguage();
+                                }else{
+                                    walkieTalkieServiceCommunicator.startRecognizingSecondLanguage();
+                                }
+                            }else{
+                                if(languageNumber == Global.LanguageNumber.FIRST) {
+                                    walkieTalkieServiceCommunicator.stopRecognizingFirstLanguage();
+                                }else{
+                                    walkieTalkieServiceCommunicator.stopRecognizingSecondLanguage();
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                }
+        );
+    }
+
+    private void setManualMicDescriptionHandlerForAccessibility(ButtonMic buttonMic, Global.LanguageNumber languageNumber){
+        // Intercepts TalkBack interaction with leftMicLanguage and changes the description based on the current selected language and mic status.
+        ViewCompat.setAccessibilityDelegate(buttonMic, new AccessibilityDelegateCompat() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(@NonNull View host, @NonNull AccessibilityNodeInfoCompat info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                // Grab the current language name
+                String language;
+                if(languageNumber == Global.LanguageNumber.FIRST){
+                    language = global.getFirstLanguage(true).getDisplayNameWithoutTTS();
+                }else{
+                    language = global.getSecondLanguage(true).getDisplayNameWithoutTTS();
+                }
+
+                // Grab whatever text is currently inside the EditText
+                CharSequence description;
+                if(buttonMic.isMute() || !buttonMic.isListening()){
+                    description = "start manual recognition of "+language;   //todo: convert the text to resource and translate it
+                }else{  //buttonMic is listening  (so also not mute)
+                    description = "stop manual recognition of "+language;   //todo: convert the text to resource and translate it
+                }
+
+                // Tell TalkBack to read this specific description
+                info.setText(description);
+            }
+        });
+    }
+
+    private void setAutoMicDescriptionHandlerForAccessibility(ButtonMic buttonMic){
+        // Intercepts TalkBack interaction with the passed buttonMic and changes the description based on the current selected language and mic status.
+        ViewCompat.setAccessibilityDelegate(buttonMic, new AccessibilityDelegateCompat() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(@NonNull View host, @NonNull AccessibilityNodeInfoCompat info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                // Grab whatever text is currently inside the EditText
+                CharSequence description;
+                if(buttonMic.isMute()){
+                    description = "start automatic recognition";   //todo: convert the text to resource and translate it
+                }else{
+                    description = "stop manual recognition";   //todo: convert the text to resource and translate it
+                }
+
+                // Tell TalkBack to read this specific description
+                info.setText(description);
+            }
+        });
     }
 
 

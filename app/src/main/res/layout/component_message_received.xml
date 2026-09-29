@@ -125,7 +125,8 @@
                     android:visibility="visible"
                     app:rippleColor="@color/gray"
                     app:tint="@color/very_very_dark_gray"
-                    android:layout_gravity="center_vertical"/>
+                    android:layout_gravity="center_vertical"
+                    android:importantForAccessibility="no"/>
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>

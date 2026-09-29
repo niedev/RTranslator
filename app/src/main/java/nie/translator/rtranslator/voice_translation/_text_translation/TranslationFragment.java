@@ -12,7 +12,10 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.text.Editable;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.style.LocaleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,15 +32,17 @@ import android.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.widget.NestedScrollView;
+import androidx.core.view.AccessibilityDelegateCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
@@ -148,8 +153,8 @@ public class TranslationFragment extends Fragment {
         secondLanguageSelector = view.findViewById(R.id.second_lang_selector);
         invertLanguagesButton = view.findViewById(R.id.invertLanguages);
         translateButton = view.findViewById(R.id.buttonTranslate);
-        walkieTalkieButton = view.findViewById(R.id.buttonMicLeft);
-        conversationButton = view.findViewById(R.id.buttonMicRight);
+        walkieTalkieButton = view.findViewById(R.id.buttonMicFirst);
+        conversationButton = view.findViewById(R.id.buttonMicSecond);
         walkieTalkieButtonSmall = view.findViewById(R.id.buttonWalkieTalkieSmall);
         conversationButtonSmall = view.findViewById(R.id.buttonConversationSmall);
         walkieTalkieButtonText = view.findViewById(R.id.textButton1);
@@ -217,8 +222,8 @@ public class TranslationFragment extends Fragment {
         conversationButtonSmall.setOnClickListener(conversationButtonListener);
         translateListener = new Translator.TranslateListener() {
             @Override
-            public void onTranslatedText(String textToTranslate, String text, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale languageOfText) {
-                outputText.setText(text);
+            public void onTranslatedText(String textToTranslate, String translatedText, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale inputLanguage, CustomLocale outputLanguage) {
+                outputText.setText(translatedText);
                 if(isFinal){
                     //eventually we show result type text
                     if(resultType != ResultType.NORMAL){
@@ -350,9 +355,13 @@ public class TranslationFragment extends Fragment {
         fullScreenOutputButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startFullScreenTextActivity(outputText.getText().toString());
+                startFullScreenTextActivity(outputText.getText().toString(), global.getSecondTextLanguage(true));
             }
         });
+        // accessibility initialization
+        setTextLanguageInfoForAccessibility(inputText, Global.LanguageNumber.FIRST);
+        setTextLanguageInfoForAccessibility(outputText, Global.LanguageNumber.SECOND);
+        setTextLanguageInfoForAccessibility(synonymsText, Global.LanguageNumber.SECOND);
     }
 
     public void onStart() {
@@ -378,7 +387,8 @@ public class TranslationFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 if(global.getTranslator() != null){
-                    global.getTranslator().setLastInputText(new GuiMessage(new Message(global, s.toString()), true, true));
+                    CustomLocale language = global.getFirstTextLanguage(true);
+                    global.getTranslator().setLastInputText(new GuiMessage(new Message(global, s.toString()), language, language, true, true));
                 }
                 if(isInputEmpty != s.toString().isEmpty()){  //the input editText transitioned from empty to not empty or vice versa
                     isInputEmpty = s.toString().isEmpty();
@@ -519,13 +529,13 @@ public class TranslationFragment extends Fragment {
         firstLanguageSelector.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showLanguageListDialog(1);
+                showLanguageListDialog(Global.LanguageNumber.FIRST);
             }
         });
         secondLanguageSelector.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showLanguageListDialog(2);
+                showLanguageListDialog(Global.LanguageNumber.SECOND);
             }
         });
         invertLanguagesButton.setOnClickListener(new View.OnClickListener() {
@@ -841,14 +851,14 @@ public class TranslationFragment extends Fragment {
         }
     }
 
-    private void showLanguageListDialog(final int languageNumber) {
+    private void showLanguageListDialog(final Global.LanguageNumber languageNumber) {
         String title = "";
         switch (languageNumber) {
-            case 1: {
+            case FIRST: {
                 title = global.getResources().getString(R.string.dialog_select_first_language);
                 break;
             }
-            case 2: {
+            case SECOND: {
                 title = global.getResources().getString(R.string.dialog_select_second_language);
                 break;
             }
@@ -856,7 +866,7 @@ public class TranslationFragment extends Fragment {
 
         final ArrayList<CustomLocale> languages = global.getTranslatorLanguages(Global.RTranslatorMode.TEXT_TRANSLATION_MODE, true);
         CustomLocale selectedLanguage;
-        if (languageNumber == 1) {
+        if (languageNumber == Global.LanguageNumber.FIRST) {
             selectedLanguage = global.getFirstTextLanguage(false);
         } else {
             selectedLanguage = global.getSecondTextLanguage(false);
@@ -867,11 +877,11 @@ public class TranslationFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id, CustomLocale item) {
                 if (item != null && languages.contains(item)) {
                     switch (languageNumber) {
-                        case 1: {
+                        case FIRST: {
                             setFirstLanguage(item);
                             break;
                         }
-                        case 2: {
+                        case SECOND: {
                             setSecondLanguage(item);
                             break;
                         }
@@ -959,9 +969,10 @@ public class TranslationFragment extends Fragment {
         }
     }
 
-    private void startFullScreenTextActivity(String text) {
+    private void startFullScreenTextActivity(String text, CustomLocale language) {
         Intent intent = new Intent(activity, FullScreenTextActivity.class);
         intent.putExtra(FullScreenTextActivity.EXTRA_TEXT, text);
+        intent.putExtra(FullScreenTextActivity.EXTRA_LANGUAGE, language);
         startActivity(intent);
     }
 
@@ -987,5 +998,41 @@ public class TranslationFragment extends Fragment {
 
     public int getActionButtonBottomMargin() {
         return actionButtonBottomMargin;
+    }
+
+    private void setTextLanguageInfoForAccessibility(View view, Global.LanguageNumber languageNumber){
+        // Intercepts TalkBack interaction with the passed view and adds the language info to the text read by it.
+        // This way, if the system TTS supports the language, TalkBack with read it with that language (otherwise it will use the default system language).
+        ViewCompat.setAccessibilityDelegate(view, new AccessibilityDelegateCompat() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(@NonNull View host, @NonNull AccessibilityNodeInfoCompat info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+
+                // Grab the current language
+                Locale language;
+                if(languageNumber == Global.LanguageNumber.FIRST) {
+                    language = global.getFirstTextLanguage(true).getLocale();
+                } else {
+                    language = global.getSecondTextLanguage(true).getLocale();
+                }
+
+                // Grab whatever text is currently inside the EditText
+                CharSequence currentText = info.getText();
+
+                if (currentText != null && currentText.length() > 0) {
+                    SpannableString accessibleText = new SpannableString(currentText);
+
+                    // Tell TalkBack to read this specific node in the source language
+                    accessibleText.setSpan(
+                            new LocaleSpan(language),
+                            0,
+                            accessibleText.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    );
+
+                    info.setText(accessibleText);
+                }
+            }
+        });
     }
 }

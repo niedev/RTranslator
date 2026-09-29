@@ -64,6 +64,16 @@ import nie.translator.rtranslator.voice_translation.neural_networks.voice.Record
 
 
 public class Global extends Application implements DefaultLifecycleObserver {
+    public enum RTranslatorMode {
+        TEXT_TRANSLATION_MODE,
+        WALKIE_TALKIE_MODE,
+        CONVERSATION_MODE
+    }
+
+    public enum LanguageNumber {
+        FIRST,
+        SECOND
+    }
     public static final boolean ONLY_TEXT_TRANSLATION_MODE = false;
     public static final boolean USE_EXTERNAL_MEMORY_FOR_RESOURCES = false;
 
@@ -76,12 +86,6 @@ public class Global extends Application implements DefaultLifecycleObserver {
     public static final String[] REQUIRED_PERMISSIONS_VOICE = new String[]{
             Manifest.permission.RECORD_AUDIO,
     };
-
-    public enum RTranslatorMode {
-        TEXT_TRANSLATION_MODE,
-        WALKIE_TALKIE_MODE,
-        CONVERSATION_MODE
-    }
     private ArrayList<CustomLocale> languages = new ArrayList<>();
     private ArrayList<CustomLocale> translatorLanguages = new ArrayList<>();
     private ArrayList<Translator.MozillaLanguageInfo> mozillaLanguages = new ArrayList<>();

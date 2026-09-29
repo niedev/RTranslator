@@ -18,6 +18,7 @@ package nie.translator.rtranslator.voice_translation._conversation_mode._convers
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -151,12 +152,15 @@ public class ConversationFragment extends PairingToolbarFragment {
 
             @Override
             public void onPageSelected(int position) {
+                updateTabSelected(position);
+                Log.i("pager", "selected page: "+position);
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
             }
         });
+        updateTabSelected(0);
 
         exitButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -190,6 +194,14 @@ public class ConversationFragment extends PairingToolbarFragment {
                 }
             }
         });
+    }
+
+    private void updateTabSelected(int selectedPosition) {
+        boolean conversationSelected = selectedPosition == 0;
+        boolean connectionSelected = selectedPosition == 1;
+
+        tabConversationContainer.setSelected(conversationSelected);
+        tabConnectionContainer.setSelected(connectionSelected);
     }
 
     public Fragment getCurrentFragment() {

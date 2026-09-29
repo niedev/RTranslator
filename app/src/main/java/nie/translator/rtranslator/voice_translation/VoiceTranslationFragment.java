@@ -36,6 +36,7 @@ import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.gui.DeactivableButton;
+import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.tools.gui.MicrophoneComunicable;
 import nie.translator.rtranslator.tools.gui.messages.MessagesAdapter;
 
@@ -61,6 +62,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
         mRecyclerView = view.findViewById(R.id.recycler_view);
         descriptionContainer = view.findViewById(R.id.descriptionContainer);
         description = view.findViewById(R.id.description);
+        GuiTools.setDescriptionOptimizationForAccessibility(description);
     }
 
     @Override
