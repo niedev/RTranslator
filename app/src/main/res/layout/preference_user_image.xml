@@ -31,6 +31,7 @@
         android:scaleType="fitXY"
         android:src="@drawable/user_icon"
         android:tint="@color/primary_very_dark"
+        android:contentDescription="@string/title_image_selector"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

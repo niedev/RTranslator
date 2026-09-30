@@ -86,7 +86,8 @@
             android:name="nie.translator.rtranslator.settings.SettingsActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.Settings" />
+            android:theme="@style/Theme.Settings"
+            android:label="@string/title_activity_settings" />
         <activity
             android:name="nie.translator.rtranslator.access.AccessActivity"
             android:exported="true"

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription and tatoeba title) -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:accessibilityPaneTitle="@string/preference_title_models_manager">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"
@@ -25,7 +27,8 @@
                 android:text="@string/translation_model"
                 android:fontFamily="sans-serif-medium"
                 android:textColor="@color/accent"
-                android:layout_marginStart="16dp"/>
+                android:layout_marginStart="16dp"
+                android:accessibilityHeading="true"/>
             <worker8.com.github.radiogroupplus.RadioGroupPlus
                 android:id="@+id/model_radios"
                 android:layout_width="match_parent"
@@ -38,7 +41,9 @@
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:screenReaderFocusable="true"
+                        android:focusable="false">
 
                         <RadioButton
                             android:id="@+id/radioMozilla"
@@ -48,6 +53,7 @@
                             android:layout_marginTop="16dp"
                             android:layout_marginEnd="16dp"
                             android:layout_marginBottom="16dp"
+                            android:contentDescription="@string/performance"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.0"
@@ -65,6 +71,7 @@
                             android:textColor="@color/very_very_dark_gray"
                             android:textSize="18sp"
                             android:textStyle="bold"
+                            android:focusable="false"
                             app:layout_constraintBottom_toBottomOf="@+id/radioMozilla"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.0"
@@ -80,6 +87,7 @@
                             android:layout_marginEnd="16dp"
                             android:layout_marginBottom="8dp"
                             android:text="@string/description_model_mozilla"
+                            android:focusable="false"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.0"
@@ -93,6 +101,7 @@
                             android:layout_height="42dp"
                             android:layout_marginEnd="24dp"
                             android:layout_marginBottom="2dp"
+                            android:contentDescription="Manage performance mode languages"
                             app:layout_constraintBottom_toBottomOf="@+id/titleMozilla"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="1.0"
@@ -116,6 +125,7 @@
                             android:layout_marginTop="16dp"
                             android:layout_marginEnd="16dp"
                             android:layout_marginBottom="16dp"
+                            android:contentDescription="@string/quality"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.0"
@@ -148,6 +158,7 @@
                             android:layout_marginTop="16dp"
                             android:layout_marginEnd="16dp"
                             android:layout_marginBottom="16dp"
+                            android:contentDescription="@string/versatility"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.0"
@@ -174,7 +185,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:screenReaderFocusable="true"
+                android:focusable="false">
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -182,7 +195,8 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="8dp"
                     android:layout_marginTop="24dp"
-                    android:layout_marginBottom="16dp">
+                    android:layout_marginBottom="16dp"
+                    android:focusable="false">
 
                     <TextView
                         android:id="@+id/titleMozillaForVoice"
@@ -193,6 +207,8 @@
                         android:textColor="@color/very_very_dark_gray"
                         android:textSize="18sp"
                         android:textStyle="bold"
+                        android:focusable="false"
+                        android:labelFor="@id/switchMozillaForVoiceModes"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -206,6 +222,7 @@
                         android:layout_marginTop="8dp"
                         android:layout_weight="2"
                         android:text="@string/description_mozilla_voice"
+                        android:focusable="false"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -228,11 +245,14 @@
                 android:text="@string/speech_recognition_model"
                 android:fontFamily="sans-serif-medium"
                 android:textColor="@color/accent"
-                android:layout_marginStart="16dp"/>
+                android:layout_marginStart="16dp"
+                android:accessibilityHeading="true"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:screenReaderFocusable="true"
+                android:focusable="false">
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -240,7 +260,8 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="8dp"
                     android:layout_marginTop="24dp"
-                    android:layout_marginBottom="16dp">
+                    android:layout_marginBottom="16dp"
+                    android:focusable="false">
 
                     <TextView
                         android:id="@+id/titleWhisperReducedRam"
@@ -251,6 +272,8 @@
                         android:textColor="@color/very_very_dark_gray"
                         android:textSize="18sp"
                         android:textStyle="bold"
+                        android:focusable="false"
+                        android:labelFor="@id/switchWhisperReducedRam"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -264,6 +287,7 @@
                         android:layout_marginTop="8dp"
                         android:layout_weight="2"
                         android:text="@string/description_whisper_ram_reduction"
+                        android:focusable="false"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -286,16 +310,20 @@
                 android:text="@string/translation_enhancements"
                 android:fontFamily="sans-serif-medium"
                 android:textColor="@color/accent"
-                android:layout_marginStart="16dp"/>
+                android:layout_marginStart="16dp"
+                android:accessibilityHeading="true"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:screenReaderFocusable="true"
+                android:focusable="false">
                 <nie.translator.rtranslator.tools.gui.ResourceManagerView
                     android:id="@+id/resourceTatoeba"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
+                    android:focusable="false"
                     app:modelDescription="@string/description_tatoeba"
                     app:modelSize="596"
                     app:modelTitle="Tatoeba"
@@ -307,17 +335,21 @@
                     android:layout_marginStart="0dp"
                     android:layout_marginEnd="16dp"
                     android:layout_marginTop="16dp"
-                    android:layout_marginBottom="16dp"/>
+                    android:layout_marginBottom="16dp"
+                    android:contentDescription="Tatoeba"/>
             </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:screenReaderFocusable="true"
+                android:focusable="false">
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
-                    android:layout_marginStart="16dp">
+                    android:layout_marginStart="16dp"
+                    android:focusable="false">
 
                     <TextView
                         android:id="@+id/titleResource"
@@ -329,6 +361,8 @@
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="@color/very_very_dark_gray"
+                        android:focusable="false"
+                        android:labelFor="@id/switchTranslationDict"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.0"
@@ -344,6 +378,7 @@
                         android:layout_marginEnd="8dp"
                         android:layout_marginBottom="8dp"
                         android:text="@string/description_dictionaries"
+                        android:focusable="false"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.0"

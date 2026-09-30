@@ -195,10 +195,12 @@ public class ResourceManagerView extends ConstraintLayout {
                                 @Override
                                 public void onAnimationEnd() {
                                     animation = null;
+                                    GuiTools.requestAccessibilityFocus(pauseIcon);
                                 }
                             });
                         } else if (oldState == State.PAUSED) {
                             applyStateDownloading();
+                            GuiTools.requestAccessibilityFocus(pauseIcon);
                         }
                         if (errorIcon.getVisibility() != INVISIBLE) {   //we eventually remove the error
                             errorIcon.setVisibility(INVISIBLE);
@@ -207,6 +209,7 @@ public class ResourceManagerView extends ConstraintLayout {
                     case PAUSED:
                         if (oldState == State.DOWNLOADING) {
                             applyStatePaused();
+                            GuiTools.requestAccessibilityFocus(playIcon);
                         }
                         break;
                     case EMPTY:
@@ -221,6 +224,7 @@ public class ResourceManagerView extends ConstraintLayout {
                                 @Override
                                 public void onAnimationEnd() {
                                     animation = null;
+                                    GuiTools.requestAccessibilityFocus(buttonDownload);
                                 }
                             });
                         }
@@ -234,6 +238,7 @@ public class ResourceManagerView extends ConstraintLayout {
                                 @Override
                                 public void onAnimationEnd() {
                                     animation = null;
+                                    GuiTools.requestAccessibilityFocus(buttonDelete);
                                 }
                             });
                         }

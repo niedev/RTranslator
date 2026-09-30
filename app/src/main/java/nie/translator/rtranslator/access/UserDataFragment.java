@@ -48,7 +48,8 @@ public class UserDataFragment extends Fragment {
     private Button buttonConfirm;
     private EditText inputName;
     private TextInputLayout inputNameLayout;
-    private CheckBox privacyTerms;
+    private CheckBox privacyTermsCheck;
+    private TextView privacyTermsText;
     //private CheckBox ageTerms;
     private AccessActivity activity;
     private Global global;
@@ -76,8 +77,9 @@ public class UserDataFragment extends Fragment {
         inputName = view.findViewById(R.id.input_name);
         inputNameLayout = view.findViewById(R.id.input_name_layout);
         //this.ageTerms = view.findViewById(R.id.checkBoxAge);
-        this.privacyTerms = view.findViewById(R.id.checkBoxPrivacy);
-        this.privacyTerms.setMovementMethod(LinkMovementMethod.getInstance());
+        this.privacyTermsCheck = view.findViewById(R.id.checkBoxPrivacy);
+        this.privacyTermsText = view.findViewById(R.id.textPrivacy);
+        this.privacyTermsText.setMovementMethod(LinkMovementMethod.getInstance());
         buttonSelectTTS = view.findViewById(R.id.buttonChangeTTS);
         ttsDescription = view.findViewById(R.id.ttsDescription);
         ttsDescription.setMovementMethod(LinkMovementMethod.getInstance());
@@ -129,7 +131,7 @@ public class UserDataFragment extends Fragment {
                     error = true;
                     showAgeTermsError();
                 }*/
-                if (!privacyTerms.isChecked() && !error) {
+                if (!privacyTermsCheck.isChecked() && !error) {
                     error = true;
                     showPrivacyTermsError();
                 }

@@ -16,12 +16,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
+import androidx.core.view.AccessibilityDelegateCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
@@ -68,6 +72,9 @@ public class ModelManagerFragment extends Fragment {
     private DownloadManager.Callback downloadManagerCallback;
     // gui
     private RadioGroupPlus radioGroup;
+    private RadioButton radioMozilla;
+    private RadioButton radioHy;
+    private RadioButton radioMadlad;
     private ResourceManagerView hyManagerView;
     private ResourceManagerView madladManagerView;
     private ResourceManagerView tatoebaManagerView;
@@ -97,6 +104,9 @@ public class ModelManagerFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         radioGroup = view.findViewById(R.id.model_radios);
+        radioMozilla = view.findViewById(R.id.radioMozilla);
+        radioHy = view.findViewById(R.id.radioHY);
+        radioMadlad = view.findViewById(R.id.radioMadlad);
         hyManagerView = view.findViewById(R.id.modelHy);
         madladManagerView = view.findViewById(R.id.modelMadlad);
         tatoebaManagerView = view.findViewById(R.id.resourceTatoeba);

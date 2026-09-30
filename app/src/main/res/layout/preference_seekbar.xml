@@ -15,6 +15,7 @@
     * limitations under the License.
     *-->
 
+<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -45,6 +46,7 @@
         android:text="@string/preference_title_mic_sensitivity"
         android:textColor="@android:color/black"
         android:textSize="16sp"
+        android:labelFor="@id/buttonRestore"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline11"
         app:layout_constraintHorizontal_bias="0"
@@ -82,6 +84,7 @@
         android:paddingBottom="12dp"
         android:paddingStart="8dp"
         android:paddingEnd="14dp"
+        android:contentDescription="reset"
         app:layout_constraintBottom_toBottomOf="@+id/seekBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"

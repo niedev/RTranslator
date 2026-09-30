@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:screenReaderFocusable="true"
+    android:focusable="false">
 
     <nie.translator.rtranslator.tools.gui.AutoScrollTextView
         android:id="@+id/titleResource"
@@ -16,6 +19,7 @@
         android:textColor="@color/very_very_dark_gray"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -31,6 +35,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:text="Middleweight model, it has the best quality, comparable to Deepseek."
+        android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -68,7 +73,8 @@
         app:layout_constraintStart_toEndOf="@+id/titleResource"
         app:layout_constraintTop_toTopOf="@+id/titleResource"
         android:src="@drawable/download_icon"
-        android:tint="@color/very_very_dark_gray" />
+        android:tint="@color/very_very_dark_gray"
+        android:contentDescription="start download"/>
 
     <ImageView
         android:id="@+id/buttonDelete"
@@ -78,6 +84,7 @@
         android:tint="@color/very_very_dark_gray"
         android:visibility="invisible"
         android:padding="10dp"
+        android:contentDescription="delete resource"
         app:layout_constraintBottom_toBottomOf="@+id/titleResource"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -90,8 +97,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
-
         android:text="2 GB"
+        android:focusable="false"
         app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="@+id/titleResource"
         app:layout_constraintEnd_toStartOf="@+id/buttonDownload"
@@ -105,6 +112,7 @@
         android:layout_height="16dp"
         android:visibility="invisible"
         android:tint="@color/very_very_dark_gray"
+        android:contentDescription="pause"
         app:layout_constraintBottom_toBottomOf="@+id/progressBarDownload"
         app:layout_constraintEnd_toEndOf="@+id/progressBarDownload"
         app:layout_constraintStart_toStartOf="@+id/progressBarDownload"
@@ -117,6 +125,7 @@
         android:layout_height="16dp"
         android:tint="@color/very_very_dark_gray"
         android:visibility="invisible"
+        android:contentDescription="resume"
         app:layout_constraintBottom_toBottomOf="@+id/progressBarDownload"
         app:layout_constraintEnd_toEndOf="@+id/progressBarDownload"
         app:layout_constraintStart_toStartOf="@+id/progressBarDownload"
@@ -135,6 +144,7 @@
         app:layout_constraintTop_toTopOf="@+id/titleResource"
         android:src="@drawable/error_icon"
         android:tint="@color/red"
-        android:visibility="invisible"/>
+        android:visibility="invisible"
+        android:contentDescription="download error"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

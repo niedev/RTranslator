@@ -24,6 +24,7 @@
             android:layout_marginBottom="16dp"
             android:tint="@color/primary_very_dark"
             android:src="@drawable/mic"
+            android:focusable="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

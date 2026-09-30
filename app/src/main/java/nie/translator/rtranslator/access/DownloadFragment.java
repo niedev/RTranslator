@@ -121,9 +121,7 @@ public class DownloadFragment extends Fragment {
                     boolean success = downloader.pauseAllDownloads();
                     if(success) {
                         //we change the icon and tag
-                        pauseButton.setImageResource(R.drawable.play_icon);
-                        //pauseButton.setImageDrawable(global.getResources().getDrawable(R.drawable.play_icon, null));
-                        pauseButton.setTag("iconPlay");
+                        setPauseButtonStatus(true);
                     }
                 }else{
                     startAllDownloads();
@@ -239,8 +237,7 @@ public class DownloadFragment extends Fragment {
                             DownloadInfo pausedDownload = downloadStatus.get(index).downloadsInfo[firstIncompleteIndex];
                             downloadManagerCallback.onProgress(downloadStatus.get(index), pausedDownload, downloadStatus.get(index).getCurrentProgress(), pausedDownload.getCurrentProgress(), pausedDownload.isUnzipping(), pausedDownload.isTestingIntegrity());
                             //we change the pause icon and tag
-                            pauseButton.setImageResource(R.drawable.play_icon);
-                            pauseButton.setTag("iconPlay");
+                            setPauseButtonStatus(true);
                         }else{
                             // the download group is completed even if for some errors the group is not marked as completed
                             downloadManagerCallback.onAllCompleted(downloadStatus.get(index));
@@ -267,9 +264,20 @@ public class DownloadFragment extends Fragment {
             transferErrorText.setVisibility(View.GONE);
             retryButton.setVisibility(View.VISIBLE);
             //we change the icon and tag of the pauseButton
+            setPauseButtonStatus(true);
+        });
+    }
+
+    private void setPauseButtonStatus(boolean paused){
+        if(paused){
             pauseButton.setImageResource(R.drawable.play_icon);
             pauseButton.setTag("iconPlay");
-        });
+            pauseButton.setContentDescription("resume");  //todo: convert the text to resource and translate it
+        }else{
+            pauseButton.setImageResource(R.drawable.pause_icon);
+            pauseButton.setTag("iconPause");
+            pauseButton.setContentDescription("pause");  //todo: convert the text to resource and translate it
+        }
     }
 
     private void retryCurrentDownload(){
@@ -279,8 +287,6 @@ public class DownloadFragment extends Fragment {
     private void startAllDownloads(){
         downloader.startAllDownloads();
         //we change the icon and tag
-        pauseButton.setImageResource(R.drawable.pause_icon);
-        //pauseButton.setImageDrawable(global.getResources().getDrawable(R.drawable.cancel_icon, null));
-        pauseButton.setTag("iconPause");
+        setPauseButtonStatus(false);
     }
 }

@@ -15,6 +15,7 @@
     * limitations under the License.
     *-->
 
+<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/constraintLayoutParent"
@@ -29,6 +30,8 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="12dp"
         android:layout_marginBottom="12dp"
+        android:contentDescription="@string/hint_user_name"
+        android:labelFor="@id/editNameButton"
         app:cardCornerRadius="24dp"
         app:cardBackgroundColor="@color/primary_very_dark"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -68,6 +71,7 @@
                 android:backgroundTint="@android:color/transparent"
                 android:src="@drawable/edit_icon"
                 android:tint="@color/accent_white"
+                android:contentDescription="edit"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1"

@@ -27,6 +27,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -234,6 +235,19 @@ public class GuiTools {
 
                     info.setText(accessibleText);
                 }
+            }
+        });
+    }
+
+    public static void requestAccessibilityFocus(View view) {
+        view.post(() -> {
+            if (ViewCompat.isAttachedToWindow(view)
+                    && view.getVisibility() == View.VISIBLE) {
+
+                view.performAccessibilityAction(
+                        AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS,
+                        null
+                );
             }
         });
     }

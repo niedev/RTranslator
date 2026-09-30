@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -12,7 +13,6 @@
         android:layout_height="match_parent"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
-        android:focusableInTouchMode="true"
         android:visibility="visible">
 
         <TextView
@@ -135,6 +135,7 @@
             android:tint="@color/dark_gray"
             android:visibility="gone"
             android:padding="16dp"
+            android:contentDescription="@string/retry"
             app:layout_constraintBottom_toTopOf="@+id/progress_description"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.498"
@@ -153,6 +154,7 @@
             android:src="@drawable/pause_icon"
             android:tint="@color/primary_dark"
             android:padding="12dp"
+            android:contentDescription="pause"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/progress_numbers"
