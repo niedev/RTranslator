@@ -120,13 +120,20 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
+
         <uses-library
             android:name="com.sec.android.app.multiwindow"
             android:required="false" />
-        <!--<receiver android:name=".access.DownloadReceiver" android:exported="true">
+
+        <receiver
+            android:name=".widgets.WalkieTalkieWidgetProvider"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-        </receiver>-->
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_walkie_talkie_info" />
+        </receiver>
     </application>
 </manifest>

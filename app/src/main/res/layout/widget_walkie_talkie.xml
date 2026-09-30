@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/primary_very_lite"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="60dp"
+        android:contentDescription="Start WalkieTalkie"
+        android:src="@drawable/walkie_talkie_icon" />
+
+</LinearLayout>

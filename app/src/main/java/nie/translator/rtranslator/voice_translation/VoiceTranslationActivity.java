@@ -131,11 +131,37 @@ public class VoiceTranslationActivity extends GeneralActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Update the original intent with the new one.
+        // This is used when this activity is launched when it is already running.
+        // If we don't set the newIntent, the new one passed in the launch is ignored.
+        setIntent(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         // when we return to the app's gui based on the service that was saved in the last closure we choose which fragment to start
-        SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
-        int fragment = sharedPreferences.getInt("fragment", DEFAULT_FRAGMENT);
+        // or we start the fragment indicated by an eventual intent received (usually by the widget but also from any third party way).
+        int fragment = DEFAULT_FRAGMENT;
+        boolean startedByIntent = false;
+        Intent intent = getIntent();
+        if(intent != null && intent.hasExtra("start_mode")) {
+            if("walkieTalkie".equals(intent.getStringExtra("start_mode"))){
+                fragment = WALKIE_TALKIE_FRAGMENT;
+                startedByIntent = true;
+                /* We remove the extra from the activity intent.
+                 * This is because otherwise, the next time we launch this Activity without an intent, this intent will be used again and again.
+                 * For this reason, the intent request must be executed only one time for each time it is passed from outside.
+                 */
+                intent.removeExtra("start_mode");
+            }
+        }
+        if(!startedByIntent){
+            SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+            fragment = sharedPreferences.getInt("fragment", DEFAULT_FRAGMENT);
+        }
         setFragment(fragment, fragment == WALKIE_TALKIE_FRAGMENT || fragment == PAIRING_FRAGMENT);
         if(getResources() != null) {
             config = getResources().getConfiguration();
@@ -179,6 +205,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 break;
             }
             case CONVERSATION_FRAGMENT: {
+                // possible stop of the WalkieTalkie Service
+                stopWalkieTalkieService();
                 // possible setting of the fragment
                 if (getCurrentFragmentId() != CONVERSATION_FRAGMENT && global.getBluetoothCommunicator() != null) {
                     ConversationFragment conversationFragment = new ConversationFragment();
@@ -202,6 +230,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 break;
             }
             case WALKIE_TALKIE_FRAGMENT: {
+                // possible stop of the Conversation Service
+                stopConversationService();
                 // possible setting of the fragment
                 if (getCurrentFragmentId() != WALKIE_TALKIE_FRAGMENT) {
                     if (Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_VOICE) || !requestPermission) {
