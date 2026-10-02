@@ -55,6 +55,47 @@
     <string name="no">No</string>
     <string name="yes">Sì</string>
     <string name="general">Generale</string>
+    <string name="edit">Modifica</string>
+    <string name="back">Indietro</string>
+    <string name="pause">Pausa</string>
+    <string name="resume">Riprendi</string>
+    <string name="offline">Offline</string>
+    <string name="reset">Reimposta</string>
+    <string name="options">Opzioni</string>
+    <string name="from">da</string>
+    <string name="to">a</string>
+
+    <string name="description_button_tts_manual">Lettura manuale dei messaggi</string>
+    <string name="description_button_tts_auto">Lettura automatica dei messaggi</string>
+    <string name="description_stop_search">Interrompi ricerca</string>
+    <string name="description_start_search">Avvia ricerca</string>
+    <string name="description_checkbox_privacy">Accetta l\'informativa sulla privacy</string>
+    <string name="description_disconnect_peer">Disconnetti dispositivo</string>
+    <string name="description_chat_tab">Scheda chat</string>
+    <string name="description_connection_tab">Scheda connessione</string>
+    <string name="description_switch_languages">Inverti lingue</string>
+    <string name="description_copy_input_text">Copia testo inserito</string>
+    <string name="description_copy_translated_text">Copia testo tradotto</string>
+    <string name="description_clear_text">Cancella testo</string>
+    <string name="description_text_fullscreen">Testo tradotto a schermo intero</string>
+    <string name="description_start_microphone">Attiva microfono</string>
+    <string name="description_stop_microphone">Disattiva microfono</string>
+    <string name="description_close_text_mode">Chiudi modalità inserimento testo</string>
+    <string name="description_send">Invia messaggio di testo</string>
+    <string name="description_start_automatic_recognition">Avvia riconoscimento automatico</string>
+    <string name="description_stop_automatic_recognition">Interrompi riconoscimento automatico</string>
+    <string name="description_start_manual_recognition">Avvia riconoscimento manuale in %1$s</string>
+    <string name="description_stop_manual_recognition">Interrompi riconoscimento manuale in %1$s</string>
+    <string name="description_double_tap_fullscreen">Doppio click per aprire a schermo intero</string>
+    <string name="description_message_fullscreen">Apri il messaggio a schermo intero</string>
+    <string name="description_exit_fullscreen">Esci dalla modalità a schermo intero</string>
+    <string name="description_mode">Descrizione della modalità</string>
+    <string name="description_read_full">Leggi la descrizione completa</string>
+    <string name="description_start_download">Avvia download</string>
+    <string name="description_delete_resource">Elimina risorsa</string>
+    <string name="description_download_error">Errore di download</string>
+    <string name="description_start_walkietalkie">Avvia WalkieTalkie</string>
+    <string name="description_manage_mozilla_button">Gestisci le lingue della modalità prestazioni</string>
 
     <string name="notification_channel_name">notifica uso in background</string>
 

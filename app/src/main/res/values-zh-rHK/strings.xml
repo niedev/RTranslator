@@ -39,6 +39,47 @@
     <string name="no">否</string>
     <string name="yes">是</string>
     <string name="general">一般</string>
+    <string name="edit">編輯</string>
+    <string name="back">返回</string>
+    <string name="pause">暫停</string>
+    <string name="resume">繼續</string>
+    <string name="offline">離線</string>
+    <string name="reset">重設</string>
+    <string name="options">選項</string>
+    <string name="from">從</string>
+    <string name="to">到</string>
+
+    <string name="description_button_tts_manual">手動朗讀訊息</string>
+    <string name="description_button_tts_auto">自動朗讀訊息</string>
+    <string name="description_stop_search">停止搜尋</string>
+    <string name="description_start_search">開始搜尋</string>
+    <string name="description_checkbox_privacy">接受隱私權政策</string>
+    <string name="description_disconnect_peer">中斷對方連線</string>
+    <string name="description_chat_tab">聊天分頁</string>
+    <string name="description_connection_tab">連線分頁</string>
+    <string name="description_switch_languages">互換語言</string>
+    <string name="description_copy_input_text">複製輸入文字</string>
+    <string name="description_copy_translated_text">複製翻譯後的文字</string>
+    <string name="description_clear_text">清除文字</string>
+    <string name="description_text_fullscreen">全螢幕顯示翻譯文字</string>
+    <string name="description_start_microphone">開啟麥克風</string>
+    <string name="description_stop_microphone">關閉麥克風</string>
+    <string name="description_close_text_mode">關閉文字輸入模式</string>
+    <string name="description_send">傳送文字訊息</string>
+    <string name="description_start_automatic_recognition">開始自動辨識</string>
+    <string name="description_stop_automatic_recognition">停止自動辨識</string>
+    <string name="description_start_manual_recognition">開始手動辨識 %1$s</string>
+    <string name="description_stop_manual_recognition">停止手動辨識 %1$s</string>
+    <string name="description_double_tap_fullscreen">點兩下以全螢幕開啟</string>
+    <string name="description_message_fullscreen">全螢幕開啟訊息</string>
+    <string name="description_exit_fullscreen">結束全螢幕</string>
+    <string name="description_mode">模式說明</string>
+    <string name="description_read_full">閱讀完整說明</string>
+    <string name="description_start_download">開始下載</string>
+    <string name="description_delete_resource">刪除資源</string>
+    <string name="description_download_error">下載錯誤</string>
+    <string name="description_start_walkietalkie">啟動 WalkieTalkie</string>
+    <string name="description_manage_mozilla_button">管理效能模式語言</string>
 
     <string name="notification_channel_name">背景通知</string>
 

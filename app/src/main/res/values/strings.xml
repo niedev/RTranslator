@@ -57,6 +57,48 @@
     <string name="no">No</string>
     <string name="yes">Yes</string>
     <string name="general">General</string>
+    <string name="Tatoeba" translatable="false">Tatoeba</string>
+    <string name="edit">Edit</string>
+    <string name="back">Back</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="offline">Offline</string>
+    <string name="reset">Reset</string>
+    <string name="options">Options</string>
+    <string name="from">from</string>
+    <string name="to">to</string>
+
+    <string name="description_button_tts_manual">Manual message reading</string>
+    <string name="description_button_tts_auto">Automatic message reading</string>
+    <string name="description_stop_search">Stop search</string>
+    <string name="description_start_search">Start search</string>
+    <string name="description_checkbox_privacy">Accept privacy policy</string>
+    <string name="description_disconnect_peer">Disconnect peer</string>
+    <string name="description_chat_tab">Chat tab</string>
+    <string name="description_connection_tab">Connection tab</string>
+    <string name="description_switch_languages">Switch languages</string>
+    <string name="description_copy_input_text">Copy input text</string>
+    <string name="description_copy_translated_text">Copy translated text</string>
+    <string name="description_clear_text">Clear text</string>
+    <string name="description_text_fullscreen">Translated text full screen</string>
+    <string name="description_start_microphone">Start microphone</string>
+    <string name="description_stop_microphone">Stop microphone</string>
+    <string name="description_close_text_mode">Close text input mode</string>
+    <string name="description_send">Send text message</string>
+    <string name="description_start_automatic_recognition">Start automatic recognition</string>
+    <string name="description_stop_automatic_recognition">Stop automatic recognition</string>
+    <string name="description_start_manual_recognition">Start manual recognition of %1$s</string>
+    <string name="description_stop_manual_recognition">Stop manual recognition of %1$s</string>
+    <string name="description_double_tap_fullscreen">Double tap to open in full screen</string>
+    <string name="description_message_fullscreen">Open message in fullscreen</string>
+    <string name="description_exit_fullscreen">Exit full screen</string>
+    <string name="description_mode">Mode description</string>
+    <string name="description_read_full">Read full description</string>
+    <string name="description_start_download">Start download</string>
+    <string name="description_delete_resource">Delete resource</string>
+    <string name="description_download_error">Download error</string>
+    <string name="description_start_walkietalkie">Start WalkieTalkie</string>
+    <string name="description_manage_mozilla_button">Manage performance mode languages</string>
 
     <string name="notification_channel_name">use in background notification</string>
 

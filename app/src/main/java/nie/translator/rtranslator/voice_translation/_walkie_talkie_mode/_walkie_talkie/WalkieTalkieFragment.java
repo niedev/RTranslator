@@ -132,72 +132,10 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         //container.setVisibility(View.INVISIBLE);  //we make the UI invisible until the restore of the attributes from the service (to avoid instant changes of the UI).
         Global globalApp = (Global) requireActivity().getApplication();
         //Set TalkBack initial brief
-        String accessibilityBrief = getResources().getString(R.string.title_fragment_walkie_talkie) + ", from "
-                + globalApp.getFirstLanguage(true).getDisplayNameWithoutTTS() + " to " +
-                globalApp.getSecondLanguage(true).getDisplayNameWithoutTTS();  //todo: convert the text to resource and translate it
+        String accessibilityBrief = getResources().getString(R.string.title_fragment_walkie_talkie) + ", " + getResources().getString(R.string.from) + " "
+                + globalApp.getFirstLanguage(true).getDisplayNameWithoutTTS() + " " + getResources().getString(R.string.to) + " "
+                + globalApp.getSecondLanguage(true).getDisplayNameWithoutTTS();
         view.setAccessibilityPaneTitle(accessibilityBrief);
-
-        ViewCompat.setAccessibilityDelegate(
-                exitButton,
-                new AccessibilityDelegateCompat() {
-                    @Override
-                    public boolean performAccessibilityAction(
-                            @NonNull View host,
-                            int action,
-                            @Nullable Bundle args) {
-
-                        if (action ==
-                                AccessibilityNodeInfoCompat.ACTION_ACCESSIBILITY_FOCUS) {
-
-                            Log.d(
-                                    "A11Y_FOCUS",
-                                    "Accessibility focus requested on exitButton",
-                                    new Throwable("Focus request stack")
-                            );
-                        }
-
-                        return super.performAccessibilityAction(
-                                host,
-                                action,
-                                args
-                        );
-                    }
-                }
-        );
-    }
-
-    private void installToolbarAccessibilityDebug(View root) {
-        ViewCompat.setAccessibilityDelegate(
-                root,
-                new AccessibilityDelegateCompat() {
-                    @Override
-                    public boolean onRequestSendAccessibilityEvent(
-                            @NonNull ViewGroup host,
-                            @NonNull View child,
-                            @NonNull AccessibilityEvent event) {
-
-                        Log.d(
-                                "A11Y_EVENT",
-                                "child=" + getViewName(child)
-                                        + " type="
-                                        + AccessibilityEvent.eventTypeToString(
-                                        event.getEventType())
-                                        + " contentChanges="
-                                        + event.getContentChangeTypes()
-                                        + " text="
-                                        + event.getText()
-                                        + " description="
-                                        + event.getContentDescription()
-                        );
-
-                        return super.onRequestSendAccessibilityEvent(
-                                host,
-                                child,
-                                event
-                        );
-                    }
-                }
-        );
     }
 
     private String getViewName(View view) {
@@ -734,9 +672,9 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                 // Grab whatever text is currently inside the EditText
                 CharSequence description;
                 if(buttonMic.isMute() || !buttonMic.isListening()){
-                    description = "start manual recognition of "+language;   //todo: convert the text to resource and translate it
+                    description = getResources().getString(R.string.description_start_manual_recognition, language);
                 }else{  //buttonMic is listening  (so also not mute)
-                    description = "stop manual recognition of "+language;   //todo: convert the text to resource and translate it
+                    description = getResources().getString(R.string.description_stop_manual_recognition, language);
                 }
 
                 // Tell TalkBack to read this specific description
@@ -754,9 +692,9 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                 // Grab whatever text is currently inside the EditText
                 CharSequence description;
                 if(buttonMic.isMute()){
-                    description = "start automatic recognition";   //todo: convert the text to resource and translate it
+                    description = getResources().getString(R.string.description_start_automatic_recognition);
                 }else{
-                    description = "stop manual recognition";   //todo: convert the text to resource and translate it
+                    description = getResources().getString(R.string.description_stop_automatic_recognition);
                 }
 
                 // Tell TalkBack to read this specific description

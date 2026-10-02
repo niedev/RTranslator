@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -33,7 +32,7 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Exit full screen"
+        android:contentDescription="@string/description_exit_fullscreen"
         android:src="@drawable/fullscreen_exit_icon"
         android:scaleType="fitXY"
         android:padding="12dp"

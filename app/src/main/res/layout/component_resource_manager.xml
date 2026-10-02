@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -74,7 +73,7 @@
         app:layout_constraintTop_toTopOf="@+id/titleResource"
         android:src="@drawable/download_icon"
         android:tint="@color/very_very_dark_gray"
-        android:contentDescription="start download"/>
+        android:contentDescription="@string/description_start_download"/>
 
     <ImageView
         android:id="@+id/buttonDelete"
@@ -84,7 +83,7 @@
         android:tint="@color/very_very_dark_gray"
         android:visibility="invisible"
         android:padding="10dp"
-        android:contentDescription="delete resource"
+        android:contentDescription="@string/description_delete_resource"
         app:layout_constraintBottom_toBottomOf="@+id/titleResource"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -112,7 +111,7 @@
         android:layout_height="16dp"
         android:visibility="invisible"
         android:tint="@color/very_very_dark_gray"
-        android:contentDescription="pause"
+        android:contentDescription="@string/pause"
         app:layout_constraintBottom_toBottomOf="@+id/progressBarDownload"
         app:layout_constraintEnd_toEndOf="@+id/progressBarDownload"
         app:layout_constraintStart_toStartOf="@+id/progressBarDownload"
@@ -125,7 +124,7 @@
         android:layout_height="16dp"
         android:tint="@color/very_very_dark_gray"
         android:visibility="invisible"
-        android:contentDescription="resume"
+        android:contentDescription="@string/resume"
         app:layout_constraintBottom_toBottomOf="@+id/progressBarDownload"
         app:layout_constraintEnd_toEndOf="@+id/progressBarDownload"
         app:layout_constraintStart_toStartOf="@+id/progressBarDownload"
@@ -145,6 +144,6 @@
         android:src="@drawable/error_icon"
         android:tint="@color/red"
         android:visibility="invisible"
-        android:contentDescription="download error"/>
+        android:contentDescription="@string/description_download_error"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

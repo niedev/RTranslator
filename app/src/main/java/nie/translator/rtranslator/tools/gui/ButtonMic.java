@@ -157,11 +157,11 @@ public class ButtonMic extends DeactivableButton {
                     animator.animateIconToMicAndIconChange(context, this, icon);
                 }
             }
-            // change accessibility description  (//todo: convert the text to resource and translate it)
+            // change accessibility description
             if(isMute){
-                setContentDescription("start microphone");
+                setContentDescription(getResources().getString(R.string.description_start_microphone));
             }else{
-                setContentDescription("stop microphone");
+                setContentDescription(getResources().getString(R.string.description_stop_microphone));
             }
         } else if (state == STATE_RETURN) {
             if (oldState == STATE_NORMAL) {
@@ -182,15 +182,15 @@ public class ButtonMic extends DeactivableButton {
                 icon.setColorFilter(currentColor.iconColor.getDefaultColor(), PorterDuff.Mode.SRC_IN);
                 animator.animateIconChange(this, icon);
             }
-            // change accessibility description  (//todo: convert the text to resource and translate it)
-            setContentDescription("close text input mode");
+            // change accessibility description
+            setContentDescription(getResources().getString(R.string.description_close_text_mode));
         } else if (state == STATE_SEND) {
             // change icon animation
             Drawable icon = getDrawable(R.drawable.send_icon);
             icon.setColorFilter(currentColor.iconColor.getDefaultColor(), PorterDuff.Mode.SRC_IN);
             animator.animateIconChange(this, icon);
-            // change accessibility description  (//todo: convert the text to resource and translate it)
-            setContentDescription("send text message");
+            // change accessibility description
+            setContentDescription(getResources().getString(R.string.description_send));
         }
     }
 
@@ -224,11 +224,11 @@ public class ButtonMic extends DeactivableButton {
                 }
                 animator.animateMute(context, this, !animate);
                 currentColor = colorMutedActivated;   //setMute can be called only when the mic is activated
-                setContentDescription("start microphone"); // change accessibility description  (//todo: convert the text to resource and translate it)
+                setContentDescription(getResources().getString(R.string.description_start_microphone)); // change accessibility description
             } else {
                 animator.animateUnmute(context, this, !animate);
                 currentColor = colorActivated;     //setMute can be called only when the mic is activated
-                setContentDescription("stop microphone");  // change accessibility description  (//todo: convert the text to resource and translate it)
+                setContentDescription(getResources().getString(R.string.description_stop_microphone));  // change accessibility description
             }
         }
     }

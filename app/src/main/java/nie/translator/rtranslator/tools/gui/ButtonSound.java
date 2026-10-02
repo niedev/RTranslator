@@ -49,14 +49,13 @@ public class ButtonSound extends DeactivableButton {
     }
 
     public void setMute(boolean mute) {
-        //todo: convert the text to resource and translate it
         if(isMute!=mute){
             if(mute){
                 setImageDrawable(getResources().getDrawable(R.drawable.sound_auto_icon,null));
-                setContentDescription("automatic message reading");
+                setContentDescription(getResources().getString(R.string.description_button_tts_auto));
             }else{
                 setImageDrawable(getResources().getDrawable(R.drawable.sound_manual_icon,null));
-                setContentDescription("manual message reading");
+                setContentDescription(getResources().getString(R.string.description_button_tts_manual));
             }
         }
         isMute = mute;

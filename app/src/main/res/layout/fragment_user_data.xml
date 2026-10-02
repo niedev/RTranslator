@@ -15,7 +15,6 @@
     * limitations under the License.
     *-->
 
-<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -178,7 +177,7 @@
                 android:textColor="#616161"
                 android:textSize="12sp"
                 android:visibility="visible"
-                android:contentDescription="accept privacy policy"
+                android:contentDescription="@string/description_checkbox_privacy"
                 app:layout_constraintBottom_toTopOf="@+id/buttonConfirm"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0"

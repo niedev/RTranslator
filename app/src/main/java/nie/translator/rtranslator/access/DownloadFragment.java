@@ -272,11 +272,11 @@ public class DownloadFragment extends Fragment {
         if(paused){
             pauseButton.setImageResource(R.drawable.play_icon);
             pauseButton.setTag("iconPlay");
-            pauseButton.setContentDescription("resume");  //todo: convert the text to resource and translate it
+            pauseButton.setContentDescription(getResources().getString(R.string.resume));
         }else{
             pauseButton.setImageResource(R.drawable.pause_icon);
             pauseButton.setTag("iconPause");
-            pauseButton.setContentDescription("pause");  //todo: convert the text to resource and translate it
+            pauseButton.setContentDescription(getResources().getString(R.string.pause));
         }
     }
 

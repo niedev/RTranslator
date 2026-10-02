@@ -15,7 +15,6 @@
     * limitations under the License.
     *-->
 
-<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -84,7 +83,7 @@
         android:paddingBottom="12dp"
         android:paddingStart="8dp"
         android:paddingEnd="14dp"
-        android:contentDescription="reset"
+        android:contentDescription="@string/reset"
         app:layout_constraintBottom_toBottomOf="@+id/seekBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"

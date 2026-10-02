@@ -16,7 +16,6 @@
     *-->
 
 
-<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
@@ -57,7 +56,7 @@
         android:src="@drawable/back_arrow_icon2"
         android:tint="@color/primary_very_dark"
         android:visibility="visible"
-        android:contentDescription="back"
+        android:contentDescription="@string/back"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarConversation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -114,7 +113,7 @@
         android:src="@drawable/cancel_icon"
         android:tint="@color/primary_very_dark"
         android:visibility="invisible"
-        android:contentDescription="stop search"
+        android:contentDescription="@string/description_stop_search"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarConversation"
         app:layout_constraintEnd_toStartOf="@+id/settingsButton"
         app:layout_constraintHorizontal_bias="1.0"
@@ -181,7 +180,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="16dp"
-            android:contentDescription="chat tab"
+            android:contentDescription="@string/description_chat_tab"
             app:cardBackgroundColor="@color/primary_very_dark"
             app:cardCornerRadius="24dp"
             app:cardElevation="0dp"
@@ -228,7 +227,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="16dp"
-            android:contentDescription="connection tab"
+            android:contentDescription="@string/description_connection_tab"
             app:cardBackgroundColor="@color/accent_white"
             app:cardCornerRadius="24dp"
             app:cardElevation="0dp"

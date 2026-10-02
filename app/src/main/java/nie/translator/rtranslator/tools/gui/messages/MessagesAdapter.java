@@ -58,7 +58,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private ArrayList<GuiMessage> messages = new ArrayList<>();
     private Callback callback;
     private long playingMessageID = -1;
-
     private static boolean showOriginalTranscriptionMsg;
 
     public MessagesAdapter(ArrayList<GuiMessage> messages, Application application, long playingMessageID, @NonNull Callback callback) {
@@ -251,7 +250,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             GestureDetectorCompat gestureDetector = new GestureDetectorCompat(itemView.getContext(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
-                    Toast.makeText(itemView.getContext(), "Double tap to open in full screen", Toast.LENGTH_SHORT).show();  //todo: convert the text to resource and translate it
+                    Context context = itemView.getContext();
+                    Toast.makeText(context, context.getResources().getString(R.string.description_double_tap_fullscreen), Toast.LENGTH_SHORT).show();
                     return true;
                 }
 
@@ -276,11 +276,13 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 return gestureDetector.onTouchEvent(event);
             });
 
+            Context context = itemView.getContext();
+
             // Accessibility configuration for TalkBack users
             ViewCompat.replaceAccessibilityAction(
                     container,
                     AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
-                    "open message in fullscreen", // Determines what Talkback TTS says   todo: convert the text to resource and translate it + test Talkback here
+                    context.getResources().getString(R.string.description_message_fullscreen), // Determines what Talkback TTS says
                     new AccessibilityViewCommand() {
                         @Override
                         public boolean perform(@NonNull View view, @Nullable CommandArguments arguments) {

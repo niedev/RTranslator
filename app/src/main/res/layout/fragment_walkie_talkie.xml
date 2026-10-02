@@ -16,7 +16,6 @@
     *-->
 
 
-<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -77,7 +76,7 @@
         android:src="@drawable/back_arrow_icon2"
         android:tint="@color/primary_very_dark"
         android:visibility="visible"
-        android:contentDescription="back"
+        android:contentDescription="@string/back"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarWalkieTalkie"
         app:layout_constraintEnd_toStartOf="@+id/settingsButton"
         app:layout_constraintHorizontal_bias="0.0"
@@ -106,7 +105,7 @@
         android:layout_height="wrap_content"
         android:backgroundTint="@android:color/transparent"
         android:tint="@color/primary_very_dark"
-        android:contentDescription="manual message reading"
+        android:contentDescription="@string/description_button_tts_manual"
         app:layout_constraintBottom_toBottomOf="@id/toolbarWalkieTalkie"
         app:layout_constraintEnd_toStartOf="@+id/settingsButton"
         app:layout_constraintHorizontal_bias="1.0"
@@ -234,7 +233,7 @@
             android:backgroundTint="@android:color/transparent"
             android:clickable="false"
             android:tint="@color/primary_very_dark"
-            android:contentDescription="back"
+            android:contentDescription="@string/back"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/guideline10"
             app:layout_constraintHorizontal_bias="0.0"
@@ -479,6 +478,8 @@
                         android:background="@drawable/circle"
                         android:src="@drawable/mic_icon"
                         android:visibility="invisible"
+                        android:importantForAccessibility="no"
+                        android:contentDescription="@null"
                         app:layout_constraintBottom_toTopOf="@+id/textButtonPlaceHolder"
                         app:layout_constraintEnd_toStartOf="@+id/rightMic"
                         app:layout_constraintHorizontal_bias="0.0"

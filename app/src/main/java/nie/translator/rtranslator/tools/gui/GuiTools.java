@@ -177,19 +177,20 @@ public class GuiTools {
      * @param descriptionView a TextView that contains a long description
      */
     public static void setDescriptionOptimizationForAccessibility(TextView descriptionView){
+        Context context = descriptionView.getContext();
         ViewCompat.setAccessibilityDelegate(descriptionView, new AccessibilityDelegateCompat() {
             @Override
             public void onInitializeAccessibilityNodeInfo(@NonNull View host, @NonNull AccessibilityNodeInfoCompat info) {
                 super.onInitializeAccessibilityNodeInfo(host, info);
 
                 // Override what TalkBack reads when it lands on the view
-                info.setContentDescription("Mode description");  //todo: convert the text to resource and translate it
+                info.setContentDescription(context.getResources().getString(R.string.description_mode));
 
                 // Add a custom action hint ("Double-tap to read full description")
                 AccessibilityNodeInfoCompat.AccessibilityActionCompat readAction =
                         new AccessibilityNodeInfoCompat.AccessibilityActionCompat(
                                 AccessibilityNodeInfoCompat.ACTION_CLICK,
-                                "read full description"  //todo: convert the text to resource and translate it
+                                context.getResources().getString(R.string.description_read_full)
                         );
                 info.addAction(readAction);
             }

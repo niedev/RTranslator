@@ -15,7 +15,6 @@
     * limitations under the License.
     *-->
 
-<!-- //todo: convert the text to resource and translate it (all the ones in contentDescription) -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -79,7 +78,7 @@
             android:backgroundTint="@android:color/transparent"
             android:src="@drawable/exit_icon"
             android:tint="@color/very_very_dark_gray"
-            android:contentDescription="disconnect peer"
+            android:contentDescription="@string/description_disconnect_peer"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1"
@@ -98,7 +97,7 @@
             android:src="@drawable/offline_icon"
             android:tint="@color/dark_gray"
             android:visibility="invisible"
-            android:contentDescription="offline"
+            android:contentDescription="@string/offline"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/exit_button"
             app:layout_constraintHorizontal_bias="1"

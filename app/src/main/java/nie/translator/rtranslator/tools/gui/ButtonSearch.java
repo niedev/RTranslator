@@ -105,11 +105,10 @@ public class ButtonSearch extends AppCompatImageButton {
 
     private void setIconInfo(int id){
         drawableId = id;
-        //todo: convert the text to resource and translate it
         if(id == R.drawable.cancel_icon){
-            setContentDescription("stop search");
+            setContentDescription(getResources().getString(R.string.description_stop_search));
         }else{  //id == R.drawable.search_icon
-            setContentDescription("start search");
+            setContentDescription(getResources().getString(R.string.description_start_search));
         }
     }
 

@@ -39,6 +39,47 @@
     <string name="no">Ні</string>
     <string name="yes">Так</string>
     <string name="general">Загальне</string>
+    <string name="edit">Редагувати</string>
+    <string name="back">Назад</string>
+    <string name="pause">Призупинити</string>
+    <string name="resume">Відновити</string>
+    <string name="offline">Офлайн</string>
+    <string name="reset">Скинути</string>
+    <string name="options">Параметри</string>
+    <string name="from">з</string>
+    <string name="to">на</string>
+
+    <string name="description_button_tts_manual">Ручне читання повідомлень</string>
+    <string name="description_button_tts_auto">Автоматичне читання повідомлень</string>
+    <string name="description_stop_search">Зупинити пошук</string>
+    <string name="description_start_search">Почати пошук</string>
+    <string name="description_checkbox_privacy">Прийняти політику конфіденційності</string>
+    <string name="description_disconnect_peer">Відключити пристрій</string>
+    <string name="description_chat_tab">Вкладка чату</string>
+    <string name="description_connection_tab">Вкладка підключення</string>
+    <string name="description_switch_languages">Поміняти мови місцями</string>
+    <string name="description_copy_input_text">Копіювати введений текст</string>
+    <string name="description_copy_translated_text">Копіювати перекладений текст</string>
+    <string name="description_clear_text">Очистити текст</string>
+    <string name="description_text_fullscreen">Перекладений текст на весь екран</string>
+    <string name="description_start_microphone">Увімкнути мікрофон</string>
+    <string name="description_stop_microphone">Вимкнути мікрофон</string>
+    <string name="description_close_text_mode">Закрити режим введення тексту</string>
+    <string name="description_send">Надіслати текстове повідомлення</string>
+    <string name="description_start_automatic_recognition">Почати автоматичне розпізнавання</string>
+    <string name="description_stop_automatic_recognition">Зупинити автоматичне розпізнавання</string>
+    <string name="description_start_manual_recognition">Почати ручне розпізнавання: %1$s</string>
+    <string name="description_stop_manual_recognition">Зупинити ручне розпізнавання: %1$s</string>
+    <string name="description_double_tap_fullscreen">Двічі торкніться, щоб відкрити на весь екран</string>
+    <string name="description_message_fullscreen">Відкрити повідомлення на весь екран</string>
+    <string name="description_exit_fullscreen">Вийти з повноекранного режиму</string>
+    <string name="description_mode">Опис режиму</string>
+    <string name="description_read_full">Читати повний опис</string>
+    <string name="description_start_download">Почати завантаження</string>
+    <string name="description_delete_resource">Видалити ресурс</string>
+    <string name="description_download_error">Помилка завантаження</string>
+    <string name="description_start_walkietalkie">Запустити WalkieTalkie</string>
+    <string name="description_manage_mozilla_button">Керувати мовами режиму продуктивності</string>
 
     <string name="notification_channel_name">використання у фоновому режимі</string>
 
