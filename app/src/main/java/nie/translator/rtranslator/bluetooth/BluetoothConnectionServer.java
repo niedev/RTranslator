@@ -98,7 +98,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                             synchronized (channelsLock) {
                                 int index;
                                 if(!client.getConnectedPeers().contains(peer)) {    // the client object is used to manage synchronization with the client to avoid adding a device that connects to the latter instead of us
-                                    bluetoothGattServer.connect(device, false);  //this is not mandatory but will tell the server OS not to drop the connection, making it more stable.
+                                    bluetoothGattServer.connect(device, false);  //this is not mandatory but will tell the server OS not to drop the connection, making it more stable. Plus, this is necessary to make cancelConnection work (this isn't documented, but it is well observed by many developers).
                                     if (!channels.contains(peer)) {
                                         channels.add(new nie.translator.rtranslator.bluetooth.ServerChannel(context, peer, bluetoothAdapter));
                                         index = channels.size() - 1;
@@ -563,6 +563,11 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
         bluetoothGattServer.close();
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+        close();
+    }
 
     private void notifyConnectionRequest(Channel channel) {
         callback.onConnectionRequest((Peer) channel.getPeer().clone());

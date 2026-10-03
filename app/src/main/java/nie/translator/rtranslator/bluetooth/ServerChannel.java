@@ -286,7 +286,6 @@ class ServerChannel extends Channel {
             super.destroy();
             if (bluetoothGattServer != null) {
                 bluetoothGattServer.cancelConnection(getPeer().getRemoteDevice(bluetoothAdapter));
-                bluetoothGattServer.close();
             }
         }
     }

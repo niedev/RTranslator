@@ -232,6 +232,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
             case WALKIE_TALKIE_FRAGMENT: {
                 // possible stop of the Conversation Service
                 stopConversationService();
+                // possible destroy of BluetoothCommunicator
+                global.destroyBluetoothCommunicator(null);
                 // possible setting of the fragment
                 if (getCurrentFragmentId() != WALKIE_TALKIE_FRAGMENT) {
                     if (Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_VOICE) || !requestPermission) {
@@ -256,6 +258,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 // possible stop of the Conversation and WalkieTalkie Service
                 stopConversationService();
                 stopWalkieTalkieService();
+                // possible destroy of BluetoothCommunicator
+                global.destroyBluetoothCommunicator(null);
                 // possible setting of the fragment
                 if (getCurrentFragmentId() != TRANSLATION_FRAGMENT) {
                     TranslationFragment translationFragment = new TranslationFragment();

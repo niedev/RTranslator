@@ -1162,11 +1162,7 @@ public class BluetoothCommunicator {
             destroyCallback = callback;
             connectionClient.destroy();
             connectionServer.destroy();
-            if(changeableBluetoothState) {
-                bluetoothAdapter.disable();  //this is used to restart (or keep turned off) bluetooth before the destruction of BluetoothCommunicator via the broadcastReceiver
-            }else{
-                releaseResourcesAndRestoreBluetoothStatus();
-            }
+            releaseResourcesAndRestoreBluetoothStatus();
         }
     }
 

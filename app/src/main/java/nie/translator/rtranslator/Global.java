@@ -198,6 +198,20 @@ public class Global extends Application implements DefaultLifecycleObserver {
         return bluetoothCommunicator;
     }
 
+    public void destroyBluetoothCommunicator(@Nullable BluetoothCommunicator.DestroyCallback listener){
+        if(bluetoothCommunicator != null){
+            bluetoothCommunicator.destroy(new BluetoothCommunicator.DestroyCallback() {
+                @Override
+                public void onDestroyed() {
+                    if(listener != null) listener.onDestroyed();
+                    bluetoothCommunicator = null;
+                }
+            });
+        }else{
+            if(listener != null) listener.onDestroyed();
+        }
+    }
+
     public void resetBluetoothCommunicator() {
         bluetoothCommunicator.destroy(new BluetoothCommunicator.DestroyCallback() {
             @Override
