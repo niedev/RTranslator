@@ -199,11 +199,11 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                                 if (index != -1) {
                                     if (!channels.get(index).getPeer().isDisconnecting()) {
                                         try {
-                                            int mtu = value.length;
+                                            int maxMessageLength = value.length;
                                             BluetoothGattService service = bluetoothGattServer.getService(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID);
                                             BluetoothGattCharacteristic output = service.getCharacteristic(BluetoothConnectionServer.MTU_RESPONSE_UUID);
-
-                                            output.setValue(String.valueOf(mtu).getBytes(StandardCharsets.UTF_8));
+                                            channels.get(index).subMessagesLength = maxMessageLength - 1; //we keep at least 1 byte as extra margin
+                                            output.setValue(String.valueOf(maxMessageLength).getBytes(StandardCharsets.UTF_8));
                                             bluetoothGattServer.notifyCharacteristicChanged(channels.get(index).getPeer().getRemoteDevice(bluetoothAdapter), output, true);
                                         } catch (Exception e) {
                                             channels.get(index).disconnect(disconnectionCallback);
@@ -388,6 +388,11 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
             @Override
             public void onMtuChanged(BluetoothDevice device, int mtu) {
                 super.onMtuChanged(device, mtu);
+                int index = channels.indexOf(new nie.translator.rtranslator.bluetooth.Peer(device, null, true));
+                if (index != -1) {
+                    Log.d("bluetooth_communicator", "onMtuChanged on server: "+mtu);
+                    channels.get(index).subMessagesLength = mtu - BluetoothConnection.DATA_MARGIN;
+                }
             }
 
             @Override

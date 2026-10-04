@@ -264,8 +264,8 @@ public class Message implements Parcelable, Cloneable {
      * @param id
      * @return the message splitted in more BluetoothMessages (or converted in one BluetoothMessage if the message is short enough)
      */
-    public ArrayDeque<nie.translator.rtranslator.bluetooth.BluetoothMessage> splitInBluetoothMessages(nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber id) {
-        int subDataLength = nie.translator.rtranslator.bluetooth.BluetoothConnection.SUB_MESSAGES_LENGTH - nie.translator.rtranslator.bluetooth.BluetoothMessage.TOTAL_HEADERS_LENGTH;
+    public ArrayDeque<nie.translator.rtranslator.bluetooth.BluetoothMessage> splitInBluetoothMessages(nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber id, int subMessagesLength) {
+        int subDataLength = subMessagesLength - nie.translator.rtranslator.bluetooth.BluetoothMessage.TOTAL_HEADERS_LENGTH;
         ArrayDeque<byte[]> subDataArray = BluetoothTools.splitBytes(BluetoothTools.concatBytes(header.getBytes(StandardCharsets.UTF_8), data), subDataLength);
 
         nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber sequenceNumber = new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH);

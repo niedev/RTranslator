@@ -130,8 +130,8 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
 
                                         //request mtu
                                         BluetoothGattCharacteristic output = service.getCharacteristic(nie.translator.rtranslator.bluetooth.BluetoothConnectionServer.MTU_REQUEST_UUID);
-                                        byte[] data = new byte[MTU];
-                                        for (int i = 0; i < MTU; i++) {
+                                        byte[] data = new byte[PREFERRED_MTU];
+                                        for (int i = 0; i < PREFERRED_MTU; i++) {
                                             data[i] = String.valueOf(1).getBytes(StandardCharsets.UTF_8)[0];
                                         }
                                         output.setValue(data);
@@ -156,8 +156,14 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
                         synchronized (channelsLock) {
                             int index = channels.indexOf(new nie.translator.rtranslator.bluetooth.Peer(gatt.getDevice(), null, true));
                             if (index != -1) {
-                                if (!channels.get(index).getPeer().isConnected() && !channels.get(index).getPeer().isDisconnecting()) {
+                                Channel channel = channels.get(index);
+                                if (!channel.getPeer().isConnected() && !channel.getPeer().isDisconnecting()) {
                                     try {
+                                        if(status == BluetoothGatt.GATT_SUCCESS) {
+                                            Log.d("bluetooth_communicator", "onMtuChanged on client: "+mtu);
+                                            channel.subMessagesLength = mtu - BluetoothConnection.DATA_MARGIN;
+                                        }
+
                                         BluetoothGattService service = gatt.getService(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID);
 
                                         BluetoothGattCharacteristic connectionResponse = service.getCharacteristic(nie.translator.rtranslator.bluetooth.BluetoothConnectionServer.CONNECTION_RESPONSE_UUID);
@@ -175,19 +181,19 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
                                         BluetoothGattCharacteristic disconnectionReceive = service.getCharacteristic(nie.translator.rtranslator.bluetooth.BluetoothConnectionServer.DISCONNECTION_SEND_UUID);
                                         gatt.setCharacteristicNotification(disconnectionReceive, true);
 
-                                        if (channels.get(index).getPeer().isReconnecting()) {
+                                        if (channel.getPeer().isReconnecting()) {
                                             // send the name (for cases where it has changed in the meantime) and the key (to avoid man in the middle during reconnection) with notifyConnectionResumed()
-                                            if (!((nie.translator.rtranslator.bluetooth.ClientChannel) channels.get(index)).notifyConnectionResumed()) {
+                                            if (!((nie.translator.rtranslator.bluetooth.ClientChannel) channel).notifyConnectionResumed()) {
                                                 throw new Exception();
                                             }
                                         } else {
-                                            if (!((nie.translator.rtranslator.bluetooth.ClientChannel) channels.get(index)).requestConnection(getUniqueName())) {
+                                            if (!((nie.translator.rtranslator.bluetooth.ClientChannel) channel).requestConnection(getUniqueName())) {
                                                 throw new Exception();
                                             }
                                         }
                                     } catch (Exception e) {
                                         //configuration failed
-                                        channels.get(index).disconnect(disconnectionCallback);
+                                        channel.disconnect(disconnectionCallback);
                                     }
                                 }
                             }
@@ -209,11 +215,14 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
                                     mainHandler.post(new Runnable() {
                                         @Override
                                         public void run() {
+                                            Channel channel = channels.get(index);
                                             int responseValue = Integer.valueOf(new String(characteristic.getValue(), StandardCharsets.UTF_8));
-                                            if (responseValue < (nie.translator.rtranslator.bluetooth.BluetoothConnection.SUB_MESSAGES_LENGTH + 8)) {
-                                                gatt.requestMtu(MTU);
+                                            channel.subMessagesLength = responseValue - 1; //we keep at least 1 byte as extra margin
+                                            if (responseValue < PREFERRED_MTU) {
+                                                Log.d("bluetooth_communicator", "mtu requested");
+                                                gatt.requestMtu(PREFERRED_MTU);
                                             } else {
-                                                channelsCallback.onMtuChanged(gatt, MTU, BluetoothGatt.GATT_SUCCESS);
+                                                channelsCallback.onMtuChanged(gatt, responseValue, BluetoothGatt.GATT_FAILURE);  // here we pass GATT_FAILURE as status value to avoid overwriting the subMessagesLength set here.
                                             }
                                         }
                                     });

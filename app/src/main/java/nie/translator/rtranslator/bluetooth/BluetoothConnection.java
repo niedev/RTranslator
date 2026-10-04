@@ -32,8 +32,9 @@ abstract class BluetoothConnection {
     public static final int ACCEPT = 0;
     public static final int REJECT = 1;
     public static final UUID APP_UUID = UUID.fromString("00001234-0000-1000-8000-00805F9B34FB");
-    public static final int MTU = 247;
-    public static final int SUB_MESSAGES_LENGTH = 192;
+    public static final int DATA_MARGIN = 6;
+    public static final int PREFERRED_MTU = 247;
+
     //oggetti e variabili
     private String uniqueName;
     protected final Object channelsLock = new Object();

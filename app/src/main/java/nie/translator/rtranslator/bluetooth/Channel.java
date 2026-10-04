@@ -67,6 +67,7 @@ abstract class Channel {
     private boolean disconnecting = false;
     protected boolean messagesPaused = false;
     protected boolean dataPaused = false;
+    public int subMessagesLength = 17;
     protected final Object lock = new Object();
 
     protected Channel(Context context, @NonNull Peer peer) {
@@ -84,7 +85,7 @@ abstract class Channel {
         synchronized (lock) {
             if (pendingMessage == null) {       // if it is true then we are not writing any messages
                 // division from the message and sending of the various parts
-                pendingMessage = message.splitInBluetoothMessages(messageID);
+                pendingMessage = message.splitInBluetoothMessages(messageID, subMessagesLength);
                 messageID.increment();
                 Log.e("messageSend", message.getText());
                 messageCallback = callback;
@@ -97,7 +98,7 @@ abstract class Channel {
         synchronized (lock) {
             if (pendingData == null) {       // if it is true then we are not writing any messages
                 // division from the message and sending of the various parts
-                pendingData = data.splitInBluetoothMessages(dataID);
+                pendingData = data.splitInBluetoothMessages(dataID, subMessagesLength);
                 dataID.increment();
                 Log.e("dataSend", data.getText());
                 dataCallback = callback;
