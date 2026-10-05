@@ -134,7 +134,7 @@ class BluetoothMessage implements Parcelable {
 
     public Message convertInMessage() {
         String completeText = new String(data, StandardCharsets.UTF_8);
-        if (completeText.length() > 0) {
+        if (completeText.length() >= Message.HEADER_LENGTH) {
             String header = completeText.substring(0, Message.HEADER_LENGTH);
             byte[] data = BluetoothTools.subBytes(getData(), header.getBytes(StandardCharsets.UTF_8).length, getData().length);
             if (data != null) {

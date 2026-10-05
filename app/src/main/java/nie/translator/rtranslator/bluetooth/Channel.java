@@ -67,7 +67,7 @@ abstract class Channel {
     private boolean disconnecting = false;
     protected boolean messagesPaused = false;
     protected boolean dataPaused = false;
-    public int subMessagesLength = 17;
+    protected int subMessagesLength;
     protected final Object lock = new Object();
 
     protected Channel(Context context, @NonNull Peer peer) {
@@ -78,6 +78,7 @@ abstract class Channel {
         this.messageHandler = new Handler(Looper.getMainLooper());
         this.dataHandler = new Handler(Looper.getMainLooper());
         this.peer = peer;
+        this.subMessagesLength = 17;  // the minimum value possible (this will always be overwritten)
     }
 
 
@@ -85,7 +86,7 @@ abstract class Channel {
         synchronized (lock) {
             if (pendingMessage == null) {       // if it is true then we are not writing any messages
                 // division from the message and sending of the various parts
-                pendingMessage = message.splitInBluetoothMessages(messageID, subMessagesLength);
+                pendingMessage = message.splitInBluetoothMessages(messageID, getSubMessagesLength());
                 messageID.increment();
                 Log.e("messageSend", message.getText());
                 messageCallback = callback;
@@ -98,13 +99,21 @@ abstract class Channel {
         synchronized (lock) {
             if (pendingData == null) {       // if it is true then we are not writing any messages
                 // division from the message and sending of the various parts
-                pendingData = data.splitInBluetoothMessages(dataID, subMessagesLength);
+                pendingData = data.splitInBluetoothMessages(dataID, getSubMessagesLength());
                 dataID.increment();
                 Log.e("dataSend", data.getText());
                 dataCallback = callback;
                 writeSubData();
             }
         }
+    }
+
+    public int getSubMessagesLength() {
+        return subMessagesLength;
+    }
+
+    public void setSubMessagesLength(int subMessagesLength) {
+        this.subMessagesLength = subMessagesLength;
     }
 
     public void onSubMessageWriteSuccess() {

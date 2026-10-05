@@ -67,6 +67,7 @@ android {
 
     buildFeatures {
         prefab true
+        buildConfig true
     }
 
     buildTypes {

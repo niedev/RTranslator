@@ -35,6 +35,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
+import nie.translator.rtranslator.BuildConfig;
 import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
 import nie.translator.rtranslator.bluetooth.tools.Timer;
 
@@ -161,7 +162,7 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
                                     try {
                                         if(status == BluetoothGatt.GATT_SUCCESS) {
                                             Log.d("bluetooth_communicator", "onMtuChanged on client: "+mtu);
-                                            channel.subMessagesLength = mtu - BluetoothConnection.DATA_MARGIN;
+                                            channel.setSubMessagesLength(mtu - BluetoothConnection.DATA_MARGIN);
                                         }
 
                                         BluetoothGattService service = gatt.getService(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID);
@@ -217,7 +218,7 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
                                         public void run() {
                                             Channel channel = channels.get(index);
                                             int responseValue = Integer.valueOf(new String(characteristic.getValue(), StandardCharsets.UTF_8));
-                                            channel.subMessagesLength = responseValue - 1; //we keep at least 1 byte as extra margin
+                                            channel.setSubMessagesLength(responseValue - 1); //we keep at least 1 byte as extra margin
                                             if (responseValue < PREFERRED_MTU) {
                                                 Log.d("bluetooth_communicator", "mtu requested");
                                                 gatt.requestMtu(PREFERRED_MTU);
@@ -278,6 +279,9 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
                                     nie.translator.rtranslator.bluetooth.Peer sender = (nie.translator.rtranslator.bluetooth.Peer) channels.get(index).getPeer().clone();
                                     nie.translator.rtranslator.bluetooth.BluetoothMessage subMessage = nie.translator.rtranslator.bluetooth.BluetoothMessage.createFromBytes(context, sender, characteristic.getValue());
                                     if (subMessage != null) {
+                                        if (BuildConfig.DEBUG) {
+                                            Log.i("bluetooth_communicator", "Received the following sub message: \n"+String.join("\n ", new String(subMessage.getData(), StandardCharsets.UTF_8)));
+                                        }
                                         if(!channels.get(index).getReceivedMessages().contains(subMessage)) {
                                             int messageIndex = channels.get(index).getReceivingMessages().indexOf(subMessage);
                                             if (messageIndex == -1) {
