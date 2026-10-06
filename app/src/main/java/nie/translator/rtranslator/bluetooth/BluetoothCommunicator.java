@@ -315,6 +315,7 @@ public class BluetoothCommunicator {
                                     } else {
                                         executeStopAdvertising();
                                         executeStopDiscovery();
+                                        pauseConnection();
                                         if (turningOffBluetooth) {
                                             turningOffBluetooth = false;
                                         } else {
@@ -330,6 +331,8 @@ public class BluetoothCommunicator {
                                     if (initializingConnection) {
                                         initializingConnection = false;
                                         initializeConnection();
+                                    }else{
+                                        resumeConnection();
                                     }
                                     if ((connectionServer != null && connectionServer.getReconnectingPeers().size() > 0) || advertising) {
                                         executeStartAdvertising();
@@ -544,6 +547,20 @@ public class BluetoothCommunicator {
             connectionClient = new BluetoothConnectionClient(context, uniqueName, bluetoothAdapter, strategy, connectionCallback);
             // we create a server that will take care of receiving any connection requests and managing those connections
             connectionServer = new nie.translator.rtranslator.bluetooth.BluetoothConnectionServer(context, uniqueName, bluetoothAdapter, strategy, connectionClient, connectionCallback);
+        }
+    }
+
+    private void pauseConnection(){
+        if(connectionClient != null && connectionServer != null){
+            connectionClient.pauseConnection();
+            connectionServer.pauseConnection();
+        }
+    }
+
+    private void resumeConnection(){
+        if(connectionClient != null && connectionServer != null){
+            connectionClient.resumeConnection();
+            connectionServer.resumeConnection();
         }
     }
 

@@ -226,6 +226,7 @@ class ClientChannel extends nie.translator.rtranslator.bluetooth.Channel {
         synchronized (lock) {
             if (super.disconnect(disconnectionCallback)) {
                 if (bluetoothGatt != null) {
+                    Log.d("bluetooth_communicator_client", "disconnect, peer: " + getPeer().getName());
                     // canceling notifications
                     BluetoothGattService service = bluetoothGatt.getService(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID);
                     if (service != null) {

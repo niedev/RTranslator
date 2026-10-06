@@ -101,6 +101,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                     @Override
                     public void run() {
                         if (newState == BluetoothProfile.STATE_CONNECTED) {
+                            Log.d("bluetooth_communicator_server", "onConnectionStateChange, connected peer: " + device.getName());
                             synchronized (channelsLock) {
                                 int index;
                                 if(!client.getConnectedPeers().contains(peer)) {    // the client object is used to manage synchronization with the client to avoid adding a device that connects to the latter instead of us
@@ -132,6 +133,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                                                     @Override
                                                     public void run() {
                                                         // means that the connection failed because it did not happen completely by the end of the timer
+                                                        Log.d("bluetooth_communicator_server", "connectionCompleteTimer, expired, peer: " + channel.getPeer().getName());
                                                         if (channel.getPeer().isReconnecting()) {
                                                             stopReconnection(channel);
                                                         } else {
@@ -146,6 +148,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                             }
 
                         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                            Log.d("bluetooth_communicator_server", "onConnectionStateChange, disconnected peer: " + device.getName());
                             manageDisconnection(peer);
                         }
                     }
@@ -163,6 +166,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                             if (characteristic.getUuid().equals(CONNECTION_REQUEST_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, CONNECTION_REQUEST_UUID, peer: " + device.getName());
                                     if (!channels.get(index).getPeer().isDisconnecting()) {
                                         if (!channels.get(index).getPeer().isConnected() && !channels.get(index).getPeer().isReconnecting()) {
                                             String data = new String(value, StandardCharsets.UTF_8);
@@ -185,6 +189,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                             } else if (characteristic.getUuid().equals(CONNECTION_RESUMED_RECEIVE_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, CONNECTION_RESUMED_RECEIVE_UUID, peer: " + device.getName());
                                     if (!channels.get(index).getPeer().isDisconnecting()) {
                                         if (channels.get(index).getPeer().isReconnecting()) {
                                             if (!((nie.translator.rtranslator.bluetooth.ServerChannel) channels.get(index)).notifyConnectionResumed()) {
@@ -203,6 +208,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                             } else if (characteristic.getUuid().equals(MTU_REQUEST_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, MTU_REQUEST_UUID, peer: " + device.getName());
                                     if (!channels.get(index).getPeer().isDisconnecting()) {
                                         try {
                                             int maxMessageLength = value.length;
@@ -219,6 +225,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                             } else if (characteristic.getUuid().equals(MESSAGE_RECEIVE_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, MESSAGE_RECEIVE_UUID, peer: " + device.getName());
                                     Peer sender = (Peer) channels.get(index).getPeer().clone();
                                     nie.translator.rtranslator.bluetooth.BluetoothMessage subMessage = nie.translator.rtranslator.bluetooth.BluetoothMessage.createFromBytes(context, sender, value);
                                     if (subMessage != null) {
@@ -248,6 +255,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                             } else if (characteristic.getUuid().equals(DATA_RECEIVE_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, DATA_RECEIVE_UUID, peer: " + device.getName());
                                     Peer sender = (Peer) channels.get(index).getPeer().clone();
                                     nie.translator.rtranslator.bluetooth.BluetoothMessage subData = nie.translator.rtranslator.bluetooth.BluetoothMessage.createFromBytes(context, sender, value);
                                     if (subData != null) {
@@ -276,6 +284,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                                 }
 
                             } else if (characteristic.getUuid().equals(READ_RESPONSE_MESSAGE_RECEIVED_UUID)) {
+                                Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, READ_RESPONSE_MESSAGE_RECEIVED_UUID, peer: " + device.getName());
                                 int totalLength = nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH + nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH;
                                 String completeText = new String(value, StandardCharsets.UTF_8);
                                 if (completeText.length() >= totalLength) {
@@ -290,6 +299,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                                 }
 
                             } else if (characteristic.getUuid().equals(READ_RESPONSE_DATA_RECEIVED_UUID)) {
+                                Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, READ_RESPONSE_DATA_RECEIVED_UUID, peer: " + device.getName());
                                 int totalLength = nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH + nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH;
                                 String completeText = new String(value, StandardCharsets.UTF_8);
                                 if (completeText.length() >= totalLength) {
@@ -305,6 +315,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                             } else if (characteristic.getUuid().equals(NAME_UPDATE_RECEIVE_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, NAME_UPDATE_RECEIVE_UUID, peer: " + device.getName());
                                     Peer newPeer = (Peer) channels.get(index).getPeer().clone();
                                     newPeer.setUniqueName(new String(value, StandardCharsets.UTF_8));
                                     notifyPeerUpdated(channels.get(index), newPeer);
@@ -313,6 +324,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                             } else if (characteristic.getUuid().equals(DISCONNECTION_RECEIVE_UUID)) {
                                 bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null);
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, DISCONNECTION_RECEIVE_UUID, peer: " + device.getName());
                                     channels.get(index).disconnect(disconnectionCallback);
                                 }
                             }
@@ -335,12 +347,14 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                                     nie.translator.rtranslator.bluetooth.BluetoothMessage pendingSubData = channels.get(index).getPendingSubData();
                                     if (pendingSubData != null) {     // if pendingSubData is null or does not match it means that the message has already been confirmed, or has yet to be confirmed, but we do nothing because this is only a repetition of a previous confirmation
                                         if (DATA_SEND_UUID.equals(characteristic.getUuid())) {
+                                            Log.d("bluetooth_communicator_server", "onCharacteristicReadRequest, DATA_SEND_UUID, peer: " + device.getName());
                                             bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, pendingSubData.getCompleteData());
                                         } else {
                                             throw new Exception();
                                         }
                                     }
                                 } catch (Exception e) {
+                                    e.printStackTrace();
                                     bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, null);
                                 }
                             }
@@ -361,27 +375,32 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                             if (index != -1) {
                                 UUID sendingCharacteristic = ((nie.translator.rtranslator.bluetooth.ServerChannel) channels.get(index)).getSendingCharacteristic();
                                 if (CONNECTION_RESPONSE_UUID.equals(sendingCharacteristic)) {
+                                    Log.d("bluetooth_communicator_server", "onNotificationSent, CONNECTION_RESPONSE_UUID, peer: " + device.getName());
                                     if (!channels.get(index).getPeer().isDisconnecting()) {
                                         notifyConnectionSuccess(channels.get(index));
                                     }
 
                                 } else if (CONNECTION_RESUMED_SEND_UUID.equals(sendingCharacteristic)) {
+                                    Log.d("bluetooth_communicator_server", "onNotificationSent, CONNECTION_RESUMED_SEND_UUID, peer: " + device.getName());
                                     if (!channels.get(index).getPeer().isDisconnecting()) {
                                         //connection resumed
                                         notifyConnectionResumed(channels.get(index));
                                     }
 
                                 } else if (MESSAGE_SEND_UUID.equals(sendingCharacteristic)) {
+                                    Log.d("bluetooth_communicator_server", "onNotificationSent, MESSAGE_SEND_UUID, peer: " + device.getName());
                                     if (status == BluetoothGatt.GATT_FAILURE) {
                                         channels.get(index).onSubMessageWriteFailed();
                                     }
 
                                 } else if (DATA_SEND_UUID.equals(sendingCharacteristic)) {
+                                    Log.d("bluetooth_communicator_server", "onNotificationSent, DATA_SEND_UUID, peer: " + device.getName());
                                     if (status == BluetoothGatt.GATT_FAILURE) {
                                         channels.get(index).onSubDataWriteFailed();
                                     }
 
                                 } else if (DISCONNECTION_SEND_UUID.equals(sendingCharacteristic)) {
+                                    Log.d("bluetooth_communicator_server", "onNotificationSent, DISCONNECTION_SEND_UUID, peer: " + device.getName());
                                     channels.get(index).disconnect(disconnectionCallback);
 
                                 }
@@ -396,7 +415,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                 super.onMtuChanged(device, mtu);
                 int index = channels.indexOf(new nie.translator.rtranslator.bluetooth.Peer(device, null, true));
                 if (index != -1) {
-                    Log.d("bluetooth_communicator", "onMtuChanged on server: "+mtu);
+                    Log.d("bluetooth_communicator_server", "onMtuChanged on server: "+mtu);
                     channels.get(index).setSubMessagesLength(mtu - BluetoothConnection.DATA_MARGIN);
                 }
             }
@@ -484,6 +503,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
     @Override
     protected void stopReconnection(final Channel channel) {
+        Log.d("bluetooth_communicator_server", "stopReconnection, peer: " + channel.getPeer().getName());
         channel.resetConnectionCompleteTimer();
         channel.resetReconnectionTimer();   // if it has not been called since the timer has expired
 
@@ -504,6 +524,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
         synchronized (channelsLock) {
             final int index = channels.indexOf(peer);
             if (index != -1) {
+                Log.d("bluetooth_communicator_client", "manageDisconnection, peer: " + peer.getName());
                 ((nie.translator.rtranslator.bluetooth.ServerChannel) channels.get(index)).setBluetoothGattServer(null);
                 channels.get(index).getPeer().setHardwareConnected(false);
 
@@ -625,6 +646,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
             @Override
             public void onFinished() {
                 // reconnection failed
+                Log.d("bluetooth_communicator_server", "reconnectionTimer, expired, peer: " + channel.getPeer().getName());
                 stopReconnection(channel);
             }
         });
