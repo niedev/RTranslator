@@ -20,6 +20,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -254,6 +255,46 @@ abstract class BluetoothConnection {
         ArrayList<Peer> clone = new ArrayList<>(list.size());
         for (Peer item : list) clone.add((Peer) item.clone());
         return clone;
+    }
+
+    /**
+     * This is meant to be called when the BT is turned off.
+     * This method will:
+     * - Manually set the connection lost status to every connected peer (because the system callback will not work).
+     * - Disconnect any peer that isn't connected or reconnecting.
+     * - And clear some resources for the client and the server.
+     */
+    public void pauseConnection(){
+        synchronized (channelsLock) {
+            Log.d("bluetooth_communicator", "paused connection");
+            final ArrayList<Channel> channelsCopy = new ArrayList<>(BluetoothConnection.this.channels);
+            for(int i=0; i<channelsCopy.size(); i++){
+                Channel channel = channelsCopy.get(i);
+                if(channel.getPeer().isFullyConnected()) {
+                    //we manually call notifyConnectionLost because if this method is called because the BT is off, the system callback of the connection lost will not be called.
+                    notifyConnectionLost(channel);
+                } else if(channel.getPeer().isReconnecting()) {
+                    // we only reset the connectionCompleteTimer and set an eventual requestingReconnection to false (we keep the peer in reconnecting state and we do not change its reconnection timer)
+                    channel.resetConnectionCompleteTimer();  //in case the reconnecting peer is hardware connected, but it hasn't fully completed the connection process (reconnecting = true, hardwareConnected = true, requestingConnection = false)
+                    if(channel.getPeer().isRequestingReconnection()){
+                        channel.getPeer().setRequestingReconnection(false);
+                    }
+                } else {   //any other cases (usually isDisconnecting)
+                    // we disconnect the peer and remove it from the channels (this is why we use channelsCopy for the loop)
+                    channel.disconnect(disconnectionCallback);
+                }
+            }
+        }
+    }
+
+    /**
+     * This is meant to be called when the BT is turned back on after a pauseConnection() call.
+     * This method will restart the resources for the server.
+     * N.B. The client will automatically initialize the resume process for the reconnecting peers
+     * and initialize the resources for each channel when its connection will be resumed.
+     */
+    public void resumeConnection(){
+        Log.d("bluetooth_communicator", "resumed connection");
     }
 
     public void destroy() {

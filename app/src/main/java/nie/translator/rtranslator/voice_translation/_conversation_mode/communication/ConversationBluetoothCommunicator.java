@@ -269,6 +269,11 @@ public class ConversationBluetoothCommunicator {
             public void onBluetoothLeNotSupported() {
                 notifyBluetoothLeNotSupported();
             }
+
+            @Override
+            public void onBluetoothStatusChange(boolean enabled, boolean externalChange) {
+                notifyBluetoothStatusChange(enabled, externalChange);
+            }
         };
         bluetoothCommunicator.addCallback(bluetoothCommunicatorCallback);
     }
@@ -508,6 +513,12 @@ public class ConversationBluetoothCommunicator {
         }
     }
 
+    private void notifyBluetoothStatusChange(boolean enabled, boolean externalChange) {
+        for (int i = 0; i < clientCallbacks.size(); i++) {
+            clientCallbacks.get(i).onBluetoothStatusChange(enabled, externalChange);
+        }
+    }
+
     public static abstract class Callback {
         public void onSearchStarted() {
         }
@@ -549,6 +560,9 @@ public class ConversationBluetoothCommunicator {
         }
 
         public void onBluetoothLeNotSupported() {
+        }
+
+        public void onBluetoothStatusChange(boolean enabled, boolean externalChange){
         }
     }
 }

@@ -138,6 +138,7 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
                                         output.setValue(data);
                                         gatt.writeCharacteristic(output);
                                     } catch (Exception e) {
+                                        e.printStackTrace();
                                         //configuration failed
                                         channels.get(index).disconnect(disconnectionCallback);
                                     }
@@ -467,7 +468,9 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
                 int index = indexOfChannel(peer.getUniqueName());
                 if (index == -1) {
                     // connection
-                    channels.add(new nie.translator.rtranslator.bluetooth.ClientChannel(context, peer));
+                    Peer clonedPeer = (Peer) peer.clone();
+                    clonedPeer.resetState(); // given that this is a new connection, we reset the state of the passed peer (if the passed peer has been already connected and its state changed, this will avoid its previous, and now invalid, state to effect the connection)
+                    channels.add(new nie.translator.rtranslator.bluetooth.ClientChannel(context, clonedPeer));
                     index = channels.size() - 1;
                     BluetoothGatt gatt = channels.get(index).getPeer().getRemoteDevice(bluetoothAdapter).connectGatt(context, false, channelsCallback, BluetoothDevice.TRANSPORT_LE);
                     if (gatt != null) {
@@ -630,6 +633,18 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
         });
     }
 
+    @Override
+    public void pauseConnection() {
+        super.pauseConnection();
+        // clean up of BLE system connection resources
+        synchronized (channelsLock) {
+            for(int i=0; i<channels.size(); i++){
+                ClientChannel channel = (ClientChannel) channels.get(i);
+                BluetoothGatt gatt = channel.getBluetoothGatt();
+                gatt.close();
+            }
+        }
+    }
 
     @Override
     protected void notifyConnectionSuccess(nie.translator.rtranslator.bluetooth.Channel channel) {

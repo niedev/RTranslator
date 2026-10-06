@@ -189,15 +189,6 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
     }
 
-    public VadSilero getVad() {
-        return vad;
-    }
-
-    @Nullable
-    public ConversationBluetoothCommunicator getBluetoothCommunicator() {
-        return bluetoothCommunicator;
-    }
-
     public void destroyBluetoothCommunicator(@Nullable BluetoothCommunicator.DestroyCallback listener){
         if(bluetoothCommunicator != null){
             bluetoothCommunicator.destroy(new BluetoothCommunicator.DestroyCallback() {
@@ -212,13 +203,13 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
     }
 
-    public void resetBluetoothCommunicator() {
-        bluetoothCommunicator.destroy(new BluetoothCommunicator.DestroyCallback() {
-            @Override
-            public void onDestroyed() {
-                bluetoothCommunicator = new ConversationBluetoothCommunicator(Global.this, getName(), BluetoothCommunicator.STRATEGY_P2P_WITH_RECONNECTION);
-            }
-        });
+    @Nullable
+    public ConversationBluetoothCommunicator getBluetoothCommunicator() {
+        return bluetoothCommunicator;
+    }
+
+    public VadSilero getVad() {
+        return vad;
     }
 
     public boolean areModelsLoaded() {

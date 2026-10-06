@@ -65,6 +65,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
     //objects
     private BluetoothGattServer bluetoothGattServer;
     private BluetoothManager bluetoothManager;
+    private final BluetoothConnectionClient client;  // the client object is used to manage synchronization with the client to avoid adding a device that connects to the latter instead of us
 
 
     public BluetoothConnectionServer(final Context context, final String name, @NonNull final BluetoothAdapter bluetoothAdapter, final int strategy, final BluetoothConnectionClient client, final Callback callback) {
@@ -86,6 +87,11 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
             }
         };
 
+        this.client = client;
+        initializeBluetoothGattServer();
+    }
+
+    public void initializeBluetoothGattServer(){
         bluetoothGattServer = bluetoothManager.openGattServer(context, new BluetoothGattServerCallback() {
             @Override
             public void onConnectionStateChange(BluetoothDevice device, int status, final int newState) {
@@ -564,8 +570,24 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
         });
     }
 
+    @Override
+    public void pauseConnection() {
+        super.pauseConnection();
+        // clean up of BLE system connection resources
+        close();
+    }
+
+    @Override
+    public void resumeConnection() {
+        super.resumeConnection();
+        // recreation of BLE system connection resources
+        initializeBluetoothGattServer();
+    }
+
     public void close() {
-        bluetoothGattServer.close();
+        if(bluetoothGattServer != null) {
+            bluetoothGattServer.close();
+        }
     }
 
     @Override
@@ -626,7 +648,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
         callback.onPeerUpdated(peerClone, newPeer);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
+
     @Override
     protected void notifyDisconnection(Channel channel) {
         channels.remove(channel);

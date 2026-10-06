@@ -308,12 +308,13 @@ public class BluetoothCommunicator {
                             int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
 
                             if (state == BluetoothAdapter.STATE_OFF) {
+                                notifyBluetoothStatusChange(false, !turningOffBluetooth);
                                 if (bluetoothAdapter != null) {
                                     if (destroying) {
                                         releaseResourcesAndRestoreBluetoothStatus();
                                     } else {
-                                        stopAdvertising(false);
-                                        stopDiscovery(false);
+                                        executeStopAdvertising();
+                                        executeStopDiscovery();
                                         if (turningOffBluetooth) {
                                             turningOffBluetooth = false;
                                         } else {
@@ -323,6 +324,7 @@ public class BluetoothCommunicator {
                                 }
 
                             } else if (state == BluetoothAdapter.STATE_ON) {
+                                notifyBluetoothStatusChange(true, !turningOnBluetooth);
                                 bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
                                 if (bluetoothAdapter != null) {
                                     if (initializingConnection) {
@@ -369,21 +371,7 @@ public class BluetoothCommunicator {
                     String uniqueName = result.getScanRecord().getDeviceName();
                 }
                 switch (callbackType) {
-                    case ScanSettings.CALLBACK_TYPE_ALL_MATCHES: {
-                        BluetoothDevice device1 = result.getDevice();
-                        if (result.getScanRecord() != null && connectionClient != null) {
-                            String uniqueName = result.getScanRecord().getDeviceName();
-                            if (uniqueName != null && uniqueName.length() > 0) {
-                                nie.translator.rtranslator.bluetooth.Peer peerFound = new nie.translator.rtranslator.bluetooth.Peer(device1, uniqueName, false);
-                                if (connectionClient.getReconnectingPeers().contains(peerFound.getUniqueName())) {
-                                    connectionClient.onReconnectingPeerFound(peerFound);
-                                } else {
-                                    notifyPeerFound(peerFound);
-                                }
-                            }
-                        }
-                        break;
-                    }
+                    case ScanSettings.CALLBACK_TYPE_ALL_MATCHES:
                     case ScanSettings.CALLBACK_TYPE_FIRST_MATCH: {
                         BluetoothDevice device1 = result.getDevice();
                         if (result.getScanRecord() != null && connectionClient != null) {
@@ -604,7 +592,9 @@ public class BluetoothCommunicator {
                     }
                 } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
                     return BLUETOOTH_LE_NOT_SUPPORTED;
-                }else{
+                } else if(bluetoothAdapter != null && !bluetoothAdapter.isEnabled()){
+                    return BLUETOOTH_OFF;
+                } else {
                     return ERROR;
                 }
             } else {
@@ -615,28 +605,32 @@ public class BluetoothCommunicator {
 
     private int executeStartAdvertising() {
         int advertisementSupportedCode = isBluetoothLeSupported();
-        if (advertisementSupportedCode == SUCCESS) {
-            //name update
-            originalName = bluetoothAdapter.getName();
-            bluetoothAdapter.setName(uniqueName);
-            //start advertizing
-            AdvertiseSettings advertiseSettings = new AdvertiseSettings.Builder()
-                    .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)  //alto
-                    .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_HIGH)    //alto
-                    .setConnectable(true)
-                    .setTimeout(0)
-                    .build();
-            AdvertiseData advertiseData = new AdvertiseData.Builder()
-                    .addServiceUuid(new ParcelUuid(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID))
-                    .setIncludeDeviceName(true)
-                    .build();
+        if (advertisementSupportedCode == SUCCESS && bluetoothAdapter != null) {
+            if(bluetoothAdapter.isEnabled()) {
+                //name update
+                originalName = bluetoothAdapter.getName();
+                bluetoothAdapter.setName(uniqueName);
+                //start advertizing
+                AdvertiseSettings advertiseSettings = new AdvertiseSettings.Builder()
+                        .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)  //alto
+                        .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_HIGH)    //alto
+                        .setConnectable(true)
+                        .setTimeout(0)
+                        .build();
+                AdvertiseData advertiseData = new AdvertiseData.Builder()
+                        .addServiceUuid(new ParcelUuid(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID))
+                        .setIncludeDeviceName(true)
+                        .build();
 
-            BluetoothLeAdvertiser advertiser = Objects.requireNonNull(bluetoothAdapter).getBluetoothLeAdvertiser();
-            if (advertiser != null) {
-                advertiser.startAdvertising(advertiseSettings, advertiseData, advertiseCallback);
-                return SUCCESS;
+                BluetoothLeAdvertiser advertiser = Objects.requireNonNull(bluetoothAdapter).getBluetoothLeAdvertiser();
+                if (advertiser != null) {
+                    advertiser.startAdvertising(advertiseSettings, advertiseData, advertiseCallback);
+                    return SUCCESS;
+                } else {
+                    return ERROR;
+                }
             } else {
-                return ERROR;
+                return BLUETOOTH_OFF;
             }
         } else {
             return advertisementSupportedCode;
@@ -768,7 +762,9 @@ public class BluetoothCommunicator {
                     }
                 } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
                     return BLUETOOTH_LE_NOT_SUPPORTED;
-                }else{
+                } else if(bluetoothAdapter != null && !bluetoothAdapter.isEnabled()){
+                    return BLUETOOTH_OFF;
+                } else {
                     return ERROR;
                 }
             } else {
@@ -779,23 +775,27 @@ public class BluetoothCommunicator {
 
     private int executeStartDiscovery() {
         if (bluetoothAdapter != null) {
-            ArrayList<ScanFilter> scanFilters = new ArrayList<>();
-            scanFilters.add(new ScanFilter.Builder()
-                    .setServiceUuid(new ParcelUuid(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID))
-                    .build());
-            ScanSettings scanSettings = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .setMatchMode(ScanSettings.MATCH_MODE_STICKY)  //old: MATCH_MODE_AGGRESSIVE
-                    .setNumOfMatches(ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT)
-                    .setReportDelay(0)
-                    .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)  //old: ScanSettings.CALLBACK_TYPE_FIRST_MATCH | ScanSettings.CALLBACK_TYPE_MATCH_LOST
-                    .build();
-            BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
-            if (scanner != null) {
-                scanner.startScan(scanFilters, scanSettings, discoveryCallback);
-                return SUCCESS;
-            } else {
-                return ERROR;
+            if(bluetoothAdapter.isEnabled()) {
+                ArrayList<ScanFilter> scanFilters = new ArrayList<>();
+                scanFilters.add(new ScanFilter.Builder()
+                        .setServiceUuid(new ParcelUuid(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID))
+                        .build());
+                ScanSettings scanSettings = new ScanSettings.Builder()
+                        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                        .setMatchMode(ScanSettings.MATCH_MODE_STICKY)  //old: MATCH_MODE_AGGRESSIVE
+                        .setNumOfMatches(ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT)
+                        .setReportDelay(0)
+                        .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)  //old: ScanSettings.CALLBACK_TYPE_FIRST_MATCH | ScanSettings.CALLBACK_TYPE_MATCH_LOST
+                        .build();
+                BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
+                if (scanner != null) {
+                    scanner.startScan(scanFilters, scanSettings, discoveryCallback);
+                    return SUCCESS;
+                } else {
+                    return ERROR;
+                }
+            }else{
+                return BLUETOOTH_OFF;
             }
         } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
             return BLUETOOTH_LE_NOT_SUPPORTED;
@@ -1345,6 +1345,17 @@ public class BluetoothCommunicator {
         });
     }
 
+    private void notifyBluetoothStatusChange(boolean enabled, boolean externalChange) {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < clientCallbacks.size(); i++) {
+                    clientCallbacks.get(i).onBluetoothStatusChange(enabled, externalChange);
+                }
+            }
+        });
+    }
+
     public static abstract class Callback extends nie.translator.rtranslator.bluetooth.BluetoothConnection.Callback {
         /**
          * Notify that advertise has started, if you want to do something after the start of advertising do it here, because
@@ -1411,6 +1422,14 @@ public class BluetoothCommunicator {
          * notify that bluetooth low energy is not compatible with this device (that for now is never been called)
          */
         public void onBluetoothLeNotSupported() {
+        }
+
+        /**
+         * notify that bluetooth has been turned off or on by the user or by this library.
+         * @param enabled represents the on/off status
+         * @param externalChange it is true when the status change is done by the user, false if it is done by this library.
+         */
+        public void onBluetoothStatusChange(boolean enabled, boolean externalChange){
         }
     }
 }
