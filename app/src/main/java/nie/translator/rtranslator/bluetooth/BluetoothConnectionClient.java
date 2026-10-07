@@ -74,7 +74,7 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
 
                             synchronized (channelsLock) {
                                 int index = channels.indexOf(new nie.translator.rtranslator.bluetooth.Peer(gatt.getDevice(), null, true));
-                                if (index != -1) {     // is used to manage synchronization with the server to avoid adding a device that connects to the latter instead of us
+                                if (index != -1) {     // is used to manage synchronization with the server to avoid adding a device that connects to the latter instead of us (if the peer is not in our channels, it means that probably is in the channels of the server)
                                     refreshDeviceCache(gatt);  // is used to avoid cache problems
                                     channels.get(index).getPeer().setHardwareConnected(true);
 
@@ -189,7 +189,7 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
 
                                         if (channel.getPeer().isReconnecting()) {
                                             // send the name (for cases where it has changed in the meantime) and the key (to avoid man in the middle during reconnection) with notifyConnectionResumed()
-                                            if (!((nie.translator.rtranslator.bluetooth.ClientChannel) channel).notifyConnectionResumed()) {
+                                            if (!((nie.translator.rtranslator.bluetooth.ClientChannel) channel).notifyConnectionResumed(getUniqueName())) {
                                                 throw new Exception();
                                             }
                                         } else {
@@ -575,7 +575,7 @@ class BluetoothConnectionClient extends nie.translator.rtranslator.bluetooth.Blu
 
             gatt.close();
 
-            if (index != -1) {     // is used to manage synchronization with the server to avoid adding a device that connects to the latter instead of us
+            if (index != -1) {     // is used to manage synchronization with the server to avoid adding a device that connects to the latter instead of us (if the peer is not in our channels, it means that probably is in the channels of the server)
                 Log.d("bluetooth_communicator_client", "manageDisconnection, peer: " + gatt.getDevice().getName());
                 ((nie.translator.rtranslator.bluetooth.ClientChannel) channels.get(index)).setBluetoothGatt(null);
                 channels.get(index).getPeer().setHardwareConnected(false);

@@ -166,7 +166,7 @@ class ClientChannel extends nie.translator.rtranslator.bluetooth.Channel {
         }
     }
 
-    public boolean notifyConnectionResumed() {
+    public boolean notifyConnectionResumed(String uniqueName) {
         synchronized (lock) {
             boolean success = false;
             if (bluetoothGatt != null) {
@@ -174,7 +174,7 @@ class ClientChannel extends nie.translator.rtranslator.bluetooth.Channel {
                 if (service != null) {
                     BluetoothGattCharacteristic output = service.getCharacteristic(nie.translator.rtranslator.bluetooth.BluetoothConnectionServer.CONNECTION_RESUMED_RECEIVE_UUID);
                     if (output != null) {
-                        output.setValue(String.valueOf(1).getBytes(StandardCharsets.UTF_8));
+                        output.setValue(uniqueName.getBytes(StandardCharsets.UTF_8));
                         success = bluetoothGatt.writeCharacteristic(output);
                     }
                 }
