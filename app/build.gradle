@@ -148,7 +148,7 @@ dependencies {
     //gallery image selector
     //implementation 'com.github.niedev:GalleryImageSelector:1.0.7'
     //ONNX Runtime
-    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.23.2'  //latest.release
+    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.30.0'  //latest.release
     implementation 'com.microsoft.onnxruntime:onnxruntime-extensions-android:0.13.0'   //latest.release
     //JWS parser
     implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '5.1'
