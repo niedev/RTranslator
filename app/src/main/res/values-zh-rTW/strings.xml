@@ -149,6 +149,7 @@
     <string name="error_missing_general">缺少所需資源</string>
     <string name="error_apply_unknown">未知錯誤，請重試。</string>
     <string name="error_delete_last_download">這是最後一個已下載的翻譯模型，無法刪除所有翻譯模型。請先下載另一個翻譯模型，再刪除此模型。</string>
+    <string name="error_bluetooth_off">藍牙已關閉，無法使用對話模式，請開啟藍牙後再使用此模式。</string>
 
     <string name="title_image_selector">用户頭像</string>
 

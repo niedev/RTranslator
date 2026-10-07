@@ -148,6 +148,7 @@
     <string name="error_missing_general">Ресурс не завантажено</string>
     <string name="error_apply_unknown">Невідома помилка, спробуйте ще раз.</string>
     <string name="error_delete_last_download">Це остання завантажена модель перекладу. Не можна видалити всі моделі перекладу — завантажте іншу, перш ніж видаляти цю.</string>
+    <string name="error_bluetooth_off">Неможливо скористатися режимом «Розмова», оскільки Bluetooth вимкнено. Увімкніть його, щоб почати користуватися цим режимом.</string>
 
     <string name="title_image_selector">зображення користувача</string>
 

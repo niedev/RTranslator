@@ -164,6 +164,7 @@
     <string name="error_missing_general">Risorsa non scaricata</string>
     <string name="error_apply_unknown">Errore sconosciuto, riprova.</string>
     <string name="error_delete_last_download">Questo è l\'ultimo modello di traduzione scaricato. Non puoi eliminare tutti i modelli di traduzione: scaricane un altro prima di eliminare questo.</string>
+    <string name="error_bluetooth_off">Non è possibile usare la modalità Conversazione perché il Bluetooth è disattivato, attivalo per iniziare a usare questa modalità.</string>
 
     <string name="title_image_selector">immagine del profilo</string>
 
