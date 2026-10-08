@@ -104,17 +104,12 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                                     int index = channels.indexOf(peer);
 
-                                    if (index == -1) {  // in case the device is reconnecting and has changed its hw address (very likely)
-                                        /* The comparison will thus be based on the name instead of the address (which is different in this case)
-                                        * The name of the device however, usually is not present (null), we keep this check only for the rare exception.  */
-                                       /* Usually, if the name in device.getName() is null, the index will still be -1, we create a new channel, like in a normal new connection,
-                                        * we continue the normal handshake like we are creating a new connection. The handshake is the same between connection and reconnection up until
-                                        * we receive a CONNECTION_RESUMED_RECEIVE_UUID instead of a CONNECTION_REQUEST_UUID, in this case, if this message is targeted to a new
-                                        * channel that is doing a connection handshake, and we also have a channel that is reconnecting and has the same uniqueName passed in the resume message,
-                                        * we will pass the important data (device, connection params, ecc.) to the old reconnecting channel and delete the new connecting channel (like a substitution)
-                                        * and continue the reconnection handshake on the old reconnecting channel. */
-                                        index = indexOfChannel(device.getName());
-                                    }
+                                    /* In case the device is reconnecting and has changed its hw address (very likely), the index will still be -1. In this case we create a new channel, like in a normal new connection,
+                                     * we continue the normal handshake like we are creating a new connection. The handshake is the same between connection and reconnection up until
+                                     * we receive a CONNECTION_RESUMED_RECEIVE_UUID instead of a CONNECTION_REQUEST_UUID, in this case, if this message is targeted to a new
+                                     * channel that is doing a connection handshake, and we also have a channel that is reconnecting and has the same uniqueName passed in the resume message,
+                                     * we will pass the important data (device, connection params, ecc.) to the old reconnecting channel and delete the new connecting channel (like a substitution)
+                                     * and continue the reconnection handshake on the old reconnecting channel. */
 
                                     if (index == -1) {
                                         channels.add(new nie.translator.rtranslator.bluetooth.ServerChannel(context, peer, bluetoothAdapter));

@@ -32,7 +32,7 @@ abstract class BluetoothConnection {
     //costanti
     public static final int ACCEPT = 0;
     public static final int REJECT = 1;
-    public static final UUID APP_UUID = UUID.fromString("00001234-0000-1000-8000-00805F9B34FB");
+    public static final UUID APP_UUID = UUID.fromString("00007B3D-0000-1000-8000-00805F9B34FB");   //16 bit UUID
     public static final int DATA_MARGIN = 6;
     public static final int PREFERRED_MTU = 247;
 

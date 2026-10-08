@@ -39,6 +39,7 @@ import android.os.ParcelUuid;
 
 import androidx.annotation.Nullable;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -256,7 +257,6 @@ public class BluetoothCommunicator {
     private int strategy;
     private int originalBluetoothState = -1;
     private String uniqueName;
-    private String originalName;
     private ArrayDeque<nie.translator.rtranslator.bluetooth.Message> pendingMessages = new ArrayDeque<>();
     private ArrayDeque<nie.translator.rtranslator.bluetooth.Message> pendingData = new ArrayDeque<>();
     // objects
@@ -378,8 +378,12 @@ public class BluetoothCommunicator {
                     case ScanSettings.CALLBACK_TYPE_FIRST_MATCH: {
                         BluetoothDevice device1 = result.getDevice();
                         if (result.getScanRecord() != null && connectionClient != null) {
-                            String uniqueName = result.getScanRecord().getDeviceName();
-                            if (uniqueName != null && uniqueName.length() > 0) {
+                            byte[] uniqueNameData = result.getScanRecord().getServiceData(new ParcelUuid(BluetoothConnection.APP_UUID));
+                            String uniqueName = "";
+                            if(uniqueNameData != null && uniqueNameData.length > 0){
+                                uniqueName = new String(uniqueNameData, StandardCharsets.UTF_8);
+                            }
+                            if (!uniqueName.isEmpty()) {
                                 nie.translator.rtranslator.bluetooth.Peer peerFound = new nie.translator.rtranslator.bluetooth.Peer(device1, uniqueName, false);
                                 if (connectionClient.getReconnectingPeers().contains(peerFound.getUniqueName())) {
                                     connectionClient.onReconnectingPeerFound(peerFound);
@@ -624,10 +628,7 @@ public class BluetoothCommunicator {
         int advertisementSupportedCode = isBluetoothLeSupported();
         if (advertisementSupportedCode == SUCCESS && bluetoothAdapter != null) {
             if(bluetoothAdapter.isEnabled()) {
-                //name update
-                originalName = bluetoothAdapter.getName();
-                bluetoothAdapter.setName(uniqueName);
-                //start advertizing
+                //start advertising
                 AdvertiseSettings advertiseSettings = new AdvertiseSettings.Builder()
                         .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)  //alto
                         .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_HIGH)    //alto
@@ -635,8 +636,8 @@ public class BluetoothCommunicator {
                         .setTimeout(0)
                         .build();
                 AdvertiseData advertiseData = new AdvertiseData.Builder()
-                        .addServiceUuid(new ParcelUuid(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID))
-                        .setIncludeDeviceName(true)
+                        .addServiceData(new ParcelUuid(BluetoothConnection.APP_UUID), uniqueName.getBytes(StandardCharsets.UTF_8))
+                        .setIncludeDeviceName(false)
                         .build();
 
                 BluetoothLeAdvertiser advertiser = Objects.requireNonNull(bluetoothAdapter).getBluetoothLeAdvertiser();
@@ -704,8 +705,6 @@ public class BluetoothCommunicator {
     private int executeStopAdvertising() {
         int advertisementSupportedCode = isBluetoothLeSupported();
         if (advertisementSupportedCode == SUCCESS) {
-            //name restore
-            bluetoothAdapter.setName(originalName);
             BluetoothLeAdvertiser advertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
             if (advertiser != null) {
                 advertiser.stopAdvertising(advertiseCallback);
@@ -795,7 +794,7 @@ public class BluetoothCommunicator {
             if(bluetoothAdapter.isEnabled()) {
                 ArrayList<ScanFilter> scanFilters = new ArrayList<>();
                 scanFilters.add(new ScanFilter.Builder()
-                        .setServiceUuid(new ParcelUuid(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID))
+                        .setServiceData(new ParcelUuid(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID), new byte[0])
                         .build());
                 ScanSettings scanSettings = new ScanSettings.Builder()
                         .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -980,7 +979,8 @@ public class BluetoothCommunicator {
             connectionServer.updateName(uniqueName);
             connectionClient.updateName(uniqueName);
             if (isAdvertising()) {
-                bluetoothAdapter.setName(uniqueName);
+                //here we do nothing because we cannot change the advertised name on the fly unless we change the advertising to use AdvertisingSet,
+                // but we will disable the option to change name in the settings while we are in Conversation mode, so we don't have to use AdvertisingSet for now.
             }
             return SUCCESS;
         } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
