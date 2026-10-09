@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Objects;
 
 import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
+import nie.translator.rtranslator.bluetooth.tools.Timer;
 
 /**
  * This class allows you to communicate in P2P mode between two or more android devices.
@@ -246,6 +247,7 @@ public class BluetoothCommunicator {
     public static final int DESTROYING = -6;
     public static final int BLUETOOTH_LE_NOT_SUPPORTED = -7;
     public static final int STRATEGY_P2P_WITH_RECONNECTION = 2;
+    private final int DISCONNECT_ALL_TIMEOUT = 5000;
     // variables
     private boolean changeableBluetoothState = false;
     private boolean advertising = false;
@@ -275,7 +277,10 @@ public class BluetoothCommunicator {
     private final Object messagesLock = new Object();
     private final Object dataLock = new Object();
     private final Object bluetoothLock = new Object();
+    private final Object disconnectionTimerLock = new Object();
     private BroadcastReceiver broadcastReceiver;
+    @Nullable
+    private Timer disconnectAllTimer = null;
 
 
     /**
@@ -331,7 +336,7 @@ public class BluetoothCommunicator {
                                     if (initializingConnection) {
                                         initializingConnection = false;
                                         initializeConnection();
-                                    }else{
+                                    } else {
                                         resumeConnection();
                                     }
                                     if ((connectionServer != null && connectionServer.getReconnectingPeers().size() > 0) || advertising) {
@@ -526,7 +531,6 @@ public class BluetoothCommunicator {
                     }
                 }
 
-                @SuppressWarnings("StatementWithEmptyBody")
                 @Override
                 public void onDisconnected(nie.translator.rtranslator.bluetooth.Peer peer) {
                     super.onDisconnected(peer);
@@ -539,9 +543,10 @@ public class BluetoothCommunicator {
                             executeStopDiscovery();
                         }
                         if (peersLeft == 0) {
+                            resetDisconnectAllTimer();
                             // reset the queued messages to be sent
                             pendingMessages = new ArrayDeque<>();
-                            pendingData= new ArrayDeque<>();
+                            pendingData = new ArrayDeque<>();
                         }
                         notifyDisconnection(peer, peersLeft);
                     }
@@ -555,14 +560,14 @@ public class BluetoothCommunicator {
     }
 
     private void pauseConnection(){
-        if(connectionClient != null && connectionServer != null){
+        if (connectionClient != null && connectionServer != null) {
             connectionClient.pauseConnection();
             connectionServer.pauseConnection();
         }
     }
 
     private void resumeConnection(){
-        if(connectionClient != null && connectionServer != null){
+        if (connectionClient != null && connectionServer != null) {
             connectionClient.resumeConnection();
             connectionServer.resumeConnection();
         }
@@ -592,12 +597,12 @@ public class BluetoothCommunicator {
                                 } else {
                                     ret = isBluetoothLeSupported();
                                 }
-                            } else if(changeableBluetoothState){
+                            } else if (changeableBluetoothState) {
                                 //turn on bluetooth
                                 turningOnBluetooth = true;
                                 bluetoothAdapter.enable();
                                 ret = SUCCESS;
-                            }else{
+                            } else {
                                 ret = BLUETOOTH_OFF;
                             }
                             if (ret == SUCCESS) {
@@ -611,9 +616,9 @@ public class BluetoothCommunicator {
                     } else {
                         return NOT_MAIN_THREAD;
                     }
-                } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
+                } else if (isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED) {
                     return BLUETOOTH_LE_NOT_SUPPORTED;
-                } else if(bluetoothAdapter != null && !bluetoothAdapter.isEnabled()){
+                } else if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
                     return BLUETOOTH_OFF;
                 } else {
                     return ERROR;
@@ -694,9 +699,9 @@ public class BluetoothCommunicator {
                 } else {
                     return NOT_MAIN_THREAD;
                 }
-            } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
+            } else if (isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED) {
                 return BLUETOOTH_LE_NOT_SUPPORTED;
-            }else{
+            } else {
                 return ERROR;
             }
         }
@@ -744,8 +749,8 @@ public class BluetoothCommunicator {
      **/
     public int startDiscovery() {
         // If we're already discovering, stop it
-        synchronized (bluetoothLock) {
-            if (!destroying) {
+        if (!destroying) {
+            synchronized (bluetoothLock) {
                 if (bluetoothAdapter != null && connectionClient != null) {
                     if (Looper.myLooper() == Looper.getMainLooper()) {
                         if (!discovering) {
@@ -757,12 +762,12 @@ public class BluetoothCommunicator {
                                 } else {
                                     ret = SUCCESS;
                                 }
-                            } else if(changeableBluetoothState){
+                            } else if (changeableBluetoothState) {
                                 //turn on bluetooth
                                 turningOnBluetooth = true;
                                 bluetoothAdapter.enable();
                                 ret = SUCCESS;
-                            }else{
+                            } else {
                                 ret = BLUETOOTH_OFF;
                             }
                             if (ret == SUCCESS) {
@@ -776,16 +781,16 @@ public class BluetoothCommunicator {
                     } else {
                         return NOT_MAIN_THREAD;
                     }
-                } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
+                } else if (isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED) {
                     return BLUETOOTH_LE_NOT_SUPPORTED;
-                } else if(bluetoothAdapter != null && !bluetoothAdapter.isEnabled()){
+                } else if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
                     return BLUETOOTH_OFF;
                 } else {
                     return ERROR;
                 }
-            } else {
-                return DESTROYING;
             }
+        } else {
+            return DESTROYING;
         }
     }
 
@@ -858,9 +863,9 @@ public class BluetoothCommunicator {
                 } else {
                     return NOT_MAIN_THREAD;
                 }
-            } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
+            } else if (isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED) {
                 return BLUETOOTH_LE_NOT_SUPPORTED;
-            }else{
+            } else {
                 return ERROR;
             }
         }
@@ -983,9 +988,9 @@ public class BluetoothCommunicator {
                 // but we will disable the option to change name in the settings while we are in Conversation mode, so we don't have to use AdvertisingSet for now.
             }
             return SUCCESS;
-        } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
+        } else if (isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED) {
             return BLUETOOTH_LE_NOT_SUPPORTED;
-        }else{
+        } else {
             return ERROR;
         }
     }
@@ -1076,7 +1081,7 @@ public class BluetoothCommunicator {
             if (connectionClient != null) {
                 connectionClient.connect((nie.translator.rtranslator.bluetooth.Peer) peer.clone());
                 return SUCCESS;
-            } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED) {
+            } else if (isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED) {
                 return BLUETOOTH_LE_NOT_SUPPORTED;
             } else {
                 return ERROR;
@@ -1091,9 +1096,9 @@ public class BluetoothCommunicator {
             connectionServer.readPhy((nie.translator.rtranslator.bluetooth.Peer) peer.clone());
             connectionClient.readPhy((nie.translator.rtranslator.bluetooth.Peer) peer.clone());
             return SUCCESS;
-        } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
+        } else if (isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED) {
             return BLUETOOTH_LE_NOT_SUPPORTED;
-        }else{
+        } else {
             return ERROR;
         }
     }
@@ -1105,6 +1110,22 @@ public class BluetoothCommunicator {
      */
     public BluetoothAdapter getBluetoothAdapter() {
         return bluetoothAdapter;
+    }
+
+    public void forceDisconnectionFromAll(){
+        destroyConnection();
+        // restart of connection
+        if (bluetoothAdapter != null) {
+            if (bluetoothAdapter.isEnabled()) {
+                initializeConnection();
+            } else {
+                initializingConnection = true;
+                if(changeableBluetoothState) {
+                    bluetoothAdapter.enable();
+                }
+            }
+        }
+        notifyForcedDisconnectionFromAll();
     }
 
     /**
@@ -1126,9 +1147,9 @@ public class BluetoothCommunicator {
                     }
                 }
                 return SUCCESS;
-            } else if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
+            } else if (isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED) {
                 return BLUETOOTH_LE_NOT_SUPPORTED;
-            }else{
+            } else {
                 return ERROR;
             }
         }
@@ -1141,6 +1162,12 @@ public class BluetoothCommunicator {
      */
     public int disconnectFromAll() {
         if (connectionClient != null && connectionServer != null) {
+            startDisconnectAllTimer(new Timer.Callback() {
+                @Override
+                public void onFinished() {
+                    forceDisconnectionFromAll();
+                }
+            });
             connectionServer.disconnectAll(new nie.translator.rtranslator.bluetooth.Channel.DisconnectionNotificationCallback() {
                 @Override
                 public void onDisconnectionNotificationSent() {
@@ -1149,10 +1176,43 @@ public class BluetoothCommunicator {
             });
             return SUCCESS;
         }
-        if(isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED){
+        if (isBluetoothLeSupported() == BLUETOOTH_LE_NOT_SUPPORTED) {
             return BLUETOOTH_LE_NOT_SUPPORTED;
-        }else{
+        } else {
             return ERROR;
+        }
+    }
+
+    public void startDisconnectAllTimer(final Timer.Callback callback) {
+        synchronized (disconnectionTimerLock) {
+            disconnectAllTimer = new Timer(DISCONNECT_ALL_TIMEOUT);
+            disconnectAllTimer.setCallback(callback);
+            disconnectAllTimer.start();
+        }
+    }
+
+    public void resetDisconnectAllTimer() {
+        synchronized (disconnectionTimerLock) {
+            if (disconnectAllTimer != null) {
+                disconnectAllTimer.cancel();
+                disconnectAllTimer = null;
+            }
+        }
+    }
+
+    public void destroyConnection(){
+        if (connectionClient != null && connectionServer != null) {
+            connectionClient.destroy();
+            connectionServer.destroy();
+            if (!advertising) {
+                executeStopAdvertising();
+            }
+            if (!discovering) {
+                executeStopDiscovery();
+            }
+            // reset the queued messages to be sent
+            pendingMessages = new ArrayDeque<>();
+            pendingData = new ArrayDeque<>();
         }
     }
 
@@ -1373,6 +1433,17 @@ public class BluetoothCommunicator {
         });
     }
 
+    private void notifyForcedDisconnectionFromAll() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < clientCallbacks.size(); i++) {
+                    clientCallbacks.get(i).onForcedDisconnectionFromAll();
+                }
+            }
+        });
+    }
+
     public static abstract class Callback extends nie.translator.rtranslator.bluetooth.BluetoothConnection.Callback {
         /**
          * Notify that advertise has started, if you want to do something after the start of advertising do it here, because
@@ -1447,6 +1518,9 @@ public class BluetoothCommunicator {
          * @param externalChange it is true when the status change is done by the user, false if it is done by this library.
          */
         public void onBluetoothStatusChange(boolean enabled, boolean externalChange){
+        }
+
+        public void onForcedDisconnectionFromAll(){
         }
     }
 }

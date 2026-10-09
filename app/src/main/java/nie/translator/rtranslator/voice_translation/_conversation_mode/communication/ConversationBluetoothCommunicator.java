@@ -266,6 +266,16 @@ public class ConversationBluetoothCommunicator {
             }
 
             @Override
+            public void onForcedDisconnectionFromAll() {
+                while (!connectingPeers.isEmpty()) {
+                    notifyConnectionFailed(new GuiPeer(connectingPeers.remove(0), null), BluetoothCommunicator.ERROR);
+                }
+                while (!connectedPeers.isEmpty()) {
+                    notifyDisconnection(new GuiPeer(connectedPeers.remove(0), null), connectedPeers.size());
+                }
+            }
+
+            @Override
             public void onBluetoothLeNotSupported() {
                 notifyBluetoothLeNotSupported();
             }
