@@ -28,7 +28,7 @@
         android:id="@+id/card1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Light"
+        android:theme="@style/ThemeOverlay.AppCompat"
         android:backgroundTint="@color/very_very_light_gray"
         android:visibility="visible"
         app:cardCornerRadius="18sp"

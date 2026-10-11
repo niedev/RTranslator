@@ -69,6 +69,14 @@ android {
         prefab true
     }
 
+    testOptions {
+        unitTests.includeAndroidResources = true
+        unitTests.all {
+            // Android 16's file descriptor interceptor needs this JDK module.
+            jvmArgs '--add-opens=java.base/jdk.internal.access=ALL-UNNAMED'
+        }
+    }
+
     buildTypes {
         debug {
             minifyEnabled false
@@ -163,7 +171,11 @@ dependencies {
     // Test helpers
     testImplementation "androidx.room:room-testing:$room_version"
     // Tests
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation('org.robolectric:robolectric:4.17') {
+        // Use the app's provider to avoid duplicate Bouncy Castle classes in tests.
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
+    }
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }

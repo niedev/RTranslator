@@ -19,10 +19,10 @@
     android:viewportWidth="960"
     android:viewportHeight="960">
   <path
-      android:fillColor="#FF000000"
+      android:fillColor="@color/very_very_dark_gray"
       android:pathData="m360,166.98 l-200,200L0,366.98v240h160l200,200zM444.69,218.86c-0.12,0.13 -0.2,0.24 -0.31,0.39h0.08l0.08,0.08 0.08,0.08h0.08c0.01,-0.17 -0.01,-0.37 0,-0.55zM529.45,258.54c-0.54,0.72 -1.08,1.42 -1.64,2.11 1.01,0.74 1.97,1.51 2.97,2.27 -0.45,-1.45 -0.87,-2.92 -1.33,-4.38zM280,360.96L280,613L193.98,526.98L80,526.98v-80h113.98z"/>
   <path
-      android:fillColor="#FF000000"
+      android:fillColor="@color/very_very_dark_gray"
       android:pathData="M665.08,239.29 L493.87,720.71h96.21L636.93,599.03 816.03,597.71 861.77,720.71h99.39L789.96,239.29ZM725.52,330.61 L796.88,514.28L657.55,514.28Z"
       android:strokeWidth="20.2"
       android:strokeColor="#00000000"/>

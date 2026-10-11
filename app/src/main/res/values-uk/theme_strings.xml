@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preference_header_appearance">Вигляд</string>
+    <string name="preference_title_theme_mode">Режим теми</string>
+    <string name="preference_title_dark_theme">Темна тема</string>
+    <string-array name="theme_mode_entries">
+        <item>Як у системі</item>
+        <item>Світла</item>
+        <item>Темна</item>
+    </string-array>
+    <string-array name="dark_theme_descriptions">
+        <item>Графіт і ніжна м’ята</item>
+        <item>Глибокий синій і крижаний блакитний</item>
+        <item>Чистий чорний і ніжна м’ята</item>
+    </string-array>
+</resources>

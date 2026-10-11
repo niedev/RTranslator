@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preference_header_appearance">外观</string>
+    <string name="preference_title_theme_mode">主题模式</string>
+    <string name="preference_title_dark_theme">深色主题</string>
+    <string-array name="theme_mode_entries">
+        <item>跟随系统</item>
+        <item>浅色</item>
+        <item>深色</item>
+    </string-array>
+    <string-array name="dark_theme_descriptions">
+        <item>炭灰与柔和薄荷绿</item>
+        <item>深海蓝与冰蓝</item>
+        <item>纯黑与柔和薄荷绿</item>
+    </string-array>
+</resources>

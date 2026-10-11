@@ -30,6 +30,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import nie.translator.rtranslator.GeneralActivity;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.Tools;
+import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.tools.gui.ResourceManagerView;
 
 
@@ -43,14 +44,12 @@ public class SettingsActivity extends GeneralActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        getWindow().setStatusBarColor(GuiTools.getColor(this, R.color.primary_very_lite));
 
         Toolbar toolbar = findViewById(R.id.toolbarSettings);
         setActionBar(toolbar);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setDisplayShowHomeEnabled(true);
-
-        View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
         Bundle b = getIntent().getExtras();
         boolean startWithModelManager = b != null && b.getBoolean("startWithModelManager");

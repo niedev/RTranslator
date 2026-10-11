@@ -83,10 +83,10 @@ public class GuiTools {
     }
 
     public static int getColor(Context context, int colorCode) {
-        return context.getResources().getColor(colorCode, null);
+        return context.getResources().getColor(colorCode, context.getTheme());
     }
 
     public static ColorStateList getColorStateList(Context context, int colorCode) {
-        return context.getResources().getColorStateList(colorCode, null);
+        return context.getResources().getColorStateList(colorCode, context.getTheme());
     }
 }

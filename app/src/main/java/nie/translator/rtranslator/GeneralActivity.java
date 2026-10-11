@@ -16,6 +16,7 @@
 
 package nie.translator.rtranslator;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -27,13 +28,25 @@ import androidx.fragment.app.FragmentActivity;
 import javax.annotation.Nullable;
 
 import nie.translator.rtranslator.access.AccessActivity;
+import nie.translator.rtranslator.tools.gui.ThemeManager;
 
 
 public abstract class GeneralActivity extends FragmentActivity {
+    private int theme;
+    private String themeMode;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(ThemeManager.wrapContext(newBase));
+    }
 
     @Override
     protected void onCreate(@androidx.annotation.Nullable Bundle savedInstanceState) {
+        theme = ThemeManager.getTheme(this);
+        themeMode = ThemeManager.getThemeMode(this);
+        setTheme(theme);
         super.onCreate(savedInstanceState);
+        ThemeManager.updateSystemBars(this);
         // if the models are not loaded and an activity different than LoadingActivity or AccessActivity is created,
         // that means that the system has killed the app, and now it is launching the app with the last activity (restoring it).
         // In this case we start the loading activity instead, otherwise the app will crash for the lack of loaded models.
@@ -47,6 +60,15 @@ public abstract class GeneralActivity extends FragmentActivity {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Settings may have changed while this activity was in the background.
+        if(theme != ThemeManager.getTheme(this) || !themeMode.equals(ThemeManager.getThemeMode(this))) {
+            recreate();
         }
     }
 

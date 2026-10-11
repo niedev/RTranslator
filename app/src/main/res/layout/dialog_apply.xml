@@ -5,7 +5,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/primary_very_lite"
+    android:background="?attr/rtranslatorBackground"
     android:elevation="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -125,7 +125,7 @@
                         android:fontFamily="@font/nunito_sans_semibold"
                         android:text="@string/exit"
                         android:textAlignment="center"
-                        android:textColor="@color/accent_white"
+                        android:textColor="@color/on_primary"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -168,7 +168,7 @@
                         android:fontFamily="@font/nunito_semibold"
                         android:text="@string/apply"
                         android:textAlignment="center"
-                        android:textColor="@color/accent_white"
+                        android:textColor="@color/on_primary"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"

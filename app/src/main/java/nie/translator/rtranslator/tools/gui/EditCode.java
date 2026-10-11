@@ -17,7 +17,6 @@
 package nie.translator.rtranslator.tools.gui;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -26,6 +25,8 @@ import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import androidx.appcompat.widget.AppCompatEditText;
+
+import nie.translator.rtranslator.R;
 
 public class EditCode extends AppCompatEditText {
     private boolean muteTextWatcher=false;
@@ -56,7 +57,7 @@ public class EditCode extends AppCompatEditText {
         setSingleLine(true);
         setText("------");
         SpannableString lastSpannableString = new SpannableString("------");
-        ForegroundColorSpan fcs = new ForegroundColorSpan(Color.LTGRAY);
+        ForegroundColorSpan fcs = new ForegroundColorSpan(GuiTools.getColor(getContext(), R.color.light_gray));
         lastSpannableString.setSpan(fcs, 0, lastSpannableString.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
         final SpannableStringBuilder text = new SpannableStringBuilder(lastSpannableString);
 
@@ -80,7 +81,7 @@ public class EditCode extends AppCompatEditText {
                         if (!delete) {
                             SpannableString lastSpannableChar = new SpannableString(s.subSequence(start, start + count));
                             // Span to set char color
-                            ForegroundColorSpan fcs = new ForegroundColorSpan(Color.BLACK);
+                            ForegroundColorSpan fcs = new ForegroundColorSpan(GuiTools.getColor(getContext(), R.color.black));
                             // Set the text color for the last character
                             lastSpannableChar.setSpan(fcs, 0, 1, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                             text.delete(start, start + 1);
@@ -88,7 +89,7 @@ public class EditCode extends AppCompatEditText {
                         } else {
                             SpannableString lastSpannableChar = new SpannableString("-");
                             // Span to set char color
-                            ForegroundColorSpan fcs = new ForegroundColorSpan(Color.LTGRAY);
+                            ForegroundColorSpan fcs = new ForegroundColorSpan(GuiTools.getColor(getContext(), R.color.light_gray));
                             // Set the text color for the last character
                             lastSpannableChar.setSpan(fcs, 0, 1, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                             text.delete(start, start + 1);

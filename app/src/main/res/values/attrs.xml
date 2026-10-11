@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Palette roles shared by XML layouts and animated controls. -->
+    <attr name="rtranslatorBackground" format="color" />
+    <attr name="rtranslatorSurfaceRaised" format="color" />
+    <attr name="rtranslatorAccentStrong" format="color" />
+    <attr name="rtranslatorAccentSoft" format="color" />
+    <attr name="rtranslatorTextBody" format="color" />
+    <attr name="rtranslatorTextStrong" format="color" />
+    <attr name="rtranslatorMuted" format="color" />
+    <attr name="rtranslatorDisabled" format="color" />
+    <attr name="rtranslatorOutline" format="color" />
+    <attr name="rtranslatorLink" format="color" />
+    <attr name="rtranslatorSentMessage" format="color" />
+    <attr name="rtranslatorWarning" format="color" />
+    <attr name="rtranslatorCardStrokeWidth" format="dimension" />
+
     <declare-styleable name="ResourceManagerView">
         <attr name="modelTitle" format="string" />
         <attr name="modelDescription" format="string" />

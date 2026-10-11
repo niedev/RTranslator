@@ -19,20 +19,38 @@ import nie.translator.rtranslator.bluetooth.Message;
 import nie.translator.rtranslator.bluetooth.Peer;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.gui.messages.MessagesAdapter;
+import nie.translator.rtranslator.tools.gui.ThemeManager;
 
 //This activity is used only to create the images of the conversation mode in the readme
 
 public class ImageActivity extends Activity {
+    private int theme;
+    private String themeMode;
     protected MessagesAdapter mAdapter;
     protected RecyclerView mRecyclerView;
 
     @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(ThemeManager.wrapContext(newBase));
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        theme = ThemeManager.getTheme(this);
+        themeMode = ThemeManager.getThemeMode(this);
+        setTheme(theme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.image_conversation);
 
-        View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        ThemeManager.updateSystemBars(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(theme != ThemeManager.getTheme(this) || !themeMode.equals(ThemeManager.getThemeMode(this))) {
+            recreate();
+        }
     }
 
     @Override

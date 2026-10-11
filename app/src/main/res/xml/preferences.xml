@@ -17,7 +17,7 @@
 
 
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:divider="@color/gray"
+    android:divider="?attr/rtranslatorOutline"
     android:dividerHeight="1dp">
 
     <nie.translator.rtranslator.settings.UserImagePreference
@@ -29,6 +29,30 @@
         android:key="changeName"
         android:layout="@layout/preference_user_name"
         app:iconSpaceReserved="false" />
+
+    <androidx.preference.PreferenceCategory
+        android:title="@string/preference_header_appearance"
+        app:iconSpaceReserved="false"
+        app:allowDividerBelow="true">
+        <androidx.preference.ListPreference
+            android:key="themeMode"
+            android:defaultValue="system"
+            android:title="@string/preference_title_theme_mode"
+            android:dialogTitle="@string/preference_title_theme_mode"
+            android:summary="@string/preference_summary_theme_mode"
+            android:entries="@array/theme_mode_entries"
+            android:entryValues="@array/theme_mode_values"
+            app:iconSpaceReserved="false" />
+        <nie.translator.rtranslator.settings.ThemePreference
+            android:key="darkTheme"
+            android:defaultValue="graphite"
+            android:title="@string/preference_title_dark_theme"
+            android:dialogTitle="@string/preference_title_dark_theme"
+            android:entries="@array/dark_theme_entries"
+            android:entryValues="@array/dark_theme_values"
+            android:widgetLayout="@layout/preference_theme_preview"
+            app:iconSpaceReserved="false" />
+    </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory
         android:title="@string/general"

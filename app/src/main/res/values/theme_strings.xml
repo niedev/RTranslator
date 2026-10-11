@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preference_header_appearance">Appearance</string>
+    <string name="preference_title_theme_mode">Theme mode</string>
+    <string name="preference_title_dark_theme">Dark theme</string>
+    <string name="preference_summary_theme_mode" translatable="false">%s</string>
+    <string name="preference_summary_dark_theme" translatable="false">%1$s · %2$s</string>
+    <string-array name="theme_mode_entries">
+        <item>System default</item>
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="theme_mode_values" translatable="false">
+        <item>system</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+    <string-array name="dark_theme_entries" translatable="false">
+        <item>Graphite</item>
+        <item>Midnight</item>
+        <item>AMOLED</item>
+    </string-array>
+    <string-array name="dark_theme_descriptions">
+        <item>Charcoal and soft mint</item>
+        <item>Deep navy and ice blue</item>
+        <item>Pure black and soft mint</item>
+    </string-array>
+    <string-array name="dark_theme_values" translatable="false">
+        <item>graphite</item>
+        <item>midnight</item>
+        <item>amoled</item>
+    </string-array>
+</resources>
