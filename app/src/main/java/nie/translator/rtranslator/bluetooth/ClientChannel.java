@@ -28,6 +28,7 @@ import androidx.annotation.NonNull;
 
 import java.nio.charset.StandardCharsets;
 
+import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
 import nie.translator.rtranslator.bluetooth.tools.Timer;
 
 @SuppressLint("MissingPermission")
@@ -42,7 +43,9 @@ class ClientChannel extends nie.translator.rtranslator.bluetooth.Channel {
 
     public void setBluetoothGatt(BluetoothGatt bluetoothGatt) {
         synchronized (lock) {
-            this.bluetoothGatt = bluetoothGatt;
+            synchronized (commandsLock) {
+                this.bluetoothGatt = bluetoothGatt;
+            }
         }
     }
 
@@ -51,87 +54,112 @@ class ClientChannel extends nie.translator.rtranslator.bluetooth.Channel {
     }
 
     @Override
-    protected void writeSubMessage() {
-        new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                synchronized (lock) {
-                    boolean success = false;
-                    if (bluetoothGatt != null && !messagesPaused && getPeer().isFullyConnected()) {
-                        BluetoothGattService service = bluetoothGatt.getService(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID);
-
-                        if (service != null) {
-                            if (pendingMessage != null) {
-                                nie.translator.rtranslator.bluetooth.BluetoothMessage subMessageToSend = pendingMessage.peekFirst();
-                                if (subMessageToSend != null) {   // if there are other subMessages for the message we are sending, we send the next one
-                                    BluetoothGattCharacteristic output = service.getCharacteristic(nie.translator.rtranslator.bluetooth.BluetoothConnectionServer.MESSAGE_RECEIVE_UUID);
-                                    if (output != null) {
-                                        output.setValue(subMessageToSend.getCompleteData());
-                                        success = bluetoothGatt.writeCharacteristic(output);
-                                        Log.e("subClientMessage send", "-" + success);
-                                    }
-                                }
-                            } else {
-                                success = true;
+    protected void sendSubMessage() {
+        if (pendingSubMessages != null) {
+            BluetoothMessage subMessageToSend = pendingSubMessages.peekFirst();
+            if(!pendingSubMessages.isEmpty()) {
+                if (subMessageToSend != null) {
+                    Log.e("sub message send", "-");
+                    startMessageTimer(new Timer.Callback() {
+                        @Override
+                        public void onFinished() {
+                            /*
+                             A confirmation of the success of the command sending the subMessage is not always the same as the confirmation of the sending of the subMessage.
+                             This second timer resolve this problem, because will retry the submessage send until it receives a success of the subMessage.
+                             */
+                            synchronized (messagesLock) {
+                                sendSubMessage();
                             }
                         }
-                    }
-                    final boolean finalSuccess = success;
-                    if (finalSuccess) {
-                        //start of message timer
-                        startMessageTimer(new Timer.Callback() {
-                            @Override
-                            public void onFinished() {
-                                onSubMessageWriteFailed();
-                            }
-                        });
-                    } else {
-                        writeSubMessage();
-                    }
+                    });
+                    Command command = new Command(Command.CommandType.WRITE, BluetoothConnectionServer.MESSAGE_RECEIVE_UUID, subMessageToSend.getCompleteData());
+                    // We check if the subData is already present in the commands before adding it.
+                    // This is to avoid adding multiple times the same subData read notification to the queue in cases its command is already retrying.
+                    boolean found = checkBluetoothMessageInCommands(command, subMessageToSend);
+                    if(!found) sendCommand(command);
+                }else{
+                    // if there are other subMessages for the message we are sending, we send the next one
+                    pendingSubMessages.removeFirst();
+                    sendSubMessage();
                 }
             }
-        }.start();
+        }
     }
 
     @Override
-    protected void writeSubData() {
+    protected void sendSubData() {
+        if (pendingSubData != null) {
+            BluetoothMessage subDataToSend = pendingSubData.peekFirst();
+            if(!pendingSubData.isEmpty()) {
+                if (subDataToSend != null) {
+                    Log.e("sub data send", "-");
+                    startDataTimer(new Timer.Callback() {
+                        @Override
+                        public void onFinished() {
+                            /* Same principle explained in the sendSubMessage() above*/
+                            sendSubData();
+                        }
+                    });
+                    Command command = new Command(Command.CommandType.WRITE, BluetoothConnectionServer.DATA_RECEIVE_UUID, subDataToSend.getCompleteData());
+                    // We check if the subData is already present in the commands before adding it.
+                    // This is to avoid adding multiple times the same subData read notification to the queue in cases its command is already retrying.
+                    boolean found = checkCommandInCommands(command);
+                    if(!found) sendCommand(command);
+                }else{
+                    // if there are other subData for the data we are sending, we send the next one
+                    pendingSubData.removeFirst();
+                    sendSubData();
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void writeCommand() {
         new Thread() {
             @Override
             public void run() {
                 super.run();
-                synchronized (lock) {
+                synchronized (commandsLock) {
                     boolean success = false;
-                    if (bluetoothGatt != null && !dataPaused && getPeer().isFullyConnected()) {
+                    if (bluetoothGatt != null && getPeer().isFullyConnected() && !getPeer().isDisconnecting()) {
                         BluetoothGattService service = bluetoothGatt.getService(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID);
 
                         if (service != null) {
-                            if (pendingData != null) {
-                                nie.translator.rtranslator.bluetooth.BluetoothMessage subDataToSend = pendingData.peekFirst();
-                                if (subDataToSend != null) {   // if there are other subMessages for the message we are sending, we send the next one
-                                    BluetoothGattCharacteristic output = service.getCharacteristic(nie.translator.rtranslator.bluetooth.BluetoothConnectionServer.DATA_RECEIVE_UUID);
+                            Command commandToSend = pendingCommands.peekFirst();
+                            if (commandToSend != null) {
+                                if(commandToSend.type == Command.CommandType.WRITE) {
+                                    BluetoothGattCharacteristic output = service.getCharacteristic(commandToSend.characteristic);
                                     if (output != null) {
-                                        output.setValue(subDataToSend.getCompleteData());
+                                        output.setValue(commandToSend.data);
                                         success = bluetoothGatt.writeCharacteristic(output);
-                                        Log.e("subClientData send", "-" + success);
+                                        Log.e("subClientCommand send", "-" + success);
                                     }
+                                }else if(commandToSend.type == Command.CommandType.READ) {
+                                    success = bluetoothGatt.readCharacteristic(service.getCharacteristic(commandToSend.characteristic));
                                 }
-                            } else {
-                                success = true;
+                            }else{
+                                // if there are other commands we send the next one immediately, and we exit,
+                                // otherwise we just exit without starting the retry timer
+                                // because the commands to execute are empty
+                                if(!pendingCommands.isEmpty()){
+                                    pendingCommands.removeFirst();
+                                    writeCommand();
+                                }
+                                return;
                             }
                         }
                     }
-                    final boolean finalSuccess = success;
-                    if (finalSuccess) {
-                        //start of data timer
-                        startDataTimer(new Timer.Callback() {
+                    // Start of message timer, retry if it finishes.
+                    // This retry timer is start only if the peer is fully connected, otherwise we will resume
+                    // the sending only when the connection is fully restored (to avoid interfering with the handshake messages)
+                    if(!success && getPeer().isFullyConnected() && !getPeer().isDisconnecting()) {
+                        startCommandTimer(new Timer.Callback() {
                             @Override
                             public void onFinished() {
-                                onSubDataWriteFailed();
+                                writeCommand();
                             }
                         });
-                    } else {
-                        writeSubData();
                     }
                 }
             }
@@ -149,7 +177,7 @@ class ClientChannel extends nie.translator.rtranslator.bluetooth.Channel {
         }
     }
 
-    public boolean requestConnection(String uniqueName) {
+    public boolean requestConnection(String uniqueName) {  //handshake commands must avoid the sendCommand queue (because of the isConnected check), also they don't need it because they are already sent sequentially
         synchronized (lock) {
             boolean success = false;
             if (bluetoothGatt != null) {
@@ -166,7 +194,7 @@ class ClientChannel extends nie.translator.rtranslator.bluetooth.Channel {
         }
     }
 
-    public boolean notifyConnectionResumed(String uniqueName) {
+    public boolean notifyConnectionResumed(String uniqueName) {  //handshake commands must avoid the sendCommand queue (because of the isConnected check), also they don't need it because they are already sent sequentially
         synchronized (lock) {
             boolean success = false;
             if (bluetoothGatt != null) {
@@ -183,22 +211,27 @@ class ClientChannel extends nie.translator.rtranslator.bluetooth.Channel {
         }
     }
 
+    public void notifySubMessageReceived(BluetoothMessage subMessage){
+        byte[] responseData = BluetoothTools.concatBytes(subMessage.getId().getValue().getBytes(StandardCharsets.UTF_8), subMessage.getSequenceNumber().getValue().getBytes(StandardCharsets.UTF_8));
+        Command command = new Command(Command.CommandType.WRITE, BluetoothConnectionServer.READ_RESPONSE_MESSAGE_RECEIVED_UUID, responseData);
+        sendCommand(command);
+    }
+
+    public void notifySubDataReceived(BluetoothMessage subMessage){
+        byte[] responseData = BluetoothTools.concatBytes(subMessage.getId().getValue().getBytes(StandardCharsets.UTF_8), subMessage.getSequenceNumber().getValue().getBytes(StandardCharsets.UTF_8));
+        Command command = new Command(Command.CommandType.WRITE, BluetoothConnectionServer.READ_RESPONSE_DATA_RECEIVED_UUID, responseData);
+        sendCommand(command);
+    }
+
+    public void notifyReadSubData(){
+        Command command = new Command(Command.CommandType.READ, BluetoothConnectionServer.DATA_SEND_UUID, new byte[0]);
+        sendCommand(command);
+    }
+
     @Override
-    public boolean notifyNameUpdated(String uniqueName) {
-        synchronized (lock) {
-            boolean success = false;
-            if (bluetoothGatt != null && getPeer().isFullyConnected()) {
-                BluetoothGattService service = bluetoothGatt.getService(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID);
-                if (service != null) {
-                    BluetoothGattCharacteristic output = service.getCharacteristic(nie.translator.rtranslator.bluetooth.BluetoothConnectionServer.NAME_UPDATE_RECEIVE_UUID);
-                    if (output != null) {
-                        output.setValue(uniqueName.getBytes(StandardCharsets.UTF_8));
-                        success = bluetoothGatt.writeCharacteristic(output);
-                    }
-                }
-            }
-            return success;
-        }
+    public void notifyNameUpdated(String uniqueName) {
+        Command command = new Command(Command.CommandType.WRITE, BluetoothConnectionServer.NAME_UPDATE_RECEIVE_UUID, uniqueName.getBytes(StandardCharsets.UTF_8));
+        sendCommand(command);
     }
 
     @Override
@@ -206,6 +239,13 @@ class ClientChannel extends nie.translator.rtranslator.bluetooth.Channel {
         synchronized (lock) {
             boolean success = false;
             if (super.notifyDisconnection(disconnectionNotificationCallback)) {
+                // start of notify disconnection timer
+                startNotifyDisconnectionTimer(new Timer.Callback() {
+                    @Override
+                    public void onFinished() {
+                        disconnect(disconnectionNotificationCallback);
+                    }
+                });
                 if (bluetoothGatt != null && getPeer().isFullyConnected()) {
                     BluetoothGattService service = bluetoothGatt.getService(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID);
                     if (service != null) {
@@ -248,7 +288,9 @@ class ClientChannel extends nie.translator.rtranslator.bluetooth.Channel {
                     // actual disconnection
                     bluetoothGatt.disconnect();
                     disconnectionCallback.onClientDisconnectionSuccess(bluetoothGatt);  //here the bluetoothGatt.close() is called, the resources are cleared and the disconnection notified to BluetoothCommunicator
-                    bluetoothGatt = null;
+                    synchronized (commandsLock) {
+                        bluetoothGatt = null;
+                    }
 
                 }
                 return true;

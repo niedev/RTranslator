@@ -27,6 +27,7 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import nie.translator.rtranslator.bluetooth.tools.Timer;
 
@@ -34,7 +35,8 @@ abstract class Channel {
     //timeouts of timers
     private final int RECONNECTION_TIMEOUT = 30000;
     private final int CONNECTION_COMPLETE_TIMEOUT = 10000;
-    protected final int MESSAGE_TIMEOUT = 1000;
+    protected final int COMMAND_TIMEOUT = 1000;
+    protected final int MESSAGE_TIMEOUT = 1500;
     private final int NOTIFY_DISCONNECTION_TIMEOUT = 5000;
     private final int DISCONNECTION_TIMEOUT = 4000;
     //variables and objects
@@ -43,120 +45,214 @@ abstract class Channel {
     private Peer peer;
     private nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber messageID;
     private nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber dataID;
+    protected ArrayDeque<nie.translator.rtranslator.bluetooth.Message> pendingMessages = new ArrayDeque<>();
+    protected ArrayDeque<nie.translator.rtranslator.bluetooth.Message> pendingData = new ArrayDeque<>();
     @Nullable
-    protected ArrayDeque<nie.translator.rtranslator.bluetooth.BluetoothMessage> pendingMessage;
+    protected ArrayDeque<nie.translator.rtranslator.bluetooth.BluetoothMessage> pendingSubMessages;  // when not null it contains all the sending subMessages of the current sending message
     @Nullable
-    protected ArrayDeque<nie.translator.rtranslator.bluetooth.BluetoothMessage> pendingData;
+    protected ArrayDeque<nie.translator.rtranslator.bluetooth.BluetoothMessage> pendingSubData;  // when not null it contains all the sending subData of the current sending data
+    protected ArrayDeque<Command> pendingCommands = new ArrayDeque<>();
     private ArrayList<nie.translator.rtranslator.bluetooth.BluetoothMessage> receivingMessages = new ArrayList<>();
     private ArrayList<nie.translator.rtranslator.bluetooth.BluetoothMessage> receivingData = new ArrayList<>();
     private ArrayList<nie.translator.rtranslator.bluetooth.BluetoothMessage> receivedMessages = new ArrayList<>();
     private ArrayList<nie.translator.rtranslator.bluetooth.BluetoothMessage> receivedData = new ArrayList<>();
     private Timer connectionCompleteTimer;
     private Timer reconnectionTimer;
+    private Timer commandTimer;
     private Timer messageTimer;
     private Timer dataTimer;
     private Timer notifyDisconnectionTimer;
     protected Handler mainHandler;
-    private Handler messageHandler;
-    private Handler dataHandler;
-    private MessageCallback messageCallback;
-    private MessageCallback dataCallback;
     @Nullable
     protected DisconnectionNotificationCallback disconnectionNotificationCallback;
     private boolean notifyingDisconnection = false;
     private boolean disconnecting = false;
     protected boolean messagesPaused = false;
     protected boolean dataPaused = false;
-    protected int subMessagesLength;
+    protected int bluetoothMessagesLength;
     protected final Object lock = new Object();
+    protected final Object messagesLock = new Object();
+    protected final Object dataLock = new Object();
+    protected final Object commandsLock = new Object();
 
     protected Channel(Context context, @NonNull Peer peer) {
         this.context = context;
         this.messageID= new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH);
         this.dataID= new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH);
-        this.mainHandler = new Handler(Looper.getMainLooper());
-        this.messageHandler = new Handler(Looper.getMainLooper());
-        this.dataHandler = new Handler(Looper.getMainLooper());
         this.peer = peer;
-        this.subMessagesLength = 17;  // the minimum value possible (this will always be overwritten)
+        this.bluetoothMessagesLength = 17;  // the minimum value possible (this will always be overwritten)
     }
 
 
-    public void writeMessage(nie.translator.rtranslator.bluetooth.Message message, MessageCallback callback) {
-        synchronized (lock) {
-            if (pendingMessage == null) {       // if it is true then we are not writing any messages
-                // division from the message and sending of the various parts
-                pendingMessage = message.splitInBluetoothMessages(messageID, getSubMessagesLength());
-                messageID.increment();
-                Log.e("messageSend", message.getText());
-                messageCallback = callback;
-                writeSubMessage();
+    public void sendMessage(@NonNull Message message) {
+        synchronized (messagesLock) {
+            pendingMessages.addLast(message);
+            if (pendingMessages.size() == 1 && pendingSubMessages == null) {  // if it is true then we are not writing any messages
+                sendMessage();
             }
         }
     }
 
-    public void writeData(Message data, MessageCallback callback) {
-        synchronized (lock) {
-            if (pendingData == null) {       // if it is true then we are not writing any messages
-                // division from the message and sending of the various parts
-                pendingData = data.splitInBluetoothMessages(dataID, getSubMessagesLength());
-                dataID.increment();
-                Log.e("dataSend", data.getText());
-                dataCallback = callback;
-                writeSubData();
+    public void sendData(@NonNull Message data) {
+        synchronized (dataLock) {
+            pendingData.addLast(data);
+            if (pendingData.size() == 1 && pendingSubData == null) {  // if it is true then we are not writing any messages
+                sendData();
             }
         }
     }
 
-    public int getSubMessagesLength() {
-        return subMessagesLength;
+    public void sendMessage(){
+        Message message = pendingMessages.peekFirst();
+        if (message != null && pendingSubMessages == null) {    // if it is true then we are not writing any subMessages and the pendingMessages is not empty
+            // division from the message and sending of the various parts
+            pendingSubMessages = message.splitInBluetoothMessages(messageID, getBluetoothMessagesLength());
+            messageID.increment();
+            Log.e("messageSend", message.getText());
+            sendSubMessage();
+        }
     }
 
-    public void setSubMessagesLength(int subMessagesLength) {
-        this.subMessagesLength = subMessagesLength;
+    public void sendData(){
+        Message data = pendingData.peekFirst();
+        if (data != null && pendingSubData == null) {    // if it is true then we are not writing any subData and the pendingData is not empty
+            // division from the message and sending of the various parts
+            pendingSubData = data.splitInBluetoothMessages(dataID, getBluetoothMessagesLength());
+            dataID.increment();
+            Log.e("dataSend", data.getText());
+            sendSubData();
+        }
+    }
+
+    protected abstract void sendSubMessage();
+
+    protected abstract void sendSubData();
+
+    protected void sendCommand(Command command){
+        synchronized (commandsLock) {
+            pendingCommands.addLast(command);
+            if(pendingCommands.size() == 1) {
+                writeCommand();
+            }
+        }
+    }
+
+    protected abstract void writeCommand();
+
+    public void onCommandSent(boolean success, UUID characteristic){
+        synchronized (commandsLock) {
+            Command command = pendingCommands.peekFirst();
+            if(command != null && command.characteristic.equals(characteristic)) {  //we check if the current sending command is targeted to the same characteristic that has been sent (not every characteristic uses the commands queue)
+                // If success we remove the newly sent command and eventually write the next command.
+                // If not success we retry the writing of the failed command.
+                if (success) {
+                    pendingCommands.pollFirst();
+                }
+                if (!pendingCommands.isEmpty()) {
+                    writeCommand();
+                }
+            }
+        }
+    }
+
+    protected boolean checkBluetoothMessageInCommands(Command command, BluetoothMessage bluetoothMessage){
+        boolean found = false;
+        synchronized (commandsLock) {
+            // We check if the subMessage command is already present in the commands
+            for (Command commandQueued : pendingCommands) {
+                if (commandQueued.type == command.type && commandQueued.characteristic.equals(command.characteristic)) {
+                    BluetoothMessage messageQueued = BluetoothMessage.createFromBytes(context, getPeer(), commandQueued.data);
+                    if (messageQueued != null && bluetoothMessage.getId().equals(messageQueued.getId()) && bluetoothMessage.getSequenceNumber().equals(messageQueued.getSequenceNumber())) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return found;
+    }
+
+    protected boolean checkCommandInCommands(Command command){
+        boolean found = false;
+        synchronized (commandsLock) {
+            // We check if the subData is already present in the commands before adding it.
+            // This is to avoid adding multiple times the same subData read notification to the queue in cases its command is already retrying.
+            for (Command commandQueued : pendingCommands) {
+                if (commandQueued.type == command.type && commandQueued.characteristic.equals(command.characteristic)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        return found;
     }
 
     public void onSubMessageWriteSuccess() {
-        synchronized (lock) {
-            nie.translator.rtranslator.bluetooth.BluetoothMessage subMessageSent = null;
-            if (pendingMessage != null) {
-                subMessageSent = pendingMessage.pollFirst();  // remove the newly sent subMessage
+        synchronized (messagesLock) {
+            BluetoothMessage subMessageSent = null;
+            resetMessageTimer();  //this is useful only for the server
+            if (pendingSubMessages != null) {
+                subMessageSent = pendingSubMessages.pollFirst();  // remove the newly sent subMessage
             }
-            resetMessageTimer();
-            if (subMessageSent != null && subMessageSent.getType() == nie.translator.rtranslator.bluetooth.BluetoothMessage.FINAL) {
-                pendingMessage = null;   // remove the newly sent ConversationMessage
-                notifyMessageSent();
+            if (subMessageSent != null && subMessageSent.getType() == BluetoothMessage.FINAL) {
+                pendingSubMessages = null;   // remove the newly sent ConversationMessage
+                pendingMessages.pollFirst();  // remove the newly sent Message
+                sendMessage();  //we send the eventual next message
             } else {
-                writeSubMessage();
+                sendSubMessage();  //we send the next sub message
+            }
+        }
+    }
+
+    public void onSubDataWriteSuccess() {
+        synchronized (dataLock) {
+            BluetoothMessage subDataSent = null;
+            resetDataTimer();  //this is useful only for the server
+            if (pendingSubData != null) {
+                subDataSent = pendingSubData.pollFirst();  // remove the newly sent subData
+            }
+            if (subDataSent != null && subDataSent.getType() == BluetoothMessage.FINAL) {
+                pendingSubData = null;   // remove the newly sent ConversationMessage
+                pendingData.pollFirst();  // remove the newly sent data
+                sendData();  //we send the eventual next data message
+            } else {
+                sendSubData();  //we send the next sub data
             }
         }
     }
 
     public void onSubMessageWriteFailed() {
-        writeSubMessage();
-    }
-
-    public void onSubDataWriteSuccess() {
-        synchronized (lock) {
-            nie.translator.rtranslator.bluetooth.BluetoothMessage subDataSent = null;
-            if (pendingData != null) {
-                subDataSent = pendingData.pollFirst();  // remove the newly sent subMessage
-            }
-            resetDataTimer();
-            if (subDataSent != null && subDataSent.getType() == nie.translator.rtranslator.bluetooth.BluetoothMessage.FINAL) {
-                pendingData = null;   // remove the newly sent ConversationMessage
-                notifyDataSent();
-            } else {
-                writeSubData();
-            }
-        }
+        sendSubMessage();  //we retry
     }
 
     public void onSubDataWriteFailed() {
-        writeSubData();
+        sendSubData();  //we retry
     }
 
-    public void pausePendingMessage() {
+    public void onConnectionLost(){
+        // We stop the sending of the messages.
+        // We need only the reset of the command timer because there are already checks in the writeCommand method.
+        // This pause and resume are to avoid interfering with the handshake messages
+        resetCommandTimer();
+    }
+
+    public void onConnectionResumed(){
+        // We resume the sending of the messages.
+        // This pause and resume are to avoid interfering with the handshake messages
+        writeCommand();
+    }
+
+
+
+    public int getBluetoothMessagesLength() {
+        return bluetoothMessagesLength;
+    }
+
+    public void setBluetoothMessagesLength(int bluetoothMessagesLength) {
+        this.bluetoothMessagesLength = bluetoothMessagesLength;
+    }
+
+    /*public void pausePendingMessage() {
         synchronized (lock) {
             if (!messagesPaused) {
                 // delete all runnables in messageHandler to prevent the pause from being activated again
@@ -208,19 +304,15 @@ abstract class Channel {
                 }, 1500);
             }
         }
-    }
+    }*/
 
     public void setPeer(@NonNull Peer peer) {
         this.peer = peer;
     }
 
-    protected abstract void writeSubMessage();
-
-    protected abstract void writeSubData();
-
     public abstract void readPhy();
 
-    public abstract boolean notifyNameUpdated(String name);
+    public abstract void notifyNameUpdated(String name);
 
     public Timer getReconnectionTimer() {
         return reconnectionTimer;
@@ -233,9 +325,9 @@ abstract class Channel {
 
     @Nullable
     public nie.translator.rtranslator.bluetooth.BluetoothMessage getPendingSubMessage() {
-        synchronized (lock) {
-            if (pendingMessage != null) {
-                return pendingMessage.peekFirst();
+        synchronized (messagesLock) {
+            if (pendingSubMessages != null) {
+                return pendingSubMessages.peekFirst();
             } else {
                 return null;
             }
@@ -244,9 +336,9 @@ abstract class Channel {
 
     @Nullable
     public nie.translator.rtranslator.bluetooth.BluetoothMessage getPendingSubData() {
-        synchronized (lock) {
-            if (pendingData != null) {
-                return pendingData.peekFirst();
+        synchronized (dataLock) {
+            if (pendingSubData != null) {
+                return pendingSubData.peekFirst();
             } else {
                 return null;
             }
@@ -302,16 +394,12 @@ abstract class Channel {
                 notifyingDisconnection = true;
                 getPeer().setDisconnecting(true);
                 this.disconnectionNotificationCallback = disconnectionNotificationCallback;
-                // start of notify disconnection timer
-                startNotifyDisconnectionTimer(new Timer.Callback() {
-                    @Override
-                    public void onFinished() {
-                        disconnect(null);
-                    }
-                });
-                // stop sending messages
-                notifyMessageSent();
-                notifyDataSent();
+                // stop sending commands
+                // We need only the reset of the command timer because there are already checks in the writeCommand method.
+                // Also, we don't manage the possible system conflicts of writing 2 characteristics due to possible commands in between the sending and the confirmation,
+                // because it is very rare that a user is sending a message while quitting at the same time.
+                // So for now we can skip this headache.
+                resetCommandTimer();
                 return true;
             }
             return false;
@@ -325,6 +413,10 @@ abstract class Channel {
                 getPeer().setDisconnecting(true);
                 // stop of notify disconnection timer
                 resetNotifyDisconnectionTimer();
+                // stop sending commands
+                resetCommandTimer();
+                resetDataTimer();
+                resetMessageTimer();
 
                 if (disconnectionNotificationCallback != null) {
                     disconnectionNotificationCallback.onDisconnectionNotificationSent();
@@ -333,9 +425,6 @@ abstract class Channel {
                 if (!getPeer().isHardwareConnected() && callback != null) {
                     callback.onAlreadyDisconnected(getPeer());
                 }
-                // stop sending messages
-                notifyMessageSent();
-                notifyDataSent();
                 return true;
             }
             return false;
@@ -348,37 +437,17 @@ abstract class Channel {
 
     public void destroy() {
         synchronized (lock) {
-            resetMessageTimer();
-            resetDataTimer();
+            resetCommandTimer();  // stop sending commands
             resetReconnectionTimer();
             resetConnectionCompleteTimer();
             resetNotifyDisconnectionTimer();
-            messageHandler.removeCallbacksAndMessages(null);
-            dataHandler.removeCallbacksAndMessages(null);
-            pendingMessage = null;
-            pendingData = null;
+            synchronized (messagesLock) {
+                pendingSubMessages = null;
+            }
+            synchronized (dataLock) {
+                pendingSubData = null;
+            }
             disconnectionNotificationCallback = null;
-            messageCallback = null;
-            dataCallback = null;
-        }
-    }
-
-
-    private void notifyMessageSent() {
-        if (messageCallback != null) {
-            // this is done because onMessageSent must be the last operation performed by this method since the latter sends subsequent messages
-            MessageCallback oldCallback = messageCallback;
-            messageCallback = null;
-            oldCallback.onMessageSent();
-        }
-    }
-
-    private void notifyDataSent() {
-        if (dataCallback != null) {
-            // this is done because onMessageSent must be the last operation performed by this method since the latter sends subsequent messages
-            MessageCallback oldCallback = dataCallback;
-            dataTimer = null;
-            oldCallback.onMessageSent();
         }
     }
 
@@ -417,8 +486,25 @@ abstract class Channel {
         }
     }
 
+    protected void startCommandTimer(final Timer.Callback callback) {
+        synchronized (commandsLock) {
+            commandTimer = new Timer(COMMAND_TIMEOUT);
+            commandTimer.setCallback(callback);
+            commandTimer.start();
+        }
+    }
+
+    private void resetCommandTimer() {
+        synchronized (commandsLock) {
+            if (commandTimer != null) {
+                commandTimer.cancel();
+                commandTimer = null;
+            }
+        }
+    }
+
     protected void startMessageTimer(final Timer.Callback callback) {
-        synchronized (lock) {
+        synchronized (messagesLock) {
             messageTimer = new Timer(MESSAGE_TIMEOUT);
             messageTimer.setCallback(callback);
             messageTimer.start();
@@ -426,7 +512,7 @@ abstract class Channel {
     }
 
     private void resetMessageTimer() {
-        synchronized (lock) {
+        synchronized (messagesLock) {
             if (messageTimer != null) {
                 messageTimer.cancel();
                 messageTimer = null;
@@ -435,7 +521,7 @@ abstract class Channel {
     }
 
     protected void startDataTimer(final Timer.Callback callback) {
-        synchronized (lock) {
+        synchronized (dataLock) {
             dataTimer = new Timer(MESSAGE_TIMEOUT);
             dataTimer.setCallback(callback);
             dataTimer.start();
@@ -443,7 +529,7 @@ abstract class Channel {
     }
 
     private void resetDataTimer() {
-        synchronized (lock) {
+        synchronized (dataLock) {
             if (dataTimer != null) {
                 dataTimer.cancel();
                 dataTimer = null;
@@ -451,7 +537,7 @@ abstract class Channel {
         }
     }
 
-    private void startNotifyDisconnectionTimer(final Timer.Callback callback) {
+    protected void startNotifyDisconnectionTimer(final Timer.Callback callback) {
         synchronized (lock) {
             notifyDisconnectionTimer = new Timer(NOTIFY_DISCONNECTION_TIMEOUT);
             notifyDisconnectionTimer.setCallback(callback);
@@ -459,7 +545,7 @@ abstract class Channel {
         }
     }
 
-    private void resetNotifyDisconnectionTimer() {
+    protected void resetNotifyDisconnectionTimer() {
         synchronized (lock) {
             if (notifyDisconnectionTimer != null) {
                 notifyDisconnectionTimer.cancel();
@@ -468,16 +554,34 @@ abstract class Channel {
         }
     }
 
+    public static class Command {
+        public enum CommandType {
+            NOTIFICATION,
+            READ,
+            WRITE
+        }
+
+        public CommandType type;
+        public UUID characteristic;
+        public byte[] data;
+
+        public Command(CommandType type, UUID characteristic, byte[] data){
+            this.type = type;
+            this.characteristic = characteristic;
+            this.data = data;
+        }
+    }
+
     public static abstract class MessageCallback {
         public abstract void onMessageSent();
     }
 
-    public static abstract class DisconnectionNotificationCallback {
+    public static abstract class DisconnectionNotificationCallback extends DisconnectionCallback{
         public abstract void onDisconnectionNotificationSent();
     }
 
     public static abstract class DisconnectionCallback {
-        public abstract void onAlreadyDisconnected(Peer peer);
+        public void onAlreadyDisconnected(Peer peer){}
 
         public void onClientDisconnectionSuccess(BluetoothGatt gatt) {}
 

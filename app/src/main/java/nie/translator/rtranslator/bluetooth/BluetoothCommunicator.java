@@ -894,37 +894,17 @@ public class BluetoothCommunicator {
      * @param message message to be sent
      */
     public void sendMessage(final nie.translator.rtranslator.bluetooth.Message message) {
-        mainHandler.post(new Runnable() {
+        mainHandler.post(new Runnable() {  //todo: decide if this is useful or not
             @Override
             public void run() {
                 synchronized (messagesLock) {
-                    pendingMessages.addLast(message);
-                    if (pendingMessages.size() == 1) {  // if it is true then we are not writing any messages
-                        sendMessage();
+                    if (connectionClient != null && connectionServer != null) {
+                        connectionClient.sendMessage(message);
+                        connectionServer.sendMessage(message);
                     }
                 }
             }
         });
-    }
-
-    private void sendMessage() {
-        if (connectionClient != null && connectionServer != null) {
-            final nie.translator.rtranslator.bluetooth.Message message = pendingMessages.peekFirst();
-            if (message != null) {
-                connectionClient.sendMessage(message, new nie.translator.rtranslator.bluetooth.Channel.MessageCallback() {
-                    @Override
-                    public void onMessageSent() {
-                        connectionServer.sendMessage(message, new nie.translator.rtranslator.bluetooth.Channel.MessageCallback() {
-                            @Override
-                            public void onMessageSent() {   // means that we have sent the message to all the client and server channels
-                                pendingMessages.pollFirst();  // remove the newly sent ConversationMessage
-                                sendMessage();  // send any other messages
-                            }
-                        });
-                    }
-                });
-            }
-        }
     }
 
     /**
@@ -934,37 +914,17 @@ public class BluetoothCommunicator {
      * @param data message to be sent
      */
     public void sendData(final nie.translator.rtranslator.bluetooth.Message data) {
-        mainHandler.post(new Runnable() {
+        mainHandler.post(new Runnable() {  //todo: decide if this is useful or not
             @Override
             public void run() {
                 synchronized (dataLock) {
-                    pendingData.addLast(data);
-                    if (pendingData.size() == 1) {  // if it is true then we are not writing any messages
-                        sendData();
+                    if (connectionClient != null && connectionServer != null) {
+                        connectionClient.sendData(data);
+                        connectionServer.sendData(data);
                     }
                 }
             }
         });
-    }
-
-    private void sendData() {
-        if (connectionClient != null && connectionServer != null) {
-            final nie.translator.rtranslator.bluetooth.Message data = pendingData.peekFirst();
-            if (data != null) {
-                connectionClient.sendData(data, new nie.translator.rtranslator.bluetooth.Channel.MessageCallback() {
-                    @Override
-                    public void onMessageSent() {
-                        connectionServer.sendData(data, new nie.translator.rtranslator.bluetooth.Channel.MessageCallback() {
-                            @Override
-                            public void onMessageSent() {   // means that we have sent the message to all the client and server channels
-                                pendingData.pollFirst();  // remove the newly sent ConversationMessage
-                                sendData();  // send any other messages
-                            }
-                        });
-                    }
-                });
-            }
-        }
     }
 
     /**
@@ -1234,13 +1194,13 @@ public class BluetoothCommunicator {
      * @param callback
      */
     public void destroy(DestroyCallback callback) {
+        destroying = true;
+        destroyCallback = callback;
         if (bluetoothAdapter != null && connectionClient != null && connectionServer != null) {
-            destroying = true;
-            destroyCallback = callback;
             connectionClient.destroy();
             connectionServer.destroy();
-            releaseResourcesAndRestoreBluetoothStatus();
         }
+        releaseResourcesAndRestoreBluetoothStatus();
     }
 
     public interface DestroyCallback {
