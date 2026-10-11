@@ -607,9 +607,9 @@ public class ModelManagerFragment extends Fragment {
         textRamUsage.setText(df.format(usedRamGB));
         textRamUsage2.setText("/" + totalRamGB + " GB");
         if(barRam.getRedLineValue() >= 0 && usedRAMPercentage > barRam.getRedLineValue()){
-            textRamUsage.setTextColor(getResources().getColor(R.color.red));
+            textRamUsage.setTextColor(getResources().getColor(R.color.red, requireContext().getTheme()));
         }else if(barRam.getOrangeLineValue() >= 0 && usedRAMPercentage > barRam.getOrangeLineValue()){
-            textRamUsage.setTextColor(getResources().getColor(R.color.orange));
+            textRamUsage.setTextColor(getResources().getColor(R.color.orange, requireContext().getTheme()));
         }else{
             textRamUsage.setTextColor(textRamUsage2.getTextColors().getDefaultColor());
         }

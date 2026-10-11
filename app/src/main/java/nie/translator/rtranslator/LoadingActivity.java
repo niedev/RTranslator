@@ -68,9 +68,6 @@ public class LoadingActivity extends GeneralActivity {
             splashScreen = SplashScreen.installSplashScreen(this);
         }
         super.onCreate(savedInstanceState);
-        if(splashScreen == null){
-            setTheme(R.style.Theme_Speech);
-        }
         setContentView(R.layout.activity_loading);
         mainHandler = new Handler(Looper.getMainLooper());
 

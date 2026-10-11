@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preference_header_appearance">Aspetto</string>
+    <string name="preference_title_theme_mode">Modalità del tema</string>
+    <string name="preference_title_dark_theme">Tema scuro</string>
+    <string-array name="theme_mode_entries">
+        <item>Predefinito di sistema</item>
+        <item>Chiaro</item>
+        <item>Scuro</item>
+    </string-array>
+    <string-array name="dark_theme_descriptions">
+        <item>Antracite e verde menta tenue</item>
+        <item>Blu notte e azzurro ghiaccio</item>
+        <item>Nero puro e verde menta tenue</item>
+    </string-array>
+</resources>

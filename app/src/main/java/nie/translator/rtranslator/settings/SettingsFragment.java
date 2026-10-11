@@ -43,6 +43,7 @@ import nie.translator.rtranslator.tools.GalleryImageSelector;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.ErrorCodes;
+import nie.translator.rtranslator.tools.gui.ThemeManager;
 
 
 public class SettingsFragment extends PreferenceFragmentCompat {
@@ -66,6 +67,18 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private ShowOriginalTranscriptionMsgPreference showOriginalTranscriptionMsgPreference;
     private SupportTtsQualityPreference supportTtsQualityPreference;
     private LanguagePreference languagePreference;
+
+    private final SharedPreferences.OnSharedPreferenceChangeListener themeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
+            if(ThemeManager.THEME_MODE.equals(key)) {
+                ThemeManager.updateNightMode(requireActivity());
+                requireActivity().recreate();
+            }else if(ThemeManager.DARK_THEME.equals(key) && ThemeManager.isDark(requireContext())) {
+                requireActivity().recreate();
+            }
+        }
+    };
 
     private Handler selfHandler = new Handler(new Handler.Callback() {
         @Override
@@ -217,6 +230,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onResume() {
         super.onResume();
+        getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(themeListener);
+    }
+
+    @Override
+    public void onPause() {
+        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(themeListener);
+        super.onPause();
     }
 
     @Override

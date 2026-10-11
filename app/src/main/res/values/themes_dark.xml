@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Shared dark roles; palette variants override only their surfaces and accents. -->
+    <style name="Theme.Speech.Graphite" parent="Theme.Speech">
+        <item name="isLightTheme">false</item>
+        <item name="colorPrimary">#96D8B2</item>
+        <item name="colorPrimaryDark">#8BCCAA</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
+        <item name="colorSecondary">#90D3AE</item>
+        <item name="colorOnPrimary">#10271B</item>
+        <item name="colorOnSecondary">?attr/colorOnPrimary</item>
+        <item name="colorSurface">#1C211F</item>
+        <item name="colorOnSurface">#EDF2EF</item>
+        <item name="colorOnBackground">?attr/colorOnSurface</item>
+        <item name="colorError">#FFB4AB</item>
+        <item name="colorControlHighlight">#33453B</item>
+        <item name="android:textColorPrimary">?attr/colorOnSurface</item>
+        <item name="android:textColorSecondary">#B3BEB7</item>
+        <item name="android:colorBackground">?attr/rtranslatorBackground</item>
+        <item name="android:windowBackground">?attr/rtranslatorBackground</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+        <item name="rtranslatorBackground">#121614</item>
+        <item name="rtranslatorSurfaceRaised">#272E2A</item>
+        <item name="rtranslatorAccentStrong">#A4DEBC</item>
+        <item name="rtranslatorAccentSoft">#B1E8C7</item>
+        <item name="rtranslatorTextBody">?attr/colorOnSurface</item>
+        <item name="rtranslatorTextStrong">#CBD5CE</item>
+        <item name="rtranslatorMuted">#A4B0A8</item>
+        <item name="rtranslatorDisabled">#63766B</item>
+        <item name="rtranslatorOutline">#3B4840</item>
+        <item name="rtranslatorLink">#95D3E6</item>
+        <item name="rtranslatorSentMessage">#233C2D</item>
+        <item name="rtranslatorWarning">#FFBE8A</item>
+        <item name="rtranslatorCardStrokeWidth">1dp</item>
+    </style>
+
+    <style name="Theme.Speech.Midnight" parent="Theme.Speech.Graphite">
+        <item name="colorPrimary">#9BCEFF</item>
+        <item name="colorPrimaryDark">#91C5F8</item>
+        <item name="colorSecondary">#A7C9EC</item>
+        <item name="colorOnPrimary">#102638</item>
+        <item name="colorSurface">#182330</item>
+        <item name="colorControlHighlight">#2C4359</item>
+        <item name="android:textColorSecondary">#B5C3D1</item>
+        <item name="rtranslatorBackground">#0D1621</item>
+        <item name="rtranslatorSurfaceRaised">#233140</item>
+        <item name="rtranslatorAccentStrong">#AED7FF</item>
+        <item name="rtranslatorAccentSoft">#BEDFFF</item>
+        <item name="rtranslatorTextStrong">#CED9E4</item>
+        <item name="rtranslatorMuted">#A3B4C5</item>
+        <item name="rtranslatorDisabled">#647F98</item>
+        <item name="rtranslatorOutline">#35485C</item>
+        <item name="rtranslatorLink">#A7D9ED</item>
+        <item name="rtranslatorSentMessage">#203C53</item>
+    </style>
+
+    <style name="Theme.Speech.Amoled" parent="Theme.Speech.Graphite">
+        <item name="elevationOverlayEnabled">false</item>
+        <item name="colorSurface">#000000</item>
+        <item name="rtranslatorBackground">#000000</item>
+        <item name="rtranslatorSurfaceRaised">#111713</item>
+        <item name="rtranslatorOutline">#304037</item>
+        <item name="rtranslatorSentMessage">#13291D</item>
+    </style>
+</resources>

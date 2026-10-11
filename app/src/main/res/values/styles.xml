@@ -17,58 +17,86 @@
 
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="Theme.Speech" parent="Theme.MaterialComponents.Light.NoActionBar">  <!-- Theme.AppCompat.Light.DarkActionBar-->
-        <item name="color">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
-        <item name="colorPrimary">@color/primary</item>
+    <!-- The activity context selects DayNight resources before any views are inflated. -->
+    <style name="Theme.Speech" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="color">?attr/colorPrimary</item>
+        <item name="colorPrimary">@color/palette_light_primary</item>
+        <item name="colorPrimaryDark">@color/palette_light_primary_dark</item>
+        <item name="colorAccent">@color/palette_light_accent</item>
+        <item name="colorSecondary">@color/palette_light_accent</item>
+        <item name="colorOnPrimary">@color/palette_light_accent_white</item>
+        <item name="colorOnSecondary">@color/palette_light_accent_white</item>
+        <item name="colorSurface">@color/palette_light_accent_white</item>
+        <item name="colorOnSurface">@color/palette_light_black</item>
+        <item name="colorOnBackground">@color/palette_light_black</item>
+        <item name="colorError">@color/palette_light_red</item>
+        <item name="colorControlNormal">?android:attr/textColorSecondary</item>
+        <item name="colorControlActivated">?attr/colorPrimary</item>
+        <item name="colorControlHighlight">@color/palette_light_pressed_color</item>
+        <item name="android:textColorPrimary">@color/palette_light_black</item>
+        <item name="android:textColorSecondary">@color/palette_light_very_dark_gray</item>
+        <item name="android:textColorHint">?attr/rtranslatorMuted</item>
+        <item name="android:colorBackground">?attr/colorSurface</item>
+        <item name="android:windowBackground">?attr/colorSurface</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">?attr/rtranslatorBackground</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="cardViewStyle">@style/CardView</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="cardViewStyle">@style/ThemedCardViewStyle</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="rtranslatorBackground">@color/palette_light_primary_very_lite</item>
+        <item name="rtranslatorSurfaceRaised">@color/palette_light_very_very_light_gray</item>
+        <item name="rtranslatorAccentStrong">@color/palette_light_primary_very_dark</item>
+        <item name="rtranslatorAccentSoft">@color/palette_light_primary_lite</item>
+        <item name="rtranslatorTextBody">@color/palette_light_light_black</item>
+        <item name="rtranslatorTextStrong">@color/palette_light_very_very_dark_gray</item>
+        <item name="rtranslatorMuted">@color/palette_light_light_gray</item>
+        <item name="rtranslatorDisabled">@color/palette_light_gray</item>
+        <item name="rtranslatorOutline">@color/palette_light_very_light_gray</item>
+        <item name="rtranslatorLink">@color/palette_light_secondary</item>
+        <item name="rtranslatorSentMessage">#E0F2F1</item>
+        <item name="rtranslatorWarning">@color/palette_light_orange</item>
+        <item name="rtranslatorCardStrokeWidth">0dp</item>
     </style>
 
-    <style name="Theme.Settings" parent="Theme.MaterialComponents.Light.NoActionBar">  <!-- Theme.AppCompat.Light.DarkActionBar-->
-        <item name="color">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
-        <item name="colorPrimary">@color/primary</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:statusBarColor">@color/primary_very_lite</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="cardViewStyle">@style/CardView</item>
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+    <style name="Theme.Settings" parent="Theme.Speech">
+        <item name="android:statusBarColor">?attr/rtranslatorBackground</item>
     </style>
 
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar" />
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen.IconBackground">
         <!-- Set the splash screen background -->
-        <item name="windowSplashScreenBackground">@android:color/white</item>
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
         <!-- Set a background behind the splash screen icon. -->
-        <item name="windowSplashScreenIconBackgroundColor">@android:color/white</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/splash_background</item>
         <!-- Use windowSplashScreenAnimatedIcon to add a drawable or an animated drawable. -->
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_screen2</item>
         <!-- Set the theme of the Activity that follows your splash screen. -->
         <item name="postSplashScreenTheme">@style/Theme.Speech</item>
     </style>
 
-    <style name="Theme.Toolbar" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="Theme.Toolbar" parent="ThemeOverlay.AppCompat">
         <item name="android:textColorPrimary">@color/primary_very_dark</item>
         <item name="android:textColorSecondary">@color/primary_very_dark</item>
     </style>
 
-    <style name="Theme.TabLayout" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="Theme.TabLayout" parent="ThemeOverlay.AppCompat">
         <item name="android:textSize">13sp</item>
         <item name="android:fontFamily">sans-serif-light</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">true</item>
     </style>
 
+    <style name="ThemedCardViewStyle" parent="CardView">
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+    </style>
+
     <style name="CustomCardViewStyle" parent="@style/Widget.MaterialComponents.CardView">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay_card_custom_corners</item>
+        <item name="strokeColor">?attr/rtranslatorOutline</item>
+        <item name="strokeWidth">?attr/rtranslatorCardStrokeWidth</item>
     </style>
 
     <style name="ShapeAppearanceOverlay_card_custom_corners" parent="">

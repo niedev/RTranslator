@@ -932,7 +932,7 @@ public class CustomAnimator {
 
         int deselectedColorText = GuiTools.getColorStateList(activity, R.color.primary_very_dark).getDefaultColor();
         int deselectedColorBackground = GuiTools.getColorStateList(activity, R.color.accent_white).getDefaultColor();
-        int selectedColorText = GuiTools.getColorStateList(activity, R.color.accent_white).getDefaultColor();
+        int selectedColorText = GuiTools.getColorStateList(activity, R.color.on_primary).getDefaultColor();
         int selectedColorBackground = GuiTools.getColorStateList(activity, R.color.primary_very_dark).getDefaultColor();
 
         Animator animatorBackgroundColorConversation;

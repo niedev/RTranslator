@@ -76,17 +76,21 @@ public class SegmentProgressBar extends View {
 
     private void loadSegmentsFromArrays(int colorsResId, int progressesResId) {
         try {
-            // getIntArray automatically resolves @color/... to actual color ints
-            int[] colorsArr = getResources().getIntArray(colorsResId);
+            // Resolve color resources with this view's theme, including selector colors.
+            TypedArray colorsArr = getResources().obtainTypedArray(colorsResId);
+            try {
+                // We use string array for progress to support float decimals (e.g., "30.5")
+                String[] progressesArr = getResources().getStringArray(progressesResId);
 
-            // We use string array for progress to support float decimals (e.g., "30.5")
-            String[] progressesArr = getResources().getStringArray(progressesResId);
-
-            int count = Math.min(colorsArr.length, progressesArr.length);
-            for (int i = 0; i < count; i++) {
-                int color = colorsArr[i];
-                float progress = Float.parseFloat(progressesArr[i].trim());
-                segments.add(new Segment(progress, color));
+                int count = Math.min(colorsArr.length(), progressesArr.length);
+                for (int i = 0; i < count; i++) {
+                    int colorResId = colorsArr.getResourceId(i, 0);
+                    int color = colorResId != 0 ? GuiTools.getColor(getContext(), colorResId) : colorsArr.getColor(i, 0);
+                    float progress = Float.parseFloat(progressesArr[i].trim());
+                    segments.add(new Segment(progress, color));
+                }
+            } finally {
+                colorsArr.recycle();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -221,7 +225,7 @@ public class SegmentProgressBar extends View {
 
         // Draw redLine
         if(redLineValue >= 0){
-            paint.setColor(getResources().getColor(R.color.red));
+            paint.setColor(getResources().getColor(R.color.red, getContext().getTheme()));
             float redLineWidth = (progressWidth / maxProgress) * 0.5F;
             float segmentHorizontalPosition = (progressWidth / maxProgress) * redLineValue;
             drawRoundRect(
@@ -240,7 +244,7 @@ public class SegmentProgressBar extends View {
 
         // Draw orangeLine
         if(orangeLineValue >= 0){
-            paint.setColor(getResources().getColor(R.color.orange));
+            paint.setColor(getResources().getColor(R.color.orange, getContext().getTheme()));
             float orangeLineWidth = (progressWidth / maxProgress) * 0.5F;
             float segmentHorizontalPosition = (progressWidth / maxProgress) * orangeLineValue;
             drawRoundRect(
