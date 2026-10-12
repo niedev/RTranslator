@@ -22,15 +22,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import java.util.ArrayList;
+
+import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
 import nie.translator.rtranslator.bluetooth.Message;
 import nie.translator.rtranslator.bluetooth.Peer;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.GalleryImageSelector;
-
-import java.util.ArrayList;
-
-import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.peers.GuiPeer;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;
@@ -267,8 +266,23 @@ public class ConversationBluetoothCommunicator {
             }
 
             @Override
+            public void onForcedDisconnectionFromAll() {
+                while (!connectingPeers.isEmpty()) {
+                    notifyConnectionFailed(new GuiPeer(connectingPeers.remove(0), null), BluetoothCommunicator.ERROR);
+                }
+                while (!connectedPeers.isEmpty()) {
+                    notifyDisconnection(new GuiPeer(connectedPeers.remove(0), null), connectedPeers.size());
+                }
+            }
+
+            @Override
             public void onBluetoothLeNotSupported() {
                 notifyBluetoothLeNotSupported();
+            }
+
+            @Override
+            public void onBluetoothStatusChange(boolean enabled, boolean externalChange) {
+                notifyBluetoothStatusChange(enabled, externalChange);
             }
         };
         bluetoothCommunicator.addCallback(bluetoothCommunicatorCallback);
@@ -509,6 +523,12 @@ public class ConversationBluetoothCommunicator {
         }
     }
 
+    private void notifyBluetoothStatusChange(boolean enabled, boolean externalChange) {
+        for (int i = 0; i < clientCallbacks.size(); i++) {
+            clientCallbacks.get(i).onBluetoothStatusChange(enabled, externalChange);
+        }
+    }
+
     public static abstract class Callback {
         public void onSearchStarted() {
         }
@@ -550,6 +570,9 @@ public class ConversationBluetoothCommunicator {
         }
 
         public void onBluetoothLeNotSupported() {
+        }
+
+        public void onBluetoothStatusChange(boolean enabled, boolean externalChange){
         }
     }
 }

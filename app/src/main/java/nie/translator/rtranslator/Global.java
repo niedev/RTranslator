@@ -45,16 +45,16 @@ import java.io.File;
 import java.util.ArrayList;
 
 import nie.translator.rtranslator.access.AccessActivity;
-import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
-import nie.translator.rtranslator.downloader2.DownloadInfo;
-import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
+import nie.translator.rtranslator.bluetooth.Peer;
+import nie.translator.rtranslator.downloader.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader.DownloadInfo;
+import nie.translator.rtranslator.downloader.DownloadManager;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.TTS;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
-import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
-import nie.translator.rtranslator.bluetooth.Peer;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.recent_peer.RecentPeersDataManager;
 import nie.translator.rtranslator.voice_translation._text_translation.TranslationFragment;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
@@ -64,6 +64,16 @@ import nie.translator.rtranslator.voice_translation.neural_networks.voice.Record
 
 
 public class Global extends Application implements DefaultLifecycleObserver {
+    public enum RTranslatorMode {
+        TEXT_TRANSLATION_MODE,
+        WALKIE_TALKIE_MODE,
+        CONVERSATION_MODE
+    }
+
+    public enum LanguageNumber {
+        FIRST,
+        SECOND
+    }
     public static final boolean ONLY_TEXT_TRANSLATION_MODE = false;
     public static final boolean USE_EXTERNAL_MEMORY_FOR_RESOURCES = false;
 
@@ -76,12 +86,6 @@ public class Global extends Application implements DefaultLifecycleObserver {
     public static final String[] REQUIRED_PERMISSIONS_VOICE = new String[]{
             Manifest.permission.RECORD_AUDIO,
     };
-
-    public enum RTranslatorMode {
-        TEXT_TRANSLATION_MODE,
-        WALKIE_TALKIE_MODE,
-        CONVERSATION_MODE
-    }
     private ArrayList<CustomLocale> languages = new ArrayList<>();
     private ArrayList<CustomLocale> translatorLanguages = new ArrayList<>();
     private ArrayList<Translator.MozillaLanguageInfo> mozillaLanguages = new ArrayList<>();
@@ -185,8 +189,18 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
     }
 
-    public VadSilero getVad() {
-        return vad;
+    public void destroyBluetoothCommunicator(@Nullable BluetoothCommunicator.DestroyCallback listener){
+        if(bluetoothCommunicator != null){
+            bluetoothCommunicator.destroy(new BluetoothCommunicator.DestroyCallback() {
+                @Override
+                public void onDestroyed() {
+                    if(listener != null) listener.onDestroyed();
+                    bluetoothCommunicator = null;
+                }
+            });
+        }else{
+            if(listener != null) listener.onDestroyed();
+        }
     }
 
     @Nullable
@@ -194,13 +208,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
         return bluetoothCommunicator;
     }
 
-    public void resetBluetoothCommunicator() {
-        bluetoothCommunicator.destroy(new BluetoothCommunicator.DestroyCallback() {
-            @Override
-            public void onDestroyed() {
-                bluetoothCommunicator = new ConversationBluetoothCommunicator(Global.this, getName(), BluetoothCommunicator.STRATEGY_P2P_WITH_RECONNECTION);
-            }
-        });
+    public VadSilero getVad() {
+        return vad;
     }
 
     public boolean areModelsLoaded() {

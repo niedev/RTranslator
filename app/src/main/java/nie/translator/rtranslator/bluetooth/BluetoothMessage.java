@@ -23,16 +23,16 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+
+import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
 
 class BluetoothMessage implements Parcelable {
     public static final int ID_LENGTH = 4;
     public static final int SEQUENCE_NUMBER_LENGTH = 3;
     public static final int TYPE_LENGTH = 1;
-    public static final int TOTAL_LENGTH = ID_LENGTH + SEQUENCE_NUMBER_LENGTH + TYPE_LENGTH;
+    public static final int TOTAL_HEADERS_LENGTH = ID_LENGTH + SEQUENCE_NUMBER_LENGTH + TYPE_LENGTH;
     public static final int NON_FINAL = 1;
     public static final int FINAL = 2;
     private Context context;
@@ -62,11 +62,11 @@ class BluetoothMessage implements Parcelable {
 
     public static BluetoothMessage createFromBytes(Context context, Peer sender, byte[] completeData) {
         String completeText = new String(completeData, StandardCharsets.UTF_8);
-        if (completeText.length() > TOTAL_LENGTH) {
+        if (completeText.length() > TOTAL_HEADERS_LENGTH) {
             SequenceNumber id = new SequenceNumber(context, completeText.substring(0, ID_LENGTH), ID_LENGTH);
             SequenceNumber sequenceNumber = new SequenceNumber(context, completeText.substring(ID_LENGTH, ID_LENGTH + SEQUENCE_NUMBER_LENGTH), SEQUENCE_NUMBER_LENGTH);
-            int type = Integer.valueOf(completeText.substring(ID_LENGTH + SEQUENCE_NUMBER_LENGTH, TOTAL_LENGTH));
-            byte[] data = BluetoothTools.subBytes(completeData, TOTAL_LENGTH, completeData.length);   // the header is deleted
+            int type = Integer.valueOf(completeText.substring(ID_LENGTH + SEQUENCE_NUMBER_LENGTH, TOTAL_HEADERS_LENGTH));
+            byte[] data = BluetoothTools.subBytes(completeData, TOTAL_HEADERS_LENGTH, completeData.length);   // the header is deleted
             if (data != null && sender != null) {
                 return new BluetoothMessage(context, sender, id, sequenceNumber, type, data);
             }
@@ -134,7 +134,7 @@ class BluetoothMessage implements Parcelable {
 
     public Message convertInMessage() {
         String completeText = new String(data, StandardCharsets.UTF_8);
-        if (completeText.length() > 0) {
+        if (completeText.length() >= Message.HEADER_LENGTH) {
             String header = completeText.substring(0, Message.HEADER_LENGTH);
             byte[] data = BluetoothTools.subBytes(getData(), header.getBytes(StandardCharsets.UTF_8).length, getData().length);
             if (data != null) {

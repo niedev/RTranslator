@@ -15,9 +15,9 @@
     * limitations under the License.
     *-->
 
+
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
@@ -35,7 +35,6 @@
             android:layout_height="match_parent"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"
-            android:focusableInTouchMode="true"
             android:visibility="visible">
 
             <com.google.android.material.textfield.TextInputLayout
@@ -87,6 +86,7 @@
                 android:scaleType="fitXY"
                 android:src="@drawable/user_icon"
                 android:tint="@color/primary_very_dark"
+                android:contentDescription="@string/title_image_selector"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -170,21 +170,31 @@
 
             <CheckBox
                 android:id="@+id/checkBoxPrivacy"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="24dp"
-                android:text="@string/privacy_check_box"
                 android:textColor="#616161"
                 android:textSize="12sp"
                 android:visibility="visible"
+                android:contentDescription="@string/description_checkbox_privacy"
                 app:layout_constraintBottom_toTopOf="@+id/buttonConfirm"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/input_name_layout"
                 app:layout_constraintVertical_bias="1.0" />
+
+            <TextView
+                android:id="@+id/textPrivacy"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/privacy_check_box"
+                app:layout_constraintBottom_toBottomOf="@+id/checkBoxPrivacy"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toEndOf="@+id/checkBoxPrivacy"
+                app:layout_constraintTop_toTopOf="@+id/checkBoxPrivacy" />
 
             <TextView
                 android:id="@+id/ttsDescription"

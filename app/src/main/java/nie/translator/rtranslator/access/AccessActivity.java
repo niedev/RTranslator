@@ -16,7 +16,6 @@
 
 package nie.translator.rtranslator.access;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,6 +34,7 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
@@ -42,8 +42,8 @@ import java.util.ArrayList;
 import nie.translator.rtranslator.GeneralActivity;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
-import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
-import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.downloader.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader.DownloadManager;
 import nie.translator.rtranslator.settings.ModelManagerFragment;
 import nie.translator.rtranslator.settings.MozillaManagerFragment;
 import nie.translator.rtranslator.tools.Tools;
@@ -143,7 +143,7 @@ public class AccessActivity extends GeneralActivity {
                 break;
             }
             case DOWNLOAD_FRAGMENT: {
-                DownloadFragment2 downloadFragment = new DownloadFragment2();
+                DownloadFragment downloadFragment = new DownloadFragment();
                 if (bundle != null) {
                     downloadFragment.setArguments(bundle);
                 }
@@ -195,7 +195,7 @@ public class AccessActivity extends GeneralActivity {
             startFragment(NOTICE_FRAGMENT,null);
             return;
         }
-        if(fragment instanceof DownloadFragment2){
+        if(fragment instanceof DownloadFragment){
             startFragment(USER_DATA_FRAGMENT,null);
             return;
         }
@@ -246,8 +246,8 @@ public class AccessActivity extends GeneralActivity {
 
         ImageView icon = editDialogLayout.findViewById(R.id.dialogIcon);
         TextView text = editDialogLayout.findViewById(R.id.textView);
-        CardView continueButton = editDialogLayout.findViewById(R.id.okButtonCard);
-        CardView cancelButton = editDialogLayout.findViewById(R.id.cancelButtonCard);
+        MaterialButton continueButton = editDialogLayout.findViewById(R.id.continue_button);
+        MaterialButton cancelButton = editDialogLayout.findViewById(R.id.cancel_button);
 
         //set icon
         icon.setImageDrawable(getResources().getDrawable(R.drawable.notification_icon));

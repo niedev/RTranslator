@@ -869,7 +869,7 @@ public class CustomAnimator {
         return animatorSet;
     }
 
-    public void animateSwitchLanguages(Context context, CardView firstLanguageContainer, CardView secondLanguageContainer, AppCompatImageButton invertLanguagesButton, Listener listener){
+    public void animateSwitchLanguages(Context context, MaterialButton firstLanguageContainer, MaterialButton secondLanguageContainer, AppCompatImageButton invertLanguagesButton, Listener listener){
         int duration = context.getResources().getInteger(R.integer.durationStandard);
 
         firstLanguageContainer.setClickable(false);
@@ -976,6 +976,7 @@ public class CustomAnimator {
         progressBar.setVisibility(View.VISIBLE);
         pauseIcon.setVisibility(View.VISIBLE);
         buttonDelete.setVisibility(View.VISIBLE);
+        progressBar.setProgress(0);
 
         AnimatorSet animatorSet= new AnimatorSet();
 
@@ -1053,6 +1054,7 @@ public class CustomAnimator {
         Animator animationButtonDeleteRightMargin = createAnimatorRightMargin(buttonDelete, buttonDeleteRightMarginInit, buttonDeleteRightMargin, duration);
         Animator animationButtonDeleteHeight = createAnimatorHeight(buttonDelete, buttonDelete.getHeight(), buttonDeleteSize, duration);
         Animator animationButtonDeleteWidth = createAnimatorWidth(buttonDelete, buttonDelete.getWidth(), buttonDeleteSize, duration);
+        Animator animationButtonDownloadWidth = createAnimatorWidth(buttonDownload, buttonDownload.getWidth(), ResourceManagerView.BUTTON_DOWNLOAD_SIZE_PX, duration);
         Animator animationProgressBarSize = createAnimatorIndicatorSize(progressBar, progressBar.getIndicatorSize(), ResourceManagerView.PROGRESS_BAR_SIZE_PX, duration);
 
         if(progressBar.getVisibility() == View.VISIBLE && pauseOrResumeIcon.getVisibility() == View.VISIBLE) {
@@ -1060,7 +1062,7 @@ public class CustomAnimator {
                     .with(animationPauseOrResumeIconAlpha).with(animationProgressBarAlpha).with(animationButtonDeleteAlpha).before(animationDownloadAlpha);
         }else{
             animatorSet.play(animationButtonDeleteLeftMargin).with(animationButtonDeleteRightMargin).with(animationButtonDeleteHeight).with(animationButtonDeleteWidth)
-                    .with(animationButtonDeleteAlpha).with(animationProgressBarSize).before(animationDownloadAlpha);
+                    .with(animationButtonDeleteAlpha).with(animationButtonDownloadWidth).with(animationProgressBarSize).before(animationDownloadAlpha);
         }
 
         final boolean[] cancelled = {false};
@@ -1098,7 +1100,7 @@ public class CustomAnimator {
         return animatorSet;
     }
 
-    public Animator animateResourceDownloadCompleted(final Context context, CircularProgressIndicator progressBar, ImageView pauseOrResumeIcon, ImageView buttonDelete, final Listener listener){
+    public Animator animateResourceDownloadCompleted(final Context context, ImageView buttonDownload, CircularProgressIndicator progressBar, ImageView pauseOrResumeIcon, ImageView buttonDelete, final Listener listener){
         int duration = context.getResources().getInteger(R.integer.durationStandard);
 
         ConstraintLayout.LayoutParams layoutParamsBar = (ConstraintLayout.LayoutParams) progressBar.getLayoutParams();
@@ -1115,10 +1117,11 @@ public class CustomAnimator {
 
         Animator animationPauseOrResumeIconAlpha = createAnimatorAlpha(pauseOrResumeIcon, pauseOrResumeIcon.getAlpha(), 0, duration);
         Animator animationProgressBarAlpha = createAnimatorAlpha(progressBar, progressBar.getAlpha(), 0, duration);
+        Animator animationButtonDownloadWidth = createAnimatorWidth(buttonDownload, buttonDownload.getWidth(), 1, duration);
         Animator animationProgressBarSize = createAnimatorIndicatorSize(progressBar, progressBar.getIndicatorSize(), 1, duration);
         Animator animationButtonDeleteLeftMargin = createAnimatorRightMargin(progressBar, buttonDeleteLeftMarginInit, buttonDeleteLeftMargin, duration);
 
-        animatorSet.play(animationPauseOrResumeIconAlpha).with(animationProgressBarAlpha).with(animationProgressBarSize).with(animationButtonDeleteLeftMargin);
+        animatorSet.play(animationPauseOrResumeIconAlpha).with(animationProgressBarAlpha).with(animationButtonDownloadWidth).with(animationProgressBarSize).with(animationButtonDeleteLeftMargin);
 
         final boolean[] cancelled = {false};
         animatorSet.addListener(new Animator.AnimatorListener() {
@@ -1328,69 +1331,6 @@ public class CustomAnimator {
 
     public void disappearVertically(final View view){
         createAnimatorHeight(view,view.getHeight(),1,view.getResources().getInteger(R.integer.durationShort)).start();
-    }
-
-    public void appearSecurityLevel(Context context, int duration, final TextView textSecurity, ImageButton securityInfo, final EditText inputRepeatPassword){
-        AnimatorSet animatorSet= new AnimatorSet();
-        // textSecurity animation
-        int finalTextHeight= Tools.convertSpToPixels(context,18);
-        int finalTextMargin= Tools.convertDpToPixels(context,12);
-        Animator textSecurityAnimation= createAppearFromTopAnimator(duration/2,finalTextHeight,finalTextMargin,textSecurity,new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-                if(inputRepeatPassword!=null) {
-                    ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) inputRepeatPassword.getLayoutParams();
-                    layoutParams.topToBottom = textSecurity.getId();
-                    inputRepeatPassword.setLayoutParams(layoutParams);
-                }
-            }
-            @Override
-            public void onAnimationEnd(Animator animator) {}
-            @Override
-            public void onAnimationCancel(Animator animator) {}
-            @Override
-            public void onAnimationRepeat(Animator animator) {}
-        });
-
-        // securityInfo animation
-        int finalInfoHeight= Tools.convertSpToPixels(context,16);
-        int finalInfoMargin= 0;
-        Animator securityInfoAnimation= createAppearFromTopAnimator(duration/2,finalInfoHeight,finalInfoMargin,securityInfo,null);
-
-        animatorSet.play(textSecurityAnimation).with(securityInfoAnimation);
-        animatorSet.start();
-
-    }
-
-    public void disappearSecurityLevel(Context context, int duration, TextView textSecurity, ImageButton securityInfo, final EditText inputPassword, final EditText inputRepeatPassword){
-        AnimatorSet animatorSet= new AnimatorSet();
-        int initialTextMargin=Tools.convertDpToPixels(context,12);
-        // textSecurity animation
-        Animator textSecurityAnimation= createDisappearFromTopAnimator(context,duration/2,initialTextMargin,View.GONE,textSecurity);
-
-        // securityInfo animation
-        int initialInfoMargin=0;
-        Animator securityInfoAnimation= createDisappearFromTopAnimator(context,duration/2,initialInfoMargin,View.GONE,securityInfo);
-
-        animatorSet.play(textSecurityAnimation).with(securityInfoAnimation);
-        animatorSet.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {}
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                if(inputRepeatPassword!=null) {
-                    ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) inputRepeatPassword.getLayoutParams();
-                    layoutParams.topToBottom = inputPassword.getId();
-                    inputRepeatPassword.setLayoutParams(layoutParams);
-                }
-            }
-            @Override
-            public void onAnimationCancel(Animator animator) {}
-            @Override
-            public void onAnimationRepeat(Animator animator) {}
-        });
-        animatorSet.start();
-
     }
 
     public void appearFromBottom(Context context, int duration, int finalSize, View...view){

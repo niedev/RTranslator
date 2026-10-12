@@ -27,7 +27,6 @@
     <string name="not_available">non disponibile</string>
     <string name="loading">caricamento…</string>
     <string name="forward">avanti</string>
-    <string name="no_graph_data">Nessun dato sull\' utilizzo presente</string>
     <string name="conversation">Conversazione</string>
     <string name="connection">Connessione</string>
     <string name="translate">Traduci</string>
@@ -36,7 +35,7 @@
     <string name="chat">Chat</string>
     <string name="select_tts">Seleziona TTS</string>
     <string name="unzipping">Decompressione...</string>
-    <string name="testing_integrity">Verifica integrità...</string>
+    <string name="testing_integrity">Verifica...</string>
     <string name="paused">"In pausa: "</string>
     <string name="applying_settings">Applicazione nuove impostazioni...</string>
     <string name="dictionary">Dizionario</string>
@@ -56,10 +55,50 @@
     <string name="no">No</string>
     <string name="yes">Sì</string>
     <string name="general">Generale</string>
+    <string name="edit">Modifica</string>
+    <string name="back">Indietro</string>
+    <string name="pause">Pausa</string>
+    <string name="resume">Riprendi</string>
+    <string name="offline">Offline</string>
+    <string name="reset">Reimposta</string>
+    <string name="options">Opzioni</string>
+    <string name="from">da</string>
+    <string name="to">a</string>
+
+    <string name="description_button_tts_manual">Lettura manuale dei messaggi</string>
+    <string name="description_button_tts_auto">Lettura automatica dei messaggi</string>
+    <string name="description_stop_search">Interrompi ricerca</string>
+    <string name="description_start_search">Avvia ricerca</string>
+    <string name="description_checkbox_privacy">Accetta l\'informativa sulla privacy</string>
+    <string name="description_disconnect_peer">Disconnetti dispositivo</string>
+    <string name="description_chat_tab">Scheda chat</string>
+    <string name="description_connection_tab">Scheda connessione</string>
+    <string name="description_switch_languages">Inverti lingue</string>
+    <string name="description_copy_input_text">Copia testo inserito</string>
+    <string name="description_copy_translated_text">Copia testo tradotto</string>
+    <string name="description_clear_text">Cancella testo</string>
+    <string name="description_text_fullscreen">Testo tradotto a schermo intero</string>
+    <string name="description_start_microphone">Attiva microfono</string>
+    <string name="description_stop_microphone">Disattiva microfono</string>
+    <string name="description_close_text_mode">Chiudi modalità inserimento testo</string>
+    <string name="description_send">Invia messaggio di testo</string>
+    <string name="description_start_automatic_recognition">Avvia riconoscimento automatico</string>
+    <string name="description_stop_automatic_recognition">Interrompi riconoscimento automatico</string>
+    <string name="description_start_manual_recognition">Avvia riconoscimento manuale in %1$s</string>
+    <string name="description_stop_manual_recognition">Interrompi riconoscimento manuale in %1$s</string>
+    <string name="description_double_tap_fullscreen">Doppio click per aprire a schermo intero</string>
+    <string name="description_message_fullscreen">Apri il messaggio a schermo intero</string>
+    <string name="description_exit_fullscreen">Esci dalla modalità a schermo intero</string>
+    <string name="description_mode">Descrizione della modalità</string>
+    <string name="description_read_full">Leggi la descrizione completa</string>
+    <string name="description_start_download">Avvia download</string>
+    <string name="description_delete_resource">Elimina risorsa</string>
+    <string name="description_download_error">Errore di download</string>
+    <string name="description_start_walkietalkie">Avvia WalkieTalkie</string>
+    <string name="description_manage_mozilla_button">Gestisci le lingue della modalità prestazioni</string>
 
     <string name="notification_channel_name">notifica uso in background</string>
 
-    <string name="age_check_box">Dichiaro di avere almeno 14 anni</string>
     <string name="privacy_check_box">Dichiaro di aver letto la <a href="https://github.com/niedev/RTranslator/blob/v2.00/privacy/Privacy_Policy_it.md">privacy policy</a></string>
 
     <string name="toast_working_background">RTranslator funzionerà in background</string>
@@ -72,13 +111,14 @@
     <string name="dialog_confirm_disconnection">Sei sicuro di volerti disconnettere da&#160;</string>
     <string name="dialog_confirm_connection">Sei sicuro di volerti connettere con&#160;</string>
     <string name="dialog_confirm_connection_request">Accetti la richiesta di connessione da&#160;</string>
-    <string name="dialog_select_file">Seleziona il file</string>
     <string name="dialog_select_personal_language">Seleziona la lingua personale</string>
     <string name="dialog_select_first_language">Seleziona la lingua primaria</string>
     <string name="dialog_select_second_language">Seleziona la lingua secondaria</string>
     <string name="dialog_insert_name">Inserisci il tuo nome</string>
     <string name="dialog_confirm_apply_quit">Sei sicuro di voler uscire senza applicare le nuove impostazioni?</string>
     <string name="dialog_confirm_delete_resource">Sei sicuro di voler eliminare questa risorsa?</string>
+    <string name="dialog_search_hint">Cerca lingua...</string>
+    <string name="dialog_no_languages">Nessuna lingua trovata</string>
 
     <string name="menu_image_select_from_gallery">Seleziona dalla galleria</string>
     <string name="menu_image_remove">Rimuovi</string>
@@ -93,8 +133,6 @@
     <string name="error_tts_toast">TTS mancante</string>
     <string name="error_tts">C\'è stato un errore con l\'inizializzazione del tts, vuoi continuare senza tts?</string>
     <string name="error_missing_tts">In questo device non è presente il motore di sintesi vocale di google, scaricalo per poter usare il tts</string>
-    <string name="error_wrong_api_key_file">Il file chiave per usare l\'API non funziona, inserire un file chiave funzionante</string>
-    <string name="error_missing_api_key_file">Inserire il file chiave per usare l\'API</string>
     <string name="error_missing_bluetooth_le">Non é possibile eseguire la modalità Conversazione perché questo dispositivo non ha il Bluetooth Low Energy</string>
     <string name="error_internet_lack_loading">Per avviare RTranslator è necessaria una connessione a internet, controllare la propria connessione</string>
     <string name="error_internet_lack_accessing">Per eseguire l\'operazione è necessaria una connessione a internet, controllare la propria connessione</string>
@@ -106,8 +144,6 @@
     <string name="error_cannot_interact_connection">Non si può interagire con i dispositivi durante la connessione</string>
     <string name="error_cannot_interact_disconnection">Non si può interagire con i dispositivi durante la disconnessione</string>
     <string name="error_wait_initialization">Attendere inizializzazione</string>
-    <string name="error_invalid_key">Inserire un file chiave valido</string>
-    <string name="error_picking_file">Errore durante il prelevamento del file, riprovare</string>
     <string name="error_selecting_image">Errore durante la selezione dell\' immagine, usa un\' altra galleria per selezionarla</string>
     <string name="error_wait_download_end">Aspetta che il download finisca</string>
     <string name="error_age_unchecked">Devi avere almeno 14 anni per usare l\'app</string>
@@ -128,8 +164,8 @@
     <string name="error_missing_general">Risorsa non scaricata</string>
     <string name="error_apply_unknown">Errore sconosciuto, riprova.</string>
     <string name="error_delete_last_download">Questo è l\'ultimo modello di traduzione scaricato. Non puoi eliminare tutti i modelli di traduzione: scaricane un altro prima di eliminare questo.</string>
+    <string name="error_bluetooth_off">Non è possibile usare la modalità Conversazione perché il Bluetooth è disattivato, attivalo per iniziare a usare questa modalità.</string>
 
-    <string name="title_graph">DOLLARI (USD) SPESI OGNI ORA</string>
     <string name="title_image_selector">immagine del profilo</string>
 
     <string name="home_walkietalkie_mode">Modalità WalkieTalkie</string>
@@ -148,12 +184,9 @@
     <string name="header_recents_peers">recenti</string>
     <string name="header_found_peers">trovati</string>
     <string name="header_connected_peers">connessi</string>
-    <string name="header_key">Chiave APIs</string>
 
-    <string name="description_cost">Il riconoscimento vocale arrotonda il costo di ogni richiesta al più vicino multiplo di 15 secondi, il costo medio totale (sia traduttore che riconoscimento vocale), senza tenere conto dell\' arrotondamento, è di 2,5 dollari l\' ora, inoltre per WalkieTalkie bisogna aggiungere ai costi di traduzione anche quelli del rilevamento della lingua, per approfondire leggere il <a href="https://github.com/niedev/RTranslator">tutorial</a></string>
     <string name="description_discovery">In questa schermata si cercano e ci rendiamo visibili ad altri dispositivi che usano RTranslator
         per poter stabilire una connessione con loro e iniziare la conversazione</string>
-    <string name="description_key">Per sapere come procurarsi il file chiave leggere il <a href="https://github.com/niedev/RTranslator">tutorial</a></string>
     <string name="description_fragment_user_data">Il tuo nome verrà visualizzato da tutti i dispositivi nelle vicinanze, mentre la tua immagine del profilo solo dai dispositivi con cui hai già avuto conversazioni</string>
     <string name="description_fragment_download">Adesso RTranslator scaricherà i modelli di reti neurali necessari per la traduzione e il riconoscimento vocale, una volta finito potrai iniziare a usare l\'app (anche offline).</string>
     <string name="description_conversation">La modalità Conversazione è la funzionalità principale di RTranslator, permette di tradurre una conversazione tra più persone in tempo reale, per un\' esperienza migliore si consiglia di collegare delle cuffie bluetooth al telefono, inoltre l\' applicazione continuerà a funzionare anche in background e con il telefono in standby (alcuni telefoni però potrebbero avere problemi di prestazioni quando l\'app gira in background)</string>

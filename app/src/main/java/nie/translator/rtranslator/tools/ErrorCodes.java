@@ -26,7 +26,6 @@ public class ErrorCodes {
     //locals
     public static final int MISSED_ARGUMENT = 0;
     public static final int MISSED_CREDENTIALS = 1;
-    public static final int MAX_CREDIT_OFFET_REACHED = 11;
 
     //safetyNet
     public static final int SAFETY_NET_EXCEPTION = 8;

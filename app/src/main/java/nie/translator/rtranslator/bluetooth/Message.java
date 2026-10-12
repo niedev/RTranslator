@@ -19,14 +19,17 @@ package nie.translator.rtranslator.bluetooth;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+
+import nie.translator.rtranslator.BuildConfig;
+import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
 
 /**
  * Message is used to send and receive messages using BluetoothCommunicator, in practice this class is a container for the messages that will be sent and received.
@@ -262,10 +265,10 @@ public class Message implements Parcelable, Cloneable {
      * This method is used only by the library, there is no need for you to use it because the split and the reassembly of a long message is handled by the library.
      *
      * @param id
-     * @return the message splitted in more BluetoothMessages (or converted in one BluetoothMessage if the message is short enough)
+     * @return the message split in more BluetoothMessages (or converted in one BluetoothMessage if the message is short enough)
      */
-    public ArrayDeque<nie.translator.rtranslator.bluetooth.BluetoothMessage> splitInBluetoothMessages(nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber id) {
-        int subDataLength = nie.translator.rtranslator.bluetooth.BluetoothConnection.SUB_MESSAGES_LENGTH - nie.translator.rtranslator.bluetooth.BluetoothMessage.TOTAL_LENGTH;
+    public ArrayDeque<nie.translator.rtranslator.bluetooth.BluetoothMessage> splitInBluetoothMessages(nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber id, int subMessagesLength) {
+        int subDataLength = subMessagesLength - nie.translator.rtranslator.bluetooth.BluetoothMessage.TOTAL_HEADERS_LENGTH;
         ArrayDeque<byte[]> subDataArray = BluetoothTools.splitBytes(BluetoothTools.concatBytes(header.getBytes(StandardCharsets.UTF_8), data), subDataLength);
 
         nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber sequenceNumber = new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH);
@@ -281,6 +284,14 @@ public class Message implements Parcelable, Cloneable {
             bluetoothMessages.addLast(new nie.translator.rtranslator.bluetooth.BluetoothMessage(context, id.clone(), sequenceNumber.clone(), type, subData));
             sequenceNumber.increment();
         }
+        if (BuildConfig.DEBUG) {
+            ArrayList<String> messagesTexts = new ArrayList<>(bluetoothMessages.size());
+            for (BluetoothMessage message: bluetoothMessages) {
+                messagesTexts.add(new String(message.getData(), StandardCharsets.UTF_8));
+            }
+            Log.i("bluetooth_communicator", "Message "+id+" converted in the following "+messagesTexts.size()+" bluetooth messages: \n"+String.join("\n ", messagesTexts));
+        }
+
         return bluetoothMessages;
     }
 

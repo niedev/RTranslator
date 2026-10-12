@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:width="100dp"
-        android:height="100dp"
-        android:drawable="@drawable/app_icon"
+        android:width="90dp"
+        android:height="64.86dp"
+        android:drawable="@drawable/app_icon_vector"
         android:gravity="center" />
 </layer-list>

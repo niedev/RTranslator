@@ -20,25 +20,32 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import nie.translator.rtranslator.bluetooth.Message;
+import nie.translator.rtranslator.tools.CustomLocale;
 
 public class GuiMessage implements Parcelable {
     private Message message;
     private boolean isMine;
     private boolean isFinal;
     private long messageID = -1;
+    private CustomLocale sourceLanguage;    //the language of the original transcription (message -> textToTranslate)
+    private CustomLocale contentLanguage;   //the language of the message translated (message -> data)
 
 
-    public GuiMessage(Message message, boolean isMine, boolean isFinal) {
+    public GuiMessage(Message message, CustomLocale sourceLanguage, CustomLocale contentLanguage, boolean isMine, boolean isFinal) {
         this.message=message;
         this.isMine = isMine;
         this.isFinal = isFinal;
+        this.sourceLanguage = sourceLanguage;
+        this.contentLanguage = contentLanguage;
     }
 
-    public GuiMessage(Message message, long messageID, boolean isMine, boolean isFinal) {
+    public GuiMessage(Message message, CustomLocale sourceLanguage, CustomLocale contentLanguage, long messageID, boolean isMine, boolean isFinal) {
         this.message=message;
         this.messageID = messageID;
         this.isMine = isMine;
         this.isFinal = isFinal;
+        this.sourceLanguage = sourceLanguage;
+        this.contentLanguage = contentLanguage;
     }
 
     public Message getMessage() {
@@ -91,6 +98,8 @@ public class GuiMessage implements Parcelable {
         messageID = in.readLong();
         isMine = in.readByte() != 0;
         isFinal = in.readByte() != 0;
+        sourceLanguage = in.readSerializable(CustomLocale.class.getClassLoader(), CustomLocale.class);
+        contentLanguage = in.readSerializable(CustomLocale.class.getClassLoader(), CustomLocale.class);
     }
 
     @Override
@@ -104,6 +113,8 @@ public class GuiMessage implements Parcelable {
         parcel.writeLong(messageID);
         parcel.writeByte((byte) (isMine ? 1 : 0));
         parcel.writeByte((byte) (isFinal ? 1 : 0));
+        parcel.writeSerializable(sourceLanguage);
+        parcel.writeSerializable(contentLanguage);
     }
 
     public long getMessageID() {
@@ -112,5 +123,13 @@ public class GuiMessage implements Parcelable {
 
     public void setMessageID(long messageID) {
         this.messageID = messageID;
+    }
+
+    public CustomLocale getSourceLanguage() {
+        return sourceLanguage;
+    }
+
+    public CustomLocale getContentLanguage() {
+        return contentLanguage;
     }
 }

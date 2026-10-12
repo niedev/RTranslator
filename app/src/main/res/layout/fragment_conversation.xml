@@ -18,12 +18,12 @@
 
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tool="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/primary_very_lite"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:accessibilityPaneTitle="@string/title_fragment_conversation">
 
     <android.widget.Toolbar
         android:id="@+id/toolbarConversation"
@@ -34,6 +34,7 @@
         android:theme="@style/Theme.Toolbar"
         android:title=" "
         android:titleTextColor="@color/primary"
+        android:importantForAccessibility="noHideDescendants"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
@@ -55,13 +56,14 @@
         android:src="@drawable/back_arrow_icon2"
         android:tint="@color/primary_very_dark"
         android:visibility="visible"
+        android:contentDescription="@string/back"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarConversation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -111,6 +113,7 @@
         android:src="@drawable/cancel_icon"
         android:tint="@color/primary_very_dark"
         android:visibility="invisible"
+        android:contentDescription="@string/description_stop_search"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarConversation"
         app:layout_constraintEnd_toStartOf="@+id/settingsButton"
         app:layout_constraintHorizontal_bias="1.0"
@@ -125,6 +128,7 @@
         android:layout_marginEnd="8dp"
         android:backgroundTint="@android:color/transparent"
         android:tint="@color/primary_very_dark"
+        android:contentDescription="@string/title_activity_settings"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarConversation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -176,6 +180,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="16dp"
+            android:contentDescription="@string/description_chat_tab"
             app:cardBackgroundColor="@color/primary_very_dark"
             app:cardCornerRadius="24dp"
             app:cardElevation="0dp"
@@ -195,7 +200,7 @@
                 android:gravity="center"
                 android:orientation="horizontal">
 
-                <TextView
+                <nie.translator.rtranslator.tools.gui.AutoScrollTextView
                     android:id="@+id/tabConversationName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -207,6 +212,7 @@
                     android:text="@string/chat"
                     android:textAlignment="center"
                     android:textColor="@color/accent_white"
+                    android:importantForAccessibility="no"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -221,6 +227,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="16dp"
+            android:contentDescription="@string/description_connection_tab"
             app:cardBackgroundColor="@color/accent_white"
             app:cardCornerRadius="24dp"
             app:cardElevation="0dp"
@@ -240,7 +247,7 @@
                 android:gravity="center"
                 android:orientation="horizontal">
 
-                <TextView
+                <nie.translator.rtranslator.tools.gui.AutoScrollTextView
                     android:id="@+id/tabConnectionName"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -252,6 +259,7 @@
                     android:text="@string/connection"
                     android:textAlignment="center"
                     android:textColor="@color/primary_very_dark"
+                    android:importantForAccessibility="no"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"

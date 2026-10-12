@@ -20,13 +20,17 @@ import static android.media.AudioManager.GET_DEVICES_INPUTS;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.media.AudioAttributes;
 import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioPlaybackConfiguration;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -35,6 +39,7 @@ import androidx.annotation.Nullable;
 import com.konovalov.vad.silero.VadSilero;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import nie.translator.rtranslator.Global;
@@ -83,6 +88,11 @@ public class Recorder {
     private int headIndex;
     private int tailIndex;
     private int startVoiceIndex;
+    private volatile boolean isSystemSpeaking = false;
+    private volatile boolean isSystemSpeakingInstant = false;
+    private AudioManager.AudioPlaybackCallback audioPlaybackCallback;
+    private Handler handler;
+    private final Object systemSpeakingLock = new Object();
     /**
      * The timestamp of the last time that voice is heard.
      */
@@ -119,6 +129,7 @@ public class Recorder {
         global.getPrevVoiceDuration();
         mCallback = callback;
         this.vad = vad;
+        this.handler = new Handler(Looper.getMainLooper());
 
         // set the encoding
         if(Build.MANUFACTURER.equalsIgnoreCase("vivo")){
@@ -134,9 +145,59 @@ public class Recorder {
             Log.e("Recorder error", "Cannot instantiate Recorder");
         }
 
+        this.audioManager = (AudioManager) global.getSystemService(Context.AUDIO_SERVICE);
+
+
+        //initialize the TTS status listener (to mute audio when TalkBack speaks)
+        /*
+         * onPlaybackConfigChanged is called when we have a state change in the system audio playback
+         * the configs attribute contains only the currently active playback sources.
+         */
+        audioPlaybackCallback = new AudioManager.AudioPlaybackCallback() {
+            @Override
+            public void onPlaybackConfigChanged(List<AudioPlaybackConfiguration> configs) {
+                boolean speaking = false;
+                for (AudioPlaybackConfiguration config : configs) {
+                    int usage = config.getAudioAttributes().getUsage();
+                    // Check if TalkBack (Accessibility) or the app's TTS (Media) is actively playing audio
+                    if (usage == AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY ) {
+                        speaking = true;
+                        break;
+                    }
+                }
+                synchronized (systemSpeakingLock) {
+                    isSystemSpeakingInstant = speaking;
+                    if (isSystemSpeakingInstant != isSystemSpeaking) {
+                        /* when isSystemSpeakingInstant is true we change isSystemSpeaking instantly,
+                        * when it is false, we delay the change to isSystemSpeaking, and if, in that time,
+                        * isSystemSpeakingInstant doesn't change to true, we update isSystemSpeaking value with false.
+                        * This delay is used because, normally, the TTS has an internal delay, but not when a speech is interrupted,
+                        * this prevents mic activation when a TTS speech is interrupted.
+                         */
+                        if (!isSystemSpeakingInstant) {
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    synchronized (systemSpeakingLock) {
+                                        if (!isSystemSpeakingInstant) {
+                                            isSystemSpeaking = false;
+                                        }
+                                    }
+                                }
+                            }, 300);
+                        } else {
+                            isSystemSpeaking = true;
+                        }
+                    }
+                }
+            }
+        };
+        if (audioManager != null) {
+            audioManager.registerAudioPlaybackCallback(audioPlaybackCallback, null);
+        }
+
         //initialize the bluetooth headset mic management
         if(useBluetoothHeadset) {
-            this.audioManager = (AudioManager) global.getSystemService(Context.AUDIO_SERVICE);
             boolean success = setBLEHeadsetConnection();
             if(success) {
                 if (bluetoothHeadsetCallback != null) {
@@ -293,9 +354,15 @@ public class Recorder {
             running = false;
             executeStopAudioRecord();      // call before setting destroyed, it checks that flag
             destroyed = true;
-            if (useBluetoothHeadset && audioManager != null) {
-                if (audioDeviceCallback != null) audioManager.unregisterAudioDeviceCallback(audioDeviceCallback);
-                if (connectedBleHeadset != null) { audioManager.stopBluetoothSco(); connectedBleHeadset = null; }
+            if(audioManager != null) {
+                if (audioPlaybackCallback != null) audioManager.unregisterAudioPlaybackCallback(audioPlaybackCallback);
+                if (useBluetoothHeadset) {
+                    if (audioDeviceCallback != null) audioManager.unregisterAudioDeviceCallback(audioDeviceCallback);
+                    if (connectedBleHeadset != null) {
+                        audioManager.stopBluetoothSco();
+                        connectedBleHeadset = null;
+                    }
+                }
             }
             if (mThread == null && mAudioRecord != null) mAudioRecord.release();
             commands.clear();
@@ -388,7 +455,7 @@ public class Recorder {
                 continue;
             }
             this.sampleRate = sampleRate;
-            AudioRecord audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, CHANNEL, ENCODING, minSizeInBytes);   //the option MIC produce better result than the option VOICE_RECOGNITION
+            AudioRecord audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, CHANNEL, ENCODING, minSizeInBytes);   //the option MIC produce better results than the option VOICE_RECOGNITION
             //audioRecord.setPreferredDevice()
             if (audioRecord.getState() == AudioRecord.STATE_INITIALIZED) {
                 int minReadSize = (minSizeInBytes/4)*2;
@@ -456,7 +523,7 @@ public class Recorder {
                         //we do the rest of voice processing
                         final long now = System.currentTimeMillis();
                         if (isHearingVoice(mBufferShort, oldTailIndex, tailIndex)) {
-                            if (mLastVoiceHeardMillis == Long.MAX_VALUE) {    // use Long's maximum limit to indicate that we have no voice
+                            if (mLastVoiceHeardMillis == Long.MAX_VALUE) {    // use Long's maximum limit to indicate that we have no voice (the mic is not listening)
                                 mVoiceStartedMillis = now;
                                 isRecording = true;
                                 mCallback.onVoiceStart();
@@ -474,8 +541,8 @@ public class Recorder {
                             if (now - (mVoiceStartedMillis - global.getPrevVoiceDuration()) > MAX_SPEECH_LENGTH_MILLIS) {  //if we are listening voice for more than MAX_SPEECH_LENGTH_MILLIS
                                 executeEnd();
                             }
-                        } else if (mLastVoiceHeardMillis != Long.MAX_VALUE) {
-                            if (now - mLastVoiceHeardMillis > global.getSpeechTimeout()) {  //if we had not heard voice for global.getSpeechTimeout() ms
+                        } else if (mLastVoiceHeardMillis != Long.MAX_VALUE) {   // use Long's maximum limit to indicate that we have no voice (the mic is not listening)
+                            if ((now - mLastVoiceHeardMillis > global.getSpeechTimeout()) || shouldVirtualMuteMic()) {  //if we had not heard voice for global.getSpeechTimeout() ms or the mic is virtually muted
                                 executeEnd();
                             }
                         }
@@ -562,25 +629,38 @@ public class Recorder {
     }
 
     private int readAudio(int offset, int size){
+        int outputSize;
         if(ENCODING == AudioFormat.ENCODING_PCM_FLOAT){
-            int outputSize = mAudioRecord.read(mBuffer, offset, size, AudioRecord.READ_BLOCKING);
+            outputSize = mAudioRecord.read(mBuffer, offset, size, AudioRecord.READ_BLOCKING);
             // Using the values just read in mBuffer we convert the values to mBufferShort in the ENCODING_PCM_16BIT format (used for VAD)
             // To do this, we iterate the section just wrote of mBuffer, convert each value from ENCODING_PCM_FLOAT to ENCODING_PCM_16BIT and insert these values in the corresponding section of mBufferShort.
             for(int i=offset; i<offset+outputSize; i++){
                 //The range with ENCODING_PCM_16BIT is [-32768, 32767], while with ENCODING_PCM_FLOAT it is [-1, 1], so we convert accordingly
                 mBufferShort[i] = (short) (mBuffer[i] * 32768);
             }
-            return outputSize;
         }else{  //ENCODING == AudioFormat.ENCODING_PCM_16BIT
-            int outputSize = mAudioRecord.read(mBufferShort, offset, size, AudioRecord.READ_BLOCKING);
+            outputSize = mAudioRecord.read(mBufferShort, offset, size, AudioRecord.READ_BLOCKING);
             // Using the values just read in mBufferShort we convert the values to mBuffer in the ENCODING_PCM_FLOAT format (used for Speech recognition)
             // Tod do this we iterate the section just wrote of mBufferShort, convert each value from ENCODING_PCM_16BIT to ENCODING_PCM_FLOAT and insert these value in the corresponding section of mBuffer.
             for(int i=offset; i<offset+outputSize; i++){
                 //The range with ENCODING_PCM_16BIT is [-32768, 32767], while with ENCODING_PCM_FLOAT it is [-1, 1], so we convert accordingly
                 mBuffer[i] = (float) mBufferShort[i] / 32768;
             }
-            return outputSize;
         }
+
+        // SOFTWARE MUTE: If TalkBack or TTS is speaking and the mic is not connected to BLE headset, zero out the buffers
+        if (shouldVirtualMuteMic()) {
+            for(int i = offset; i < offset + outputSize; i++){
+                mBuffer[i] = 0.0f;
+                mBufferShort[i] = 0;
+            }
+        }
+
+        return outputSize;
+    }
+
+    private boolean shouldVirtualMuteMic(){
+        return isSystemSpeaking && !isOnHeadsetSco();
     }
 
     private boolean isHearingVoice(short[] buffer, int begin, int end) {

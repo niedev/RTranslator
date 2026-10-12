@@ -86,7 +86,8 @@
             android:name="nie.translator.rtranslator.settings.SettingsActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.Settings" />
+            android:theme="@style/Theme.Settings"
+            android:label="@string/title_activity_settings" />
         <activity
             android:name="nie.translator.rtranslator.access.AccessActivity"
             android:exported="true"
@@ -97,13 +98,17 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Speech"/>
+        <activity
+            android:name="nie.translator.rtranslator.voice_translation.FullScreenTextActivity"
+            android:theme="@style/Theme.MaterialComponents.NoActionBar"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
 
         <service android:name="nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService"
             android:foregroundServiceType="dataSync|microphone"/>
         <service android:name="nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieService"
             android:foregroundServiceType="dataSync|microphone"/>
         <service android:name="nie.translator.rtranslator.GeneralService" />
-        <service android:name=".downloader2.DownloaderService"
+        <service android:name=".downloader.DownloaderService"
             android:foregroundServiceType="dataSync" />
 
         <provider
@@ -115,13 +120,20 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
+
         <uses-library
             android:name="com.sec.android.app.multiwindow"
             android:required="false" />
-        <!--<receiver android:name=".access.DownloadReceiver" android:exported="true">
+
+        <receiver
+            android:name=".widgets.WalkieTalkieWidgetProvider"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-        </receiver>-->
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_walkie_talkie_info" />
+        </receiver>
     </application>
 </manifest>

@@ -292,6 +292,23 @@ public class Peer implements Parcelable, Cloneable {
     }
 
     /**
+     * This method resets the state of the Peer to:
+     * isHardwareConnected = false;
+     * isConnected = false;
+     * isReconnecting = false;
+     * isRequestingReconnection = false;
+     * isDisconnecting = false;
+     * This new state is like a Peer that is just been found.
+     */
+    public void resetState(){
+        isHardwareConnected = false;
+        isConnected = false;
+        isReconnecting = false;
+        isRequestingReconnection = false;
+        isDisconnecting = false;
+    }
+
+    /**
      * This method is for internal usage only
      *
      * @return

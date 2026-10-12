@@ -2,12 +2,9 @@ package nie.translator.rtranslator.voice_translation.neural_networks.translation
 
 import android.content.Context;
 import android.os.Environment;
-import android.util.Log;
 
 import java.io.File;
 import java.util.Objects;
-
-import javax.annotation.Nullable;
 
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.tools.CustomLocale;

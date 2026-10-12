@@ -27,9 +27,9 @@ import nie.translator.rtranslator.tools.gui.peers.Header;
 import nie.translator.rtranslator.tools.gui.peers.Listable;
 
 public class InfoArray implements PeerListArray {
-    private static final int CONNECTED_HADER_WEIGHT = 0;
+    private static final int CONNECTED_HEADER_WEIGHT = 0;
     private static final int CONNECTED_PEER_WEIGHT = 1;
-    private static final int FOUND_HADER_WEIGHT = 2;
+    private static final int FOUND_HEADER_WEIGHT = 2;
     private static final int FOUND_PEER_WEIGHT = 3;
     private WeightArray weightArray = new WeightArray();
     private Header foundHeader;
@@ -54,7 +54,7 @@ public class InfoArray implements PeerListArray {
                 return weightArray.add(new WeightElement(guiPeer, CONNECTED_PEER_WEIGHT));
             } else {
                 if (numberOfFoundPeers == 0) {
-                    weightArray.add(new WeightElement(foundHeader, FOUND_HADER_WEIGHT));
+                    weightArray.add(new WeightElement(foundHeader, FOUND_HEADER_WEIGHT));
                 }
                 numberOfFoundPeers++;
                 return weightArray.add(new WeightElement(guiPeer, FOUND_PEER_WEIGHT));
@@ -84,7 +84,7 @@ public class InfoArray implements PeerListArray {
                     weightArray.set(index, new WeightElement(newListable, FOUND_PEER_WEIGHT));
                     if (oldPeer.isConnected() || oldPeer.isReconnecting() || oldPeer.isDisconnecting()) {
                         if (numberOfFoundPeers == 0) {
-                            weightArray.add(new WeightElement(foundHeader, FOUND_HADER_WEIGHT));
+                            weightArray.add(new WeightElement(foundHeader, FOUND_HEADER_WEIGHT));
                         }
                         numberOfFoundPeers++;
                     }

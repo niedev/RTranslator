@@ -32,6 +32,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageButton;
@@ -40,12 +41,17 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
+import nie.translator.rtranslator.bluetooth.Peer;
+import nie.translator.rtranslator.bluetooth.tools.Timer;
 import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.FileLog;
 import nie.translator.rtranslator.tools.Tools;
+import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.tools.gui.RequestDialog;
 import nie.translator.rtranslator.tools.gui.animations.CustomAnimator;
 import nie.translator.rtranslator.tools.gui.peers.GuiPeer;
@@ -53,10 +59,6 @@ import nie.translator.rtranslator.tools.gui.peers.Listable;
 import nie.translator.rtranslator.tools.gui.peers.PeerListAdapter;
 import nie.translator.rtranslator.tools.gui.peers.array.PairingArray;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
-import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
-import nie.translator.rtranslator.bluetooth.Peer;
-import nie.translator.rtranslator.bluetooth.tools.Timer;
-
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.recent_peer.RecentPeer;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.recent_peer.RecentPeersDataManager;
 
@@ -76,6 +78,7 @@ public class PairingFragment extends PairingToolbarFragment {
     private TextView noDevices;
     private TextView noPermissions;
     private TextView noBluetoothLe;
+    private TextView bluetoothOff;
     private AppCompatImageButton exitButton;
     private AppCompatImageButton settingsButton;
     private final Object lock = new Object();
@@ -257,6 +260,17 @@ public class PairingFragment extends PairingToolbarFragment {
                 }
                 startSearch();
             }
+
+            @Override
+            public void onBluetoothStatusChange(boolean enabled, boolean externalChange) {
+                super.onBluetoothStatusChange(enabled, externalChange);
+                if (enabled) {
+                    disappearBluetoothOffError();
+                    startSearch();
+                }else{
+                    appearBluetoothOffError();
+                }
+            }
         };
     }
 
@@ -276,6 +290,7 @@ public class PairingFragment extends PairingToolbarFragment {
         noDevices = view.findViewById(R.id.noDevices);
         noPermissions = view.findViewById(R.id.noPermission);
         noBluetoothLe = view.findViewById(R.id.noBluetoothLe);
+        bluetoothOff = view.findViewById(R.id.bluetoothOff);
         exitButton = view.findViewById(R.id.exitButton);
         settingsButton = view.findViewById(R.id.settingsButton);
     }
@@ -337,11 +352,20 @@ public class PairingFragment extends PairingToolbarFragment {
                 }
             }
         });
+
+        GuiTools.setDescriptionOptimizationForAccessibility(discoveryDescription);
+        GuiTools.setDescriptionOptimizationForAccessibility(discoveryDescriptionBottom);
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        //we request to turn on bluetooth to the user
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, 2);
+        }
         // release buttons and eliminate any loading
         activateInputs();
         disappearLoading(true, null);
@@ -355,14 +379,6 @@ public class PairingFragment extends PairingToolbarFragment {
     public void onResume() {
         super.onResume();
         //restore status
-        /*if (activity.getConnectingPeersList().size() > 0) {
-            deactivateInputs();
-            appearLoading(null);
-        } else {
-            clearFoundPeers();
-            disappearLoading(null);
-            activateInputs();
-        }*/
         clearFoundPeers();
 
         activity.addCallback(communicatorCallback);
@@ -409,7 +425,9 @@ public class PairingFragment extends PairingToolbarFragment {
     @Override
     protected void startSearch() {
         int result = activity.startSearch();
-        if (result != BluetoothCommunicator.SUCCESS) {
+        if (result == BluetoothCommunicator.SUCCESS) {
+            disappearBluetoothOffError();
+        } else {
             if (result == BluetoothCommunicator.BLUETOOTH_LE_NOT_SUPPORTED && noBluetoothLe.getVisibility() != View.VISIBLE) {
                 // appearance of the bluetooth le missing sign
                 listViewGui.setVisibility(View.GONE);
@@ -417,6 +435,8 @@ public class PairingFragment extends PairingToolbarFragment {
                 noDevices.setVisibility(View.GONE);
                 discoveryDescription.setVisibility(View.GONE);
                 noBluetoothLe.setVisibility(View.VISIBLE);
+            } else if (result == BluetoothCommunicator.BLUETOOTH_OFF) {
+                appearBluetoothOffError();
             } else if (result != ErrorCodes.NO_PERMISSIONS && result != BluetoothCommunicator.ALREADY_STARTED) {
                 //Toast.makeText(activity, getResources().getString(R.string.error_starting_search), Toast.LENGTH_SHORT).show();
                 Log.i("bluetooth", "Error in starting search, trying again in 2 seconds...");
@@ -427,6 +447,26 @@ public class PairingFragment extends PairingToolbarFragment {
 
     private void stopSearch() {
         activity.stopSearch(connectingPeer == null);
+    }
+
+    private void appearBluetoothOffError(){
+        // appearance of the bluetooth off sign
+        listViewGui.setVisibility(View.GONE);
+        discoveryDescriptionBottom.setVisibility(View.INVISIBLE);
+        noDevices.setVisibility(View.GONE);
+        discoveryDescription.setVisibility(View.GONE);
+        bluetoothOff.setVisibility(View.VISIBLE);
+    }
+
+    private void disappearBluetoothOffError(){
+        // appearance of the bluetooth off sign
+        // listViewGui and discoveryDescriptionBottom will appear from the first found peer, not here
+        bluetoothOff.setVisibility(View.GONE);
+        if(listView != null && listView.getCount() > 0){
+            appearList();
+        }else{
+            disappearList();
+        }
     }
 
     private void activateInputs() {
@@ -464,21 +504,13 @@ public class PairingFragment extends PairingToolbarFragment {
             @Override
             public void onFirstItemAdded() {
                 super.onFirstItemAdded();
-                discoveryDescription.setVisibility(View.GONE);
-                noDevices.setVisibility(View.GONE);
-                listViewGui.setVisibility(View.VISIBLE);
-                discoveryDescriptionBottom.setVisibility(View.VISIBLE);
+                appearList();
             }
 
             @Override
             public void onLastItemRemoved() {
                 super.onLastItemRemoved();
-                listViewGui.setVisibility(View.GONE);
-                discoveryDescriptionBottom.setVisibility(View.INVISIBLE);
-                if (noPermissions.getVisibility() != View.VISIBLE) {
-                    discoveryDescription.setVisibility(View.VISIBLE);
-                    noDevices.setVisibility(View.VISIBLE);
-                }
+                disappearList();
             }
 
             @Override
@@ -499,6 +531,24 @@ public class PairingFragment extends PairingToolbarFragment {
                 listViewGui.setAdapter(listView);
             }
         });
+    }
+
+    private void appearList(){
+        discoveryDescription.setVisibility(View.GONE);
+        noDevices.setVisibility(View.GONE);
+        if(bluetoothOff.getVisibility() != View.VISIBLE) {
+            listViewGui.setVisibility(View.VISIBLE);
+            discoveryDescriptionBottom.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void disappearList(){
+        listViewGui.setVisibility(View.GONE);
+        discoveryDescriptionBottom.setVisibility(View.INVISIBLE);
+        if (noPermissions.getVisibility() != View.VISIBLE && bluetoothOff.getVisibility() != View.VISIBLE) {
+            discoveryDescription.setVisibility(View.VISIBLE);
+            noDevices.setVisibility(View.VISIBLE);
+        }
     }
 
     public void clearFoundPeers() {
