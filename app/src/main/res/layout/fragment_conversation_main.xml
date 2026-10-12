@@ -52,7 +52,7 @@
                     android:layout_marginBottom="12dp"
                     android:background="@null"
                     android:padding="12dp"
-                    android:src="@drawable/sound_auto_icon"
+                    android:src="@drawable/sound_manual_icon"
                     android:tint="@color/gray"
                     android:contentDescription="manual message reading"
                     app:layout_constraintBottom_toBottomOf="parent"
