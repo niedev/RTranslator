@@ -12,8 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
-import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.downloader.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader.DownloadManager;
 
 public class DownloaderTools {
     public static boolean isMozillaDownload(DownloadGroupInfo download){

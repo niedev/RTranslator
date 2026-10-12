@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Statistic">
+    <option name="excludedDirectories">
+      <list>
+        <option value="$PROJECT_DIR$/app/src/main/cpp/src/bergamot_translator" />
+        <option value="$PROJECT_DIR$/app/src/main/cpp/src/fasttext" />
+        <option value="$PROJECT_DIR$/app/src/main/cpp/src/libs" />
+        <option value="$PROJECT_DIR$/app/src/main/cpp/src/protobuf" />
+      </list>
+    </option>
+  </component>
+</project>

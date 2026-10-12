@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">RTranslator</string>
-
     <string name="mic">мікрофон</string>
     <string name="btHeadset">бт-гарнітура</string>
     <string name="exit">вихід</string>
@@ -13,7 +11,6 @@
     <string name="not_available">не доступний</string>
     <string name="loading">завантаження…</string>
     <string name="forward">вперед</string>
-    <string name="no_graph_data">Відсутні дані використання</string>
     <string name="conversation">Розмова</string>
     <string name="connection">З\'єднання</string>
     <string name="translate">Переклад</string>
@@ -22,7 +19,7 @@
     <string name="chat">Чат</string>
     <string name="select_tts">Виберіть TTS</string>
     <string name="unzipping">Розпакування...</string>
-    <string name="testing_integrity">Перевірка цілісності...</string>
+    <string name="testing_integrity">тестування...</string>
     <string name="paused">"Призупинено: "</string>
     <string name="applying_settings">Застосування нових налаштувань...</string>
     <string name="dictionary">Словник</string>
@@ -42,10 +39,50 @@
     <string name="no">Ні</string>
     <string name="yes">Так</string>
     <string name="general">Загальне</string>
+    <string name="edit">Редагувати</string>
+    <string name="back">Назад</string>
+    <string name="pause">Призупинити</string>
+    <string name="resume">Відновити</string>
+    <string name="offline">Офлайн</string>
+    <string name="reset">Скинути</string>
+    <string name="options">Параметри</string>
+    <string name="from">з</string>
+    <string name="to">на</string>
+
+    <string name="description_button_tts_manual">Ручне читання повідомлень</string>
+    <string name="description_button_tts_auto">Автоматичне читання повідомлень</string>
+    <string name="description_stop_search">Зупинити пошук</string>
+    <string name="description_start_search">Почати пошук</string>
+    <string name="description_checkbox_privacy">Прийняти політику конфіденційності</string>
+    <string name="description_disconnect_peer">Відключити пристрій</string>
+    <string name="description_chat_tab">Вкладка чату</string>
+    <string name="description_connection_tab">Вкладка підключення</string>
+    <string name="description_switch_languages">Поміняти мови місцями</string>
+    <string name="description_copy_input_text">Копіювати введений текст</string>
+    <string name="description_copy_translated_text">Копіювати перекладений текст</string>
+    <string name="description_clear_text">Очистити текст</string>
+    <string name="description_text_fullscreen">Перекладений текст на весь екран</string>
+    <string name="description_start_microphone">Увімкнути мікрофон</string>
+    <string name="description_stop_microphone">Вимкнути мікрофон</string>
+    <string name="description_close_text_mode">Закрити режим введення тексту</string>
+    <string name="description_send">Надіслати текстове повідомлення</string>
+    <string name="description_start_automatic_recognition">Почати автоматичне розпізнавання</string>
+    <string name="description_stop_automatic_recognition">Зупинити автоматичне розпізнавання</string>
+    <string name="description_start_manual_recognition">Почати ручне розпізнавання: %1$s</string>
+    <string name="description_stop_manual_recognition">Зупинити ручне розпізнавання: %1$s</string>
+    <string name="description_double_tap_fullscreen">Двічі торкніться, щоб відкрити на весь екран</string>
+    <string name="description_message_fullscreen">Відкрити повідомлення на весь екран</string>
+    <string name="description_exit_fullscreen">Вийти з повноекранного режиму</string>
+    <string name="description_mode">Опис режиму</string>
+    <string name="description_read_full">Читати повний опис</string>
+    <string name="description_start_download">Почати завантаження</string>
+    <string name="description_delete_resource">Видалити ресурс</string>
+    <string name="description_download_error">Помилка завантаження</string>
+    <string name="description_start_walkietalkie">Запустити WalkieTalkie</string>
+    <string name="description_manage_mozilla_button">Керувати мовами режиму продуктивності</string>
 
     <string name="notification_channel_name">використання у фоновому режимі</string>
 
-    <string name="age_check_box">Я підтверджую, що мені щонайменше 14 років</string>
     <string name="privacy_check_box">Я підтверджую, що я прочитав <a href="https://github.com/niedev/RTranslator/blob/v2.00/privacy/Privacy_Policy_en.md">політику конфіденційності</a></string>
 
     <string name="toast_working_background">RTranslator буде працювати у фоновому режимі</string>
@@ -58,13 +95,14 @@
     <string name="dialog_confirm_disconnection">Ви впевнені, що хочете відключитися від&#160;</string>
     <string name="dialog_confirm_connection">Ви впевнені, що хочете підключитися до&#160;</string>
     <string name="dialog_confirm_connection_request">Прийняти запит на підключення від&#160;</string>
-    <string name="dialog_select_file">Виберіть файл</string>
     <string name="dialog_select_personal_language">Виберіть особисту мову</string>
     <string name="dialog_select_first_language">Виберіть основну мову</string>
     <string name="dialog_select_second_language">Виберіть другу мову</string>
     <string name="dialog_insert_name">Введіть ваше ім\'я</string>
     <string name="dialog_confirm_apply_quit">Ви впевнені, що хочете вийти без застосування нових налаштувань?</string>
     <string name="dialog_confirm_delete_resource">Ви впевнені, що хочете видалити цей ресурс?</string>
+    <string name="dialog_search_hint">Пошук мови...</string>
+    <string name="dialog_no_languages">Мови не знайдено</string>
 
     <string name="menu_image_select_from_gallery">Вибрати з галереї</string>
     <string name="menu_image_remove">Видалити</string>
@@ -79,8 +117,6 @@
     <string name="error_tts_toast">Відсутній tts</string>
     <string name="error_tts">Виникла помилка при ініціалізації tts, хочете продовжити без tts?</string>
     <string name="error_missing_tts">На цьому пристрої відсутній голосовий двигун Google TTS, завантажте його, щоб мати змогу використовувати tts</string>
-    <string name="error_wrong_api_key_file">Файл ключа для використання API не працює, вставте робочий файл ключа</string>
-    <string name="error_missing_api_key_file">Введіть файл ключа для використання API</string>
     <string name="error_missing_bluetooth_le">Неможливо використовувати режим Розмови, оскільки цей пристрій не має Bluetooth Low Energy</string>
     <string name="error_internet_lack_loading">Для запуску RTranslator потрібне підключення до Інтернету, перевірте ваше підключення</string>
     <string name="error_internet_lack_accessing">Для виконання операції потрібне підключення до Інтернету, перевірте ваше підключення</string>
@@ -92,8 +128,6 @@
     <string name="error_cannot_interact_connection">не можна взаємодіяти з пристроями під час підключення</string>
     <string name="error_cannot_interact_disconnection">не можна взаємодіяти з пристроями під час відключення</string>
     <string name="error_wait_initialization">Зачекайте на ініціалізацію</string>
-    <string name="error_invalid_key">Введіть дійсний файл ключа</string>
-    <string name="error_picking_file">Помилка під час вибору файлу, спробуйте ще раз</string>
     <string name="error_selecting_image">Помилка під час вибору зображення, використовуйте іншу галерею для вибору</string>
     <string name="error_wait_download_end">Зачекайте завершення завантаження</string>
     <string name="error_age_unchecked">Вам повинно бути щонайменше 14 років для використання додатка</string>
@@ -114,8 +148,8 @@
     <string name="error_missing_general">Ресурс не завантажено</string>
     <string name="error_apply_unknown">Невідома помилка, спробуйте ще раз.</string>
     <string name="error_delete_last_download">Це остання завантажена модель перекладу. Не можна видалити всі моделі перекладу — завантажте іншу, перш ніж видаляти цю.</string>
+    <string name="error_bluetooth_off">Неможливо скористатися режимом «Розмова», оскільки Bluetooth вимкнено. Увімкніть його, щоб почати користуватися цим режимом.</string>
 
-    <string name="title_graph">ДОЛАРІВ (USD) ВИТРАЧАЮТЬ КОЖНУ ГОДИНУ</string>
     <string name="title_image_selector">зображення користувача</string>
 
     <string name="home_walkietalkie_mode">Режим WalkieTalkie</string>
@@ -134,11 +168,8 @@
     <string name="header_recents_peers">недавні</string>
     <string name="header_found_peers">знайдені</string>
     <string name="header_connected_peers">підключені</string>
-    <string name="header_key">Ключі API</string>
 
-    <string name="description_cost">Розпізнавання мови округлює вартість кожного запиту до найближчого кратного 15 секундам, середня вартість (як для перекладу, так і для розпізнавання мови), без врахування округлення, становить 2,5 доларів на годину, також для WalkieTalkie необхідно додатково врахувати витрати на виявлення мови для перекладу, щоб дізнатися більше, прочитайте <a href="https://github.com/niedev/RTranslator">посібник</a></string>
     <string name="description_discovery">На цьому екрані буде виконано пошук та ми будемо видимі для інших пристроїв, які використовують RTranslator, щоб зможемо встановити з\'єднання з ними та почати розмову</string>
-    <string name="description_key">Для того щоб дізнатися, як отримати файл ключа, прочитайте <a href="https://github.com/niedev/RTranslator">посібник</a></string>
     <string name="description_fragment_user_data">Ваше ім\'я буде відображено на всіх навколишніх пристроях, тоді як ваше фото профілю покажуть лише на пристроях, з якими ви вже мали розмови</string>
     <string name="description_fragment_download">Тепер RTranslator завантажить необхідні нейромережеві моделі для перекладу та розпізнавання мови, коли завершите, ви зможете почати використовувати додаток (навіть офлайн).</string>
     <string name="description_conversation">Режим Розмови - основна функція RTranslator, вона дозволяє перекладати розмову між кількома людьми в реальному часі, для кращого враження рекомендується підключити блютуз-гарнітуру до телефону,

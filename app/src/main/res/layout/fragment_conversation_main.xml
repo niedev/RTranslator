@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -52,9 +51,10 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginBottom="12dp"
                     android:background="@null"
-                    android:padding="8dp"
-                    android:src="@drawable/sound_auto_icon"
+                    android:padding="12dp"
+                    android:src="@drawable/sound_manual_icon"
                     android:tint="@color/gray"
+                    android:contentDescription="manual message reading"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.926"
@@ -92,7 +92,8 @@
                     android:background="@null"
                     android:src="@drawable/keyboard_icon"
                     android:tint="@color/gray"
-                    android:padding="8dp"
+                    android:padding="12dp"
+                    android:contentDescription="open text input mode"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.069"
@@ -164,6 +165,7 @@
                             android:background="@drawable/circle"
                             android:backgroundTint="@color/primary"
                             android:src="@drawable/mic_icon"
+                            android:contentDescription="stop microphone"
                             app:tint="@color/white"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -209,7 +211,7 @@
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <TextView
+                    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
                         android:id="@+id/inputMicType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -220,7 +222,8 @@
                         android:textAlignment="center"
                         android:textColor="@color/very_dark_gray"
                         android:textSize="12sp"
-                        android:visibility="visible" />
+                        android:visibility="visible"
+                        android:importantForAccessibility="no"/>
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>

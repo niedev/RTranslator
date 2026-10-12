@@ -35,9 +35,9 @@ import java.util.ArrayList;
 
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
-import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
-import nie.translator.rtranslator.downloader2.DownloadInfo;
-import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.downloader.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader.DownloadInfo;
+import nie.translator.rtranslator.downloader.DownloadManager;
 import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.tools.gui.ResourceManagerView;
 

@@ -19,14 +19,13 @@ package nie.translator.rtranslator.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.AttributeSet;
+
 import androidx.annotation.NonNull;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 import androidx.preference.SwitchPreference;
-import java.util.ArrayList;
+
 import nie.translator.rtranslator.Global;
-import nie.translator.rtranslator.tools.CustomLocale;
-import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
 
 public class SupportTtsQualityPreference extends SwitchPreference {

@@ -26,19 +26,26 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
+import nie.translator.rtranslator.bluetooth.Peer;
+import nie.translator.rtranslator.bluetooth.tools.Timer;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.FileLog;
 import nie.translator.rtranslator.tools.Tools;
+import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.tools.gui.RequestDialog;
 import nie.translator.rtranslator.tools.gui.peers.GuiPeer;
 import nie.translator.rtranslator.tools.gui.peers.Listable;
@@ -47,9 +54,6 @@ import nie.translator.rtranslator.tools.gui.peers.array.InfoArray;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation._conversation_mode.PairingFragment;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationFragment;
-import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
-import nie.translator.rtranslator.bluetooth.Peer;
-import nie.translator.rtranslator.bluetooth.tools.Timer;
 
 
 public class PeersInfoFragment extends Fragment {
@@ -320,6 +324,7 @@ public class PeersInfoFragment extends Fragment {
         discoveryDescription = view.findViewById(R.id.discoveryDescription);
         noPermissions = view.findViewById(R.id.noPermission);
         noBluetoothLe = view.findViewById(R.id.noBluetoothLe);
+        GuiTools.setDescriptionOptimizationForAccessibility(discoveryDescription);
     }
 
     @Override
@@ -479,9 +484,11 @@ public class PeersInfoFragment extends Fragment {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         activity.disconnect(peer);
-                                        if (activity.getConnectedPeersList().size() == 0 && global.getBluetoothCommunicator() != null) {
-                                            activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT, true);
-                                        }else{
+                                        if(global.getBluetoothCommunicator() != null) {
+                                            if (activity.getConnectedPeersList().isEmpty()) {
+                                                activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT, true);
+                                            }
+                                        } else {
                                             activity.setFragment(VoiceTranslationActivity.DEFAULT_FRAGMENT);
                                         }
                                     }

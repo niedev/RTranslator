@@ -16,7 +16,6 @@
 
 package nie.translator.rtranslator.settings;
 
-import android.app.Application;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 import nie.translator.rtranslator.R;
-import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader.DownloadGroupInfo;
 import nie.translator.rtranslator.tools.SortedArrayList;
 import nie.translator.rtranslator.tools.gui.ResourceManagerView;
 

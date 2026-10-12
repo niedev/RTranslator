@@ -31,12 +31,12 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
-import nie.translator.rtranslator.bluetooth.tools.Timer;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.UUID;
+
+import nie.translator.rtranslator.bluetooth.tools.BluetoothTools;
+import nie.translator.rtranslator.bluetooth.tools.Timer;
 
 
 @SuppressLint("MissingPermission")
@@ -49,13 +49,9 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
     public static final UUID MTU_REQUEST_UUID = UUID.fromString("fa87c0d4-afac-11de-8a39-0857350c7a60");
     public static final UUID MTU_RESPONSE_UUID = UUID.fromString("fa87c0d5-adac-11de-8a39-0857350c7a61");
     public static final UUID MESSAGE_SEND_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0830350c9a66");
-    //public static final UUID EXECUTE_MESSAGE_SEND_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0830350c9a13");
     public static final UUID DATA_SEND_UUID = UUID.fromString("fa87c0d0-afac-11de-8a33-0830350c9a66");
-    //public static final UUID EXECUTE_DATA_SEND_UUID = UUID.fromString("fa87c0d0-afac-11db-8a34-0830350c9a13");
     public static final UUID MESSAGE_RECEIVE_UUID = UUID.fromString("fa87c0d0-afac-11dc-8a39-0850350c8a66");
-    //public static final UUID EXECUTE_MESSAGE_RECEIVE_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0830350c9a27");
     public static final UUID DATA_RECEIVE_UUID = UUID.fromString("fa87c0d0-afac-11dd-8a32-0850350c8a66");
-    //public static final UUID EXECUTE_DATA_RECEIVE_UUID = UUID.fromString("fa87c0d0-afac-11dd-8a31-0830350c9a27");
     public static final UUID READ_RESPONSE_MESSAGE_RECEIVED_UUID = UUID.fromString("fa87c0d0-aaac-11df-8a38-0897350c8a60");
     public static final UUID READ_RESPONSE_DATA_RECEIVED_UUID = UUID.fromString("fa87c0d0-aaac-11df-8a38-0897350c8f65");
     public static final UUID NAME_UPDATE_SEND_UUID = UUID.fromString("fa87c0d4-afab-11de-8a39-0857350c7a42");
@@ -65,6 +61,8 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
     //objects
     private BluetoothGattServer bluetoothGattServer;
     private BluetoothManager bluetoothManager;
+    private final BluetoothConnectionClient client;  // the client object is used to manage synchronization with the client to avoid adding a device that connects to the latter instead of us
+    private final Object gattServerLock = new Object();  //we use this so synchronize the notifyCharacteristicChange of the shared gattServerLock and characteristic objects between the different channels (otherwise we would have conflicts in the assign of the value to send of the characteristic)
 
 
     public BluetoothConnectionServer(final Context context, final String name, @NonNull final BluetoothAdapter bluetoothAdapter, final int strategy, final BluetoothConnectionClient client, final Callback callback) {
@@ -86,6 +84,11 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
             }
         };
 
+        this.client = client;
+        initializeBluetoothGattServer();
+    }
+
+    public void initializeBluetoothGattServer(){
         bluetoothGattServer = bluetoothManager.openGattServer(context, new BluetoothGattServerCallback() {
             @Override
             public void onConnectionStateChange(BluetoothDevice device, int status, final int newState) {
@@ -95,12 +98,22 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                     @Override
                     public void run() {
                         if (newState == BluetoothProfile.STATE_CONNECTED) {
+                            Log.d("bluetooth_communicator_server", "onConnectionStateChange, connected peer: " + device.getName());
                             synchronized (channelsLock) {
-                                int index;
                                 if(!client.getConnectedPeers().contains(peer)) {    // the client object is used to manage synchronization with the client to avoid adding a device that connects to the latter instead of us
-                                    bluetoothGattServer.connect(device, false);  //this is not mandatory but will tell the server OS not to drop the connection, making it more stable.
-                                    if (!channels.contains(peer)) {
-                                        channels.add(new nie.translator.rtranslator.bluetooth.ServerChannel(context, peer, bluetoothAdapter));
+                                    bluetoothGattServer.connect(device, false);  //this is not mandatory but will tell the server OS not to drop the connection, making it more stable. Plus, this is necessary to make cancelConnection work (this isn't documented, but it is well observed by many developers).
+
+                                    int index = channels.indexOf(peer);
+
+                                    /* In case the device is reconnecting and has changed its hw address (very likely), the index will still be -1. In this case we create a new channel, like in a normal new connection,
+                                     * we continue the normal handshake like we are creating a new connection. The handshake is the same between connection and reconnection up until
+                                     * we receive a CONNECTION_RESUMED_RECEIVE_UUID instead of a CONNECTION_REQUEST_UUID, in this case, if this message is targeted to a new
+                                     * channel that is doing a connection handshake, and we also have a channel that is reconnecting and has the same uniqueName passed in the resume message,
+                                     * we will pass the important data (device, connection params, ecc.) to the old reconnecting channel and delete the new connecting channel (like a substitution)
+                                     * and continue the reconnection handshake on the old reconnecting channel. */
+
+                                    if (index == -1) {
+                                        channels.add(new nie.translator.rtranslator.bluetooth.ServerChannel(context, peer, bluetoothAdapter, gattServerLock));
                                         index = channels.size() - 1;
                                         ((nie.translator.rtranslator.bluetooth.ServerChannel) channels.get(index)).setBluetoothGattServer(bluetoothGattServer);
                                         channels.get(index).getPeer().setHardwareConnected(true);
@@ -126,11 +139,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                                                     @Override
                                                     public void run() {
                                                         // means that the connection failed because it did not happen completely by the end of the timer
-                                                        if (channel.getPeer().isReconnecting()) {
-                                                            stopReconnection(channel);
-                                                        } else {
-                                                            channel.disconnect(disconnectionCallback);
-                                                        }
+                                                        manageConnectionCompleteTimerExpiration(channel);
                                                     }
                                                 });
                                             }
@@ -140,6 +149,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                             }
 
                         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                            Log.d("bluetooth_communicator_server", "onConnectionStateChange, disconnected peer: " + device.getName());
                             manageDisconnection(peer);
                         }
                     }
@@ -157,6 +167,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                             if (characteristic.getUuid().equals(CONNECTION_REQUEST_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, CONNECTION_REQUEST_UUID, peer: " + device.getName());
                                     if (!channels.get(index).getPeer().isDisconnecting()) {
                                         if (!channels.get(index).getPeer().isConnected() && !channels.get(index).getPeer().isReconnecting()) {
                                             String data = new String(value, StandardCharsets.UTF_8);
@@ -179,17 +190,60 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                             } else if (characteristic.getUuid().equals(CONNECTION_RESUMED_RECEIVE_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, CONNECTION_RESUMED_RECEIVE_UUID, peer: " + device.getName());
                                     if (!channels.get(index).getPeer().isDisconnecting()) {
                                         if (channels.get(index).getPeer().isReconnecting()) {
                                             if (!((nie.translator.rtranslator.bluetooth.ServerChannel) channels.get(index)).notifyConnectionResumed()) {
                                                 stopReconnection(channels.get(index));
                                             }
-                                        } else if (!channels.get(index).getPeer().isConnected()) {
-                                            /* means that the peer for which we accepted the connection request without having it in the list of channels is not starting a connection but is resetting it,
-                                             but we are not, so we disconnect, otherwise we would remain forever waiting for the connection request */
-                                            channels.get(index).getPeer().setDisconnecting(true);
-                                            if (!((nie.translator.rtranslator.bluetooth.ServerChannel) channels.get(index)).notifyConnectionResumedRejected()) {
-                                                channels.get(index).disconnect(disconnectionCallback);
+                                        } else {
+                                            /* If a channel is not reconnecting but receives a CONNECTION_RESUMED_RECEIVE_UUID instead of a CONNECTION_REQUEST_UUID,
+                                             * it means that the new channel in connection handshake phase is actually one of the reconnecting channels, but with a different
+                                             * hw address (that has changed during the connection loss) and without a name passed in onConnectionStateChange (see there for more info).
+                                             * So we have in fact 2 channels that point to the same device. The problem is that we had no way to identify the new connecting channel
+                                             * as the same device of a reconnecting channel (different address and no uniqueName). But now we can use the uniqueName passed in this
+                                             * message to identify the connecting channel, if it has the same uniqueName of a channel that is reconnecting, we will pass the important
+                                             * data (device, connection params, ecc.) to the old reconnecting channel and delete the new connecting channel (like a substitution)
+                                             * and continue the reconnection handshake on the old reconnecting channel.
+                                             * If there is no correlation with a reconnecting channel or if the uniqueName is not passed by the client (old versions of the library
+                                             * passed the value 1 instead), and the channel that receives the message is not connected (so it has not finished the handshake), we will
+                                             * respond with a rejection.
+                                             */
+                                            String uniqueName = new String(value, StandardCharsets.UTF_8);
+                                            int indexReconnecting = indexOfChannel(uniqueName);
+                                            if(indexReconnecting != -1 && channels.get(indexReconnecting).getPeer().isReconnecting() && uniqueName.length() > 1){  //if uniqueName is 1 char long it means that the client is using an old version of the protocol that send the value 1 instead of the uniqueName (min 2 char long)
+                                                Channel reconnectingChannel = channels.get(indexReconnecting);
+                                                Channel placeholderChannel = channels.remove(index);
+                                                // set up of timers
+                                                placeholderChannel.resetConnectionCompleteTimer();
+                                                reconnectingChannel.resetReconnectionTimer();
+                                                reconnectingChannel.startConnectionCompleteTimer(new Timer.Callback() {
+                                                    @Override
+                                                    public void onFinished() {
+                                                        // means that the connection failed because it did not happen completely by the end of the timer
+                                                        manageConnectionCompleteTimerExpiration(reconnectingChannel);
+                                                    }
+                                                });
+                                                // update data of reconnectingChannel
+                                                reconnectingChannel.setBluetoothMessagesLength(placeholderChannel.getBluetoothMessagesLength());
+                                                ((ServerChannel) reconnectingChannel).setBluetoothGattServer(bluetoothGattServer);
+                                                Peer newPeer = (Peer) reconnectingChannel.getPeer().clone();
+                                                newPeer.setUniqueName(uniqueName);
+                                                newPeer.setDevice(device);
+                                                newPeer.setHardwareConnected(true);
+                                                notifyPeerUpdated(reconnectingChannel, newPeer);
+
+                                                if (!((nie.translator.rtranslator.bluetooth.ServerChannel) reconnectingChannel).notifyConnectionResumed()) {
+                                                    stopReconnection(reconnectingChannel);
+                                                }
+
+                                            }else if (!channels.get(index).getPeer().isConnected()) {
+                                                /* means that the peer for which we accepted the connection request without having it in the list of channels is not starting a connection but is resetting it,
+                                                 but we are not, so we disconnect, otherwise we would remain forever waiting for the connection request */
+                                                channels.get(index).getPeer().setDisconnecting(true);
+                                                if (!((nie.translator.rtranslator.bluetooth.ServerChannel) channels.get(index)).notifyConnectionResumedRejected()) {
+                                                    channels.get(index).disconnect(disconnectionCallback);
+                                                }
                                             }
                                         }
                                     }
@@ -197,14 +251,18 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                             } else if (characteristic.getUuid().equals(MTU_REQUEST_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, MTU_REQUEST_UUID, peer: " + device.getName());
                                     if (!channels.get(index).getPeer().isDisconnecting()) {
                                         try {
-                                            int mtu = value.length;
-                                            BluetoothGattService service = bluetoothGattServer.getService(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID);
-                                            BluetoothGattCharacteristic output = service.getCharacteristic(BluetoothConnectionServer.MTU_RESPONSE_UUID);
-
-                                            output.setValue(String.valueOf(mtu).getBytes(StandardCharsets.UTF_8));
-                                            bluetoothGattServer.notifyCharacteristicChanged(channels.get(index).getPeer().getRemoteDevice(bluetoothAdapter), output, true);
+                                            int maxMessageLength = value.length;
+                                            synchronized (gattServerLock) {
+                                                BluetoothGattService service = bluetoothGattServer.getService(nie.translator.rtranslator.bluetooth.BluetoothConnection.APP_UUID);
+                                                BluetoothGattCharacteristic output = service.getCharacteristic(BluetoothConnectionServer.MTU_RESPONSE_UUID);
+                                                channels.get(index).setBluetoothMessagesLength(maxMessageLength - 1); //we keep at least 1 byte as extra margin
+                                                output.setValue(String.valueOf(maxMessageLength).getBytes(StandardCharsets.UTF_8));
+                                                //handshake commands must avoid the sendCommand queue (because of the isConnected check), also they don't need it because they are already sent sequentially
+                                                bluetoothGattServer.notifyCharacteristicChanged(channels.get(index).getPeer().getRemoteDevice(bluetoothAdapter), output, true);
+                                            }
                                         } catch (Exception e) {
                                             channels.get(index).disconnect(disconnectionCallback);
                                         }
@@ -213,6 +271,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                             } else if (characteristic.getUuid().equals(MESSAGE_RECEIVE_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, MESSAGE_RECEIVE_UUID, peer: " + device.getName());
                                     Peer sender = (Peer) channels.get(index).getPeer().clone();
                                     nie.translator.rtranslator.bluetooth.BluetoothMessage subMessage = nie.translator.rtranslator.bluetooth.BluetoothMessage.createFromBytes(context, sender, value);
                                     if (subMessage != null) {
@@ -242,6 +301,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
                             } else if (characteristic.getUuid().equals(DATA_RECEIVE_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, DATA_RECEIVE_UUID, peer: " + device.getName());
                                     Peer sender = (Peer) channels.get(index).getPeer().clone();
                                     nie.translator.rtranslator.bluetooth.BluetoothMessage subData = nie.translator.rtranslator.bluetooth.BluetoothMessage.createFromBytes(context, sender, value);
                                     if (subData != null) {
@@ -270,35 +330,42 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                                 }
 
                             } else if (characteristic.getUuid().equals(READ_RESPONSE_MESSAGE_RECEIVED_UUID)) {
-                                int totalLength = nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH + nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH;
-                                String completeText = new String(value, StandardCharsets.UTF_8);
-                                if (completeText.length() >= totalLength) {
-                                    nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber id = new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, completeText.substring(0, nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH), nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH);
-                                    nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber sequenceNumber = new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, completeText.substring(nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH, totalLength), nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH);
-                                    nie.translator.rtranslator.bluetooth.BluetoothMessage pendingSubMessage = channels.get(index).getPendingSubMessage();
-                                    // if pendingSubMessage is null or does not match it means that the message has already been confirmed, or has yet to be confirmed, but we do nothing because this is only a repetition of a previous confirmation
-                                    if (pendingSubMessage != null && id.equals(pendingSubMessage.getId()) && sequenceNumber.equals(pendingSubMessage.getSequenceNumber())) {
-                                        channels.get(index).onSubMessageWriteSuccess();
-                                    }
+                                if(index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, READ_RESPONSE_MESSAGE_RECEIVED_UUID, peer: " + device.getName());
+                                    int totalLength = nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH + nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH;
+                                    String completeText = new String(value, StandardCharsets.UTF_8);
+                                    if (completeText.length() >= totalLength) {
+                                        nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber id = new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, completeText.substring(0, nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH), nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH);
+                                        nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber sequenceNumber = new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, completeText.substring(nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH, totalLength), nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH);
+                                        nie.translator.rtranslator.bluetooth.BluetoothMessage pendingSubMessage = channels.get(index).getPendingSubMessage();
+                                        // if pendingSubMessage is null or does not match it means that the message has already been confirmed, or has yet to be confirmed, but we do nothing because this is only a repetition of a previous confirmation
+                                        if (pendingSubMessage != null && id.equals(pendingSubMessage.getId()) && sequenceNumber.equals(pendingSubMessage.getSequenceNumber())) {
+                                            channels.get(index).onSubMessageWriteSuccess();
+                                        }
 
+                                    }
                                 }
 
                             } else if (characteristic.getUuid().equals(READ_RESPONSE_DATA_RECEIVED_UUID)) {
-                                int totalLength = nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH + nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH;
-                                String completeText = new String(value, StandardCharsets.UTF_8);
-                                if (completeText.length() >= totalLength) {
-                                    nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber id = new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, completeText.substring(0, nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH), nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH);
-                                    nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber sequenceNumber = new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, completeText.substring(nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH, totalLength), nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH);
-                                    nie.translator.rtranslator.bluetooth.BluetoothMessage pendingSubData = channels.get(index).getPendingSubData();
-                                    // if pendingSubData is null or does not match it means that the message has already been confirmed, or has yet to be confirmed, but we do nothing because this is only a repetition of a previous confirmation
-                                    if (pendingSubData != null && id.equals(pendingSubData.getId()) && sequenceNumber.equals(pendingSubData.getSequenceNumber())) {
-                                        channels.get(index).onSubDataWriteSuccess();
-                                    }
+                                if(index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, READ_RESPONSE_DATA_RECEIVED_UUID, peer: " + device.getName());
+                                    int totalLength = nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH + nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH;
+                                    String completeText = new String(value, StandardCharsets.UTF_8);
+                                    if (completeText.length() >= totalLength) {
+                                        nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber id = new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, completeText.substring(0, nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH), nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH);
+                                        nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber sequenceNumber = new nie.translator.rtranslator.bluetooth.BluetoothMessage.SequenceNumber(context, completeText.substring(nie.translator.rtranslator.bluetooth.BluetoothMessage.ID_LENGTH, totalLength), nie.translator.rtranslator.bluetooth.BluetoothMessage.SEQUENCE_NUMBER_LENGTH);
+                                        nie.translator.rtranslator.bluetooth.BluetoothMessage pendingSubData = channels.get(index).getPendingSubData();
+                                        // if pendingSubData is null or does not match it means that the message has already been confirmed, or has yet to be confirmed, but we do nothing because this is only a repetition of a previous confirmation
+                                        if (pendingSubData != null && id.equals(pendingSubData.getId()) && sequenceNumber.equals(pendingSubData.getSequenceNumber())) {
+                                            channels.get(index).onSubDataWriteSuccess();
+                                        }
 
+                                    }
                                 }
 
                             } else if (characteristic.getUuid().equals(NAME_UPDATE_RECEIVE_UUID)) {
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, NAME_UPDATE_RECEIVE_UUID, peer: " + device.getName());
                                     Peer newPeer = (Peer) channels.get(index).getPeer().clone();
                                     newPeer.setUniqueName(new String(value, StandardCharsets.UTF_8));
                                     notifyPeerUpdated(channels.get(index), newPeer);
@@ -307,6 +374,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                             } else if (characteristic.getUuid().equals(DISCONNECTION_RECEIVE_UUID)) {
                                 bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null);
                                 if (index != -1) {
+                                    Log.d("bluetooth_communicator_server", "onCharacteristicWriteRequest, DISCONNECTION_RECEIVE_UUID, peer: " + device.getName());
                                     channels.get(index).disconnect(disconnectionCallback);
                                 }
                             }
@@ -329,13 +397,15 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                                     nie.translator.rtranslator.bluetooth.BluetoothMessage pendingSubData = channels.get(index).getPendingSubData();
                                     if (pendingSubData != null) {     // if pendingSubData is null or does not match it means that the message has already been confirmed, or has yet to be confirmed, but we do nothing because this is only a repetition of a previous confirmation
                                         if (DATA_SEND_UUID.equals(characteristic.getUuid())) {
+                                            Log.d("bluetooth_communicator_server", "onCharacteristicReadRequest, DATA_SEND_UUID, peer: " + device.getName());
                                             bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, pendingSubData.getCompleteData());
                                         } else {
                                             throw new Exception();
                                         }
                                     }
                                 } catch (Exception e) {
-                                    bluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, offset, null);
+                                    e.printStackTrace();
+                                    bluetoothGattServer.sendResponse(device, requestId, REJECT, offset, null);
                                 }
                             }
                         }
@@ -353,31 +423,45 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                             int index = channels.indexOf(new Peer(device, null, true));
 
                             if (index != -1) {
+                                // if the status is GATT_SUCCESS it means that the client has received the message correctly
+                                // all the other values represent a system failure, so the client has not received the message correctly (the channel will retry the sending).
                                 UUID sendingCharacteristic = ((nie.translator.rtranslator.bluetooth.ServerChannel) channels.get(index)).getSendingCharacteristic();
+                                boolean messageReceived = status == BluetoothGatt.GATT_SUCCESS;
+
                                 if (CONNECTION_RESPONSE_UUID.equals(sendingCharacteristic)) {
-                                    if (!channels.get(index).getPeer().isDisconnecting()) {
-                                        notifyConnectionSuccess(channels.get(index));
+                                    Log.d("bluetooth_communicator_server", "onNotificationSent, CONNECTION_RESPONSE_UUID, peer: " + device.getName());
+                                    channels.get(index).onCommandSent(messageReceived, sendingCharacteristic);
+                                    if(messageReceived) {  //is false we resend the message, and we execute this the next time we receive a success
+                                        if (!channels.get(index).getPeer().isDisconnecting()) {
+                                            notifyConnectionSuccess(channels.get(index));
+                                        }
                                     }
 
                                 } else if (CONNECTION_RESUMED_SEND_UUID.equals(sendingCharacteristic)) {
-                                    if (!channels.get(index).getPeer().isDisconnecting()) {
-                                        //connection resumed
-                                        notifyConnectionResumed(channels.get(index));
+                                    Log.d("bluetooth_communicator_server", "onNotificationSent, CONNECTION_RESUMED_SEND_UUID, peer: " + device.getName());
+                                    channels.get(index).onCommandSent(messageReceived, sendingCharacteristic);
+                                    if(messageReceived) {  //if false we resend the message, and we execute this the next time we receive a success
+                                        if (!channels.get(index).getPeer().isDisconnecting()) {
+                                            //connection resumed
+                                            notifyConnectionResumed(channels.get(index));
+                                        }
                                     }
 
                                 } else if (MESSAGE_SEND_UUID.equals(sendingCharacteristic)) {
-                                    if (status == BluetoothGatt.GATT_FAILURE) {
-                                        channels.get(index).onSubMessageWriteFailed();
-                                    }
+                                    Log.d("bluetooth_communicator_server", "onNotificationSent, MESSAGE_SEND_UUID, peer: " + device.getName());
+                                    channels.get(index).onCommandSent(messageReceived, sendingCharacteristic);
 
                                 } else if (DATA_SEND_UUID.equals(sendingCharacteristic)) {
-                                    if (status == BluetoothGatt.GATT_FAILURE) {
-                                        channels.get(index).onSubDataWriteFailed();
-                                    }
+                                    Log.d("bluetooth_communicator_server", "onNotificationSent, DATA_SEND_UUID, peer: " + device.getName());
+                                    channels.get(index).onCommandSent(messageReceived, sendingCharacteristic);
 
                                 } else if (DISCONNECTION_SEND_UUID.equals(sendingCharacteristic)) {
+                                    Log.d("bluetooth_communicator_server", "onNotificationSent, DISCONNECTION_SEND_UUID, peer: " + device.getName());
+                                    channels.get(index).onCommandSent(true, sendingCharacteristic);  //is case of errors we will not send another disconnection notification, we disconnect directly
                                     channels.get(index).disconnect(disconnectionCallback);
 
+                                }else{
+                                    channels.get(index).onCommandSent(messageReceived, sendingCharacteristic);
                                 }
                             }
                         }
@@ -388,6 +472,11 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
             @Override
             public void onMtuChanged(BluetoothDevice device, int mtu) {
                 super.onMtuChanged(device, mtu);
+                int index = channels.indexOf(new nie.translator.rtranslator.bluetooth.Peer(device, null, true));
+                if (index != -1) {
+                    Log.d("bluetooth_communicator_server", "onMtuChanged on server: "+mtu);
+                    channels.get(index).setBluetoothMessagesLength(mtu - BluetoothConnection.DATA_MARGIN);
+                }
             }
 
             @Override
@@ -473,6 +562,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
 
     @Override
     protected void stopReconnection(final Channel channel) {
+        Log.d("bluetooth_communicator_server", "stopReconnection, peer: " + channel.getPeer().getName());
         channel.resetConnectionCompleteTimer();
         channel.resetReconnectionTimer();   // if it has not been called since the timer has expired
 
@@ -493,6 +583,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
         synchronized (channelsLock) {
             final int index = channels.indexOf(peer);
             if (index != -1) {
+                Log.d("bluetooth_communicator_client", "manageDisconnection, peer: " + peer.getName());
                 ((nie.translator.rtranslator.bluetooth.ServerChannel) channels.get(index)).setBluetoothGattServer(null);
                 channels.get(index).getPeer().setHardwareConnected(false);
 
@@ -523,6 +614,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
                     } else {
                         // means that there has been a disconnect between the connection request and its acceptance.
                         // we delete the disconnected channel
+                        channels.get(index).resetConnectionCompleteTimer();
                         channels.remove(index);
                     }
                 }
@@ -559,10 +651,41 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
         });
     }
 
-    public void close() {
-        bluetoothGattServer.close();
+    @Override
+    public void pauseConnection() {
+        super.pauseConnection();
+        // clean up of BLE system connection resources
+        close();
     }
 
+    @Override
+    public void resumeConnection() {
+        super.resumeConnection();
+        // recreation of BLE system connection resources
+        initializeBluetoothGattServer();
+    }
+
+    private void manageConnectionCompleteTimerExpiration(Channel channel){
+        // means that the connection failed because it did not happen completely by the end of the timer
+        Log.d("bluetooth_communicator_server", "connectionCompleteTimer, expired, peer: " + channel.getPeer().getName());
+        if (channel.getPeer().isReconnecting()) {
+            stopReconnection(channel);
+        } else {
+            channel.disconnect(disconnectionCallback);
+        }
+    }
+
+    public void close() {
+        if(bluetoothGattServer != null) {
+            bluetoothGattServer.close();
+        }
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        close();
+    }
 
     private void notifyConnectionRequest(Channel channel) {
         callback.onConnectionRequest((Peer) channel.getPeer().clone());
@@ -588,11 +711,13 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
     @Override
     protected void notifyConnectionLost(final Channel channel) {
         channel.getPeer().setReconnecting(true, false);
+        channel.onConnectionLost();
         callback.onConnectionLost((Peer) channel.getPeer().clone());
         channel.startReconnectionTimer(new Timer.Callback() {
             @Override
             public void onFinished() {
                 // reconnection failed
+                Log.d("bluetooth_communicator_server", "reconnectionTimer, expired, peer: " + channel.getPeer().getName());
                 stopReconnection(channel);
             }
         });
@@ -604,6 +729,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
         int index = channels.indexOf(channel);
         if (index != -1) {
             channel.getPeer().setReconnecting(false, true);
+            channel.onConnectionResumed();
             channels.set(index, channel);
             callback.onConnectionResumed((Peer) channels.get(index).getPeer().clone());
         }
@@ -616,7 +742,7 @@ class BluetoothConnectionServer extends nie.translator.rtranslator.bluetooth.Blu
         callback.onPeerUpdated(peerClone, newPeer);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
+
     @Override
     protected void notifyDisconnection(Channel channel) {
         channels.remove(channel);

@@ -1,4 +1,4 @@
-package nie.translator.rtranslator.downloader2;
+package nie.translator.rtranslator.downloader;
 
 import android.os.Parcel;
 import android.os.Parcelable;

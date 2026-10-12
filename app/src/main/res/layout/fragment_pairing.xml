@@ -18,11 +18,13 @@
 
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/primary_very_lite"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:accessibilityPaneTitle="Connection">
 
     <android.widget.Toolbar
         android:id="@+id/toolbarPairing"
@@ -33,6 +35,7 @@
         android:theme="@style/Theme.Toolbar"
         android:title=" "
         android:titleTextColor="@color/primary"
+        android:importantForAccessibility="noHideDescendants"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
@@ -54,6 +57,7 @@
         android:src="@drawable/back_arrow_icon2"
         android:tint="@color/primary_very_dark"
         android:visibility="visible"
+        android:contentDescription="@string/back"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -88,6 +92,7 @@
         android:src="@drawable/cancel_icon"
         android:tint="@color/primary_very_dark"
         android:visibility="visible"
+        android:contentDescription="@string/description_stop_search"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
         app:layout_constraintEnd_toStartOf="@+id/settingsButton"
         app:layout_constraintHorizontal_bias="1.0"
@@ -102,6 +107,7 @@
         android:layout_marginEnd="8dp"
         android:backgroundTint="@android:color/transparent"
         android:tint="@color/primary_very_dark"
+        android:contentDescription="@string/title_activity_settings"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -109,7 +115,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/settings_icon" />
 
-    <TextView
+    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -124,6 +130,7 @@
         android:maxWidth="190dp"
         android:scrollHorizontally="true"
         android:ellipsize="end"
+
         app:layout_constraintBottom_toBottomOf="@+id/toolbarPairing"
         app:layout_constraintEnd_toEndOf="@+id/toolbarPairing"
         app:layout_constraintHorizontal_bias="0"
@@ -227,6 +234,24 @@
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="8dp"
                 android:text="@string/error_missing_bluetooth_le"
+                android:textAlignment="center"
+                android:textColor="@color/red"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0" />
+
+            <TextView
+                android:id="@+id/bluetoothOff"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/error_bluetooth_off"
                 android:textAlignment="center"
                 android:textColor="@color/red"
                 android:visibility="gone"

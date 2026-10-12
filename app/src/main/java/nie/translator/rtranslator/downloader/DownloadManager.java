@@ -1,4 +1,4 @@
-package nie.translator.rtranslator.downloader2;
+package nie.translator.rtranslator.downloader;
 
 import static android.content.Context.BIND_ABOVE_CLIENT;
 
@@ -27,7 +27,7 @@ public class DownloadManager implements ServiceConnection {
     private Callback callback;
     @Nullable
     private DownloaderService downloaderService;
-    private final Downloader2.ClientCallback serviceCallback;
+    private final Downloader.ClientCallback serviceCallback;
     private ArrayList<DownloadGroupInfo> downloadsToStart = new ArrayList<>();
     private boolean shouldStartAllDownloads = false;
     private Handler mainHandler;
@@ -36,7 +36,7 @@ public class DownloadManager implements ServiceConnection {
     public DownloadManager(Context context) {
         this.context = context;
         this.mainHandler = new android.os.Handler(Looper.getMainLooper());
-        this.serviceCallback = new Downloader2.ClientCallback() {
+        this.serviceCallback = new Downloader.ClientCallback() {
             @Override
             public void onProgress(DownloadGroupInfo downloadGroup, DownloadInfo download, int totalProgress, int progress, boolean unzipping, boolean testingIntegrity) {
                 mainHandler.post(() -> {
@@ -268,7 +268,7 @@ public class DownloadManager implements ServiceConnection {
         this.downloaderService = null;
     }
 
-    public static abstract class Callback extends Downloader2.ClientCallback {
+    public static abstract class Callback extends Downloader.ClientCallback {
         public abstract void onServiceConnected();
     }
 }

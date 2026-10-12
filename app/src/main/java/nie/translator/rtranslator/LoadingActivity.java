@@ -28,13 +28,15 @@ import android.os.Looper;
 import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.splashscreen.SplashScreen;
 
 import java.io.File;
 import java.util.ArrayList;
+
 import nie.translator.rtranslator.access.AccessActivity;
-import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
-import nie.translator.rtranslator.downloader2.DownloadInfo;
-import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.downloader.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader.DownloadInfo;
+import nie.translator.rtranslator.downloader.DownloadManager;
 import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.DownloaderTools;
@@ -43,8 +45,6 @@ import nie.translator.rtranslator.tools.ImageActivity;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
 import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
-
-import androidx.core.splashscreen.SplashScreen;
 
 
 public class LoadingActivity extends GeneralActivity {
@@ -61,9 +61,11 @@ public class LoadingActivity extends GeneralActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        String previousActivity = getIntent().getStringExtra("activity");
+        Intent intent = getIntent();
+        String previousActivity = intent.getStringExtra("activity");
+        boolean fromWidget = intent.getBooleanExtra("from_widget", false);
         SplashScreen splashScreen = null;
-        if(previousActivity == null) {  //if this activity is called by another activity (instead of on launch), we don't use the splash screen
+        if(previousActivity == null && !fromWidget) {  //if this activity is called by another activity or from the widget (instead of on launch), we don't use the splash screen
             // Handle the splash screen transition (it must remain before the super.onCreate() call).
             splashScreen = SplashScreen.installSplashScreen(this);
         }
@@ -83,6 +85,15 @@ public class LoadingActivity extends GeneralActivity {
                 }
             });
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Update the original intent with the new one.
+        // This is used when this activity is launched when it is already running.
+        // If we don't set the newIntent, the new one passed in the launch is ignored.
+        setIntent(intent);
     }
 
     public void onResume() {
@@ -210,6 +221,19 @@ public class LoadingActivity extends GeneralActivity {
             startingActivity = true;
             Intent intent = new Intent(LoadingActivity.this, VoiceTranslationActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            // Eventually we forward the start_mode value to VoiceTranslationActivity
+            Intent mainIntent = getIntent();
+            if(mainIntent != null && mainIntent.hasExtra("start_mode")){
+                String mode = mainIntent.getStringExtra("start_mode");
+                intent.putExtra("start_mode", mode);
+                /* We remove the extra from the activity intent.
+                * This is because otherwise, the next time we launch this Activity without an intent, this intent will be used again and again.
+                * For this reason, the intent request must be executed only one time for each time it is passed from outside.
+                */
+                mainIntent.removeExtra("start_mode");
+            }
+
             startActivity(intent);
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             finish();

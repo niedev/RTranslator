@@ -18,7 +18,9 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:clickable="false"
+    android:accessibilityHeading="true">
 
     <TextView
         android:id="@+id/header_text"
@@ -33,6 +35,7 @@
         android:textColor="@color/primary_lite"
         android:textSize="12sp"
         android:textStyle="bold"
+        android:clickable="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"

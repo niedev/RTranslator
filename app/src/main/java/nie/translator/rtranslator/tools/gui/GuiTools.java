@@ -19,13 +19,36 @@ package nie.translator.rtranslator.tools.gui;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.LocaleSpan;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.view.AccessibilityDelegateCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
+
 import com.google.android.material.textfield.TextInputLayout;
+
+import java.util.ArrayList;
 import java.util.Objects;
+
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.tools.CustomLocale;
+import nie.translator.rtranslator.tools.Tools;
 
 public class GuiTools {
     public static EditTextDialog createEditTextDialog(Activity activity, String text, String title, int layout) {
@@ -73,20 +96,167 @@ public class GuiTools {
         }
     }
 
-    public static AlertDialog createDialog(Activity activity, String title, String text) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle(title);
-        builder.setMessage(text);
-        builder.setPositiveButton(android.R.string.ok, null);
-
-        return builder.create();
-    }
-
     public static int getColor(Context context, int colorCode) {
         return context.getResources().getColor(colorCode, null);
     }
 
     public static ColorStateList getColorStateList(Context context, int colorCode) {
         return context.getResources().getColorStateList(colorCode, null);
+    }
+
+
+    public static void showLanguageListDialog(Activity activity, String title, ArrayList<CustomLocale> languages, CustomLocale selectedLanguage, boolean showTTSInfo, OnLanguageClickListener clickListener) {
+        LanguageListAdapter listViewAdapter;
+        ListView listView;
+        AlertDialog dialog;
+
+        //initialize and show dialog
+        final View editDialogLayout = activity.getLayoutInflater().inflate(R.layout.dialog_languages, null);
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.MyThemeOverlay_MaterialComponents_MaterialAlertDialogWithTitle);
+        builder.setCancelable(true);
+
+        dialog = builder.create();
+        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(activity, 22), 0, 0);
+        dialog.show();
+
+        //initialize dialog gui
+        TextView titleView = editDialogLayout.findViewById(R.id.title);
+        listView = editDialogLayout.findViewById(R.id.list_view_dialog);
+        SearchView searchView = editDialogLayout.findViewById(R.id.search);
+        TextView emptyTextView = editDialogLayout.findViewById(R.id.empty_text_view);
+
+        titleView.setText(title);
+
+        //initialize and show dialog list
+        listViewAdapter = new LanguageListAdapter(activity, showTTSInfo, languages, selectedLanguage);
+        listView.setEmptyView(emptyTextView);
+        listView.setAdapter(listViewAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                CustomLocale language = null;
+                Object item = listViewAdapter.getItem(position);
+                if(item instanceof CustomLocale){
+                    language = (CustomLocale) item;
+                }
+                clickListener.onItemClick(parent, view, position, id, language);
+                dialog.dismiss();
+            }
+        });
+
+        //initialize search bar
+        searchView.setOnClickListener(v -> searchView.setIconified(false));   //make the whole search bar clickable
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // We don't need to do anything on submit, because we filter as the user types
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // Call the built-in filter method on the adapter
+                listViewAdapter.getFilter().filter(newText);
+                return true;
+            }
+        });
+
+        Log.i("languages_list", "List Showed");
+    }
+
+    public  interface OnLanguageClickListener {
+        void onItemClick(AdapterView<?> parent, View view, final int position, long id, @Nullable CustomLocale item);
+    }
+
+    /**
+     * This method intercepts TalkBack interaction with the descriptionView and instead of reading the
+     * long description directly it reads a placeholder.
+     * It also defines a click listener only for TalkBack that if clicked, makes TalkBack read the full description.
+     * This way the user will not listen the long description during TalkBack navigation directly, but only with a click.
+     * @param descriptionView a TextView that contains a long description
+     */
+    public static void setDescriptionOptimizationForAccessibility(TextView descriptionView){
+        Context context = descriptionView.getContext();
+        ViewCompat.setAccessibilityDelegate(descriptionView, new AccessibilityDelegateCompat() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(@NonNull View host, @NonNull AccessibilityNodeInfoCompat info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+
+                // Override what TalkBack reads when it lands on the view
+                info.setContentDescription(context.getResources().getString(R.string.description_mode));
+
+                // Add a custom action hint ("Double-tap to read full description")
+                AccessibilityNodeInfoCompat.AccessibilityActionCompat readAction =
+                        new AccessibilityNodeInfoCompat.AccessibilityActionCompat(
+                                AccessibilityNodeInfoCompat.ACTION_CLICK,
+                                context.getResources().getString(R.string.description_read_full)
+                        );
+                info.addAction(readAction);
+            }
+
+            @Override
+            public boolean performAccessibilityAction(@NonNull View host, int action, Bundle args) {
+                // 3. Handle the double-tap to read the text
+                if (action == AccessibilityNodeInfoCompat.ACTION_CLICK) {
+                    CharSequence textToRead = ((TextView) host).getText();
+                    host.announceForAccessibility(textToRead);
+                    return true;
+                }
+                return super.performAccessibilityAction(host, action, args);
+            }
+        });
+    }
+
+    /**
+     * Intercepts TalkBack interaction with the passed view and adds the language info to the text read by it.
+     * This way, if the system TTS supports the language, TalkBack with read it with that language (otherwise it will use the default system language).
+     * @param view
+     * @param language
+     */
+    public static void setTextLanguageInfoForAccessibility(View view, CustomLocale language){
+        ViewCompat.setAccessibilityDelegate(view, new AccessibilityDelegateCompat() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(@NonNull View host, @NonNull AccessibilityNodeInfoCompat info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+
+                // Grab whatever text is currently inside the view
+                CharSequence currentText = info.getText();
+
+                if (currentText != null && currentText.length() > 0) {
+                    SpannableString accessibleText = new SpannableString(currentText);
+
+                    // Tell TalkBack to read this specific node in the source language
+                    accessibleText.setSpan(
+                            new LocaleSpan(language.getLocale()),
+                            0,
+                            accessibleText.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    );
+
+                    info.setText(accessibleText);
+                }
+            }
+        });
+    }
+
+    public static void requestAccessibilityFocus(View view) {
+        view.post(() -> {
+            if (ViewCompat.isAttachedToWindow(view)
+                    && view.getVisibility() == View.VISIBLE) {
+
+                view.performAccessibilityAction(
+                        AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS,
+                        null
+                );
+            }
+        });
+    }
+
+    public static boolean isTalkBackActive(Context context){
+        AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        boolean isAccessibilityEnabled = am.isEnabled();
+        boolean isExploreByTouchEnabled = am.isTouchExplorationEnabled();
+        return isAccessibilityEnabled && isExploreByTouchEnabled;
     }
 }

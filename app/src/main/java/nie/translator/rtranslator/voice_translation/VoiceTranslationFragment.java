@@ -20,6 +20,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +36,7 @@ import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.gui.DeactivableButton;
+import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.tools.gui.MicrophoneComunicable;
 import nie.translator.rtranslator.tools.gui.messages.MessagesAdapter;
 
@@ -45,6 +47,7 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     protected Global global;
     protected MessagesAdapter mAdapter;
     protected RecyclerView mRecyclerView;
+    protected ScrollView descriptionContainer;
     protected TextView description;
     protected View.OnClickListener micClickListener;
 
@@ -57,7 +60,9 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mRecyclerView = view.findViewById(R.id.recycler_view);
+        descriptionContainer = view.findViewById(R.id.descriptionContainer);
         description = view.findViewById(R.id.description);
+        GuiTools.setDescriptionOptimizationForAccessibility(description);
     }
 
     @Override

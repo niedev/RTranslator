@@ -20,12 +20,15 @@ import android.bluetooth.BluetoothDevice;
 import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import java.util.Objects;
+
+import nie.translator.rtranslator.bluetooth.Peer;
 import nie.translator.rtranslator.tools.gui.peers.GuiPeer;
 import nie.translator.rtranslator.tools.gui.peers.Listable;
-import nie.translator.rtranslator.bluetooth.Peer;
 
 
 public class RecentPeer implements Parcelable, Listable {

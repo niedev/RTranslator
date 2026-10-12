@@ -17,13 +17,12 @@
 package nie.translator.rtranslator.voice_translation._conversation_mode._conversation;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toolbar;
 
@@ -35,7 +34,6 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -154,12 +152,15 @@ public class ConversationFragment extends PairingToolbarFragment {
 
             @Override
             public void onPageSelected(int position) {
+                updateTabSelected(position);
+                Log.i("pager", "selected page: "+position);
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
             }
         });
+        updateTabSelected(0);
 
         exitButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,6 +194,14 @@ public class ConversationFragment extends PairingToolbarFragment {
                 }
             }
         });
+    }
+
+    private void updateTabSelected(int selectedPosition) {
+        boolean conversationSelected = selectedPosition == 0;
+        boolean connectionSelected = selectedPosition == 1;
+
+        tabConversationContainer.setSelected(conversationSelected);
+        tabConnectionContainer.setSelected(connectionSelected);
     }
 
     public Fragment getCurrentFragment() {

@@ -16,14 +16,19 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
+import androidx.core.view.AccessibilityDelegateCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
@@ -34,9 +39,9 @@ import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.LoadingActivity;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.access.AccessActivity;
-import nie.translator.rtranslator.downloader2.DownloadGroupInfo;
-import nie.translator.rtranslator.downloader2.DownloadInfo;
-import nie.translator.rtranslator.downloader2.DownloadManager;
+import nie.translator.rtranslator.downloader.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader.DownloadInfo;
+import nie.translator.rtranslator.downloader.DownloadManager;
 import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.Tools;
@@ -67,6 +72,9 @@ public class ModelManagerFragment extends Fragment {
     private DownloadManager.Callback downloadManagerCallback;
     // gui
     private RadioGroupPlus radioGroup;
+    private RadioButton radioMozilla;
+    private RadioButton radioHy;
+    private RadioButton radioMadlad;
     private ResourceManagerView hyManagerView;
     private ResourceManagerView madladManagerView;
     private ResourceManagerView tatoebaManagerView;
@@ -96,6 +104,9 @@ public class ModelManagerFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         radioGroup = view.findViewById(R.id.model_radios);
+        radioMozilla = view.findViewById(R.id.radioMozilla);
+        radioHy = view.findViewById(R.id.radioHY);
+        radioMadlad = view.findViewById(R.id.radioMadlad);
         hyManagerView = view.findViewById(R.id.modelHy);
         madladManagerView = view.findViewById(R.id.modelMadlad);
         tatoebaManagerView = view.findViewById(R.id.resourceTatoeba);
@@ -368,7 +379,7 @@ public class ModelManagerFragment extends Fragment {
         dialog.show();
 
         TextView textView = editDialogLayout.findViewById(R.id.textView);
-        CardView okButton = editDialogLayout.findViewById(R.id.okButtonCard);
+        MaterialButton okButton = editDialogLayout.findViewById(R.id.ok_button);
 
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -424,7 +435,7 @@ public class ModelManagerFragment extends Fragment {
 
     private void notifyApplyError(ApplySettingsStage stage, int error, long value, View dialogLayout){
         TextView textView = dialogLayout.findViewById(R.id.textView);
-        CardView okButton = dialogLayout.findViewById(R.id.okButtonCard);
+        MaterialButton okButton = dialogLayout.findViewById(R.id.ok_button);
         android.widget.ProgressBar progressBar = dialogLayout.findViewById(R.id.progressBar);
 
         progressBar.setVisibility(View.INVISIBLE);

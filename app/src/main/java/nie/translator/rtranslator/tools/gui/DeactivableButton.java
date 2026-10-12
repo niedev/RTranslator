@@ -17,11 +17,9 @@
 package nie.translator.rtranslator.tools.gui;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.util.AttributeSet;
-import androidx.appcompat.widget.AppCompatImageButton;
 
-import java.net.PortUnreachableException;
+import androidx.appcompat.widget.AppCompatImageButton;
 
 import javax.annotation.Nullable;
 

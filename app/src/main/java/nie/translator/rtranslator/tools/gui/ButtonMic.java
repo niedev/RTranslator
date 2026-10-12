@@ -23,30 +23,26 @@ import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.preference.AndroidResources;
 
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.animations.CustomAnimator;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.main.ConversationMainFragment;
-import nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieFragment;
 
 
 public class ButtonMic extends DeactivableButton {
     public static final int SIZE_MUTED_DP = 56;
     public static final int SIZE_NORMAL_DP = 66;
     public static final int SIZE_LISTENING_DP = 76;
-    public static final float SIZE_ICON_DP = 42;
+    public static final float SIZE_ICON_DP = 48;
 
     public static final int MAX_LENGTH_LEFT_LINE_DP = 21;
     public static final int MAX_LENGTH_CENTER_LINE_DP = 26;
@@ -161,6 +157,12 @@ public class ButtonMic extends DeactivableButton {
                     animator.animateIconToMicAndIconChange(context, this, icon);
                 }
             }
+            // change accessibility description
+            if(isMute){
+                setContentDescription(getResources().getString(R.string.description_start_microphone));
+            }else{
+                setContentDescription(getResources().getString(R.string.description_stop_microphone));
+            }
         } else if (state == STATE_RETURN) {
             if (oldState == STATE_NORMAL) {
                 if(fragment != null) {
@@ -180,11 +182,15 @@ public class ButtonMic extends DeactivableButton {
                 icon.setColorFilter(currentColor.iconColor.getDefaultColor(), PorterDuff.Mode.SRC_IN);
                 animator.animateIconChange(this, icon);
             }
+            // change accessibility description
+            setContentDescription(getResources().getString(R.string.description_close_text_mode));
         } else if (state == STATE_SEND) {
             // change icon animation
             Drawable icon = getDrawable(R.drawable.send_icon);
             icon.setColorFilter(currentColor.iconColor.getDefaultColor(), PorterDuff.Mode.SRC_IN);
             animator.animateIconChange(this, icon);
+            // change accessibility description
+            setContentDescription(getResources().getString(R.string.description_send));
         }
     }
 
@@ -217,10 +223,12 @@ public class ButtonMic extends DeactivableButton {
                     volumeLevel = -1;
                 }
                 animator.animateMute(context, this, !animate);
-                currentColor = colorMutedActivated;   //setMute can be called only when the mic is activate
+                currentColor = colorMutedActivated;   //setMute can be called only when the mic is activated
+                setContentDescription(getResources().getString(R.string.description_start_microphone)); // change accessibility description
             } else {
                 animator.animateUnmute(context, this, !animate);
-                currentColor = colorActivated;     //setMute can be called only when the mic is activate
+                currentColor = colorActivated;     //setMute can be called only when the mic is activated
+                setContentDescription(getResources().getString(R.string.description_stop_microphone));  // change accessibility description
             }
         }
     }

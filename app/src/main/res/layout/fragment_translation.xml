@@ -5,16 +5,17 @@
     android:id="@+id/container2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
     android:background="@color/primary_very_lite"
     android:elevation="0dp"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:accessibilityPaneTitle="Text Translation">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/toolbarTranslatorContainer"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:translationY="0dp"
+        android:importantForAccessibility="no"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
@@ -32,6 +33,7 @@
             android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             android:theme="@style/Theme.Toolbar"
             android:title=" "
+            android:importantForAccessibility="noHideDescendants"
             android:titleTextColor="@color/primary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -40,7 +42,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0" />
 
-        <TextView
+        <nie.translator.rtranslator.tools.gui.AutoScrollTextView
             android:id="@+id/title2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -67,6 +69,7 @@
             android:layout_marginEnd="8dp"
             android:backgroundTint="@android:color/transparent"
             android:tint="@color/primary_very_dark"
+            android:contentDescription="@string/title_activity_settings"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/toolbarTranslator"
             app:layout_constraintHorizontal_bias="1.0"
@@ -79,6 +82,7 @@
         android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:importantForAccessibility="no"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -113,123 +117,61 @@
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.87" />
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cancelButtonCard"
+        <nie.translator.rtranslator.tools.gui.AutoScrollMaterialButton
+            android:id="@+id/first_lang_selector"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="21dp"
+            android:layout_marginBottom="21dp"
             android:backgroundTint="@color/primary_very_dark"
-            android:elevation="2dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
+            android:outlineProvider="none"
+            android:paddingStart="8dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="12dp"
+            android:text="@string/loading"
+            android:textColor="@color/white"
+            android:fontFamily="@font/nunito_semibold"
+            android:theme="@style/Theme.MaterialComponents"
+            android:visibility="visible"
+            app:cornerRadius="24dp"
+            app:elevation="0dp"
+            app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/guideline11"
             app:layout_constraintHorizontal_bias="0.55"
             app:layout_constraintStart_toStartOf="@+id/guideline10"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0">
+            app:layout_constraintVertical_bias="0.0"
+            tools:text="English"/>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/cancelButtonLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <nie.translator.rtranslator.tools.gui.AnimatedTextView
-                    android:id="@+id/cancelButtonText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="11dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="11dp"
-                    android:fontFamily="@font/nunito_sans_semibold"
-                    android:text="@string/loading"
-                    android:textAlignment="center"
-                    android:textColor="@color/accent_white"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.101" />
-
-                <ImageView
-                    android:id="@+id/imageView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:src="@drawable/dropdown_icon"
-                    android:tint="@color/accent_white"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="1.0"
-                    app:layout_constraintStart_toEndOf="@+id/cancelButtonText"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/okButtonCard"
+        <nie.translator.rtranslator.tools.gui.AutoScrollMaterialButton
+            android:id="@+id/second_lang_selector"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="21dp"
+            android:layout_marginBottom="21dp"
             android:backgroundTint="@color/primary_very_dark"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            android:elevation="1dp"
+            android:outlineProvider="none"
+            android:paddingStart="8dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="12dp"
+            android:text="@string/loading"
+            android:textColor="@color/white"
+            android:fontFamily="@font/nunito_semibold"
+            android:theme="@style/Theme.MaterialComponents"
+            android:visibility="visible"
+            app:cornerRadius="24dp"
+            app:elevation="0dp"
+            app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/guideline13"
             app:layout_constraintHorizontal_bias="0.45"
             app:layout_constraintStart_toStartOf="@+id/guideline12"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/okButtonLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <nie.translator.rtranslator.tools.gui.AnimatedTextView
-                    android:id="@+id/okButtonText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="11dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="11dp"
-                    android:fontFamily="@font/nunito_semibold"
-                    android:text="@string/loading"
-                    android:textAlignment="center"
-                    android:textColor="@color/accent_white"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.101" />
-
-                <ImageView
-                    android:id="@+id/imageView3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:layout_weight="1"
-                    android:src="@drawable/dropdown_icon"
-                    android:tint="@color/accent_white"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="1.0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
+            app:layout_constraintVertical_bias="0"
+            tools:text="Italian"/>
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/invertLanguages"
@@ -238,10 +180,11 @@
             android:backgroundTint="@android:color/transparent"
             android:tint="@color/primary_very_dark"
             android:elevation="0dp"
-            app:layout_constraintBottom_toBottomOf="@+id/cancelButtonCard"
+            android:contentDescription="@string/description_switch_languages"
+            app:layout_constraintBottom_toBottomOf="@+id/first_lang_selector"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/cancelButtonCard"
+            app:layout_constraintTop_toTopOf="@+id/first_lang_selector"
             app:srcCompat="@drawable/invert_arrows" />
 
         <androidx.appcompat.widget.AppCompatImageButton
@@ -252,6 +195,7 @@
             android:backgroundTint="@android:color/transparent"
             android:clickable="false"
             android:tint="@color/primary_very_dark"
+            android:contentDescription="@string/title_activity_settings"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.9"
@@ -269,6 +213,7 @@
             android:backgroundTint="@android:color/transparent"
             android:clickable="false"
             android:tint="@color/primary_very_dark"
+            android:contentDescription="@string/back"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/guideline10"
             app:layout_constraintHorizontal_bias="0.0"
@@ -283,6 +228,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="4dp"
+        android:importantForAccessibility="no"
         app:cardBackgroundColor="@color/accent_white"
         app:cardElevation="0dp"
         app:cardPreventCornerOverlap="false"
@@ -293,110 +239,32 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <!--<LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="0dp"
-                android:orientation="vertical"
-                app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-
-                <EditText
-                    android:id="@+id/multiAutoCompleteTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="12dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="@android:color/transparent"
-                    android:gravity="start|top"
-                    android:hint="Insert text"
-                    android:inputType="textCapSentences|textMultiLine|textAutoCorrect"
-                    android:textSize="18sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.0" />
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <androidx.constraintlayout.widget.Guideline
-                        android:id="@+id/guideline8"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        app:layout_constraintGuide_percent="0.20" />
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="2dp"
-                        android:background="?android:attr/listDivider"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="@id/guideline9"
-                        app:layout_constraintStart_toStartOf="@+id/guideline8"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <androidx.constraintlayout.widget.Guideline
-                        android:id="@+id/guideline9"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        app:layout_constraintGuide_percent="0.80" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <TextView
-                    android:id="@+id/multiAutoCompleteTextView2"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginStart="18dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="0dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="@android:color/transparent"
-                    android:enabled="true"
-                    android:focusable="true"
-                    android:gravity="start|top"
-                    android:longClickable="true"
-                    android:scrollbars="vertical"
-                    android:textColor="@color/black"
-                    android:textIsSelectable="true"
-                    android:textSize="18sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.0"
-                    tools:text="Input text" />
-            </LinearLayout>-->
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no">
 
             <androidx.core.widget.NestedScrollView
                 android:id="@+id/nestedScrollView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                android:fillViewport="true"
                 app:layout_constraintBottom_toTopOf="@+id/cardView8"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                android:importantForAccessibility="no">
 
                 <LinearLayout
+                    android:id="@+id/mainContainer"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:importantForAccessibility="no">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/inputContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:focusable="true">
+                        android:importantForAccessibility="no">
 
                         <EditText
                             android:id="@+id/multiAutoCompleteTextView"
@@ -421,7 +289,7 @@
                             app:layout_constraintVertical_bias="0.0" />
 
                         <com.google.android.material.floatingactionbutton.FloatingActionButton
-                            android:id="@+id/ttsButtonInput"
+                            android:id="@+id/tts_button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
@@ -429,6 +297,7 @@
                             android:layout_marginBottom="4dp"
                             android:backgroundTint="@color/accent_white"
                             android:src="@drawable/sound_icon"
+                            android:importantForAccessibility="no"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
@@ -452,6 +321,7 @@
                             android:layout_marginBottom="4dp"
                             android:backgroundTint="@color/accent_white"
                             android:src="@drawable/copy_icon"
+                            android:contentDescription="@string/description_copy_input_text"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
@@ -477,6 +347,7 @@
                             android:backgroundTint="@color/accent_white"
                             android:src="@drawable/cancel_icon"
                             android:visibility="invisible"
+                            android:contentDescription="@string/description_clear_text"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
@@ -528,7 +399,9 @@
                         android:layout_height="wrap_content"
                         android:alpha="0"
                         android:visibility="invisible"
-                        android:focusable="true">
+                        android:importantForAccessibility="no"
+                        tools:alpha="1"
+                        tools:visibility="invisible">
 
                         <LinearLayout
                             android:id="@+id/outputTextContainer"
@@ -573,15 +446,18 @@
                                 android:layout_marginEnd="6dp"
                                 android:visibility="invisible"/>
                         </LinearLayout>
+
                         <com.google.android.material.floatingactionbutton.FloatingActionButton
                             android:id="@+id/ttsButtonOutput"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
+                            android:layout_marginTop="8dp"
                             android:layout_marginEnd="8dp"
                             android:layout_marginBottom="4dp"
                             android:backgroundTint="@color/accent_white"
                             android:src="@drawable/sound_icon"
+                            android:importantForAccessibility="no"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
@@ -599,10 +475,12 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
+                            android:layout_marginTop="8dp"
                             android:layout_marginEnd="8dp"
                             android:layout_marginBottom="4dp"
                             android:backgroundTint="@color/accent_white"
                             android:src="@drawable/copy_icon"
+                            android:contentDescription="@string/description_copy_translated_text"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
@@ -615,21 +493,46 @@
                             app:rippleColor="@color/very_light_gray"
                             app:tint="@color/very_very_dark_gray" />
 
+                        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                            android:id="@+id/fullscreenButtonOutput"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginBottom="4dp"
+                            android:backgroundTint="@color/accent_white"
+                            android:src="@drawable/fullscreen_icon"
+                            android:contentDescription="@string/description_text_fullscreen"
+                            app:borderWidth="0dp"
+                            app:elevation="0dp"
+                            app:fabSize="mini"
+                            app:maxImageSize="30dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/copyButtonOutput"
+                            app:layout_constraintHorizontal_bias="1.0"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/outputTextContainer"
+                            app:layout_constraintVertical_bias="1.0"
+                            app:rippleColor="@color/very_light_gray"
+                            app:tint="@color/very_very_dark_gray" />
+
                         <TextView
                             android:id="@+id/resultTypeText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:layout_marginEnd="8dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginEnd="16dp"
                             android:layout_marginBottom="4dp"
-                            android:backgroundTint="@color/accent_white"
-                            android:text="Tatoeba"
                             android:alpha="0"
+                            android:backgroundTint="@color/accent_white"
+                            android:text="@string/Tatoeba"
                             app:borderWidth="0dp"
                             app:elevation="0dp"
                             app:fabSize="mini"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toStartOf="@+id/copyButtonOutput"
+                            app:layout_constraintEnd_toStartOf="@+id/fullscreenButtonOutput"
                             app:layout_constraintHorizontal_bias="1.0"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/outputTextContainer"
@@ -662,7 +565,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="1.0">
 
-                    <com.google.android.material.button.MaterialButton
+                    <nie.translator.rtranslator.tools.gui.AutoScrollMaterialButton
                         android:id="@+id/buttonTranslate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -673,13 +576,12 @@
                         android:theme="@style/Theme.MaterialComponents"
                         android:visibility="visible"
                         android:outlineProvider="none"
-                        android:lines="1"
                         app:elevation="0dp"
                         app:cornerRadius="20dp"
-                        app:layout_constraintBottom_toBottomOf="@+id/buttonMicLeft"
-                        app:layout_constraintEnd_toStartOf="@+id/buttonMicRight"
-                        app:layout_constraintStart_toEndOf="@+id/buttonMicLeft"
-                        app:layout_constraintTop_toTopOf="@+id/buttonMicLeft" />
+                        app:layout_constraintBottom_toBottomOf="@+id/buttonMicFirst"
+                        app:layout_constraintEnd_toStartOf="@+id/buttonMicSecond"
+                        app:layout_constraintStart_toEndOf="@+id/buttonMicFirst"
+                        app:layout_constraintTop_toTopOf="@+id/buttonMicFirst" />
 
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/buttonWalkieTalkieSmall"
@@ -689,6 +591,7 @@
                         android:alpha="0"
                         android:clickable="false"
                         android:src="@drawable/walkie_talkie_icon_reduced"
+                        android:contentDescription="@string/title_fragment_walkie_talkie"
                         app:elevation="0dp"
                         app:backgroundTint="@color/primary_very_lite"
                         app:rippleColor="@color/light_gray"
@@ -710,6 +613,7 @@
                         android:clickable="false"
                         android:theme="@style/Theme.MaterialComponents"
                         android:src="@drawable/conversation_icon_reduced"
+                        android:contentDescription="@string/title_fragment_conversation"
                         app:backgroundTint="@color/primary_very_lite"
                         app:fabSize="mini"
                         app:elevation="0dp"
@@ -722,7 +626,7 @@
                         app:layout_constraintVertical_bias="0.50" />
 
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/buttonMicLeft"
+                        android:id="@+id/buttonMicFirst"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="24dp"
@@ -732,6 +636,7 @@
                         android:focusable="true"
                         android:src="@drawable/walkie_talkie_icon"
                         android:visibility="visible"
+                        android:contentDescription="@string/title_fragment_walkie_talkie"
                         app:backgroundTint="@color/primary_very_lite"
                         app:elevation="0dp"
                         app:layout_constraintBottom_toTopOf="@+id/textButton1"
@@ -744,27 +649,25 @@
                         app:rippleColor="@color/light_gray"
                         app:tint="@color/primary_very_dark" />
 
-                    <TextView
+                    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
                         android:id="@+id/textButton1"
                         android:layout_width="90dp"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:ellipsize="end"
                         android:fontFamily="@font/nunito_sans_light"
                         android:gravity="center"
-                        android:lines="1"
-                        android:scrollHorizontally="true"
                         android:text="@string/title_fragment_walkie_talkie"
                         android:textSize="12sp"
                         android:visibility="visible"
+                        android:importantForAccessibility="no"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="@+id/buttonMicLeft"
-                        app:layout_constraintStart_toStartOf="@+id/buttonMicLeft"
+                        app:layout_constraintEnd_toEndOf="@+id/buttonMicFirst"
+                        app:layout_constraintStart_toStartOf="@+id/buttonMicFirst"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintVertical_bias="0.998" />
 
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/buttonMicRight"
+                        android:id="@+id/buttonMicSecond"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="24dp"
@@ -773,6 +676,7 @@
                         android:focusable="true"
                         android:src="@drawable/conversation_icon"
                         android:visibility="visible"
+                        android:contentDescription="@string/title_fragment_conversation"
                         app:backgroundTint="@color/primary_very_lite"
                         app:elevation="0dp"
                         app:layout_constraintBottom_toTopOf="@+id/textButton2"
@@ -785,22 +689,20 @@
                         app:rippleColor="@color/light_gray"
                         app:tint="@color/primary_very_dark" />
 
-                    <TextView
+                    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
                         android:id="@+id/textButton2"
                         android:layout_width="90dp"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:ellipsize="end"
                         android:fontFamily="@font/nunito_sans_light"
                         android:gravity="center"
-                        android:lines="1"
-                        android:scrollHorizontally="true"
                         android:text="@string/title_fragment_conversation"
                         android:textSize="12sp"
                         android:visibility="visible"
+                        android:importantForAccessibility="no"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="@+id/buttonMicRight"
-                        app:layout_constraintStart_toStartOf="@+id/buttonMicRight"
+                        app:layout_constraintEnd_toEndOf="@+id/buttonMicSecond"
+                        app:layout_constraintStart_toStartOf="@+id/buttonMicSecond"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintVertical_bias="0.998" />
 

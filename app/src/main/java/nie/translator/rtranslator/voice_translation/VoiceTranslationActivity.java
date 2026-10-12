@@ -27,8 +27,6 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -47,15 +45,17 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import nie.translator.rtranslator.GeneralActivity;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
-import nie.translator.rtranslator.settings.SettingsActivity;
+import nie.translator.rtranslator.bluetooth.Peer;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.CustomServiceConnection;
 import nie.translator.rtranslator.tools.Tools;
@@ -66,8 +66,6 @@ import nie.translator.rtranslator.voice_translation._conversation_mode._conversa
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.main.ConversationMainFragment;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
-import nie.translator.rtranslator.bluetooth.Peer;
-
 import nie.translator.rtranslator.voice_translation._text_translation.TranslationFragment;
 import nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieFragment;
 import nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie_talkie.WalkieTalkieService;
@@ -133,34 +131,41 @@ public class VoiceTranslationActivity extends GeneralActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Update the original intent with the new one.
+        // This is used when this activity is launched when it is already running.
+        // If we don't set the newIntent, the new one passed in the launch is ignored.
+        setIntent(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         // when we return to the app's gui based on the service that was saved in the last closure we choose which fragment to start
-        SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
-        int fragment = sharedPreferences.getInt("fragment", DEFAULT_FRAGMENT);
+        // or we start the fragment indicated by an eventual intent received (usually by the widget but also from any third party way).
+        int fragment = DEFAULT_FRAGMENT;
+        boolean startedByIntent = false;
+        Intent intent = getIntent();
+        if(intent != null && intent.hasExtra("start_mode")) {
+            if("walkieTalkie".equals(intent.getStringExtra("start_mode"))){
+                fragment = WALKIE_TALKIE_FRAGMENT;
+                startedByIntent = true;
+                /* We remove the extra from the activity intent.
+                 * This is because otherwise, the next time we launch this Activity without an intent, this intent will be used again and again.
+                 * For this reason, the intent request must be executed only one time for each time it is passed from outside.
+                 */
+                intent.removeExtra("start_mode");
+            }
+        }
+        if(!startedByIntent){
+            SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
+            fragment = sharedPreferences.getInt("fragment", DEFAULT_FRAGMENT);
+        }
         setFragment(fragment, fragment == WALKIE_TALKIE_FRAGMENT || fragment == PAIRING_FRAGMENT);
         if(getResources() != null) {
             config = getResources().getConfiguration();
         }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.settings: {
-                Intent intent = new Intent(this, SettingsActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                break;
-            }
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        //getMenuInflater().inflate(R.menu.toolbar_menu, menu);
-        return true;
     }
 
     public void setFragment(int fragmentName) {
@@ -200,6 +205,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 break;
             }
             case CONVERSATION_FRAGMENT: {
+                // possible stop of the WalkieTalkie Service
+                stopWalkieTalkieService();
                 // possible setting of the fragment
                 if (getCurrentFragmentId() != CONVERSATION_FRAGMENT && global.getBluetoothCommunicator() != null) {
                     ConversationFragment conversationFragment = new ConversationFragment();
@@ -223,6 +230,10 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 break;
             }
             case WALKIE_TALKIE_FRAGMENT: {
+                // possible stop of the Conversation Service
+                stopConversationService();
+                // possible destroy of BluetoothCommunicator
+                global.destroyBluetoothCommunicator(null);
                 // possible setting of the fragment
                 if (getCurrentFragmentId() != WALKIE_TALKIE_FRAGMENT) {
                     if (Tools.hasPermissions(this, Global.REQUIRED_PERMISSIONS_VOICE) || !requestPermission) {
@@ -247,6 +258,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 // possible stop of the Conversation and WalkieTalkie Service
                 stopConversationService();
                 stopWalkieTalkieService();
+                // possible destroy of BluetoothCommunicator
+                global.destroyBluetoothCommunicator(null);
                 // possible setting of the fragment
                 if (getCurrentFragmentId() != TRANSLATION_FRAGMENT) {
                     TranslationFragment translationFragment = new TranslationFragment();
@@ -409,8 +422,8 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
         ImageView icon = editDialogLayout.findViewById(R.id.dialogIcon);
         TextView text = editDialogLayout.findViewById(R.id.textView);
-        CardView continueButton = editDialogLayout.findViewById(R.id.okButtonCard);
-        CardView cancelButton = editDialogLayout.findViewById(R.id.cancelButtonCard);
+        MaterialButton continueButton = editDialogLayout.findViewById(R.id.continue_button);
+        MaterialButton cancelButton = editDialogLayout.findViewById(R.id.cancel_button);
 
         //set icon
         if(mode == PAIRING_FRAGMENT){

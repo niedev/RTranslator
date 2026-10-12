@@ -11,7 +11,6 @@
     <string name="not_available">不可用</string>
     <string name="loading">载入中…</string>
     <string name="forward">下一步</string>
-    <string name="no_graph_data">无使用数据</string>
     <string name="conversation">对话</string>
     <string name="connection">连接</string>
     <string name="translate">翻译</string>
@@ -20,7 +19,7 @@
     <string name="chat">聊天</string>
     <string name="select_tts">选择 TTS</string>
     <string name="unzipping">正在解压...</string>
-    <string name="testing_integrity">正在校验完整性...</string>
+    <string name="testing_integrity">測試中…</string>
     <string name="paused">已暂停：</string>
     <string name="applying_settings">正在应用新设置...</string>
     <string name="dictionary">词典</string>
@@ -40,10 +39,50 @@
     <string name="no">否</string>
     <string name="yes">是</string>
     <string name="general">常规</string>
+    <string name="edit">编辑</string>
+    <string name="back">返回</string>
+    <string name="pause">暂停</string>
+    <string name="resume">继续</string>
+    <string name="offline">离线</string>
+    <string name="reset">重置</string>
+    <string name="options">选项</string>
+    <string name="from">从</string>
+    <string name="to">到</string>
+
+    <string name="description_button_tts_manual">手动朗读消息</string>
+    <string name="description_button_tts_auto">自动朗读消息</string>
+    <string name="description_stop_search">停止搜索</string>
+    <string name="description_start_search">开始搜索</string>
+    <string name="description_checkbox_privacy">接受隐私政策</string>
+    <string name="description_disconnect_peer">断开对方连接</string>
+    <string name="description_chat_tab">聊天标签页</string>
+    <string name="description_connection_tab">连接标签页</string>
+    <string name="description_switch_languages">互换语言</string>
+    <string name="description_copy_input_text">复制输入文本</string>
+    <string name="description_copy_translated_text">复制翻译后的文本</string>
+    <string name="description_clear_text">清除文本</string>
+    <string name="description_text_fullscreen">全屏显示翻译文本</string>
+    <string name="description_start_microphone">开启麦克风</string>
+    <string name="description_stop_microphone">关闭麦克风</string>
+    <string name="description_close_text_mode">关闭文本输入模式</string>
+    <string name="description_send">发送文本消息</string>
+    <string name="description_start_automatic_recognition">开始自动识别</string>
+    <string name="description_stop_automatic_recognition">停止自动识别</string>
+    <string name="description_start_manual_recognition">开始手动识别 %1$s</string>
+    <string name="description_stop_manual_recognition">停止手动识别 %1$s</string>
+    <string name="description_double_tap_fullscreen">双击以全屏打开</string>
+    <string name="description_message_fullscreen">全屏打开消息</string>
+    <string name="description_exit_fullscreen">退出全屏</string>
+    <string name="description_mode">模式说明</string>
+    <string name="description_read_full">阅读完整说明</string>
+    <string name="description_start_download">开始下载</string>
+    <string name="description_delete_resource">删除资源</string>
+    <string name="description_download_error">下载错误</string>
+    <string name="description_start_walkietalkie">启动 WalkieTalkie</string>
+    <string name="description_manage_mozilla_button">管理性能模式语言</string>
 
     <string name="notification_channel_name">背景通知</string>
 
-    <string name="age_check_box">我声明我已满 14 岁</string>
     <string name="privacy_check_box">我声明我已阅读 <a href="https://github.com/niedev/RTranslator/blob/v2.00/privacy/Privacy_Policy_en.md">隐私政策</a></string>
 
     <string name="toast_working_background">RTranslator 将在背景中运行</string>
@@ -57,13 +96,14 @@
     <string name="dialog_confirm_disconnection">确定要断开连接吗&#160;</string>
     <string name="dialog_confirm_connection">确定要连接吗&#160;</string>
     <string name="dialog_confirm_connection_request">接受来自&#160;的连接请求</string>
-    <string name="dialog_select_file">选择档案</string>
     <string name="dialog_select_personal_language">选择个人语言</string>
     <string name="dialog_select_first_language">选择主要语言</string>
     <string name="dialog_select_second_language">选择次要语言</string>
     <string name="dialog_insert_name">输入您的名字</string>
     <string name="dialog_confirm_apply_quit">确定要退出而不应用新设置吗？</string>
     <string name="dialog_confirm_delete_resource">确定要删除此资源吗？</string>
+    <string name="dialog_search_hint">搜索语言…</string>
+    <string name="dialog_no_languages">未找到语言</string>
 
     <string name="menu_image_select_from_gallery">从相册中选择</string>
     <string name="menu_image_remove">删除</string>
@@ -78,8 +118,6 @@
     <string name="error_tts_toast">缺少 TTS</string>
     <string name="error_tts">TTS 初始化时出现错误，是否要在没有 TTS 的情况下继续？</string>
     <string name="error_missing_tts">此设备上没有 Google TTS 引擎，请下载以使用 TTS</string>
-    <string name="error_wrong_api_key_file">用于 API 的密钥档案无效，请输入有效的密钥档案</string>
-    <string name="error_missing_api_key_file">请输入密钥档案以使用 API</string>
     <string name="error_missing_bluetooth_le">此设备不支持低功耗蓝牙，无法使用交互方式</string>
     <string name="error_internet_lack_loading">启动 RTranslator 需要网络连接，请检查您的网络</string>
     <string name="error_internet_lack_accessing">执行此操作需要网络连接，请检查您的网络</string>
@@ -91,8 +129,6 @@
     <string name="error_cannot_interact_connection">连接期间无法与设备交互</string>
     <string name="error_cannot_interact_disconnection">断开连接期间无法与设备交互</string>
     <string name="error_wait_initialization">请等待初始化</string>
-    <string name="error_invalid_key">请输入有效的密钥档案</string>
-    <string name="error_picking_file">选取档案时出错，请重试</string>
     <string name="error_selecting_image">选择图片时出错，请使用另一个相册选择</string>
     <string name="error_wait_download_end">请等待下载完成</string>
     <string name="error_age_unchecked">您必须年满 14 岁才能使用此应用程序</string>
@@ -113,8 +149,8 @@
     <string name="error_missing_general">缺少所需资源</string>
     <string name="error_apply_unknown">未知错误，请重试。</string>
     <string name="error_delete_last_download">这是最后一个已下载的翻译模型，无法删除所有翻译模型。请先下载另一个翻译模型，再删除此模型。</string>
+    <string name="error_bluetooth_off">蓝牙已关闭，无法使用对话模式，请开启蓝牙后再使用此模式。</string>
 
-    <string name="title_graph">每小时花费的美元 (USD)</string>
     <string name="title_image_selector">用户头像</string>
 
     <string name="home_walkietalkie_mode">对讲机模式</string>
@@ -133,11 +169,8 @@
     <string name="header_recents_peers">最近</string>
     <string name="header_found_peers">找到的</string>
     <string name="header_connected_peers">已连接</string>
-    <string name="header_key">API 密钥</string>
 
-    <string name="description_cost">语音识别将每次请求的成本四舍五入到最接近的 15 秒的倍数，如果不考虑四舍五入，平均总成本（包括翻译和语音识别）是每小时 2.5 美元，对讲机模式还包括语言识别成本，了解更多请阅读<a href="https://github.com/niedev/RTranslator">教学</a></string>
     <string name="description_discovery">此界面将搜寻其他设备，并使我们对其他使用 RTranslator 的设备可见，以便能够与它们建立连接并开始对话</string>
-    <string name="description_key">要了解如何获取密钥档案，请阅读 <a href="https://github.com/niedev/RTranslator">教学</a></string>
     <string name="description_fragment_user_data">您的名字将显示给所有附近的设备，而您的个人资料照片仅显示在您已经进行过配对的设备上</string>
     <string name="description_fragment_download">现在 RTranslator 将下载翻译和语音识别所需的神经网络模型，完成后您可以开始使用应用程序（即使是在没有网络的状态下）。</string>
     <string name="description_conversation">对话模式是 RTranslator 的主要功能，它允许您实时翻译多个人之间的对话，为了更好的体验，建议将手机连接到蓝牙耳机，此外应用程序在后台运行和手机待机时也会继续工作（然而，一些手机在后台运行应用程序时可能会有性能问题）</string>

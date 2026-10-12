@@ -3,18 +3,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:screenReaderFocusable="true"
+    android:focusable="false">
 
-    <TextView
+    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
         android:id="@+id/titleResource"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
         android:text="HY-MT"
+        app:layout_constraintWidth_percent="0.35"
         android:textColor="@color/very_very_dark_gray"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -29,7 +33,8 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="Middleweigth model, it has the best quality, comparable to Deepseek."
+        android:text="Middleweight model, it has the best quality, comparable to Deepseek."
+        android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -45,50 +50,57 @@
         android:max="100"
         android:progress="0"
         tools:progress="70"
+        android:padding="4dp"
         android:visibility="invisible"
         app:indicatorSize="33dp"
         app:trackThickness="4dp"
+        app:layout_constraintBottom_toBottomOf="@+id/buttonDownload"
+        app:layout_constraintEnd_toEndOf="@+id/buttonDownload"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/buttonDownload"
+        app:layout_constraintTop_toTopOf="@+id/buttonDownload" />
+
+    <ImageView
+        android:id="@+id/buttonDownload"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:visibility="visible"
+        android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="@+id/titleResource"
         app:layout_constraintEnd_toStartOf="@+id/buttonDelete"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/titleResource"
-        app:layout_constraintTop_toTopOf="@+id/titleResource" />
-
-    <ImageView
-        android:id="@+id/buttonDownload"
-        android:layout_width="42dp"
-        android:layout_height="42dp"
-        android:visibility="visible"
-        android:padding="2dp"
-        app:layout_constraintBottom_toBottomOf="@+id/progressBarDownload"
-        app:layout_constraintEnd_toEndOf="@+id/progressBarDownload"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/progressBarDownload"
-        app:layout_constraintTop_toTopOf="@+id/progressBarDownload"
+        app:layout_constraintTop_toTopOf="@+id/titleResource"
         android:src="@drawable/download_icon"
-        android:tint="@color/very_very_dark_gray" />
+        android:tint="@color/very_very_dark_gray"
+        android:contentDescription="@string/description_start_download"/>
 
     <ImageView
         android:id="@+id/buttonDelete"
-        android:layout_width="8dp"
-        android:layout_height="32dp"
+        android:layout_width="6dp"
+        android:layout_height="48dp"
         android:src="@drawable/delete_icon"
         android:tint="@color/very_very_dark_gray"
         android:visibility="invisible"
+        android:padding="10dp"
+        android:contentDescription="@string/description_delete_resource"
         app:layout_constraintBottom_toBottomOf="@+id/titleResource"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/titleResource"
         app:layout_constraintTop_toTopOf="@+id/titleResource" />
 
-    <TextView
+    <nie.translator.rtranslator.tools.gui.AutoScrollTextView
         android:id="@+id/textDownload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
         android:text="2 GB"
+        android:focusable="false"
+        app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="@+id/titleResource"
-        app:layout_constraintEnd_toStartOf="@+id/progressBarDownload"
+        app:layout_constraintEnd_toStartOf="@+id/buttonDownload"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/titleResource"
         app:layout_constraintTop_toTopOf="@+id/titleResource" />
@@ -99,6 +111,7 @@
         android:layout_height="16dp"
         android:visibility="invisible"
         android:tint="@color/very_very_dark_gray"
+        android:contentDescription="@string/pause"
         app:layout_constraintBottom_toBottomOf="@+id/progressBarDownload"
         app:layout_constraintEnd_toEndOf="@+id/progressBarDownload"
         app:layout_constraintStart_toStartOf="@+id/progressBarDownload"
@@ -111,6 +124,7 @@
         android:layout_height="16dp"
         android:tint="@color/very_very_dark_gray"
         android:visibility="invisible"
+        android:contentDescription="@string/resume"
         app:layout_constraintBottom_toBottomOf="@+id/progressBarDownload"
         app:layout_constraintEnd_toEndOf="@+id/progressBarDownload"
         app:layout_constraintStart_toStartOf="@+id/progressBarDownload"
@@ -129,6 +143,7 @@
         app:layout_constraintTop_toTopOf="@+id/titleResource"
         android:src="@drawable/error_icon"
         android:tint="@color/red"
-        android:visibility="invisible"/>
+        android:visibility="invisible"
+        android:contentDescription="@string/description_download_error"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
