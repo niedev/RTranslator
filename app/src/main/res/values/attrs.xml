@@ -36,6 +36,8 @@
         <attr name="colorBackgroundLite" format="color" />
         <attr name="colorBackgroundStrong" format="color" />
         <attr name="colorBackgroundColored" format="color" />
+        <attr name="colorBackgroundMessageSend" format="color" />
+        <attr name="colorBackgroundMessageReceived" format="color" />
 
         <attr name="colorTextLevel1" format="color"/>
         <attr name="colorTextLevel2" format="color"/>

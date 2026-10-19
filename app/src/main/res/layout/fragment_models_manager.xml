@@ -109,7 +109,7 @@
                             app:layout_constraintStart_toEndOf="@+id/titleMozilla"
                             app:layout_constraintTop_toTopOf="@+id/titleMozilla"
                             android:src="@drawable/right_arrow_icon"
-                            android:tint="@color/very_dark_gray" />
+                            android:tint="?attr/colorTextLevel4" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -409,7 +409,7 @@
                     android:layout_marginTop="32dp"
                     android:layout_marginEnd="16dp"
                     android:layout_marginBottom="16dp"
-                    app:backgroundColor="@color/very_very_light_gray"
+                    app:backgroundColor="?attr/colorBackgroundStrong"
                     app:cornerRadius="8dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"

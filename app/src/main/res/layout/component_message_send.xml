@@ -31,7 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Dark"
-        android:backgroundTint="@color/secondary_very_lite"
+        android:backgroundTint="?attr/colorBackgroundMessageSend"
         app:cardCornerRadius="24sp"
         app:cardElevation="0dp"
         app:cardUseCompatPadding="true"
@@ -56,7 +56,7 @@
                 android:layout_marginBottom="12dp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textSize="16sp"
-                android:textColor="@color/very_dark_gray_plus"
+                android:textColor="?attr/colorTextLevel4Plus"
                 android:visibility="visible"
                 tool:text="Original text to be translated"/>
 
@@ -87,15 +87,15 @@
                     android:id="@+id/tts_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="@color/secondary_very_lite"
+                    android:backgroundTint="?attr/colorBackgroundMessageSend"
                     android:src="@drawable/sound_icon"
                     app:borderWidth="0dp"
                     app:elevation="0dp"
                     app:fabSize="mini"
                     android:alpha="1"
                     android:visibility="visible"
-                    app:rippleColor="@color/gray"
-                    app:tint="@color/very_very_dark_gray"
+                    app:rippleColor="#12000000"
+                    app:tint="?attr/colorTextLevel3"
                     android:layout_gravity="center_vertical"
                     android:importantForAccessibility="no"/>
 
