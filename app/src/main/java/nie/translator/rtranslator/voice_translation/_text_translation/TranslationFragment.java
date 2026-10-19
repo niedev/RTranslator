@@ -101,8 +101,8 @@ public class TranslationFragment extends Fragment {
     private TextView synonymsText;
     private CustomAnimator animator = new CustomAnimator();
     private Animator colorAnimator = null;
-    private int activatedColor = R.color.primary;
-    private int deactivatedColor = R.color.gray;
+    private int activatedColor = R.attr.colorPrimary;
+    private int deactivatedColor = R.attr.colorDeactivated;
     private boolean isKeyboardShowing = false;
     private boolean isScreenReduced = false;
     private boolean isInputEmpty = true;

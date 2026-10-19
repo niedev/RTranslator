@@ -30,7 +30,7 @@
             android:id="@+id/input_buttons_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/accent_white"
+            android:backgroundTint="?attr/colorBackgroundLite"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -53,7 +53,7 @@
                     android:background="@null"
                     android:padding="12dp"
                     android:src="@drawable/sound_manual_icon"
-                    android:tint="@color/gray"
+                    android:tint="?attr/colorTextLevel6"
                     android:contentDescription="manual message reading"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -91,7 +91,7 @@
                     android:layout_marginBottom="8dp"
                     android:background="@null"
                     android:src="@drawable/keyboard_icon"
-                    android:tint="@color/gray"
+                    android:tint="?attr/colorTextLevel6"
                     android:padding="12dp"
                     android:contentDescription="open text input mode"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -116,7 +116,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="1.0"
-                    app:tint="@color/primary_very_dark" />
+                    app:tint="?attr/colorPrimaryStrong" />
 
                 <TextView
                     android:id="@+id/textButtonPlaceHolder"
@@ -163,10 +163,10 @@
                             android:layout_height="66dp"
                             android:layout_gravity="center"
                             android:background="@drawable/circle"
-                            android:backgroundTint="@color/primary"
+                            android:backgroundTint="?attr/colorPrimary"
                             android:src="@drawable/mic_icon"
                             android:contentDescription="stop microphone"
-                            app:tint="@color/white"
+                            app:tint="?attr/colorTextInverted"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -220,7 +220,7 @@
                         android:fontFamily="@font/nunito_sans"
                         android:text="@string/mic"
                         android:textAlignment="center"
-                        android:textColor="@color/very_dark_gray"
+                        android:textColor="?attr/colorTextLevel4"
                         android:textSize="12sp"
                         android:visibility="visible"
                         android:importantForAccessibility="no"/>

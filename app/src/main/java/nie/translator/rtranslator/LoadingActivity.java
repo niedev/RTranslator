@@ -71,7 +71,7 @@ public class LoadingActivity extends GeneralActivity {
         }
         super.onCreate(savedInstanceState);
         if(splashScreen == null){
-            setTheme(R.style.Theme_Speech);
+            setTheme(R.style.Theme_RTranslator_Light);
         }
         setContentView(R.layout.activity_loading);
         mainHandler = new Handler(Looper.getMainLooper());

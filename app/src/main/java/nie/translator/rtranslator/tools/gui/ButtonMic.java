@@ -79,28 +79,28 @@ public class ButtonMic extends DeactivableButton {
     public ButtonMic(Context context) {
         super(context);
         this.context = context;
-        colorActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.accent_white), GuiTools.getColorStateList(context,R.color.primary));
-        colorMutedActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.primary_very_dark), GuiTools.getColorStateList(context,R.color.primary_very_lite));
-        colorDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.accent_white), GuiTools.getColorStateList(context,R.color.gray));
-        colorMutedDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.very_very_dark_gray), GuiTools.getColorStateList(context,R.color.very_very_light_gray));
+        colorActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorTextInverted), GuiTools.getColorStateList(context,R.attr.colorPrimary));
+        colorMutedActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorPrimaryStrong), GuiTools.getColorStateList(context,R.attr.colorBackgroundColored));
+        colorDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorTextInverted), GuiTools.getColorStateList(context,R.attr.colorDeactivated));
+        colorMutedDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorTextLevel3), GuiTools.getColorStateList(context,R.attr.colorDeactivatedLite));
     }
 
     public ButtonMic(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
-        colorActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.accent_white), GuiTools.getColorStateList(context,R.color.primary));
-        colorMutedActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.primary_very_dark), GuiTools.getColorStateList(context,R.color.primary_very_lite));
-        colorDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.accent_white), GuiTools.getColorStateList(context,R.color.gray));
-        colorMutedDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.very_very_dark_gray), GuiTools.getColorStateList(context,R.color.very_very_light_gray));
+        colorActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorTextInverted), GuiTools.getColorStateList(context,R.attr.colorPrimary));
+        colorMutedActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorPrimaryStrong), GuiTools.getColorStateList(context,R.attr.colorBackgroundColored));
+        colorDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorTextInverted), GuiTools.getColorStateList(context,R.attr.colorDeactivated));
+        colorMutedDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorTextLevel3), GuiTools.getColorStateList(context,R.attr.colorDeactivatedLite));
     }
 
     public ButtonMic(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.context = context;
-        colorActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.accent_white), GuiTools.getColorStateList(context,R.color.primary));
-        colorMutedActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.primary_very_dark), GuiTools.getColorStateList(context,R.color.primary_very_lite));
-        colorDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.accent_white), GuiTools.getColorStateList(context,R.color.gray));
-        colorMutedDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.color.very_very_dark_gray), GuiTools.getColorStateList(context,R.color.very_very_light_gray));
+        colorActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorTextInverted), GuiTools.getColorStateList(context,R.attr.colorPrimary));
+        colorMutedActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorPrimaryStrong), GuiTools.getColorStateList(context,R.attr.colorBackgroundColored));
+        colorDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorTextInverted), GuiTools.getColorStateList(context,R.attr.colorDeactivated));
+        colorMutedDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorTextLevel3), GuiTools.getColorStateList(context,R.attr.colorDeactivatedLite));
     }
 
     public void deleteEditText(VoiceTranslationActivity activity, final ConversationMainFragment fragment, final ButtonKeyboard buttonKeyboard, final EditText editText, ImageButton micPlaceHolder) {
@@ -238,7 +238,7 @@ public class ButtonMic extends DeactivableButton {
             isListening = true;
             if(!isMute) {
                 if(leftLine != null && centerLine != null && rightLine != null){
-                    getDrawable().setColorFilter(GuiTools.getColorStateList(context, android.R.color.transparent).getDefaultColor(), PorterDuff.Mode.SRC_IN);  //we make the mic icon invisible
+                    getDrawable().setColorFilter(GuiTools.getTransparentColorStateList(context).getDefaultColor(), PorterDuff.Mode.SRC_IN);  //we make the mic icon invisible
                     leftLine.setVisibility(VISIBLE);
                     centerLine.setVisibility(VISIBLE);
                     rightLine.setVisibility(VISIBLE);
@@ -265,7 +265,7 @@ public class ButtonMic extends DeactivableButton {
     public void updateVolumeLevel(float volumeLevel){
         if(isListening){
             //we make the mic icon invisible (we do this also here because otherwise when the onVoiceStart is called during another animation the icon will not disappear)
-            getDrawable().setColorFilter(GuiTools.getColorStateList(context, android.R.color.transparent).getDefaultColor(), PorterDuff.Mode.SRC_IN);
+            getDrawable().setColorFilter(GuiTools.getTransparentColorStateList(context).getDefaultColor(), PorterDuff.Mode.SRC_IN);
         }
         if(this.volumeLevel == -1 || this.animationVoice == null || !this.animationVoice.isRunning()) {
             animationVoice = updateVolumeLevel(volumeLevel, new CustomAnimator.EndListener() {

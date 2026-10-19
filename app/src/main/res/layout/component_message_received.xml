@@ -66,7 +66,7 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginEnd="16dp"
                 android:fontFamily="@font/nunito_sans"
-                android:textColor="@color/primary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:visibility="visible"
@@ -82,7 +82,7 @@
                 android:layout_marginBottom="12dp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textSize="16sp"
-                android:textColor="@color/very_dark_gray"
+                android:textColor="?attr/colorTextLevel4"
                 android:visibility="visible"
                 tool:text="Original text to be translated"/>
 
@@ -107,7 +107,7 @@
                     android:layout_marginEnd="16dp"
                     android:layout_marginBottom="8dp"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/colorTextLevel1"
                     android:textSize="16sp"
                     tool:text="Ciao, come stai?"
                     android:layout_gravity="center_vertical"/>

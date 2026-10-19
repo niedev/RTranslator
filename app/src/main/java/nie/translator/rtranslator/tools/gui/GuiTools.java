@@ -19,6 +19,8 @@ package nie.translator.rtranslator.tools.gui;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -96,12 +98,20 @@ public class GuiTools {
         }
     }
 
-    public static int getColor(Context context, int colorCode) {
-        return context.getResources().getColor(colorCode, null);
+    public static int getColor(Context context, int colorAttr) {
+        try (TypedArray array = context.obtainStyledAttributes(new int[]{colorAttr})) {
+            return array.getColor(0, Color.TRANSPARENT);
+        }
     }
 
-    public static ColorStateList getColorStateList(Context context, int colorCode) {
-        return context.getResources().getColorStateList(colorCode, null);
+    public static ColorStateList getColorStateList(Context context, int colorAttr) {
+        try (TypedArray array = context.obtainStyledAttributes(new int[]{colorAttr})) {
+            return array.getColorStateList(0);
+        }
+    }
+
+    public static ColorStateList getTransparentColorStateList(Context context) {
+        return context.getResources().getColorStateList(android.R.color.transparent, null);
     }
 
 

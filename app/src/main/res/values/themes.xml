@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. -->
+    <style name="Theme.RTranslator.Light" parent="Theme.MaterialComponents.Light.DarkActionBar">  <!-- Theme.AppCompat.Light.DarkActionBar-->
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="color">@color/primary</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryAlt">@color/primary_dark</item>
+        <item name="colorPrimaryStrong">@color/primary_very_dark</item>
+        <item name="colorPrimaryLite">@color/primary_lite</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="colorError">@color/red</item>
+        <item name="colorDeactivated">@color/gray</item>
+        <item name="colorDeactivatedLite">@color/very_very_light_gray</item>
+
+        <item name="colorBackground">@color/white</item>
+        <item name="colorBackgroundStrong">@color/very_very_light_gray</item>
+        <item name="colorBackgroundLite">@color/accent_white</item>
+        <item name="colorBackgroundColored">@color/primary_very_lite</item>
+
+        <item name="colorTextLevel1">@color/black</item>
+        <item name="colorTextLevel2">@color/light_black</item>
+        <item name="colorTextLevel3">@color/very_very_dark_gray</item>
+        <item name="colorTextLevel4Plus">@color/very_dark_gray_plus</item>
+        <item name="colorTextLevel4">@color/very_dark_gray</item>
+        <item name="colorTextLevel5">@color/dark_gray</item>
+        <item name="colorTextLevel6">@color/gray</item>
+        <item name="colorTextLevel7">@color/light_gray</item>
+        <item name="colorTextInverted">@color/accent_white</item>
+
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="cardViewStyle">@style/CardView</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="materialButtonStyle">@style/Widget.RTranslator.Button</item>
+    </style>
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen.IconBackground">
+        <!-- Set the splash screen background -->
+        <item name="windowSplashScreenBackground">@android:color/white</item>
+        <!-- Set a background behind the splash screen icon. -->
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/white</item>
+        <!-- Use windowSplashScreenAnimatedIcon to add a drawable or an animated drawable. -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_screen</item>
+        <!-- Set the theme of the Activity that follows your splash screen. -->
+        <item name="postSplashScreenTheme">@style/Theme.RTranslator.Light</item>
+    </style>
+</resources>

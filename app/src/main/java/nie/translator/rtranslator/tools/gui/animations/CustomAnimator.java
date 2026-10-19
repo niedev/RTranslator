@@ -77,7 +77,6 @@ public class CustomAnimator {
             return Math.abs(interpolator.getInterpolation(v) -1f);
         }
     };
-    private ValueAnimator selectionAnimator= new ValueAnimator();
 
     public void animateIconToMic(Context context, ButtonMic buttonMic, TextView micInput){
         AnimatorSet animatorSet= new AnimatorSet();
@@ -125,10 +124,6 @@ public class CustomAnimator {
         Animator micAnimator = createAnimatorSize(buttonMic, buttonMic.getWidth(), buttonMic.getHeight(), micFinalSize, micFinalSize, context.getResources().getInteger(R.integer.durationStandard));
         micAnimator.start();
     }
-
-    /*public void animateIconToMicInstantly(Context context, ButtonMic buttonMic){
-        new AnimationIconToMic(context,new ViewPropertiesAdapter(buttonMic)).startInstantly();
-    }*/
 
     public void animateIconChange(final ImageView view, final Drawable newIcon){
         animateIconChange(view,newIcon,null);
@@ -263,10 +258,10 @@ public class CustomAnimator {
         int duration = buttonMic.getResources().getInteger(R.integer.durationStandard);
         int finalSizeInPixels = Tools.convertDpToPixels(context, ButtonMic.SIZE_MUTED_DP);
 
-        int initialColorIcon = GuiTools.getColor(buttonMic.getContext(), R.color.white);
-        int finalColorIcon = GuiTools.getColor(buttonMic.getContext(), R.color.primary_very_dark);
-        int initialColor = GuiTools.getColor(buttonMic.getContext(), R.color.primary);
-        int finalColor = GuiTools.getColor(buttonMic.getContext(), R.color.primary_very_lite);
+        int initialColorIcon = GuiTools.getColor(buttonMic.getContext(), R.attr.colorTextInverted);
+        int finalColorIcon = GuiTools.getColor(buttonMic.getContext(), R.attr.colorPrimaryStrong);
+        int initialColor = GuiTools.getColor(buttonMic.getContext(), R.attr.colorPrimary);
+        int finalColor = GuiTools.getColor(buttonMic.getContext(), R.attr.colorBackgroundColored);
 
         if(!instant) {
             AnimatorSet animatorSet = new AnimatorSet();
@@ -303,10 +298,10 @@ public class CustomAnimator {
         int duration = buttonMic.getResources().getInteger(R.integer.durationStandard);
         int finalSizeInPixels = Tools.convertDpToPixels(context, ButtonMic.SIZE_NORMAL_DP);
 
-        int initialColorIcon = GuiTools.getColor(buttonMic.getContext(),R.color.primary_very_dark);
-        int finalColorIcon = GuiTools.getColor(buttonMic.getContext(),R.color.white);
-        int initialColor = GuiTools.getColor(buttonMic.getContext(),R.color.primary_very_lite);
-        int finalColor = GuiTools.getColor(buttonMic.getContext(),R.color.primary);
+        int initialColorIcon = GuiTools.getColor(buttonMic.getContext(),R.attr.colorPrimaryStrong);
+        int finalColorIcon = GuiTools.getColor(buttonMic.getContext(),R.attr.colorTextInverted);
+        int initialColor = GuiTools.getColor(buttonMic.getContext(),R.attr.colorBackgroundColored);
+        int finalColor = GuiTools.getColor(buttonMic.getContext(),R.attr.colorPrimary);
 
         if(!instant) {
             AnimatorSet animatorSet = new AnimatorSet();
@@ -930,10 +925,10 @@ public class CustomAnimator {
         int duration = activity.getResources().getInteger(R.integer.durationStandard);
         AnimatorSet animatorSet = new AnimatorSet();
 
-        int deselectedColorText = GuiTools.getColorStateList(activity, R.color.primary_very_dark).getDefaultColor();
-        int deselectedColorBackground = GuiTools.getColorStateList(activity, R.color.accent_white).getDefaultColor();
-        int selectedColorText = GuiTools.getColorStateList(activity, R.color.accent_white).getDefaultColor();
-        int selectedColorBackground = GuiTools.getColorStateList(activity, R.color.primary_very_dark).getDefaultColor();
+        int deselectedColorText = GuiTools.getColorStateList(activity, R.attr.colorPrimaryStrong).getDefaultColor();
+        int deselectedColorBackground = GuiTools.getColorStateList(activity, R.attr.colorBackgroundLite).getDefaultColor();
+        int selectedColorText = GuiTools.getColorStateList(activity, R.attr.colorTextInverted).getDefaultColor();
+        int selectedColorBackground = GuiTools.getColorStateList(activity, R.attr.colorPrimaryStrong).getDefaultColor();
 
         Animator animatorBackgroundColorConversation;
         Animator animatorTextColorConversation;
@@ -1269,60 +1264,6 @@ public class CustomAnimator {
             public void onAnimationRepeat(Animator animator) {}
         });
         animatorSet.start();
-    }
-
-    public void animateSelection(Context context,View view, int x,int y,ValueAnimator.AnimatorListener listener){
-        selectionAnimator.cancel();
-        // animation preparation
-        CustomDrawable customDrawable;
-        if(view.getBackground()==null) {
-            customDrawable = new CustomDrawable(context, Tools.convertDpToPixels(context, 6));
-            view.setBackground(customDrawable);
-        }else{
-            customDrawable= (CustomDrawable) view.getBackground();
-        }
-
-        final CustomDrawable customDrawableFinal=customDrawable;
-
-        customDrawable.setPosition(x,y);
-
-        // selection animation
-        selectionAnimator = ValueAnimator.ofFloat(customDrawable.getSize(), view.getWidth() + 100);
-        selectionAnimator.setDuration(350);
-        selectionAnimator.setInterpolator(new AccelerateInterpolator());
-        selectionAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                customDrawableFinal.setSize((Float) valueAnimator.getAnimatedValue());
-            }
-        });
-        selectionAnimator.addListener(listener);
-        selectionAnimator.start();
-    }
-
-    public void animateDeselection(View view,int x,int y,ValueAnimator.AnimatorListener listener){
-        selectionAnimator.cancel();
-        // animation preparation
-        final CustomDrawable customDrawable= (CustomDrawable) view.getBackground();
-        customDrawable.setPosition(x,y);
-
-        // selection animation
-        selectionAnimator= ValueAnimator.ofFloat(customDrawable.getSize(),0);  //vedere se si può fare senza reverse interpolator, ma invertendo i valori
-        selectionAnimator.setDuration(350);
-                /*valueAnimator.setInterpolator(new Interpolator() {
-                    @Override
-                    public float getInterpolation(float v) {
-                        return Math.abs(v-1);
-                    }
-                });*/
-        selectionAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                customDrawable.setSize((Float) valueAnimator.getAnimatedValue());
-            }
-        });
-        selectionAnimator.addListener(listener);
-        selectionAnimator.start();
     }
 
     public void appearVertically(final View view, int finalHeight){
@@ -1867,220 +1808,6 @@ public class CustomAnimator {
 
         return animator;
     }
-
-    public class CustomDrawable extends Drawable {
-
-        private Paint paint;
-        private float cx,cy;
-        private float size;
-
-
-        CustomDrawable(Context context,float size){
-            this.size=size;
-            paint=new Paint();
-            paint.setColor(GuiTools.getColor(context,R.color.pressed_color));
-        }
-
-        public void setSize(float size){
-            this.size=size;
-            invalidateSelf();
-        }
-
-        private void setPosition(float x, float y){
-            this.cx=x;
-            this.cy=y;
-        }
-
-        @Override
-        public void draw(@NonNull Canvas canvas){
-            canvas.save();
-            canvas.drawCircle(cx,cy,size,paint);
-        }
-
-        @Override
-        public void setAlpha(int alpha) {
-            // Has no effect
-            paint.setAlpha(alpha);
-        }
-
-        @Override
-        public void setColorFilter(ColorFilter cf) {
-            // Has no effect
-            paint.setColorFilter(cf);
-        }
-
-        @Override
-        public int getOpacity() {
-            // Not Implemented
-            return PixelFormat.OPAQUE;
-        }
-
-        public float getSize() {
-            return size;
-        }
-    }
-
-    /*private class AnimationIconToMic {
-        private ValueAnimator valueAnimator;
-
-        private AnimationIconToMic(Context context, final ViewPropertiesAdapter buttonMic, final ViewPropertiesAdapter micInput){
-            final float[] micAnimationValues={Tools.convertDpToPixels(context,24),Tools.convertDpToPixels(context,38)};
-            final float[] micInputAnimationValues={Tools.convertDpToPixels(context,0),Tools.convertDpToPixels(context,11)};
-            final float micInputAnimationStartTime= (float) 0.6;
-            final float micInputAnimationDuration= (1 - micInputAnimationStartTime);
-
-            valueAnimator = ValueAnimator.ofObject(new FloatArrayEvaluator(),micAnimationValues,micInputAnimationValues);
-            valueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-            valueAnimator.setDuration(250);
-            valueAnimator.setEvaluator(new FloatArrayEvaluator() {
-                @Override
-                public float[] evaluate(float fraction, float[] micValues, float[] micInputValues) {
-                    //l' evaluator ritornerà un array di due interi, nel primo ci inseriamo il valore dell' animazione del microfono
-                    //e nel secondo 0 prima che l' animazione parta e il valore dell' animazione dell' anim. del micInput una volta partita
-
-                    float micAnimationValue= micValues[0]+(micValues[1]-micValues[0])*fraction; //verificare se v parte da 0
-                    float micInputAnimationValue=-1;
-                    if(fraction > micInputAnimationStartTime){
-                        float subFraction= (fraction-micInputAnimationStartTime)*(1/micInputAnimationDuration);
-                        micInputAnimationValue= micInputValues[0]+(micInputValues[1]-micInputValues[0])*subFraction;
-                    }
-
-                    return new float[]{micAnimationValue,micInputAnimationValue};
-                }
-            });
-            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    float[] values= (float[]) valueAnimator.getAnimatedValue();
-                    buttonMic.setWidth((int) values[0]);
-                    buttonMic.setHeight((int) values[0]);
-                    if(values[1]!=-1){
-                        micInput.setHeight((int) values[1]);
-                    }
-                }
-            });
-            valueAnimator.addCallback(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animator) {micInput.getView().setVisibility(View.VISIBLE);}
-                @Override
-                public void onAnimationEnd(Animator animator) {}
-                @Override
-                public void onAnimationCancel(Animator animator) {}
-                @Override
-                public void onAnimationRepeat(Animator animator) {}
-            });
-        }
-
-        private AnimationIconToMic(Context context,final ViewPropertiesAdapter buttonMic){
-            final int[] micAnimationValues={Tools.convertDpToPixels(context,24),Tools.convertDpToPixels(context,38)};
-            valueAnimator = ValueAnimator.ofInt(micAnimationValues[0],micAnimationValues[1]);
-            valueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-            valueAnimator.setDuration(250);
-            valueAnimator.setEvaluator(new TypeEvaluator() {
-                @Override
-                public Object evaluate(float v, Object initialValue, Object finalValue) {
-                    return (int)initialValue+((int)finalValue-(int)initialValue)*v; //verificare se v parte da 0
-                }
-            });
-            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    int value= (int) valueAnimator.getAnimatedValue();
-                    buttonMic.setWidth(value);
-                    buttonMic.setHeight(value);
-                }
-            });
-        }
-
-        public void start(){
-            eventHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    valueAnimator.start();
-                }
-            },50);
-        }
-
-        public void startInstantly(){
-            valueAnimator.start();
-        }
-    }
-
-    private class AnimationMicToIcon {
-        private ValueAnimator animator;
-
-        private AnimationMicToIcon(Context context,final ViewPropertiesAdapter buttonMic, final ViewPropertiesAdapter micInput){
-            final float[] micAnimationValues={Tools.convertDpToPixels(context,38),Tools.convertDpToPixels(context,24)};
-            final float[] micInputAnimationValues={Tools.convertDpToPixels(context,11),Tools.convertDpToPixels(context,0)};
-            final float micInputAnimationDuration= (float) 0.4;
-
-            animator= ValueAnimator.ofObject(new FloatArrayEvaluator(),micAnimationValues,micInputAnimationValues);
-            animator.setInterpolator(new AccelerateDecelerateInterpolator());
-            animator.setDuration(250);
-            animator.setEvaluator(new FloatArrayEvaluator() {
-                @Override
-                public float[] evaluate(float fraction, float[] micValues, float[] micInputValues) {
-                    //l' evaluator ritornerà un array di due interi, nel primo ci inseriamo il valore dell' animazione del microfono
-                    //e nel secondo 0 prima che l' animazione parta e il valore dell' animazione dell' anim. del micInput una volta partita
-
-                    float micAnimationValue= micValues[0]+(micValues[1]-micValues[0])*fraction; //verificare se v parte da 0
-                    float micInputAnimationValue=-1;
-                    if(fraction < micInputAnimationDuration){
-                        float subFraction= fraction*(1/micInputAnimationDuration);
-                        micInputAnimationValue= micInputValues[0]+(micInputValues[1]-micInputValues[0])*subFraction;
-                    }
-
-                    return new float[]{micAnimationValue,micInputAnimationValue};
-                }
-            });
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    float[] values= (float[]) valueAnimator.getAnimatedValue();
-                    buttonMic.setWidth((int) values[0]);
-                    buttonMic.setHeight((int) values[0]);
-                    if(values[1]!=-1){
-                        micInput.setHeight((int) values[1]);
-                    }
-                }
-            });
-            animator.addCallback(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animator) {}
-                @Override
-                public void onAnimationEnd(Animator animator) {micInput.getView().setVisibility(View.GONE);}
-                @Override
-                public void onAnimationCancel(Animator animator) {}
-                @Override
-                public void onAnimationRepeat(Animator animator) {}
-            });
-        }
-
-        private AnimationMicToIcon(Context context,final ViewPropertiesAdapter buttonMic){
-            final int[] micAnimationValues={Tools.convertDpToPixels(context,38),Tools.convertDpToPixels(context,24)};
-            animator= ValueAnimator.ofInt(micAnimationValues[0],micAnimationValues[1]);
-            animator.setInterpolator(new AccelerateDecelerateInterpolator());
-            animator.setDuration(250);
-            animator.setEvaluator(new TypeEvaluator() {
-                @Override
-                public Object evaluate(float v, Object initialValue, Object finalValue) {
-                    return (int)initialValue+((int)finalValue-(int)initialValue)*v; //verificare se v parte da 0
-                }
-            });
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    int value= (int) valueAnimator.getAnimatedValue();
-                    buttonMic.setWidth(value);
-                    buttonMic.setHeight(value);
-                }
-            });
-        }
-
-        public void start(){
-            animator.start();
-        }
-    }*/
 
     public abstract static class Listener {
         public void onAnimationStart(){}

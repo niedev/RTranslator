@@ -79,7 +79,7 @@
                     android:layout_marginBottom="8dp"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large"
                     android:textSize="16sp"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/colorTextLevel1"
                     android:layout_gravity="center_vertical"
                     tool:text="Ciao, come stai?"/>
 
