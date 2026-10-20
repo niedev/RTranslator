@@ -188,7 +188,9 @@ public class ButtonMic extends DeactivableButton {
             // change icon animation
             Drawable icon = getDrawable(R.drawable.send_icon);
             icon.setColorFilter(currentColor.iconColor.getDefaultColor(), PorterDuff.Mode.SRC_IN);
+            //icon.setColorFilter(context.getResources().getColorStateList(R.color.primary_very_dark, null).getDefaultColor(), PorterDuff.Mode.SRC_IN);
             animator.animateIconChange(this, icon);
+            //this.setImageDrawable(icon);
             // change accessibility description
             setContentDescription(getResources().getString(R.string.description_send));
         }
@@ -383,7 +385,7 @@ public class ButtonMic extends DeactivableButton {
     }
 
     public Drawable getDrawable(int id) {
-        Drawable drawable = getResources().getDrawable(id, null);
+        Drawable drawable = getResources().getDrawable(id, getContext().getTheme());
         drawable.setTintList(currentColor.iconColor);
         return drawable;
     }
