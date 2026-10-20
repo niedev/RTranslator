@@ -5,7 +5,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/colorBackgroundColored"
+    android:background="?attr/colorBackgroundColoredDialog"
     android:elevation="0dp"
     tools:ignore="UseAppTint">
 
@@ -37,7 +37,7 @@
         style="@style/CustomCardViewStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="?attr/colorBackgroundLite"
+        app:cardBackgroundColor="?attr/colorBackgroundDialog"
         app:cardElevation="0dp"
         app:cardPreventCornerOverlap="false"
         app:layout_constraintBottom_toBottomOf="parent"

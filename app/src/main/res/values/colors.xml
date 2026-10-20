@@ -19,24 +19,31 @@
     <color name="primary">#43a047</color>
     <color name="primary_dark">#388e3c</color>
     <color name="primary_very_dark">#296B2C</color>
-    <color name="primary_lite">#66bb6a</color>
+    <color name="primary_very_very_dark">#1D2123</color>
+    <color name="primary_very_very_dark_light">#262E27</color>
+    <color name="primary_lite">#5FAD63</color>
     <color name="primary_very_lite">#E6F8E6</color>   <!-- #DEF8E0 -->  <!-- #E9FFE9-->
     <color name="accent">#36b024</color>
     <color name="secondary">#3785C3</color>
     <color name="secondary_dark">#2F72A8</color>
     <color name="secondary_very_dark">#1D4C71</color>
+    <color name="secondary_very_very_dark">#184949</color>
     <color name="secondary_very_lite">#E0F2F1</color>
     <color name="secondaryTransparent">#320099cc</color>
     <color name="background_discover">#5a43a047</color>
     <color name="background_advertize">#5a43a047</color>
     <color name="pressed_color">#cfd8dc</color>
-    <color name="black">#212121</color>
-    <color name="light_black">#404040</color>
+    <color name="accent_black">#ff000000</color>
+    <color name="dark_black">#06070A</color>
+    <color name="black">#0B1014</color>
+    <color name="light_black">#1E2123</color>
+    <color name="very_light_black">#3C4040</color>
     <color name="very_very_dark_gray">#5A5A5A</color>
-    <color name="very_dark_gray">#757575</color>
+    <color name="very_dark_gray">#737578</color>
     <color name="very_dark_gray_plus">#6B6B6B</color>
     <color name="dark_gray">#8C8C8C</color>
-    <color name="gray">#9e9e9e</color>
+    <color name="gray">#9A9EA0</color>
+    <color name="gray_plus">#AEB3B4</color>
     <color name="light_gray">#bdbdbd</color>
     <color name="very_light_gray">#e0e0e0</color>
     <color name="very_light_gray2">#E9E9E9</color>
@@ -49,4 +56,7 @@
     <color name="blue">#6faffc</color>
     <color name="purple">#BA68C8</color>
     <color name="orange">#FF7043</color>
+    <!-- colors for the widget-->
+    <color name="widget_background">@color/primary_very_lite</color>
+    <color name="widget_icon">@color/primary_very_dark</color>
 </resources>

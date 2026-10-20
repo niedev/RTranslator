@@ -16,7 +16,7 @@
         android:layout_marginBottom="20dp"
         android:text="HY-MT"
         app:layout_constraintWidth_percent="0.35"
-        android:textColor="?attr/colorTextLevel3"
+        android:textColor="?attr/colorTextLevel2"
         android:textSize="18sp"
         android:textStyle="bold"
         android:focusable="false"

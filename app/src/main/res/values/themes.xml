@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme. -->
-    <style name="Theme.RTranslator.Light" parent="Theme.MaterialComponents.Light.DarkActionBar">  <!-- Theme.AppCompat.Light.DarkActionBar-->
+    <!-- Lite application theme. -->
+    <style name="Theme.RTranslator" parent="Theme.MaterialComponents.DayNight.DarkActionBar">  <!-- Theme.AppCompat.Light.DarkActionBar-->
         <item name="colorOnPrimary">@color/white</item>
 
         <item name="color">@color/primary</item>
@@ -18,11 +18,16 @@
         <item name="colorBackgroundStrong">@color/very_very_light_gray</item>
         <item name="colorBackgroundLite">@color/accent_white</item>
         <item name="colorBackgroundColored">@color/primary_very_lite</item>
+
+        <item name="colorBackgroundColoredDialog">@color/primary_very_lite</item>
+        <item name="colorBackgroundDialog">@color/accent_white</item>
+
         <item name="colorBackgroundMessageSend">@color/secondary_very_lite</item>
         <item name="colorBackgroundMessageReceived">@color/very_very_light_gray</item>
 
-        <item name="colorTextLevel1">@color/black</item>
-        <item name="colorTextLevel2">@color/light_black</item>
+        <item name="colorTextLevel0">@color/accent_black</item>
+        <item name="colorTextLevel1">@color/light_black</item>
+        <item name="colorTextLevel2">@color/very_light_black</item>
         <item name="colorTextLevel3">@color/very_very_dark_gray</item>
         <item name="colorTextLevel4Plus">@color/very_dark_gray_plus</item>
         <item name="colorTextLevel4">@color/very_dark_gray</item>
@@ -33,6 +38,7 @@
 
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/accent_white</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar">true</item>
         <item name="cardViewStyle">@style/CardView</item>
@@ -48,6 +54,11 @@
         <!-- Use windowSplashScreenAnimatedIcon to add a drawable or an animated drawable. -->
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_screen</item>
         <!-- Set the theme of the Activity that follows your splash screen. -->
-        <item name="postSplashScreenTheme">@style/Theme.RTranslator.Light</item>
+        <item name="postSplashScreenTheme">@style/Theme.RTranslator</item>
+    </style>
+
+    <style name="Theme.RTranslator.FullScreen" parent="Theme.RTranslator">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 </resources>

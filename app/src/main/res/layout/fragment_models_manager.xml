@@ -69,7 +69,7 @@
                             android:layout_marginStart="8dp"
                             android:layout_marginBottom="2dp"
                             android:text="@string/performance"
-                            android:textColor="?attr/colorTextLevel3"
+                            android:textColor="?attr/colorTextLevel2"
                             android:textSize="18sp"
                             android:textStyle="bold"
                             android:focusable="false"
@@ -205,7 +205,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
                         android:text="@string/title_mozilla_voice"
-                        android:textColor="?attr/colorTextLevel3"
+                        android:textColor="?attr/colorTextLevel2"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:focusable="false"
@@ -230,7 +230,7 @@
                         app:layout_constraintTop_toBottomOf="@+id/titleMozillaForVoice"
                         app:layout_constraintVertical_bias="0.0" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
-                <com.google.android.material.switchmaterial.SwitchMaterial
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchMozillaForVoiceModes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -270,7 +270,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
                         android:text="@string/title_whisper_ram_reduction"
-                        android:textColor="?attr/colorTextLevel3"
+                        android:textColor="?attr/colorTextLevel2"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:focusable="false"
@@ -295,7 +295,7 @@
                         app:layout_constraintTop_toBottomOf="@+id/titleWhisperReducedRam"
                         app:layout_constraintVertical_bias="0.0" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
-                <com.google.android.material.switchmaterial.SwitchMaterial
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchWhisperReducedRam"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -329,7 +329,7 @@
                     app:modelSize="596"
                     app:modelTitle="Tatoeba"
                     android:layout_weight="2"/>
-                <com.google.android.material.switchmaterial.SwitchMaterial
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchTatoeba"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -361,7 +361,7 @@
                         android:text="@string/translation_dictionaries"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorTextLevel3"
+                        android:textColor="?attr/colorTextLevel2"
                         android:focusable="false"
                         android:labelFor="@id/switchTranslationDict"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -388,7 +388,7 @@
                         app:layout_constraintVertical_bias="0.0" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
-                <com.google.android.material.switchmaterial.SwitchMaterial
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchTranslationDict"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"

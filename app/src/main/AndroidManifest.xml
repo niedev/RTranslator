@@ -57,7 +57,7 @@
         android:requestLegacyExternalStorage="true"
         android:largeHeap="true"
         android:supportsRtl="true"
-        android:theme="@style/Theme.RTranslator.Light"
+        android:theme="@style/Theme.RTranslator"
         android:enableOnBackInvokedCallback="false"
         tools:ignore="GoogleAppIndexingWarning,NewApi">
         <activity
@@ -96,7 +96,7 @@
             android:launchMode="singleTask" />
         <activity
             android:name="nie.translator.rtranslator.voice_translation.FullScreenTextActivity"
-            android:theme="@style/Theme.MaterialComponents.NoActionBar"
+            android:theme="@style/Theme.RTranslator.FullScreen"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
 
         <service android:name="nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService"

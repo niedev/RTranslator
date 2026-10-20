@@ -43,7 +43,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
         android:text="@string/preference_title_mic_sensitivity"
-        android:textColor="@android:color/black"
+        android:textColor="?attr/colorTextLevel0"
         android:textSize="16sp"
         android:labelFor="@id/buttonRestore"
         app:layout_constraintBottom_toBottomOf="parent"

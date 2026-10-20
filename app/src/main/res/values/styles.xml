@@ -34,11 +34,12 @@
 
     <style name="MyThemeOverlay.MaterialComponents.MaterialAlertDialog" parent="@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.RTranslator.Dialog.Rounded</item>
-        <item name="colorSurface">@color/primary_very_lite</item>
+        <item name="colorSurface">?attr/colorBackgroundColoredDialog</item>
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 
     <style name="MyThemeOverlay.MaterialComponents.MaterialAlertDialogWithTitle" parent="@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-        <item name="colorSurface">@color/accent_white</item>
+        <item name="colorSurface">?attr/colorBackground</item>
         <item name="android:windowBackground">@drawable/bg_custom_material_dialog</item>
         <item name="android:backgroundDimAmount">0.7</item>
     </style>

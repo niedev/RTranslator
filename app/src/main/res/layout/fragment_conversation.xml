@@ -22,7 +22,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorBackgroundColored"
+    android:background="@drawable/bg_fragment"
     android:fitsSystemWindows="true"
     android:accessibilityPaneTitle="@string/title_fragment_conversation"
     tools:ignore="UseAppTint">

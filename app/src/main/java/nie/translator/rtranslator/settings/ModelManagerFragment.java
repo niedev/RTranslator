@@ -22,15 +22,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.cardview.widget.CardView;
-import androidx.core.view.AccessibilityDelegateCompat;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,10 +76,10 @@ public class ModelManagerFragment extends Fragment {
     private ResourceManagerView tatoebaManagerView;
     private Button applyButton;
     private SegmentProgressBar barRam;
-    private SwitchMaterial switchMozillaForVoiceModes;
-    private SwitchMaterial switchWhisperReducedRam;
-    private SwitchMaterial switchTatoeba;
-    private SwitchMaterial switchTranslationDict;
+    private SwitchCompat switchMozillaForVoiceModes;
+    private SwitchCompat switchWhisperReducedRam;
+    private SwitchCompat switchTatoeba;
+    private SwitchCompat switchTranslationDict;
     private TextView textRamUsage;
     private TextView textRamUsage2;
     private ImageView arrowMozilla;
