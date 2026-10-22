@@ -64,6 +64,10 @@
     <string name="options">Opzioni</string>
     <string name="from">da</string>
     <string name="to">a</string>
+    <string name="theme">Tema</string>
+    <string name="system_default">Predefinito di sistema</string>
+    <string name="light">Chiaro</string>
+    <string name="dark">Scuro</string>
 
     <string name="description_button_tts_manual">Lettura manuale dei messaggi</string>
     <string name="description_button_tts_auto">Lettura automatica dei messaggi</string>

@@ -30,7 +30,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -250,7 +249,7 @@ public class AccessActivity extends GeneralActivity {
 
         ImageView icon = editDialogLayout.findViewById(R.id.dialogIcon);
         TextView text = editDialogLayout.findViewById(R.id.textView);
-        MaterialButton continueButton = editDialogLayout.findViewById(R.id.continue_button);
+        MaterialButton continueButton = editDialogLayout.findViewById(R.id.apply_button);
         MaterialButton cancelButton = editDialogLayout.findViewById(R.id.cancel_button);
 
         //set icon

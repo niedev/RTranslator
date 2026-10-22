@@ -24,13 +24,13 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0" >
 
-        <android.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbarTranslator"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:backgroundTint="@android:color/transparent"
             android:elevation="0dp"
-            android:title=" "
+            app:title=" "
             android:importantForAccessibility="noHideDescendants"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

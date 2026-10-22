@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Lite application theme. -->
-    <style name="Theme.RTranslator" parent="Theme.MaterialComponents.DayNight.DarkActionBar">  <!-- Theme.AppCompat.Light.DarkActionBar-->
+    <style name="Theme.RTranslator" parent="Theme.MaterialComponents.DayNight.NoActionBar">  <!-- Theme.AppCompat.Light.DarkActionBar-->
         <item name="colorOnPrimary">@color/white</item>
 
         <item name="color">@color/primary</item>

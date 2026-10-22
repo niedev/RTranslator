@@ -27,11 +27,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.AccessibilityDelegateCompat;
 import androidx.core.view.ViewCompat;
@@ -188,7 +188,7 @@ public class TranslationFragment extends Fragment {
         activity = (VoiceTranslationActivity) requireActivity();
         global = (Global) activity.getApplication();
         Toolbar toolbar = activity.findViewById(R.id.toolbarTranslator);
-        activity.setActionBar(toolbar);
+        activity.setSupportActionBar(toolbar);
         //inputText.setImeOptions(EditorInfo.IME_ACTION_GO);
         //inputText.setRawInputType(InputType.TYPE_CLASS_TEXT);
 

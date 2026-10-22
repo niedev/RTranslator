@@ -34,6 +34,10 @@
         android:title="@string/general"
         app:iconSpaceReserved="false"
         app:allowDividerBelow="true">
+        <nie.translator.rtranslator.settings.ThemePreference
+            android:key="theme"
+            android:title="@string/theme"
+            app:iconSpaceReserved="false" />
         <androidx.preference.Preference
             android:key="modelsManager"
             android:title="@string/preference_title_models_manager"

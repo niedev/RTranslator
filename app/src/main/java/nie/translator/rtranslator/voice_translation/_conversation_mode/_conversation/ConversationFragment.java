@@ -24,11 +24,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.TextView;
-import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
@@ -109,7 +109,7 @@ public class ConversationFragment extends PairingToolbarFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         Toolbar toolbar = activity.findViewById(R.id.toolbarConversation);
-        activity.setActionBar(toolbar);
+        activity.setSupportActionBar(toolbar);
         // we give the constraint layout the information on the system measures (status bar etc.), which the fragmentContainer has, because they are not passed
         // to it if started with a Transaction and therefore it overlaps the status bar because fitsSystemWindows does not work
         WindowInsets windowInsets = activity.getFragmentContainer().getRootWindowInsets();

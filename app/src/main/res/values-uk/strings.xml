@@ -48,6 +48,10 @@
     <string name="options">Параметри</string>
     <string name="from">з</string>
     <string name="to">на</string>
+    <string name="theme">Тема</string>
+    <string name="system_default">Системний стандарт</string>
+    <string name="light">Світла</string>
+    <string name="dark">Темна</string>
 
     <string name="description_button_tts_manual">Ручне читання повідомлень</string>
     <string name="description_button_tts_auto">Автоматичне читання повідомлень</string>

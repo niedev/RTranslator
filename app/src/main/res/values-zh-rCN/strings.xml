@@ -48,6 +48,10 @@
     <string name="options">选项</string>
     <string name="from">从</string>
     <string name="to">到</string>
+    <string name="theme">主题</string>
+    <string name="system_default">跟随系统</string>
+    <string name="light">浅色</string>
+    <string name="dark">深色</string>
 
     <string name="description_button_tts_manual">手动朗读消息</string>
     <string name="description_button_tts_auto">自动朗读消息</string>

@@ -16,6 +16,11 @@
     *-->
 
 <resources>
+    <style name="TextAppearance.RTranslator.ToolbarTitle" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textSize">22sp</item>
+        <item name="android:fontFamily">@font/nunito_sans_semibold</item>
+    </style>
+
     <style name="Widget.RTranslator.Button" parent="Widget.MaterialComponents.Button">
         <item name="rippleColor">#33000000</item>   <!-- This will make ripple effects dark even if the colorOnPrimary is white -->
     </style>

@@ -27,11 +27,11 @@
     android:accessibilityPaneTitle="@string/title_fragment_walkie_talkie"
     tools:ignore="UseAppTint">
 
-    <android.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbarWalkieTalkie"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:title=" "
+        app:title=" "
         android:importantForAccessibility="noHideDescendants"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

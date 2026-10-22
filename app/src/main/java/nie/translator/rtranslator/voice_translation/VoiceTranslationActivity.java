@@ -36,7 +36,6 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -426,7 +425,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
         ImageView icon = editDialogLayout.findViewById(R.id.dialogIcon);
         TextView text = editDialogLayout.findViewById(R.id.textView);
-        MaterialButton continueButton = editDialogLayout.findViewById(R.id.continue_button);
+        MaterialButton continueButton = editDialogLayout.findViewById(R.id.apply_button);
         MaterialButton cancelButton = editDialogLayout.findViewById(R.id.cancel_button);
 
         //set icon
