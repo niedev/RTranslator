@@ -53,6 +53,7 @@ import nie.translator.rtranslator.downloader.DownloadManager;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.TTS;
+import nie.translator.rtranslator.tools.gui.ThemeManager;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.ConversationBluetoothCommunicator;
 import nie.translator.rtranslator.voice_translation._conversation_mode.communication.recent_peer.RecentPeersDataManager;
@@ -127,6 +128,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         super.onCreate();
         mainHandler = new Handler(Looper.getMainLooper());
         recentPeersDataManager = new RecentPeersDataManager(this);
+        ThemeManager.restore(this);  //this will apply the night mode chose in the settings
         //initializeBluetoothCommunicator();
         getMicSensitivity();
         createNotificationChannel();

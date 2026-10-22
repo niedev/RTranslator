@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/primary_very_lite"
-    android:elevation="0dp">
+    android:background="?attr/colorBackgroundColoredDialog"
+    android:elevation="0dp"
+    tools:ignore="UseAppTint">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
@@ -23,12 +25,13 @@
             android:layout_height="32dp"
             android:layout_marginBottom="16dp"
             android:focusable="false"
+            android:importantForAccessibility="no"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:src="@drawable/settings_icon"
-            android:tint="@color/primary_very_dark" />
+            android:tint="?attr/colorPrimaryStrong" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.card.MaterialCardView
@@ -36,7 +39,7 @@
         style="@style/CustomCardViewStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="@color/accent_white"
+        app:cardBackgroundColor="?attr/colorBackgroundDialog"
         app:cardElevation="0dp"
         app:cardPreventCornerOverlap="false"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -78,14 +81,13 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="12dp"
-                android:backgroundTint="@color/primary_very_dark"
+                android:backgroundTint="?attr/colorPrimaryStrong"
                 android:maxWidth="200dp"
                 android:minWidth="120dp"
                 android:outlineProvider="none"
                 android:padding="12dp"
                 android:text="@string/exit"
-                android:textColor="@color/white"
-                android:theme="@style/Theme.MaterialComponents"
+                android:textColor="?attr/colorTextInverted"
                 android:visibility="visible"
                 app:cornerRadius="24dp"
                 app:elevation="0dp"
@@ -105,14 +107,13 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="24dp"
                 android:layout_marginBottom="12dp"
-                android:backgroundTint="@color/primary_very_dark"
+                android:backgroundTint="?attr/colorPrimaryStrong"
                 android:maxWidth="200dp"
                 android:minWidth="120dp"
                 android:outlineProvider="none"
                 android:padding="12dp"
                 android:text="@string/apply"
-                android:textColor="@color/white"
-                android:theme="@style/Theme.MaterialComponents"
+                android:textColor="?attr/colorTextInverted"
                 android:visibility="visible"
                 app:cornerRadius="24dp"
                 app:elevation="0dp"

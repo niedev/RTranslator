@@ -36,7 +36,6 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -120,7 +119,11 @@ public class VoiceTranslationActivity extends GeneralActivity {
         }
 
         View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        decorView.setSystemUiVisibility(
+                decorView.getSystemUiVisibility()
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        );
 
         fragmentContainer = findViewById(R.id.fragment_container);
 
@@ -422,7 +425,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
         ImageView icon = editDialogLayout.findViewById(R.id.dialogIcon);
         TextView text = editDialogLayout.findViewById(R.id.textView);
-        MaterialButton continueButton = editDialogLayout.findViewById(R.id.continue_button);
+        MaterialButton continueButton = editDialogLayout.findViewById(R.id.apply_button);
         MaterialButton cancelButton = editDialogLayout.findViewById(R.id.cancel_button);
 
         //set icon

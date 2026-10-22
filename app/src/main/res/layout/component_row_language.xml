@@ -18,7 +18,9 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="UseAppTint">
 
     <TextView
         android:id="@+id/languageName"
@@ -30,7 +32,7 @@
         android:layout_marginBottom="16dp"
         android:background="#00000000"
         android:text="TextView"
-        android:textColor="@color/black"
+        android:textColor="?attr/colorTextLevel1"
         android:textSize="17sp"
         android:textStyle="normal"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -49,11 +51,11 @@
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="8dp"
         android:src="@drawable/check_icon"
-        android:tint="@color/very_dark_gray"
+        android:tint="?attr/colorTextLevel4"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1"
-        app:layout_constraintStart_toEndOf="@+id/textRowRecent"
+        app:layout_constraintStart_toEndOf="@+id/languageName"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

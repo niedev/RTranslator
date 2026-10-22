@@ -211,7 +211,7 @@ public class ButtonSearch extends AppCompatImageButton {
 
     public Drawable getDrawable(int id) {
         Drawable drawable = getResources().getDrawable(id, null);
-        drawable.setTintList(GuiTools.getColorStateList(getContext(), R.color.primary));
+        drawable.setTintList(GuiTools.getColorStateList(getContext(), R.attr.colorPrimaryStrong));
         return drawable;
     }
 }

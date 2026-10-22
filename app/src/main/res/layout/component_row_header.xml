@@ -32,7 +32,7 @@
         android:layout_marginBottom="8dp"
         android:fontFamily="@font/nunito_sans"
         android:text="TextView"
-        android:textColor="@color/primary_lite"
+        android:textColor="?attr/colorPrimaryLite"
         android:textSize="12sp"
         android:textStyle="bold"
         android:clickable="false"

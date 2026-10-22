@@ -16,13 +16,16 @@
 
 package nie.translator.rtranslator.settings;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toolbar;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -46,12 +49,28 @@ public class SettingsActivity extends GeneralActivity {
         setContentView(R.layout.activity_settings);
 
         Toolbar toolbar = findViewById(R.id.toolbarSettings);
-        setActionBar(toolbar);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setDisplayShowHomeEnabled(true);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        Drawable icon = toolbar.getNavigationIcon();
+
+        if (icon != null) {
+            TypedValue color = new TypedValue();
+            toolbar.getContext().getTheme().resolveAttribute(
+                    R.attr.colorPrimaryStrong, color, true);
+
+            icon = DrawableCompat.wrap(icon).mutate();
+            DrawableCompat.setTint(icon, color.data);
+            toolbar.setNavigationIcon(icon);
+        }
 
         View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        decorView.setSystemUiVisibility(
+                decorView.getSystemUiVisibility()
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        );
 
         Bundle b = getIntent().getExtras();
         boolean startWithModelManager = b != null && b.getBoolean("startWithModelManager");

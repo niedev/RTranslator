@@ -149,6 +149,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         userNamePreference = (UserNamePreference) findPreference("changeName");
         userNamePreference.setActivity(activity);
 
+        // theme preference initialization
+        ThemePreference themePreference = (ThemePreference) findPreference("theme");
+        themePreference.initialize(activity);
+
         // change microphone sensibility initialization
         SeekBarPreference micSensibilityPreference = (SeekBarPreference) findPreference("micSensibilitySetting");
         micSensibilityPreference.initialize(activity, SeekBarPreference.MIC_SENSIBILITY_MODE);

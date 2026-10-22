@@ -67,6 +67,10 @@
     <string name="options">Options</string>
     <string name="from">from</string>
     <string name="to">to</string>
+    <string name="theme">Theme</string>
+    <string name="system_default">System default</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
 
     <string name="description_button_tts_manual">Manual message reading</string>
     <string name="description_button_tts_auto">Automatic message reading</string>

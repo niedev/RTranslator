@@ -13,7 +13,7 @@
         android:layout_marginBottom="8dp"
         android:fontFamily="sans-serif-medium"
         android:text="Installed"
-        android:textColor="@color/accent"
+        android:textColor="?attr/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

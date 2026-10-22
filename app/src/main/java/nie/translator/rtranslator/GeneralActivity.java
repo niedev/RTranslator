@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
 import javax.annotation.Nullable;
@@ -29,7 +30,7 @@ import javax.annotation.Nullable;
 import nie.translator.rtranslator.access.AccessActivity;
 
 
-public abstract class GeneralActivity extends FragmentActivity {
+public abstract class GeneralActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@androidx.annotation.Nullable Bundle savedInstanceState) {

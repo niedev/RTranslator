@@ -3,8 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:fitsSystemWindows="true"
-    android:accessibilityPaneTitle="@string/preference_title_models_manager">
+    android:accessibilityPaneTitle="@string/preference_title_models_manager"
+    tools:ignore="UseAppTint">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"
@@ -25,7 +27,7 @@
                 android:layout_marginTop="16dp"
                 android:text="@string/translation_model"
                 android:fontFamily="sans-serif-medium"
-                android:textColor="@color/accent"
+                android:textColor="?attr/colorAccent"
                 android:layout_marginStart="16dp"
                 android:accessibilityHeading="true"/>
             <worker8.com.github.radiogroupplus.RadioGroupPlus
@@ -67,7 +69,7 @@
                             android:layout_marginStart="8dp"
                             android:layout_marginBottom="2dp"
                             android:text="@string/performance"
-                            android:textColor="@color/very_very_dark_gray"
+                            android:textColor="?attr/colorTextLevel2"
                             android:textSize="18sp"
                             android:textStyle="bold"
                             android:focusable="false"
@@ -107,7 +109,7 @@
                             app:layout_constraintStart_toEndOf="@+id/titleMozilla"
                             app:layout_constraintTop_toTopOf="@+id/titleMozilla"
                             android:src="@drawable/right_arrow_icon"
-                            android:tint="@color/very_dark_gray" />
+                            android:tint="?attr/colorTextLevel4" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -203,7 +205,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
                         android:text="@string/title_mozilla_voice"
-                        android:textColor="@color/very_very_dark_gray"
+                        android:textColor="?attr/colorTextLevel2"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:focusable="false"
@@ -228,7 +230,7 @@
                         app:layout_constraintTop_toBottomOf="@+id/titleMozillaForVoice"
                         app:layout_constraintVertical_bias="0.0" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
-                <com.google.android.material.switchmaterial.SwitchMaterial
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchMozillaForVoiceModes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -243,7 +245,7 @@
                 android:layout_marginTop="16dp"
                 android:text="@string/speech_recognition_model"
                 android:fontFamily="sans-serif-medium"
-                android:textColor="@color/accent"
+                android:textColor="?attr/colorAccent"
                 android:layout_marginStart="16dp"
                 android:accessibilityHeading="true"/>
             <LinearLayout
@@ -268,7 +270,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
                         android:text="@string/title_whisper_ram_reduction"
-                        android:textColor="@color/very_very_dark_gray"
+                        android:textColor="?attr/colorTextLevel2"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:focusable="false"
@@ -293,7 +295,7 @@
                         app:layout_constraintTop_toBottomOf="@+id/titleWhisperReducedRam"
                         app:layout_constraintVertical_bias="0.0" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
-                <com.google.android.material.switchmaterial.SwitchMaterial
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchWhisperReducedRam"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -308,7 +310,7 @@
                 android:layout_marginTop="16dp"
                 android:text="@string/translation_enhancements"
                 android:fontFamily="sans-serif-medium"
-                android:textColor="@color/accent"
+                android:textColor="?attr/colorAccent"
                 android:layout_marginStart="16dp"
                 android:accessibilityHeading="true"/>
             <LinearLayout
@@ -327,7 +329,7 @@
                     app:modelSize="596"
                     app:modelTitle="Tatoeba"
                     android:layout_weight="2"/>
-                <com.google.android.material.switchmaterial.SwitchMaterial
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchTatoeba"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -359,7 +361,7 @@
                         android:text="@string/translation_dictionaries"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/very_very_dark_gray"
+                        android:textColor="?attr/colorTextLevel2"
                         android:focusable="false"
                         android:labelFor="@id/switchTranslationDict"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -386,7 +388,7 @@
                         app:layout_constraintVertical_bias="0.0" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
-                <com.google.android.material.switchmaterial.SwitchMaterial
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchTranslationDict"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -407,7 +409,7 @@
                     android:layout_marginTop="32dp"
                     android:layout_marginEnd="16dp"
                     android:layout_marginBottom="16dp"
-                    app:backgroundColor="@color/very_very_light_gray"
+                    app:backgroundColor="?attr/colorBackgroundStrong"
                     app:cornerRadius="8dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -544,11 +546,11 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="40dp"
                 android:layout_marginBottom="16dp"
-                android:backgroundTint="@color/primary"
+                android:backgroundTint="?attr/colorPrimary"
                 android:elevation="2dp"
                 android:stateListAnimator="@null"
                 android:text="@string/apply"
-                android:textColor="@color/white"
+                android:textColor="?attr/colorTextInverted"
                 app:cornerRadius="24dp"
                 android:layout_gravity="center"/>
         </LinearLayout>

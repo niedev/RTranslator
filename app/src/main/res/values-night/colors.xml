@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- colors for the widget-->
+    <color name="widget_background">@color/primary_very_very_dark</color>
+    <color name="widget_icon">@color/primary_lite</color>
+</resources>

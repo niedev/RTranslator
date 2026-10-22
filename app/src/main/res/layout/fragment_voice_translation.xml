@@ -20,7 +20,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/accent_white">
+    android:background="?attr/colorBackgroundLite">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -69,7 +69,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
-                android:textColor="@color/light_gray"
+                android:textColor="?attr/colorTextLevel7"
                 tools:text="@string/description_conversation" />
         </ScrollView>
     </androidx.constraintlayout.widget.ConstraintLayout>

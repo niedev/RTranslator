@@ -57,7 +57,7 @@
         android:requestLegacyExternalStorage="true"
         android:largeHeap="true"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Speech"
+        android:theme="@style/Theme.RTranslator"
         android:enableOnBackInvokedCallback="false"
         tools:ignore="GoogleAppIndexingWarning,NewApi">
         <activity
@@ -80,27 +80,23 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenLayout|screenSize"
-            android:windowSoftInputMode="adjustResize|stateHidden"
-            android:theme="@style/Theme.Speech" />
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
             android:name="nie.translator.rtranslator.settings.SettingsActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.Settings"
             android:label="@string/title_activity_settings" />
         <activity
             android:name="nie.translator.rtranslator.access.AccessActivity"
             android:exported="true"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.Speech" />
+            android:launchMode="singleTask" />
         <activity android:name="nie.translator.rtranslator.GeneralActivity" />
         <activity android:name="nie.translator.rtranslator.tools.ImageActivity"
             android:exported="true"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.Speech"/>
+            android:launchMode="singleTask" />
         <activity
             android:name="nie.translator.rtranslator.voice_translation.FullScreenTextActivity"
-            android:theme="@style/Theme.MaterialComponents.NoActionBar"
+            android:theme="@style/Theme.RTranslator.FullScreen"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
 
         <service android:name="nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationService"

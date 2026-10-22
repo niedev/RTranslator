@@ -16,55 +16,13 @@
     *-->
 
 <resources>
-
-    <!-- Base application theme. -->
-    <style name="Theme.Speech" parent="Theme.MaterialComponents.Light.NoActionBar">  <!-- Theme.AppCompat.Light.DarkActionBar-->
-        <item name="color">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
-        <item name="colorPrimary">@color/primary</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="cardViewStyle">@style/CardView</item>
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+    <style name="TextAppearance.RTranslator.ToolbarTitle" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textSize">22sp</item>
+        <item name="android:fontFamily">@font/nunito_sans_semibold</item>
     </style>
 
-    <style name="Theme.Settings" parent="Theme.MaterialComponents.Light.NoActionBar">  <!-- Theme.AppCompat.Light.DarkActionBar-->
-        <item name="color">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
-        <item name="colorPrimary">@color/primary</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:statusBarColor">@color/primary_very_lite</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="cardViewStyle">@style/CardView</item>
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
-    </style>
-
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar" />
-
-    <style name="Theme.App.Starting" parent="Theme.SplashScreen.IconBackground">
-        <!-- Set the splash screen background -->
-        <item name="windowSplashScreenBackground">@android:color/white</item>
-        <!-- Set a background behind the splash screen icon. -->
-        <item name="windowSplashScreenIconBackgroundColor">@android:color/white</item>
-        <!-- Use windowSplashScreenAnimatedIcon to add a drawable or an animated drawable. -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_screen</item>
-        <!-- Set the theme of the Activity that follows your splash screen. -->
-        <item name="postSplashScreenTheme">@style/Theme.Speech</item>
-    </style>
-
-    <style name="Theme.Toolbar" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="android:textColorPrimary">@color/primary_very_dark</item>
-        <item name="android:textColorSecondary">@color/primary_very_dark</item>
-    </style>
-
-    <style name="Theme.TabLayout" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="android:textSize">13sp</item>
-        <item name="android:fontFamily">sans-serif-light</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textAllCaps">true</item>
+    <style name="Widget.RTranslator.Button" parent="Widget.MaterialComponents.Button">
+        <item name="rippleColor">#33000000</item>   <!-- This will make ripple effects dark even if the colorOnPrimary is white -->
     </style>
 
     <style name="CustomCardViewStyle" parent="@style/Widget.MaterialComponents.CardView">
@@ -81,11 +39,12 @@
 
     <style name="MyThemeOverlay.MaterialComponents.MaterialAlertDialog" parent="@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.RTranslator.Dialog.Rounded</item>
-        <item name="colorSurface">@color/primary_very_lite</item>
+        <item name="colorSurface">?attr/colorBackgroundColoredDialog</item>
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 
     <style name="MyThemeOverlay.MaterialComponents.MaterialAlertDialogWithTitle" parent="@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-        <item name="colorSurface">@color/accent_white</item>
+        <item name="colorSurface">?attr/colorBackground</item>
         <item name="android:windowBackground">@drawable/bg_custom_material_dialog</item>
         <item name="android:backgroundDimAmount">0.7</item>
     </style>

@@ -45,7 +45,7 @@
             android:id="@+id/editText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/white"
+            android:backgroundTint="?attr/colorBackground"
             android:inputType="textPersonName"
             android:maxLength="18"
             android:paddingStart="16dp"

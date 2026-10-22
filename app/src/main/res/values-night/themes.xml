@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Lite application theme. -->
+    <style name="Theme.RTranslator" parent="Theme.MaterialComponents.DayNight.NoActionBar">  <!-- Theme.AppCompat.Light.DarkActionBar-->
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="color">@color/primary_lite</item>
+        <item name="colorPrimary">@color/primary_lite</item>
+        <item name="colorPrimaryAlt">@color/primary</item>
+        <item name="colorPrimaryStrong">@color/primary_lite</item>
+        <item name="colorPrimaryLite">@color/primary_dark</item>
+        <item name="colorAccent">@color/primary</item>
+        <item name="colorError">@color/red</item>
+        <item name="colorDeactivated">@color/gray</item>
+        <item name="colorDeactivatedLite">@color/light_black</item>
+
+        <item name="colorBackground">@color/light_black</item>
+        <item name="colorBackgroundStrong">@color/very_light_black</item>
+        <item name="colorBackgroundLite">@color/black</item>
+        <item name="colorBackgroundColored">@color/primary_very_very_dark</item>
+
+        <item name="colorBackgroundColoredDialog">@color/primary_very_very_dark_light</item>
+        <item name="colorBackgroundDialog">@color/light_black</item>
+
+        <item name="colorBackgroundMessageSend">@color/secondary_very_very_dark</item>
+        <item name="colorBackgroundMessageReceived">@color/light_black</item>
+
+        <item name="colorTextLevel0">@color/white</item>
+        <item name="colorTextLevel1">@color/very_very_light_gray</item>
+        <item name="colorTextLevel2">@color/very_light_gray</item>
+        <item name="colorTextLevel3">@color/light_gray</item>
+        <item name="colorTextLevel4Plus">@color/gray_plus</item>
+        <item name="colorTextLevel4">@color/gray</item>
+        <item name="colorTextLevel5">@color/dark_gray</item>
+        <item name="colorTextLevel6">@color/dark_gray</item>
+        <item name="colorTextLevel7">@color/very_very_dark_gray</item>
+        <item name="colorTextInverted">@color/light_black</item>
+
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">?attr/colorBackgroundLite</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="cardViewStyle">@style/CardView</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="materialButtonStyle">@style/Widget.RTranslator.Button</item>
+        <!--<item name="android:enforceNavigationBarContrast">false</item>-->
+    </style>
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen.IconBackground">
+        <!-- Set the splash screen background -->
+        <item name="windowSplashScreenBackground">@color/black</item>
+        <!-- Set a background behind the splash screen icon. -->
+        <item name="windowSplashScreenIconBackgroundColor">@color/black</item>
+        <!-- Use windowSplashScreenAnimatedIcon to add a drawable or an animated drawable. -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_screen</item>
+        <!-- Set the theme of the Activity that follows your splash screen. -->
+        <item name="postSplashScreenTheme">@style/Theme.RTranslator</item>
+    </style>
+</resources>

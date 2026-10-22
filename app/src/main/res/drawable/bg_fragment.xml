@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Base color: header, status-bar area and exposed corners. -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorBackgroundColored" />
+        </shape>
+    </item>
+
+    <!-- Bottom strip: same color as the bottom card. -->
+    <item
+        android:height="60dp"
+        android:gravity="bottom|fill_horizontal">
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorBackgroundLite" />
+        </shape>
+    </item>
+
+</layer-list>

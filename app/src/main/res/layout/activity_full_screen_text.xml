@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="?attr/colorBackground"
+    tools:ignore="UseAppTint">
 
     <TextView
         android:id="@+id/fullscreen_text_view"
@@ -14,7 +15,7 @@
         android:layout_gravity="center"
         android:gravity="center"
         android:padding="24dp"
-        android:textColor="@color/light_black"
+        android:textColor="?attr/colorTextLevel2"
         android:textSize="32sp"
         android:textStyle="bold"
         app:autoSizeTextType="uniform"
@@ -36,7 +37,7 @@
         android:src="@drawable/fullscreen_exit_icon"
         android:scaleType="fitXY"
         android:padding="12dp"
-        android:tint="@color/very_very_dark_gray"
+        android:tint="?attr/colorTextLevel3"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
