@@ -21,6 +21,8 @@
 #include "protobuf/dictionary_data.pb.h"
 #include <memory>
 #include "libs/sqlite4java/include/sqlite3.h"
+#include <future>
+#include <chrono>
 
 
 struct DictionaryContainer{
@@ -41,6 +43,9 @@ static std::string databasePath;
 void initializeService(const std::string& dbPath) {
     std::lock_guard <std::mutex> lock(service_mutex);
     databasePath = dbPath;
+    __android_log_print(
+            ANDROID_LOG_INFO, "DictionaryTranslator",
+            "SQLite SQLITE_THREADSAFE=%d", sqlite3_threadsafe());
 }
 
 std::shared_ptr<mydata::DataMap> getDictData(const std::string& lang, const bool toEnglish) {
@@ -48,16 +53,26 @@ std::shared_ptr<mydata::DataMap> getDictData(const std::string& lang, const bool
     sqlite3_stmt* stmt;
     std::shared_ptr<mydata::DataMap> result = nullptr;
 
-    if (sqlite3_open_v2(databasePath.c_str(), &db, SQLITE_OPEN_READONLY, NULL) != SQLITE_OK) {
+    //auto start = std::chrono::steady_clock::now();
+
+    if (sqlite3_open_v2(databasePath.c_str(), &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
+        sqlite3_close(db);
         return {};
     }
 
     const char* sql = "SELECT data FROM dictionaries WHERE srcLang = ? AND toEnglish = ? LIMIT 1";
 
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
         // Bind arguments
         sqlite3_bind_text(stmt, 1, lang.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_int(stmt, 2, toEnglish ? 1 : 0);
+
+        /*double elapsedMs = std::chrono::duration<double, std::milli>(
+                std::chrono::steady_clock::now() - start).count();
+        __android_log_print(
+                ANDROID_LOG_INFO, "dict_native_perf",
+                "Open connection toEng=%d: %.2f ms", toEnglish ? 1:0, elapsedMs);
+        start = std::chrono::steady_clock::now();*/
 
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             // Get pointer to the BLOB memory
@@ -66,12 +81,27 @@ std::shared_ptr<mydata::DataMap> getDictData(const std::string& lang, const bool
             // Get the size of the BLOB in bytes
             int blobSize = sqlite3_column_bytes(stmt, 0);
 
+            /*elapsedMs = std::chrono::duration<double, std::milli>(
+                    std::chrono::steady_clock::now() - start).count();
+            __android_log_print(
+                    ANDROID_LOG_INFO, "dict_native_perf",
+                    "Read BLOB toEng=%d: %.2f ms", toEnglish ? 1:0, elapsedMs);
+            start = std::chrono::steady_clock::now();*/
+
             if (blobPtr != nullptr && blobSize > 0) {
-                // Parsing with Protobuf
-                auto dataMap = std::make_shared<mydata::DataMap>();
+                // Parsing with Protobuf (with arena for speed improvement)
+                auto arena = std::make_shared<google::protobuf::Arena>(); // The returned shared_ptr keeps the arena and its messages alive together.
+                auto* dataMap =
+                        google::protobuf::Arena::CreateMessage<mydata::DataMap>(arena.get());
+
                 if (dataMap->ParseFromArray(blobPtr, blobSize)) {
-                    result = std::move(dataMap);
+                    result = std::shared_ptr<mydata::DataMap>(arena, dataMap);
                 }
+                /*elapsedMs = std::chrono::duration<double, std::milli>(
+                        std::chrono::steady_clock::now() - start).count();
+                __android_log_print(
+                        ANDROID_LOG_INFO, "dict_native_perf",
+                        "Parse BLOB toEng=%d: %.2f ms", toEnglish ? 1:0, elapsedMs);*/
             }
         }
     }
@@ -85,10 +115,22 @@ void loadTranslationDictionary(const std::string& lang) {
     std::lock_guard <std::mutex> lock(service_mutex);
 
     if (dict_cache.find(lang) == dict_cache.end()) {
-        auto toEngDict = getDictData(lang, true);
+        /*auto toEngDict = getDictData(lang, true);
         auto fromEngDict = getDictData(lang, false);
         if(toEngDict != nullptr && fromEngDict != nullptr) {
             dict_cache[lang] = std::make_shared<DictionaryContainer>(toEngDict, fromEngDict);
+        }*/
+        // Each load owns its SQLite connection and Protobuf object.
+        auto toEnglish = std::async(std::launch::async, [lang] {
+            return getDictData(lang, true);
+        });
+        auto fromEnglishDict = getDictData(lang, false);
+        auto toEnglishDict = toEnglish.get();
+
+        // Publish only after both dictionaries have loaded successfully.
+        if (toEnglishDict && fromEnglishDict) {
+            dict_cache[lang] = std::make_shared<DictionaryContainer>(
+                    std::move(toEnglishDict), std::move(fromEnglishDict));
         }
     }
 }

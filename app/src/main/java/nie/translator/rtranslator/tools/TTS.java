@@ -197,9 +197,11 @@ public class TTS {
 
         @Override
         public void run() {
+            long time = System.currentTimeMillis();
             tempTts = new TTS((context), new TTS.InitListener() {    // tts initialization (to be improved, automatic package installation)
                 @Override
                 public void onInit() {
+                    android.util.Log.i("performance_lang", "TTS init: " + (System.currentTimeMillis() - time) + "ms");
                     Set<Voice> set = tempTts.getVoices();
                     SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
                     boolean qualityLow = sharedPreferences.getBoolean("languagesQualityLow", false);

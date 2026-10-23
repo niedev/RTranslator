@@ -165,15 +165,23 @@ public class LoadingActivity extends GeneralActivity {
     private void initializeApp(boolean ignoreTTSError) {
         Log.i("app", "App initialization");
         adaptResourcesPreferencesToDownloads();
+        final long initTime = System.currentTimeMillis();
+        final long[] time = {System.currentTimeMillis()};
         global.getLanguagesAndCheckTTS(false, ignoreTTSError, new Global.GetLocalesListListener() {
             @Override
             public void onSuccess(ArrayList<CustomLocale> result) {
+                android.util.Log.i("performance_init", "Language list initialization: " + (System.currentTimeMillis() - time[0]) + "ms");
+                time[0] = System.currentTimeMillis();
                 global.initializeTranslator(new Translator.GeneralListener() {
                     @Override
                     public void onSuccess() {
+                        android.util.Log.i("performance_init", "Translator initialization: " + (System.currentTimeMillis() - time[0]) + "ms");
+                        time[0] = System.currentTimeMillis();
                         NeuralNetworkApi.InitListener speechRecognizerInitListener = new NeuralNetworkApi.InitListener() {
                             @Override
                             public void onInitializationFinished() {
+                                android.util.Log.i("performance_init", "Speech recognizer initialization: " + (System.currentTimeMillis() - time[0]) + "ms");
+                                android.util.Log.i("performance_init", "App initialization: " + (System.currentTimeMillis() - initTime) + "ms");
                                 global.setModelsLoaded(true);
                                 if (isVisible) {
                                     startVoiceTranslationActivity();

@@ -70,6 +70,7 @@ public class LanguageResourcesManager {
             CustomLocale secondLanguage
     ) throws Exception {
 
+        long time = System.currentTimeMillis();
         this.global = global;
         String basePath;
         if(Global.USE_EXTERNAL_MEMORY_FOR_RESOURCES){
@@ -82,8 +83,12 @@ public class LanguageResourcesManager {
         tatoebaDb = new TatoebaDbWrapper(tatoebaDbPath);
         BergamotTranslator.initializeService();
         DictionaryTranslator.initializeService(translationDictionariesDbPath);
-        //we load the deu translation dictionary (to and from English) because it will be used for the LID for the English language (I chose to use the deu dict because it is by far the biggest)
+        Log.d("perf_lang_res", "Initializing lang res manager in "+(System.currentTimeMillis()-time)+" ms");
+        // we load the deu translation dictionary (to and from English) because it will be used for the LID for the English language (I chose to use the deu dict because it is by far the biggest)
+        time = System.currentTimeMillis();
         DictionaryTranslator.loadDictionary(new CustomLocale("deu"));
+        Log.d("perf_lang_res", "Loaded eng dict for LID in "+(System.currentTimeMillis()-time)+" ms");
+        // load the resources
         setStatus(useMozillaForTranslation, useMozillaForVoiceTranslation, useTatoeba, useTranslationDictionaries,
                 firstTextLanguage, secondTextLanguage, firstLanguage, secondLanguage, null);
     }
@@ -506,7 +511,8 @@ public class LanguageResourcesManager {
     }
 
     private void performLoadLanguageResources(@NonNull CustomLocale srcLang, @NonNull CustomLocale tgtLang, Global.RTranslatorMode rtranslatorMode) throws Exception {
-        Log.d("language_resources", "Language loaded: "+srcLang.getLanguage());
+        Log.d("lang_res", "Language pair loaded: "+srcLang.getLanguage() +" - "+tgtLang.getLanguage());
+        long initTime = System.currentTimeMillis();
         long time = System.currentTimeMillis();
         if(isMozillaEnabled(rtranslatorMode)){
             if (!srcLang.getLanguage().equals("en")) {
@@ -515,16 +521,20 @@ public class LanguageResourcesManager {
             if (!tgtLang.getLanguage().equals("en")) {
                 BergamotTranslator.loadModelIntoCache(global, tgtLang);
             }
+            Log.d("perf_lang_res", "Mozilla loading for "+srcLang.getLanguage() +" - "+tgtLang.getLanguage() +" in "+(System.currentTimeMillis()-time)+" ms");
         }
         if(useTranslationDictionaries || rtranslatorMode == Global.RTranslatorMode.WALKIE_TALKIE_MODE){  // WalkieTalkie mode must always have dicts loaded for LID
+            time = System.currentTimeMillis();
             if (!srcLang.getISO3Language().equals("eng")) {
                 DictionaryTranslator.loadDictionary(srcLang);
             }
             if (!tgtLang.getISO3Language().equals("eng")) {
                 DictionaryTranslator.loadDictionary(tgtLang);
             }
+            Log.d("perf_lang_res", "Dicts loading for "+srcLang.getLanguage() +" - "+tgtLang.getLanguage() +" in "+(System.currentTimeMillis()-time)+" ms");
         }
         if(useTatoeba){
+            time = System.currentTimeMillis();
             String langPairCode = srcLang.getISO3Language() + "-" + tgtLang.getISO3Language();
             if(!tatoebaLinks.containsKey(langPairCode)){
                 LinksData.DataMap links = tatoebaDb.getLinkData(srcLang.getISO3Language(), tgtLang.getISO3Language());
@@ -533,13 +543,16 @@ public class LanguageResourcesManager {
                         links
                 );
             }
+            Log.d("perf_lang_res", "Tatoeba loading for "+srcLang.getLanguage() +" - "+tgtLang.getLanguage() +" in "+(System.currentTimeMillis()-time)+" ms");
         }
         //load of lingua resources for language detection in walkieTalkie mode
         if(rtranslatorMode == Global.RTranslatorMode.WALKIE_TALKIE_MODE) {
+            time = System.currentTimeMillis();
             if(linguaLanguageDetector != null) linguaLanguageDetector.unloadLanguageModels();
             linguaLanguageDetector = buildDetectorFromLocales(new CustomLocale[]{srcLang, tgtLang});
+            Log.d("perf_lang_res", "Lingua LID loading for "+srcLang.getLanguage() +" - "+tgtLang.getLanguage() +" in "+(System.currentTimeMillis()-time)+" ms");
         }
-        Log.d("performance_resources", "Resources loaded in: "+(System.currentTimeMillis()-time));
+        Log.d("perf_lang_res", "Resources loaded in: "+(System.currentTimeMillis()-initTime));
     }
 
     private static LanguageDetector buildDetectorFromLocales(CustomLocale[] locales) {

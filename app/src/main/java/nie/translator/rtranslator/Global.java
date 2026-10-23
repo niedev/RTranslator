@@ -226,9 +226,11 @@ public class Global extends Application implements DefaultLifecycleObserver {
         if (recycleResult && !languages.isEmpty()) {
             responseListener.onSuccess(languages);
         } else {
+            long time = System.currentTimeMillis();
             TTS.getSupportedLanguages(this, new TTS.SupportedLanguagesListener() {    //we load TTS languages to catch eventual TTS errors
                 @Override
                 public void onLanguagesListAvailable(ArrayList<CustomLocale> ttsLanguages) {
+                    android.util.Log.i("performance_lang", "TTS language loading: " + (System.currentTimeMillis() - time) + "ms");
                     responseListener.onSuccess(getLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, recycleResult));
                 }
 
@@ -264,6 +266,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
 
         // recycleResult is false
+        long time = System.currentTimeMillis();
         SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
         int mode;
         if(translator != null){
@@ -274,6 +277,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         boolean qualityLow = sharedPreferences.getBoolean("languagesNNQualityLow", false);
         ArrayList<CustomLocale> languages = Translator.getSupportedLanguages(Global.this, qualityLow, mode);  //in the case of mozilla, this method will return all the supported languages, not only the installed ones, so for mozilla we will use the getMozillaLanguages method
         ArrayList<CustomLocale> mozillaLanguages = getMozillaLanguages(false);
+        android.util.Log.i("performance_lang", "Translator language loading: " + (System.currentTimeMillis() - time) + "ms");
         if(mode == Translator.MOZILLA) {
             translatorLanguages = mozillaLanguages;
             return mozillaLanguages;

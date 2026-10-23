@@ -1,8 +1,11 @@
 package nie.translator.rtranslator.databases.tatoeba;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.protobuf.CodedInputStream;
 import com.niedev.sqlite4java.SQLiteConnection;
 import com.niedev.sqlite4java.SQLiteException;
 import com.niedev.sqlite4java.SQLiteStatement;
@@ -86,13 +89,15 @@ public class TatoebaDbWrapper {
     }
 
     @Nullable
-    public LinksData.DataMap getLinkData(String srcLang,
-                                         String tgtLang) {
+    public LinksData.DataMap getLinkData(String srcLang, String tgtLang) {
+        //long time = System.currentTimeMillis();
         LinksData.DataMap result = null;
         SQLiteConnection database = new SQLiteConnection(dbFile);
         SQLiteStatement st = null;
         try {
             database.openReadonly();
+            //Log.d("perf_tatoeba_db", "Tatoeba connection db in "+(System.currentTimeMillis()-time)+" ms");
+            //time = System.currentTimeMillis();
             st = database.prepare(
                     "SELECT data FROM links WHERE srcLang = ? AND tgtLang = ? LIMIT 1"
             );
@@ -100,10 +105,17 @@ public class TatoebaDbWrapper {
             st.bind(2, tgtLang);
 
             if (st.step()) {
+                //Log.d("perf_tatoeba_db", "Tatoeba search db in "+(System.currentTimeMillis()-time)+" ms");
+                //time = System.currentTimeMillis();
+
                 // Key point: stream the BLOB (no CursorWindow)
                 try (InputStream in = st.columnStream(0)) {
+                    /*CodedInputStream input = CodedInputStream.newInstance(in, 64 * 1024);
+                    result = LinksData.DataMap.parseFrom(input);
+                    input.checkLastTagWas(0);*/
                     result = LinksData.DataMap.parseFrom(in);
                 }
+                //Log.d("perf_tatoeba_db", "Tatoeba blob fetch db in "+(System.currentTimeMillis()-time)+" ms");
             }
         } catch (Exception e) {
             e.printStackTrace();

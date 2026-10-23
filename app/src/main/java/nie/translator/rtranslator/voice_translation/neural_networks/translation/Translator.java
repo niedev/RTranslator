@@ -38,9 +38,14 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -50,6 +55,7 @@ import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OnnxValue;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
+import ai.onnxruntime.OrtLoggingLevel;
 import ai.onnxruntime.OrtSession;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
@@ -124,6 +130,7 @@ public class Translator extends NeuralNetworkApi {
         final Thread t = new Thread("textTranslation") {
             public void run() {
                 try {
+                    long initTime = System.currentTimeMillis();
                     int oldMode = Translator.this.mode;
                     Translator.this.mode = modelMode;
                     if(oldMode != modelMode) {
@@ -138,6 +145,8 @@ public class Translator extends NeuralNetworkApi {
                         if (mode != MOZILLA) {
                             onnxTranslationModelInitialization();
                         }
+                        android.util.Log.i("performance_init", "Onnx models initialization: " + (System.currentTimeMillis() - initTime) + "ms");
+                        initTime = System.currentTimeMillis();
                     }
 
                     // translation resources update (or initialization) (N.B. mozilla models are translation resources)
@@ -156,12 +165,15 @@ public class Translator extends NeuralNetworkApi {
                         languageResourcesManager.setStatus(mode == MOZILLA, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts,
                                 firstTextLanguage, secondTextLanguage, firstLanguage, secondLanguage, language);
                     }
+                    android.util.Log.i("performance_init", "Lang resources initialization: " + (System.currentTimeMillis() - initTime) + "ms");
+                    initTime = System.currentTimeMillis();
 
                     //eventual initialization of language detector (it must happen after the language resources initialization)
                     if(languageDetector == null) {
                         languageDetector = new LanguageDetector();
                         languageDetector.initialize(global, languageResourcesManager);
                     }
+                    android.util.Log.i("performance_init", "LanguageDetector initialization: " + (System.currentTimeMillis() - initTime) + "ms");
                     mainHandler.post(() -> listener.onSuccess());
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -243,7 +255,7 @@ public class Translator extends NeuralNetworkApi {
             }
         }
         if(onnxEnv == null) {
-            onnxEnv = OrtEnvironment.getEnvironment();
+            onnxEnv = OrtEnvironment.getEnvironment(/*OrtLoggingLevel.ORT_LOGGING_LEVEL_VERBOSE*/);
         }
         //we eventually transfer the NLLB vocab file from the assets to the internal memory (because the tokenizer can open vocab only via a path to internal or external memory)
         File outFile = new File(global.getFilesDir(), "sentencepiece_bpe.model");
@@ -251,6 +263,7 @@ public class Translator extends NeuralNetworkApi {
             FileTools.copyAssetToInternalMemory(global, "sentencepiece_bpe.model");
         }
 
+        // tokenizer initialization
         if(mode == MADLAD || mode == MADLAD_CACHE) {
             tokenizer = new Tokenizer(vocabPath, Tokenizer.MADLAD);
         }else if(mode == NLLB || mode == NLLB_CACHE) {
@@ -259,41 +272,81 @@ public class Translator extends NeuralNetworkApi {
             tokenizer = new Tokenizer(vocabPath, Tokenizer.HY_MT);
         }
 
-        final OrtSession.SessionOptions.OptLevel optDefaultLevel = OrtSession.SessionOptions.OptLevel.EXTENDED_OPT;
+        // we load the models (in parallel)
+        final OrtSession.SessionOptions.OptLevel optDefaultLevel = OrtSession.SessionOptions.OptLevel.NO_OPT;  //todo: revert to EXTENDED_OPT or optimize the models offline
         boolean arena = true;
 
-        OrtSession.SessionOptions decoderOptions = new OrtSession.SessionOptions();
-        decoderOptions.setMemoryPatternOptimization(arena);
-        decoderOptions.setCPUArenaAllocator(arena);
-        decoderOptions.setOptimizationLevel(optDefaultLevel);
-        decoderSession = onnxEnv.createSession(decoderPath, decoderOptions);
+        // Fixed ordering for assigning the results after loading:
+        // 0 = decoder, 1 = encoder, 2 = cache initializer, 3 = embedding.
+        String[] paths = mode == HY_MT
+                ? new String[]{decoderPath}
+                : new String[]{
+                decoderPath, encoderPath,
+                cacheInitializerPath, embedAndLmHeadPath
+        };
 
-        OrtSession.SessionOptions encoderOptions = new OrtSession.SessionOptions();
-        encoderOptions.setMemoryPatternOptimization(arena);
-        encoderOptions.setCPUArenaAllocator(arena);
-        encoderOptions.setOptimizationLevel(optDefaultLevel);
-        if(mode != HY_MT) encoderSession = onnxEnv.createSession(encoderPath, encoderOptions);
+        // One worker for each applicable session.
+        ExecutorService executor = Executors.newFixedThreadPool(paths.length);
+        List<CompletableFuture<OrtSession>> loads = new ArrayList<>(paths.length);
 
-        OrtSession.SessionOptions cacheInitOptions = new OrtSession.SessionOptions();
-        cacheInitOptions.setMemoryPatternOptimization(arena);
-        cacheInitOptions.setCPUArenaAllocator(arena);
-        cacheInitOptions.setOptimizationLevel(optDefaultLevel);
-        if(mode != HY_MT) cacheInitSession = onnxEnv.createSession(cacheInitializerPath, cacheInitOptions);
+        try {
+            // Submit ALL loads before waiting for any of them.
+            for (String path : paths) {
+                loads.add(CompletableFuture.supplyAsync(() -> {
+                    try (OrtSession.SessionOptions options = new OrtSession.SessionOptions()) {
+                        options.setMemoryPatternOptimization(arena);
+                        options.setCPUArenaAllocator(arena);
+                        options.setOptimizationLevel(optDefaultLevel);
+                        options.addConfigEntry("session.prepack.enable_parallel", "1");
+                        return onnxEnv.createSession(path, options);
+                    } catch (OrtException e) {
+                        throw new CompletionException(e);
+                    }
+                }, executor));
+            }
 
-        OrtSession.SessionOptions embedAndLmHeadOptions = new OrtSession.SessionOptions();
-        embedAndLmHeadOptions.setMemoryPatternOptimization(arena);
-        embedAndLmHeadOptions.setCPUArenaAllocator(arena);
-        embedAndLmHeadOptions.setOptimizationLevel(optDefaultLevel);
-        if (mode == MADLAD_CACHE) {
-            embedSession = onnxEnv.createSession(embedAndLmHeadPath, embedAndLmHeadOptions);
-        } else if(mode != HY_MT){
-            embedAndLmHeadSession = onnxEnv.createSession(embedAndLmHeadPath, embedAndLmHeadOptions);
+            // Blocks the caller until all loads finish, even if one fails.
+            CompletableFuture.allOf(
+                    loads.toArray(new CompletableFuture<?>[0])
+            ).join();
+
+            // All loads succeeded. These joins return immediately.
+            decoderSession = loads.get(0).join();
+            if (mode != HY_MT) {
+                encoderSession = loads.get(1).join();
+                cacheInitSession = loads.get(2).join();
+
+                if (mode == MADLAD_CACHE) {
+                    embedSession = loads.get(3).join();
+                } else {
+                    embedAndLmHeadSession = loads.get(3).join();
+                }
+            }
+        } catch (RuntimeException | Error e) {
+            Throwable cause = e instanceof CompletionException && e.getCause() != null
+                    ? e.getCause() : e;
+
+            // Finish submitted loads before closing any successful sessions.
+            CompletableFuture.allOf(loads.toArray(new CompletableFuture<?>[0]))
+                    .handle((result, error) -> null).join();
+
+            for (CompletableFuture<OrtSession> load : loads) {
+                if (!load.isCompletedExceptionally()) {
+                    try {
+                        load.join().close();
+                    } catch (OrtException closeFailure) {
+                        cause.addSuppressed(closeFailure);
+                    }
+                }
+            }
+
+            if (cause instanceof OrtException) throw (OrtException) cause;
+            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
+            if (cause instanceof Error) throw (Error) cause;
+            throw e;
+        } finally {
+            executor.shutdown();
         }
-
-        decoderOptions.close();
-        encoderOptions.close();
-        cacheInitOptions.close();
-        embedAndLmHeadOptions.close();
     }
 
     public void translate(final String textToTranslate, final CustomLocale languageInput, final CustomLocale languageOutput, int beamSize, boolean saveResults, Global.RTranslatorMode rtranslatorMode) {

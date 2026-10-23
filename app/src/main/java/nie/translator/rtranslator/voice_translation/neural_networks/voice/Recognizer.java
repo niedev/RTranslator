@@ -31,7 +31,13 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -191,42 +197,83 @@ public class Recognizer extends NeuralNetworkApi {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                String[] paths = {
+                        modelInitPath, cacheInitPath, cacheInitBatchPath,
+                        decoderPath, detokenizerPath
+                };
+
+                ExecutorService executor = Executors.newFixedThreadPool(6);
+                List<CompletableFuture<OrtSession>> loads = new ArrayList<>(6);
+                boolean initialized = false;
+
+                // we load the models (in parallel)
                 try {
-                    OrtSession.SessionOptions initSessionOptions = new OrtSession.SessionOptions();
-                    initSessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
-                    initSessionOptions.setCPUArenaAllocator(false);
-                    initSessionOptions.setMemoryPatternOptimization(false);
-                    initSessionOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
-                    initSession = onnxEnv.createSession(modelInitPath, initSessionOptions);
+                    // Submit ALL loads before waiting for any of them.
+                    for (int i = 0; i < paths.length+1; i++) {
+                        final int index = i;
+                        loads.add(CompletableFuture.supplyAsync(() -> {
+                            try {
+                                // Load the encoder alongside the other models.
+                                if (index == 5) {
+                                    initializeEncoderSession();
+                                    return encoderSession;
+                                }
 
-                    initializeEncoderSession();
+                                try (OrtSession.SessionOptions options = new OrtSession.SessionOptions()) {
+                                    //options.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
+                                    options.setCPUArenaAllocator(false);
+                                    options.setMemoryPatternOptimization(false);
+                                    options.addConfigEntry("session.prepack.enable_parallel", "1");
+                                    // Keep default optimization for the detokenizer and custom op registration.
+                                    if (index != 4) {
+                                        options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
+                                    }else{
+                                        options.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
+                                    }
+                                    return onnxEnv.createSession(paths[index], options);
+                                }
+                            } catch (OrtException e) {
+                                throw new CompletionException(e);
+                            }
+                        }, executor));
+                    }
 
-                    OrtSession.SessionOptions cacheSessionOptions = new OrtSession.SessionOptions();
-                    cacheSessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
-                    cacheSessionOptions.setCPUArenaAllocator(false);
-                    cacheSessionOptions.setMemoryPatternOptimization(false);
-                    cacheSessionOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
-                    cacheInitSession = onnxEnv.createSession(cacheInitPath, cacheSessionOptions);
-                    cacheInitBatchSession = onnxEnv.createSession(cacheInitBatchPath, cacheSessionOptions);
+                    // Wait for all six models before notifying the listener.
+                    CompletableFuture.allOf(loads.toArray(new CompletableFuture<?>[0])).join();
+                    initSession = loads.get(0).join();
+                    cacheInitSession = loads.get(1).join();
+                    cacheInitBatchSession = loads.get(2).join();
+                    decoderSession = loads.get(3).join();
+                    detokenizerSession = loads.get(4).join();
 
-                    OrtSession.SessionOptions decoderSessionOptions = new OrtSession.SessionOptions();
-                    decoderSessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
-                    decoderSessionOptions.setCPUArenaAllocator(false);
-                    decoderSessionOptions.setMemoryPatternOptimization(false);
-                    decoderSessionOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
-                    decoderSession = onnxEnv.createSession(decoderPath, decoderSessionOptions);
-
-                    OrtSession.SessionOptions detokenizerSessionOptions = new OrtSession.SessionOptions();
-                    detokenizerSessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
-                    detokenizerSessionOptions.setCPUArenaAllocator(false);
-                    detokenizerSessionOptions.setMemoryPatternOptimization(false);
-                    //detokenizerSessionOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
-                    detokenizerSession = onnxEnv.createSession(detokenizerPath, detokenizerSessionOptions);
-
+                    initialized = true;
                     initListener.onInitializationFinished();
                 } catch (Exception e) {
+                    if (!initialized) {
+                        // Finish pending loads and close every successfully loaded session.
+                        CompletableFuture.allOf(loads.toArray(new CompletableFuture<?>[0]))
+                                .handle((result, error) -> null).join();
+
+                        for (CompletableFuture<OrtSession> load : loads) {
+                            if (!load.isCompletedExceptionally()) {
+                                try {
+                                    load.join().close();
+                                } catch (OrtException closeFailure) {
+                                    e.addSuppressed(closeFailure);
+                                }
+                            }
+                        }
+
+                        // The encoder method assigns this field before the other loads finish.
+                        if (loads.size() == 6 && !loads.get(5).isCompletedExceptionally()) {
+                            encoderSession = null;
+                        }
+                    }
+
                     e.printStackTrace();
-                    initListener.onError(new int[]{ErrorCodes.ERROR_LOADING_MODEL},0);
+                    initListener.onError(new int[]{ErrorCodes.ERROR_LOADING_MODEL}, 0);
+                } finally {
+                    executor.shutdown();
                 }
             }
         }).start();
@@ -237,20 +284,22 @@ public class Recognizer extends NeuralNetworkApi {
         if(encoderSession != null){
             encoderSession.close();
         }
+
         // encoder session initialization
         String encoderPath = global.getFilesDir().getPath() + "/Whisper_encoder.onnx";
-        OrtSession.SessionOptions encoderSessionOptions = new OrtSession.SessionOptions();
-        encoderSessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
-        if(global.isWhisperReducedRam()){
-            encoderSessionOptions.setCPUArenaAllocator(false);
-            encoderSessionOptions.setMemoryPatternOptimization(false);
-        }else {
-            encoderSessionOptions.setCPUArenaAllocator(true);
-            encoderSessionOptions.setMemoryPatternOptimization(true);
+        try (OrtSession.SessionOptions encoderSessionOptions = new OrtSession.SessionOptions()) {
+            //encoderSessionOptions.registerCustomOpLibrary(OrtxPackage.getLibraryPath());
+            if (global.isWhisperReducedRam()) {
+                encoderSessionOptions.setCPUArenaAllocator(false);
+                encoderSessionOptions.setMemoryPatternOptimization(false);
+            } else {
+                encoderSessionOptions.setCPUArenaAllocator(true);
+                encoderSessionOptions.setMemoryPatternOptimization(true);
+            }
+            encoderSessionOptions.setSymbolicDimensionValue("batch_size", 1);
+            encoderSessionOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
+            encoderSession = onnxEnv.createSession(encoderPath, encoderSessionOptions);
         }
-        encoderSessionOptions.setSymbolicDimensionValue("batch_size", 1);
-        encoderSessionOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
-        encoderSession = onnxEnv.createSession(encoderPath, encoderSessionOptions);
     }
 
     /**
@@ -595,6 +644,7 @@ public class Recognizer extends NeuralNetworkApi {
     // this method returns only the languages of Whisper-small that have a minimum quality (wer <= 37%)
     // LANGUAGES instead contains all languages supported by Whisper and it is needed for generating the language ID
     public static ArrayList<CustomLocale> getSupportedLanguages(Context context) {
+        long time = System.currentTimeMillis();
         ArrayList<CustomLocale> languages = new ArrayList<>();
         SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
         boolean qualityLow = sharedPreferences.getBoolean("languagesNNQualityLow", false);
@@ -615,6 +665,7 @@ public class Recognizer extends NeuralNetworkApi {
                 languages.add(CustomLocale.getInstance(language));
             }
         }
+        android.util.Log.i("performance_lang", "Recognizer language loading: " + (System.currentTimeMillis() - time) + "ms");
         return languages;
     }
 
