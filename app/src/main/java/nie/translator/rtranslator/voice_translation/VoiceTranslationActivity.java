@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +41,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.TaskStackBuilder;
+import androidx.core.splashscreen.SplashScreen;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -99,7 +101,21 @@ public class VoiceTranslationActivity extends GeneralActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // This will maintain the splashscreen from the LoadingActivity and immediately drop it with
+        // a disappearing animation. This is the only way to have an animation for the disappearance of the splash screen.
+        SplashScreen splash = SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
+
+        splash.setOnExitAnimationListener(provider -> {
+            provider.getView()
+                    .animate()
+                    .alpha(0f)
+                    .setDuration(300L)
+                    .setInterpolator(new DecelerateInterpolator())
+                    .withEndAction(provider::remove)
+                    .start();
+        });
+
         setContentView(R.layout.activity_main);
         global = (Global) getApplication();
         mainHandler = new Handler(Looper.getMainLooper());
@@ -781,6 +797,18 @@ public class VoiceTranslationActivity extends GeneralActivity {
                 }
             }
         });
+    }
+
+    public void manageTTSError(){
+        Toast.makeText(this, "Error connecting to TTS", Toast.LENGTH_LONG).show();  //todo: convert text
+    }
+
+    public void manageTranslatorError(){
+
+    }
+
+    public void manageSpeechRecognizerError(){
+
     }
 
     public CoordinatorLayout getFragmentContainer() {

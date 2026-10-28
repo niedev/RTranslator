@@ -128,7 +128,7 @@ public class LanguageListAdapter extends BaseAdapter implements Filterable {
 
     private void initializeTTSLanguageList(Activity activity) {
         Global global = (Global) activity.getApplication();
-        global.getTTSLanguages(true, new Global.GetLocalesListListener() {
+        global.getTTSLanguages(true, true, new Global.GetLocalesListListener() {
             @Override
             public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
                 LanguageListAdapter.this.ttsLanguages = ttsLanguages;

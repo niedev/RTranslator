@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -113,9 +114,9 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
         sound = view.findViewById(R.id.buttonSound);
         editText = view.findViewById(R.id.editText);
         micPlaceHolder = view.findViewById(R.id.buttonPlaceHolder);
-        microphone.initialize(this, view.findViewById(R.id.leftLine), view.findViewById(R.id.centerLine), view.findViewById(R.id.rightLine));
+        microphone.initialize(this, false, view.findViewById(R.id.leftLine), view.findViewById(R.id.centerLine), view.findViewById(R.id.rightLine));
         microphone.setEditText(editText);
-        deactivateInputs(DeactivableButton.DEACTIVATED);
+        deactivateInputs(DeactivableButton.DEACTIVATED_FOR_WAIT_ENGINE);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -146,6 +147,18 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
             @Override
             public void onClick(View v) {
                 //Toast.makeText(activity, getResources().getString(R.string.error_wait_initialization), Toast.LENGTH_SHORT).show();
+            }
+        };
+        final View.OnClickListener waitingEngineLoadClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(activity, getResources().getString(R.string.error_wait_initialization), Toast.LENGTH_SHORT).show();
+            }
+        };
+        final View.OnClickListener errorEngineLoadClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
             }
         };
         sound.setOnClickListenerForDeactivated(deactivatedClickListener);
@@ -229,6 +242,18 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                 }
             }
         });
+        microphone.setOnClickListenerForEngineWait(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (microphone.getState() == ButtonMic.STATE_RETURN) {
+                    isEditTextOpen = false;
+                    conversationServiceCommunicator.setEditTextOpen(false);
+                    microphone.deleteEditText(activity, ConversationMainFragment.this, keyboard, editText, micPlaceHolder);
+                } else {
+                    waitingEngineLoadClickListener.onClick(v);
+                }
+            }
+        });
     }
 
     /*@Override
@@ -283,7 +308,9 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
     public void restoreAttributesFromService() {
         conversationServiceCommunicator.getAttributes(new VoiceTranslationService.AttributesListener() {
             @Override
-            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic) {
+            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError,
+                                  VoiceTranslationService.EngineStatus translatorEngineStatus, VoiceTranslationService.EngineStatus speechRecognizerEngineStatus,
+                                  final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic) {
                 container.setVisibility(View.VISIBLE);
                 // initialization with service values
                 mAdapter = new MessagesAdapter(messages, global, speakingUtteranceId, new MessagesAdapter.Callback() {
@@ -319,6 +346,7 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                 }
                 sound.setMute(isAudioMute);
                 if(isTTSError){
+                    activity.manageTTSError();
                     sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
                 }
                 // restore editText
@@ -335,18 +363,28 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                 if(!Tools.hasPermissions(activity, Global.REQUIRED_PERMISSIONS_VOICE)){
                     deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_MIC_PERMISSION);
                 } else {
-                    if (isMicActivated) {
-                        if (!microphone.isMute() && !isEditTextOpen) {
-                            activateInputs(true);
-                        } else {
-                            activateInputs(false);
-                        }
-                    } else {
-                        deactivateInputs(DeactivableButton.DEACTIVATED);
+                    if(translatorEngineStatus == VoiceTranslationService.EngineStatus.INITIALIZED && speechRecognizerEngineStatus == VoiceTranslationService.EngineStatus.INITIALIZED) {
+                        initializeInputs(isMicActivated);
+                    } else if(translatorEngineStatus == VoiceTranslationService.EngineStatus.ERROR){
+                        manageTranslatorError();
+                    } else if(speechRecognizerEngineStatus == VoiceTranslationService.EngineStatus.ERROR){
+                        manageSpeechRecognizerError();
                     }
                 }
             }
         });
+    }
+
+    public void initializeInputs(boolean isMicActivated){
+        if (isMicActivated) {
+            if (!microphone.isMute() && !isEditTextOpen) {
+                activateInputs(true);
+            } else {
+                activateInputs(false);
+            }
+        } else {
+            deactivateInputs(DeactivableButton.DEACTIVATED);
+        }
     }
 
     @Override
@@ -422,9 +460,23 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
         super.onDestroy();
     }
 
+    private void manageSpeechRecognizerError() {
+        activity.manageSpeechRecognizerError();
+    }
+
+    private void manageTranslatorError(){
+        activity.manageTranslatorError();
+    }
+
 
 
     public class ConversationServiceCallback extends VoiceTranslationService.VoiceTranslationServiceCallback {
+        @Override
+        public void onEngineLoaded() {
+            Log.d("engine", "onEngineLoaded");
+            initializeInputs(true);
+        }
+
         @Override
         public void onTTSStarted(String utteranceId) {
             super.onTTSStarted(utteranceId);
@@ -516,12 +568,9 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                         activity.showInternetLackDialog(R.string.error_internet_lack_services, null);
                         break;
                     case ErrorCodes.MISSING_GOOGLE_TTS:
-                        sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
-                        //activity.showMissingGoogleTTSDialog();
-                        break;
                     case ErrorCodes.GOOGLE_TTS_ERROR:
+                        activity.manageTTSError();
                         sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
-                        //activity.showGoogleTTSErrorDialog();
                         break;
                     /*case ErrorCodes.MISSING_MIC_PERMISSION: {
                         if(getContext() != null) {

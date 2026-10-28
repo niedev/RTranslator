@@ -337,10 +337,27 @@ public class Downloader {
     private void startNextDownload(){
         int runningDownloadIndex = downloadGroupInfo.getRunningDownloadIndex();
         if (runningDownloadIndex < downloadGroupInfo.downloadsInfo.length - 1) {
-            //we start the next download and notify the end of the current one
+            // we start the next download and notify the end of the current one
             lastDownloadSuccessIndex = runningDownloadIndex;
             callback.onCompleted(downloadGroupInfo, downloadGroupInfo.downloadsInfo[runningDownloadIndex]);
-            startDownload(runningDownloadIndex+1);
+            // we eventually skip already completed operations (this will only be done for fixes of already completed downloads, normally this will execute startDownload(startIndex))
+            int startIndex = runningDownloadIndex+1;
+            DownloadInfo startDownload = downloadGroupInfo.downloadsInfo[startIndex];
+            downloadGroupInfo.setRunningDownloadIndex(startIndex);
+            int percentageTotalProgress = calculateTotalProgress(lastDownloadSuccessIndex + 1, 0);
+            if (!startDownload.isDownloadCompleted()) {
+                startDownload(startIndex);
+            } else {
+                if (startDownload.shouldUnzip() && !startDownload.isUnzipped()) {
+                    unzipRunningDownloadAndTestIntegrity(percentageTotalProgress);
+                } else {
+                    if (startDownload.shouldTestIntegrity() && !startDownload.isIntegrityTested()) {
+                        testRunningDownloadIntegrity(percentageTotalProgress, startDownload.getInternalFolder());
+                    } else {
+                        startNextDownload();
+                    }
+                }
+            }
         } else {
             //we notify the end of all downloads
             downloadGroupInfo.setAllDownloadCompleted(true);

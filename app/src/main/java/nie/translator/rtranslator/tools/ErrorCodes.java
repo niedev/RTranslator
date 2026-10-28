@@ -39,6 +39,8 @@ public class ErrorCodes {
     public static final int ERROR_LOADING_MODEL = 34;
     public static final int ERROR_EXECUTING_MODEL = 35;
     public static final int ERROR_LANGUAGE_NOT_SUPPORTED = 36;
+    public static final int ERROR_LOADING_TRANSLATOR = 37;
+    public static final int ERROR_LOADING_SPEECH_RECOGNIZER = 38;
 
     //language identification
     public static final int LANGUAGE_UNKNOWN = 15;

@@ -254,14 +254,21 @@ public class CustomAnimator {
         }
     }
 
-    public void animateMute(Context context, final ButtonMic buttonMic, boolean instant){
+    public void animateMute(Context context, final ButtonMic buttonMic, ButtonMic.ButtonMicColor initialColor, ButtonMic.ButtonMicColor finalColor, boolean instant){
         int duration = buttonMic.getResources().getInteger(R.integer.durationStandard);
         int finalSizeInPixels = Tools.convertDpToPixels(context, ButtonMic.SIZE_MUTED_DP);
 
+        /*
         int initialColorIcon = GuiTools.getColor(buttonMic.getContext(), R.attr.colorTextInverted);
         int finalColorIcon = GuiTools.getColor(buttonMic.getContext(), R.attr.colorPrimaryStrong);
-        int initialColor = GuiTools.getColor(buttonMic.getContext(), R.attr.colorPrimary);
-        int finalColor = GuiTools.getColor(buttonMic.getContext(), R.attr.colorBackgroundColored);
+        int initialColorBackground = GuiTools.getColor(buttonMic.getContext(), R.attr.colorPrimary);
+        int finalColorBackground = GuiTools.getColor(buttonMic.getContext(), R.attr.colorBackgroundColored);
+         */
+
+        int initialColorIcon = initialColor.iconColor.getDefaultColor();
+        int finalColorIcon = finalColor.iconColor.getDefaultColor();
+        int initialColorBackground = initialColor.backgroundColor.getDefaultColor();
+        int finalColorBackground = finalColor.backgroundColor.getDefaultColor();
 
         if(!instant) {
             AnimatorSet animatorSet = new AnimatorSet();
@@ -273,7 +280,7 @@ public class CustomAnimator {
             Animator animatorIconColor = createAnimatorColor(buttonMic.getDrawable(), initialColorIcon, finalColorIcon, duration);
 
             // change color of background animation
-            Animator animatorBackgroundColor = createAnimatorColor(buttonMic.getBackground(), initialColor, finalColor, duration);
+            Animator animatorBackgroundColor = createAnimatorColor(buttonMic.getBackground(), initialColorBackground, finalColorBackground, duration);
 
             animatorSet.play(reduceAnimation).with(animatorIconColor).with(animatorBackgroundColor);
             animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -290,18 +297,23 @@ public class CustomAnimator {
             buttonMic.getDrawable().setColorFilter(finalColorIcon, PorterDuff.Mode.SRC_IN);
 
             // change color of background
-            buttonMic.getBackground().setColorFilter(finalColor, PorterDuff.Mode.SRC_IN);
+            buttonMic.getBackground().setColorFilter(finalColorBackground, PorterDuff.Mode.SRC_IN);
         }
     }
 
-    public void animateUnmute(Context context, final ButtonMic buttonMic, boolean instant){
+    public void animateUnmute(Context context, final ButtonMic buttonMic, ButtonMic.ButtonMicColor initialColor, ButtonMic.ButtonMicColor finalColor, boolean instant){
         int duration = buttonMic.getResources().getInteger(R.integer.durationStandard);
         int finalSizeInPixels = Tools.convertDpToPixels(context, ButtonMic.SIZE_NORMAL_DP);
 
-        int initialColorIcon = GuiTools.getColor(buttonMic.getContext(),R.attr.colorPrimaryStrong);
+        /*int initialColorIcon = GuiTools.getColor(buttonMic.getContext(),R.attr.colorPrimaryStrong);
         int finalColorIcon = GuiTools.getColor(buttonMic.getContext(),R.attr.colorTextInverted);
-        int initialColor = GuiTools.getColor(buttonMic.getContext(),R.attr.colorBackgroundColored);
-        int finalColor = GuiTools.getColor(buttonMic.getContext(),R.attr.colorPrimary);
+        int initialColorBackground = GuiTools.getColor(buttonMic.getContext(),R.attr.colorBackgroundColored);
+        int finalColorBackground = GuiTools.getColor(buttonMic.getContext(),R.attr.colorPrimary);*/
+
+        int initialColorIcon = initialColor.iconColor.getDefaultColor();
+        int finalColorIcon = finalColor.iconColor.getDefaultColor();
+        int initialColorBackground = initialColor.backgroundColor.getDefaultColor();
+        int finalColorBackground = finalColor.backgroundColor.getDefaultColor();
 
         if(!instant) {
             AnimatorSet animatorSet = new AnimatorSet();
@@ -313,7 +325,7 @@ public class CustomAnimator {
             Animator animatorIconColor = createAnimatorColor(buttonMic.getDrawable(), initialColorIcon, finalColorIcon, duration);
 
             // change color of background animation
-            Animator animatorBackgroundColor = createAnimatorColor(buttonMic.getBackground(), initialColor, finalColor, duration);
+            Animator animatorBackgroundColor = createAnimatorColor(buttonMic.getBackground(), initialColorBackground, finalColorBackground, duration);
 
             animatorSet.play(enlargeAnimation).with(animatorIconColor).with(animatorBackgroundColor);
             animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -330,7 +342,7 @@ public class CustomAnimator {
             buttonMic.getDrawable().setColorFilter(finalColorIcon, PorterDuff.Mode.SRC_IN);
 
             // change color of background
-            buttonMic.getBackground().setColorFilter(finalColor, PorterDuff.Mode.SRC_IN);
+            buttonMic.getBackground().setColorFilter(finalColorBackground, PorterDuff.Mode.SRC_IN);
         }
     }
 
@@ -517,14 +529,14 @@ public class CustomAnimator {
         return animatorSet;
     }
 
-    public Animator animateCompressActionBar(final VoiceTranslationActivity activity, ConstraintLayout toolbarContainer, TextView title, AppCompatImageButton settingsButton, AppCompatImageButton settingsButtonReduced, AppCompatImageButton backButton, Listener listener){
+    public Animator animateCompressActionBar(final VoiceTranslationActivity activity, ConstraintLayout toolbarContainer, TextView title, ProgressBar progressBar, AppCompatImageButton settingsButton, AppCompatImageButton settingsButtonReduced, AppCompatImageButton backButton, Listener listener){
         int duration = activity.getResources().getInteger(R.integer.durationStandard);
         int durationShort = activity.getResources().getInteger(R.integer.durationShort);
 
         settingsButton.setClickable(false);
 
         Animator animatorToolbar = createAnimatorHeight(toolbarContainer, toolbarContainer.getHeight(), Tools.convertDpToPixels(activity,2), duration);
-        Animator animatorTranslation = createAnimatorTranslationY(new View[]{title, settingsButton}, (int) title.getTranslationY(), -Tools.convertDpToPixels(activity,56), duration);
+        Animator animatorTranslation = createAnimatorTranslationY(new View[]{title, progressBar, settingsButton}, (int) title.getTranslationY(), -Tools.convertDpToPixels(activity,56), duration);
 
         Animator animationAppear = createAnimatorAlpha(new View[]{settingsButtonReduced, backButton}, settingsButtonReduced.getAlpha(), 1, duration);
 
@@ -565,7 +577,7 @@ public class CustomAnimator {
         return animatorSet;
     }
 
-    public Animator animateEnlargeActionBar(final VoiceTranslationActivity activity, ConstraintLayout toolbarContainer, TextView title, AppCompatImageButton settingsButton, AppCompatImageButton settingsButtonReduced, AppCompatImageButton backButton, Listener listener){
+    public Animator animateEnlargeActionBar(final VoiceTranslationActivity activity, ConstraintLayout toolbarContainer, TextView title, ProgressBar progressBar, AppCompatImageButton settingsButton, AppCompatImageButton settingsButtonReduced, AppCompatImageButton backButton, Listener listener){
         int duration = activity.getResources().getInteger(R.integer.durationStandard);
         int durationShort = activity.getResources().getInteger(R.integer.durationShort);
 
@@ -576,7 +588,7 @@ public class CustomAnimator {
         Animator animationDisappear = createAnimatorAlpha(new View[]{settingsButtonReduced, backButton}, settingsButtonReduced.getAlpha(), 0, duration);
 
         Animator animatorToolbar = createAnimatorHeight(toolbarContainer, toolbarContainer.getHeight(), Tools.convertDpToPixels(activity,56), duration);
-        Animator animatorTranslation = createAnimatorTranslationY(new View[]{title, settingsButton}, (int) title.getTranslationY(), 0, duration);
+        Animator animatorTranslation = createAnimatorTranslationY(new View[]{title, progressBar, settingsButton}, (int) title.getTranslationY(), 0, duration);
 
         Animator animationAppear = createAnimatorAlpha(settingsButton, settingsButton.getAlpha(), 1, duration);
 

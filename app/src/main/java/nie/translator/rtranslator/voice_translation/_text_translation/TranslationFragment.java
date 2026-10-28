@@ -25,6 +25,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -99,6 +100,7 @@ public class TranslationFragment extends Fragment {
     private ConstraintLayout outputContainer;
     private TextView resultTypeText;
     private TextView synonymsText;
+    private ProgressBar progressBar;
     private CustomAnimator animator = new CustomAnimator();
     private Animator colorAnimator = null;
     private int activatedColor = R.attr.colorPrimary;
@@ -153,6 +155,7 @@ public class TranslationFragment extends Fragment {
         secondLanguageSelector = view.findViewById(R.id.second_lang_selector);
         invertLanguagesButton = view.findViewById(R.id.invertLanguages);
         translateButton = view.findViewById(R.id.buttonTranslate);
+        translateButton.setActivated(false);  //the translation button always starts deactivated, and it will be activated when we will connect to the translator or when it will be initialized (if it is the first start)
         walkieTalkieButton = view.findViewById(R.id.buttonMicFirst);
         conversationButton = view.findViewById(R.id.buttonMicSecond);
         walkieTalkieButtonSmall = view.findViewById(R.id.buttonWalkieTalkieSmall);
@@ -178,6 +181,7 @@ public class TranslationFragment extends Fragment {
         outputContainer = view.findViewById(R.id.outputContainer);
         resultTypeText = view.findViewById(R.id.resultTypeText);
         synonymsText = view.findViewById(R.id.synonymsText);
+        progressBar = view.findViewById(R.id.progressBar);
         //we set the initial tag for the tts buttons
         ttsInputButton.setTag(R.drawable.sound_icon);
         ttsOutputButton.setTag(R.drawable.sound_icon);
@@ -202,7 +206,7 @@ public class TranslationFragment extends Fragment {
                 if(!Global.ONLY_TEXT_TRANSLATION_MODE) {
                     activity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT, true);
                 }else{
-                    Toast.makeText(global, "'Only text translation mode' is active", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(global, "'Only text translation mode' is active", Toast.LENGTH_SHORT).show();  //todo: convert text
                 }
             }
         };
@@ -212,7 +216,7 @@ public class TranslationFragment extends Fragment {
                 if(!Global.ONLY_TEXT_TRANSLATION_MODE) {
                     activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT, true);
                 }else{
-                    Toast.makeText(global, "'Only text translation mode' is active", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(global, "'Only text translation mode' is active", Toast.LENGTH_SHORT).show();  //todo: convert text
                 }
             }
         };
@@ -275,20 +279,26 @@ public class TranslationFragment extends Fragment {
         translateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String text = inputText.getText().toString();
+                if(translateButton.isActivated()) {
+                    String text = inputText.getText().toString();
 
-                if(text.length() <= 0){   //test code  todo: remove before release
-                    text = "Also unlike 2014, there aren’t nearly as many loopholes. You can’t just buy a 150-watt incandescent or a three-way bulb — the ban covers any normal bulb that generates less than 45 lumens per watt, which pretty much rules out both incandescent and halogen tech in their entirety.";
-                    inputText.setText(text);
-                }
+                    if (text.isEmpty()) {   //test code  todo: remove before release
+                        text = "Also unlike 2014, there aren’t nearly as many loopholes. You can’t just buy a 150-watt incandescent or a three-way bulb — the ban covers any normal bulb that generates less than 45 lumens per watt, which pretty much rules out both incandescent and halogen tech in their entirety.";
+                        inputText.setText(text);
+                    }
 
-                if(!text.isEmpty()) {
-                    CustomLocale firstLanguage = global.getFirstTextLanguage(true);
-                    CustomLocale secondLanguage = global.getSecondTextLanguage(true);
-                    //we deactivate translate button
-                    deactivateTranslationButton();  //todo: implement stop button instead of deactivation
-                    //we start the translation
-                    global.getTranslator().translate(text, firstLanguage, secondLanguage, global.getBeamSize(), true, Global.RTranslatorMode.TEXT_TRANSLATION_MODE);
+                    if (!text.isEmpty()) {
+                        CustomLocale firstLanguage = global.getFirstTextLanguage(true);
+                        CustomLocale secondLanguage = global.getSecondTextLanguage(true);
+                        //we deactivate translate button
+                        deactivateTranslationButton();  //todo: implement stop button instead of deactivation
+                        //we start the translation
+                        if (global.getTranslator() != null) {
+                            global.getTranslator().translate(text, firstLanguage, secondLanguage, global.getBeamSize(), true, Global.RTranslatorMode.TEXT_TRANSLATION_MODE);
+                        }
+                    }
+                } else if(global.isTranslatorInitializing()) {
+                    Toast.makeText(activity, getResources().getString(R.string.error_wait_initialization), Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -349,7 +359,9 @@ public class TranslationFragment extends Fragment {
             public void onClick(View v) {
                 inputText.setText("");
                 outputText.setText("");
-                global.getTranslator().resetLastOutput();
+                if(global.getTranslator() != null) {
+                    global.getTranslator().resetLastOutput();
+                }
             }
         });
         fullScreenOutputButton.setOnClickListener(new View.OnClickListener() {
@@ -366,8 +378,6 @@ public class TranslationFragment extends Fragment {
 
     public void onStart() {
         super.onStart();
-        GuiMessage lastInputText = global.getTranslator().getLastInputText();
-        GuiMessage lastOutputText = global.getTranslator().getLastOutputText();
 
         //we hide the keyboard
         if(getView() != null) {
@@ -515,16 +525,64 @@ public class TranslationFragment extends Fragment {
             }
         });
 
-        //we restore the last input and output text
-        if(lastInputText != null){
-            inputText.setText(lastInputText.getMessage().getText());
+        boolean isTranslatorInitialized = !global.registerInitEngineListenerIfTranslatorNotInitialized(new Global.InitEngineListener() {
+            @Override
+            public void onTranslatorInitialized() {
+                //we set the input text to the translator (in case the user has typed during the loading)
+                CustomLocale language = global.getFirstTextLanguage(true);
+                global.getTranslator().setLastInputText(new GuiMessage(new Message(global, inputText.getText().toString()), language, language, true, true));
+                //we attach the translateListener
+                global.getTranslator().addCallback(translateListener);
+                //we activate the translation button
+                activateTranslationButton();
+                //we hide the loading
+                progressBar.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onTTSInitialized() {
+
+            }
+
+            @Override
+            public void onTranslatorError(int[] reasons, long value) {
+                manageTranslatorError();
+            }
+
+            @Override
+            public void onTTSError(int[] reasons, long value) {
+                manageTTSError();
+            }
+        });
+
+        if(isTranslatorInitialized) {
+            //we restore the last input and output text
+            GuiMessage lastInputText = global.getTranslator().getLastInputText();
+            GuiMessage lastOutputText = global.getTranslator().getLastOutputText();
+            if (lastInputText != null) {
+                inputText.setText(lastInputText.getMessage().getText());
+            }
+            if (lastOutputText != null) {
+                isRestoringOutputText = true;
+                outputText.setText(lastOutputText.getMessage().getText());
+            }
+            //we attach the translate listener
+            global.getTranslator().addCallback(translateListener);
+            //we restore the translation button state based on the translation status
+            if (global.getTranslator().isTranslating()) {
+                deactivateTranslationButton();
+            } else {
+                activateTranslationButton();
+            }
+            //we hide the loading (in case the user has exit the app when the loading was visible and re entered after the engine has loaded)
+            progressBar.setVisibility(View.GONE);
+        }else{
+            progressBar.setVisibility(View.VISIBLE);
+            if(global.getTranslatorError() != null){
+                manageTranslatorError();
+            }
         }
-        if(lastOutputText != null){
-            isRestoringOutputText = true;
-            outputText.setText(lastOutputText.getMessage().getText());
-        }
-        //we attach the translate listener
-        global.getTranslator().addCallback(translateListener);
+
         //we attach the click listener for the language selectors
         firstLanguageSelector.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -550,12 +608,6 @@ public class TranslationFragment extends Fragment {
                 });
             }
         });
-        //we restore the translation button state based on the translation status
-        if(global.getTranslator().isTranslating()){
-            deactivateTranslationButton();
-        }else{
-            activateTranslationButton();
-        }
         //we set some buttons to not clickable (it is done here as well as in the xml because Android sets clickable to true when we set an onClickListener)
         backButton.setClickable(false);
         settingsButtonReduced.setClickable(false);
@@ -654,21 +706,23 @@ public class TranslationFragment extends Fragment {
                     ttsListener.onDone("");  //we call this to make eventual visual updates to the tts buttons (stop() doesn't call onDone automatically)
                 }else {
                     CustomLocale firstLanguage = global.getFirstTextLanguage(true);
-                    global.getTTSLanguages(true, new Global.GetLocalesListListener() {
+                    global.getTTSLanguages(true, false, new Global.GetLocalesListListener() {
                         @Override
                         public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
-                            if (CustomLocale.containsLanguage(ttsLanguages, firstLanguage)) { // check if the language can be speak
+                            if (CustomLocale.containsLanguage(ttsLanguages, firstLanguage)) { // check if the language can be spoken
                                 tts.stop();
                                 ttsListener.onDone("");  //we call this to make eventual visual updates to the tts buttons (stop() doesn't call onDone automatically)
                                 speak(inputText.getText().toString(), firstLanguage);
                                 ttsInputButton.setImageResource(R.drawable.stop_icon);
                                 ttsInputButton.setTag(R.drawable.stop_icon);
+                            }else{
+                                Toast.makeText(activity, "Language not supported by TTS", Toast.LENGTH_LONG).show();  //todo: convert text
                             }
                         }
 
                         @Override
                         public void onFailure(int[] reasons, long value) {
-                            //we do nothing
+                            manageTTSError();
                         }
                     });
                 }
@@ -683,7 +737,7 @@ public class TranslationFragment extends Fragment {
                     ttsListener.onDone("");  //we call this to make eventual visual updates to the tts buttons (stop() doesn't call onDone automatically)
                 }else {
                     CustomLocale secondLanguage = global.getSecondTextLanguage(true);
-                    global.getTTSLanguages(true, new Global.GetLocalesListListener() {
+                    global.getTTSLanguages(true, false, new Global.GetLocalesListListener() {
                         @Override
                         public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
                             if (CustomLocale.containsLanguage(ttsLanguages, secondLanguage)) { // check if the language can be speak
@@ -692,12 +746,14 @@ public class TranslationFragment extends Fragment {
                                 speak(outputText.getText().toString(), secondLanguage);
                                 ttsOutputButton.setImageResource(R.drawable.stop_icon);
                                 ttsOutputButton.setTag(R.drawable.stop_icon);
+                            }else{
+                                Toast.makeText(activity, "Language not supported by TTS", Toast.LENGTH_LONG).show();  //todo: convert text
                             }
                         }
 
                         @Override
                         public void onFailure(int[] reasons, long value) {
-                            //we do nothing
+                            manageTTSError();
                         }
                     });
                 }
@@ -735,7 +791,7 @@ public class TranslationFragment extends Fragment {
                         animationKeyboardButton = null;
                     }
                 });
-                animationKeyboardTop = animator.animateCompressActionBar(activity, toolbarContainer, title, settingsButton, settingsButtonReduced, backButton, new CustomAnimator.Listener() {
+                animationKeyboardTop = animator.animateCompressActionBar(activity, toolbarContainer, title, progressBar, settingsButton, settingsButtonReduced, backButton, new CustomAnimator.Listener() {
                     @Override
                     public void onAnimationEnd() {
                         super.onAnimationEnd();
@@ -750,7 +806,7 @@ public class TranslationFragment extends Fragment {
                         animationKeyboardButton = null;
                     }
                 });
-                animationKeyboardTop = animator.animateEnlargeActionBar(activity, toolbarContainer, title, settingsButton, settingsButtonReduced, backButton, new CustomAnimator.Listener() {
+                animationKeyboardTop = animator.animateEnlargeActionBar(activity, toolbarContainer, title, progressBar, settingsButton, settingsButtonReduced, backButton, new CustomAnimator.Listener() {
                     @Override
                     public void onAnimationEnd() {
                         super.onAnimationEnd();
@@ -904,8 +960,11 @@ public class TranslationFragment extends Fragment {
         outputText.removeTextChangedListener(outputTextListener);
         inputText.clearFocus();
         outputText.clearFocus();
-        //we detach the translate listener
-        global.getTranslator().removeCallback(translateListener);
+        //we detach the translate listener and the initEngineListener
+        if(global.getTranslator() != null) {
+            global.getTranslator().removeCallback(translateListener);
+        }
+        global.setInitEngineListener(null);
     }
 
     private void setFirstLanguage(CustomLocale language) {
@@ -1034,5 +1093,13 @@ public class TranslationFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private void manageTTSError() {
+        activity.manageTTSError();
+    }
+
+    private void manageTranslatorError(){
+        activity.manageTranslatorError();
     }
 }

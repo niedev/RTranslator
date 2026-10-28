@@ -164,20 +164,32 @@ public class TTS {
     }
 
     private static void notifyGetSupportedLanguagesSuccess(ArrayList<CustomLocale> languages) {
+
+        ArrayList<SupportedLanguagesListener> listeners;
+
         synchronized (lock) {
-            while (supportedLanguagesListeners.peekFirst() != null) {
-                supportedLanguagesListeners.pollFirst().onLanguagesListAvailable(languages);
-            }
+            listeners = new ArrayList<>(supportedLanguagesListeners);
+            supportedLanguagesListeners.clear();
             getSupportedLanguageThread = null;
+        }
+
+        for (SupportedLanguagesListener listener : listeners) {
+            listener.onLanguagesListAvailable(languages);
         }
     }
 
     private static void notifyGetSupportedLanguagesFailure(final int reasons) {
+
+        ArrayList<SupportedLanguagesListener> listeners;
+
         synchronized (lock) {
-            while (supportedLanguagesListeners.peekFirst() != null) {
-                supportedLanguagesListeners.pollFirst().onError(reasons);
-            }
+            listeners = new ArrayList<>(supportedLanguagesListeners);
+            supportedLanguagesListeners.clear();
             getSupportedLanguageThread = null;
+        }
+
+        for (SupportedLanguagesListener listener : listeners) {
+            listener.onError(reasons);
         }
     }
 

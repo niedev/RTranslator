@@ -46,6 +46,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -133,6 +134,7 @@ public class Translator extends NeuralNetworkApi {
                     long initTime = System.currentTimeMillis();
                     int oldMode = Translator.this.mode;
                     Translator.this.mode = modelMode;
+                    FutureTask<Void> initTask = null;
                     if(oldMode != modelMode) {
                         /** CLEANUP **/
                         if (oldMode != -1) {
@@ -141,32 +143,37 @@ public class Translator extends NeuralNetworkApi {
                         }
 
                         /** INITIALIZATION **/
-                        // translation onnx model initialization
+                        // translation onnx model initialization (in parallel)
                         if (mode != MOZILLA) {
-                            onnxTranslationModelInitialization();
+                            initTask = new FutureTask<>(() -> {
+                                onnxTranslationModelInitialization();
+                                return null;
+                            });
+                            new Thread(initTask, "onnxInit").start();
                         }
-                        android.util.Log.i("performance_init", "Onnx models initialization: " + (System.currentTimeMillis() - initTime) + "ms");
-                        initTime = System.currentTimeMillis();
                     }
 
                     // translation resources update (or initialization) (N.B. mozilla models are translation resources)
-                    if(languageResourcesManager != null) global.updateLanguages();  //if it is not the first start we update the languages before updating the resources
+                    synchronized (langResourcesLock) {
+                        if (languageResourcesManager != null)
+                            global.updateLanguages();  //if it is not the first start we update the languages before updating the resources
 
-                    CustomLocale firstTextLanguage = global.getFirstTextLanguage(true);
-                    CustomLocale secondTextLanguage = global.getSecondTextLanguage(true);
-                    CustomLocale firstLanguage = global.getFirstLanguage(true);
-                    CustomLocale secondLanguage = global.getSecondLanguage(true);
-                    CustomLocale language = global.getLanguage(true);
+                        CustomLocale firstTextLanguage = global.getFirstTextLanguage(true);
+                        CustomLocale secondTextLanguage = global.getSecondTextLanguage(true);
+                        CustomLocale firstLanguage = global.getFirstLanguage(true);
+                        CustomLocale secondLanguage = global.getSecondLanguage(true);
+                        CustomLocale language = global.getLanguage(true);
 
-                    if(languageResourcesManager == null) {
-                        languageResourcesManager = new LanguageResourcesManager(global, mode == MOZILLA, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts,
-                                firstTextLanguage, secondTextLanguage, firstLanguage, secondLanguage);
-                    }else{
-                        languageResourcesManager.setStatus(mode == MOZILLA, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts,
-                                firstTextLanguage, secondTextLanguage, firstLanguage, secondLanguage, language);
+                        if (languageResourcesManager == null) {
+                            languageResourcesManager = new LanguageResourcesManager(global, mode == MOZILLA, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts,
+                                    firstTextLanguage, secondTextLanguage, firstLanguage, secondLanguage);
+                        } else {
+                            languageResourcesManager.setStatus(mode == MOZILLA, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts,
+                                    firstTextLanguage, secondTextLanguage, firstLanguage, secondLanguage, language);
+                        }
+                        android.util.Log.i("performance_init", "Lang resources initialization: " + (System.currentTimeMillis() - initTime) + "ms");
+                        initTime = System.currentTimeMillis();
                     }
-                    android.util.Log.i("performance_init", "Lang resources initialization: " + (System.currentTimeMillis() - initTime) + "ms");
-                    initTime = System.currentTimeMillis();
 
                     //eventual initialization of language detector (it must happen after the language resources initialization)
                     if(languageDetector == null) {
@@ -174,6 +181,7 @@ public class Translator extends NeuralNetworkApi {
                         languageDetector.initialize(global, languageResourcesManager);
                     }
                     android.util.Log.i("performance_init", "LanguageDetector initialization: " + (System.currentTimeMillis() - initTime) + "ms");
+                    if (initTask != null) initTask.get();  //we wait for the eventual onnx model initialization
                     mainHandler.post(() -> listener.onSuccess());
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -200,6 +208,7 @@ public class Translator extends NeuralNetworkApi {
     }
 
     private void onnxTranslationModelInitialization() throws OrtException, IOException {
+        long initTime = System.currentTimeMillis();
         String encoderPath = "";
         String decoderPath = "";
         String vocabPath = "";
@@ -322,6 +331,7 @@ public class Translator extends NeuralNetworkApi {
                     embedAndLmHeadSession = loads.get(3).join();
                 }
             }
+            android.util.Log.i("performance_init", "Onnx models initialization: " + (System.currentTimeMillis() - initTime) + "ms");
         } catch (RuntimeException | Error e) {
             Throwable cause = e instanceof CompletionException && e.getCause() != null
                     ? e.getCause() : e;

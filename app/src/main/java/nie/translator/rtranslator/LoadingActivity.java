@@ -85,6 +85,10 @@ public class LoadingActivity extends GeneralActivity {
                 }
             });
         }
+        /*super.onCreate(savedInstanceState);
+        setTheme(R.style.Theme_RTranslator);
+        setContentView(R.layout.activity_loading);
+        mainHandler = new Handler(Looper.getMainLooper());*/
     }
 
     @Override
@@ -102,7 +106,7 @@ public class LoadingActivity extends GeneralActivity {
         global = (Global) getApplication();
         if (isFirstStart()) {
             startAccessActivity();
-        } else if (global.getTranslator() != null && (Global.ONLY_TEXT_TRANSLATION_MODE || global.getSpeechRecognizer() != null)) {
+        } else if (global.isTranslatorInitialized() && (Global.ONLY_TEXT_TRANSLATION_MODE || global.isSpeechRecognizerInitialized())) {  //todo: gestire meglio questa parte (dovremmo avviarla solo se il check del TTS è finito, non se i modelli sono stati inizializzati, inoltre capire come gestire per bene l'avvio della schermata del model manager)
             if(checkIfResourcesPreferencesRespectDownloads()) {
                 startVoiceTranslationActivity();
             }else{
@@ -164,56 +168,34 @@ public class LoadingActivity extends GeneralActivity {
 
     private void initializeApp(boolean ignoreTTSError) {
         Log.i("app", "App initialization");
-        adaptResourcesPreferencesToDownloads();
         final long initTime = System.currentTimeMillis();
-        final long[] time = {System.currentTimeMillis()};
-        global.getLanguagesAndCheckTTS(false, ignoreTTSError, new Global.GetLocalesListListener() {
+        adaptResourcesPreferencesToDownloads();
+        mainHandler.postDelayed(new Runnable() {
             @Override
-            public void onSuccess(ArrayList<CustomLocale> result) {
-                android.util.Log.i("performance_init", "Language list initialization: " + (System.currentTimeMillis() - time[0]) + "ms");
-                time[0] = System.currentTimeMillis();
-                global.initializeTranslator(new Translator.GeneralListener() {
-                    @Override
-                    public void onSuccess() {
-                        android.util.Log.i("performance_init", "Translator initialization: " + (System.currentTimeMillis() - time[0]) + "ms");
-                        time[0] = System.currentTimeMillis();
-                        NeuralNetworkApi.InitListener speechRecognizerInitListener = new NeuralNetworkApi.InitListener() {
-                            @Override
-                            public void onInitializationFinished() {
-                                android.util.Log.i("performance_init", "Speech recognizer initialization: " + (System.currentTimeMillis() - time[0]) + "ms");
-                                android.util.Log.i("performance_init", "App initialization: " + (System.currentTimeMillis() - initTime) + "ms");
-                                global.setModelsLoaded(true);
-                                if (isVisible) {
-                                    startVoiceTranslationActivity();
-                                }
-                            }
-
-                            @Override
-                            public void onError(int[] reasons, long value) {
-                                global.deleteSpeechRecognizer();  //we do this to ensure the restart of the loading of models when the app is restarted
-                                LoadingActivity.this.onFailure(reasons, value);
-                            }
-                        };
-                        if(Global.ONLY_TEXT_TRANSLATION_MODE) {
-                            speechRecognizerInitListener.onInitializationFinished();
-                        }else{
-                            global.initializeSpeechRecognizer(speechRecognizerInitListener);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(int[] reasons, long value) {
-                        global.deleteTranslator();   //we do this to ensure the restart of the loading of models when the app is restarted
-                        LoadingActivity.this.onFailure(reasons, value);
-                    }
-                });
+            public void run() {
+                // if this is called before the onTranslatorInitialized, we remove the engine listener callback,
+                // and we start voice translation activity
+                global.setInitEngineListener(null);
+                Log.i("init_load_status", "started voice translation activity from timer");
+                if (isVisible) {
+                    startVoiceTranslationActivity();
+                }
             }
-
+        }, 1000);
+        global.setInitEngineListener(new Global.InitEngineListener() {
             @Override
-            public void onFailure(int[] reasons, long value) {
-                LoadingActivity.this.onFailure(reasons, value);
+            public void onTranslatorInitialized() {
+                // if this is called before the postDelayed is called, we remove the postDelayed callback,
+                // and we start voice translation activity
+                mainHandler.removeCallbacksAndMessages(null);
+                global.setInitEngineListener(null);
+                Log.i("init_load_status", "started voice translation activity from engine init listener");
+                if (isVisible) {
+                    startVoiceTranslationActivity();
+                }
             }
         });
+        global.initializeEngine();
     }
 
     private void startAccessActivity(){

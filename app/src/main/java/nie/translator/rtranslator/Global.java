@@ -29,6 +29,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -103,6 +104,17 @@ public class Global extends Application implements DefaultLifecycleObserver {
     private Translator translator;
     @Nullable
     private Recognizer speechRecognizer;
+    private volatile boolean translatorInitializing = false;
+    private volatile boolean speechRecognizerInitializing = false;
+    private volatile boolean translatorInitialized = false;
+    private volatile boolean speechRecognizerInitialized = false;
+    @Nullable
+    private ErrorInfo translatorError = null;
+    @Nullable
+    private ErrorInfo speechRecognizerError = null;
+    @Nullable
+    private InitEngineListener initEngineListener = null;
+    private final Object initEngineListenerLock = new Object();
     private String name = "";
     private int micSensitivity = -1;
     private int speechTimeout = -1;
@@ -121,7 +133,6 @@ public class Global extends Application implements DefaultLifecycleObserver {
     private boolean whisperReducedRam;
     private int translationMode;
     private VadSilero vad;
-    private boolean modelsLoaded = false;
 
     @Override
     public void onCreate() {
@@ -138,6 +149,17 @@ public class Global extends Application implements DefaultLifecycleObserver {
         useMozillaForVoiceTranslation = sharedPreferences.getBoolean("useMozillaForVoiceTranslation", false);
         whisperReducedRam = sharedPreferences.getBoolean("whisperReducedRam", getTotalRamSize() <= 7000);
         translationMode = sharedPreferences.getInt("selectedTranslationModel", Translator.MOZILLA);
+
+        long time = System.currentTimeMillis();
+        vad = Vad.builder()
+                .setContext(Global.this)
+                .setSampleRate(SampleRate.SAMPLE_RATE_16K)
+                .setFrameSize(FrameSize.FRAME_SIZE_512)
+                .setMode(Mode.NORMAL)
+                .setSilenceDurationMs(300)
+                .setSpeechDurationMs(50)
+                .build();
+        android.util.Log.i("performance_vad", "Vad initialization: " + (System.currentTimeMillis() - time) + "ms");
 
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             REQUIRED_PERMISSIONS_PAIRING = new String[]{
@@ -161,27 +183,192 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
     }
 
-    public void initializeTranslator(Translator.GeneralListener initListener){
-        if(translator == null) {
-            translator = new Translator(this, getTranslationMode(), isUseMozillaForVoiceTranslation(), isUseTatoeba(), isUseTranslationDictionaries(), initListener);
-        }else{
-            initListener.onSuccess();
+
+    public void initializeEngine(){
+        if(translator == null && !translatorInitializing){
+            Log.i("app", "Engine initialization");
+            final long initTime = System.currentTimeMillis();
+            final long[] time = {System.currentTimeMillis()};
+            translatorInitializing = true;
+            if (!ONLY_TEXT_TRANSLATION_MODE && speechRecognizer == null) {
+                speechRecognizerInitializing = true;
+            }
+            // translator initialization
+            initializeTranslator(new Translator.GeneralListener() {
+                @Override
+                public void onSuccess() {
+                    android.util.Log.i("performance_init", "Translator initialization: " + (System.currentTimeMillis() - time[0]) + "ms");
+                    time[0] = System.currentTimeMillis();
+
+                    // tts initialization
+                    getLanguagesAndCheckTTS(false, false, new Global.GetLocalesListListener() {
+                        @Override
+                        public void onSuccess(ArrayList<CustomLocale> result) {
+                            android.util.Log.i("performance_init", "TTS check: " + (System.currentTimeMillis() - time[0]) + "ms");
+                            InitEngineListener listener;
+                            synchronized (initEngineListenerLock) {
+                                listener = initEngineListener;
+                            }
+                            if(listener != null) listener.onTTSInitialized();
+                        }
+
+                        @Override
+                        public void onFailure(int[] reasons, long value) {
+                            InitEngineListener listener;
+                            synchronized (initEngineListenerLock) {
+                                listener = initEngineListener;
+                            }
+                            if(listener != null) listener.onTTSError(reasons, value);
+                        }
+                    });
+
+                    // speech recognizer initialization
+                    if(!ONLY_TEXT_TRANSLATION_MODE) {
+                        initializeSpeechRecognizer(new NeuralNetworkApi.InitListener() {
+                            @Override
+                            public void onInitializationFinished() {
+                                android.util.Log.i("performance_init", "Speech recognizer initialization: " + (System.currentTimeMillis() - time[0]) + "ms");
+                                android.util.Log.i("performance_init", "App initialization: " + (System.currentTimeMillis() - initTime) + "ms");
+                            }
+
+                            @Override
+                            public void onError(int[] reasons, long value) {
+                                //here we do nothing, the error is already managed inside the method initializeSpeechRecognizer
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onFailure(int[] reasons, long value) {
+                    //here we do nothing, the error is already managed inside the method initializeTranslator
+                }
+            });
         }
     }
 
-    public void initializeSpeechRecognizer(NeuralNetworkApi.InitListener initListener){
+    public void setInitEngineListener(@Nullable InitEngineListener initEngineListener) {
+        synchronized (initEngineListenerLock) {
+            this.initEngineListener = initEngineListener;
+        }
+    }
+
+    public boolean registerInitEngineListenerIfTranslatorNotInitialized(InitEngineListener listener) {
+        synchronized (initEngineListenerLock) {
+            if (translatorInitialized) {
+                return false;
+            }
+
+            setInitEngineListener(listener);
+            return true;
+        }
+    }
+
+    public boolean registerInitEngineListenerIfRecognizerNotInitialized(InitEngineListener listener) {
+        synchronized (initEngineListenerLock) {
+            if (speechRecognizerInitialized) {
+                return false;
+            }
+
+            setInitEngineListener(listener);
+            return true;
+        }
+    }
+
+    public boolean isTranslatorInitializing() {
+        return translatorInitializing;
+    }
+
+    public boolean isTranslatorInitialized() {
+        return translatorInitialized;
+    }
+
+    public boolean isSpeechRecognizerInitializing() {
+        return speechRecognizerInitializing;
+    }
+
+    public boolean isSpeechRecognizerInitialized() {
+        return speechRecognizerInitialized;
+    }
+
+    public void resetTranslationError(){
+        translatorError = null;
+    }
+
+    public void resetSpeechRecognizerError(){
+        speechRecognizerError = null;
+    }
+
+    @Nullable
+    public ErrorInfo getTranslatorError() {
+        return translatorError;
+    }
+
+    @Nullable
+    public ErrorInfo getSpeechRecognizerError() {
+        return speechRecognizerError;
+    }
+
+    public void initializeTranslator(@Nullable Translator.GeneralListener initListener){
+        if(translator == null){
+            translatorInitializing = true;
+            // translator initialization
+            translator = new Translator(this, getTranslationMode(), isUseMozillaForVoiceTranslation(), isUseTatoeba(), isUseTranslationDictionaries(), new Translator.GeneralListener() {
+                @Override
+                public void onSuccess() {
+                    InitEngineListener listener;
+                    synchronized (initEngineListenerLock) {
+                        translatorInitialized = true;
+                        translatorInitializing = false;
+                        listener = initEngineListener;
+                    }
+                    if (listener != null) listener.onTranslatorInitialized();
+                    if(initListener != null) initListener.onSuccess();
+                }
+
+                @Override
+                public void onFailure(int[] reasons, long value) {
+                    InitEngineListener listener;
+                    synchronized (initEngineListenerLock) {
+                        translatorInitializing = false;
+                        listener = initEngineListener;
+                    }
+                    translatorError = new ErrorInfo(reasons, value);
+                    if(listener != null) listener.onTranslatorError(reasons, value);
+                    if(initListener != null) initListener.onFailure(reasons, value);
+                }
+            });
+        }
+    }
+
+    public void initializeSpeechRecognizer(@Nullable NeuralNetworkApi.InitListener initListener){
         if(speechRecognizer == null) {
-            vad = Vad.builder()
-                    .setContext(this)
-                    .setSampleRate(SampleRate.SAMPLE_RATE_16K)
-                    .setFrameSize(FrameSize.FRAME_SIZE_512)
-                    .setMode(Mode.NORMAL)
-                    .setSilenceDurationMs(300)
-                    .setSpeechDurationMs(50)
-                    .build();
-            speechRecognizer = new Recognizer(this, true, initListener);
-        }else{
-            initListener.onInitializationFinished();
+            speechRecognizerInitializing = true;
+            speechRecognizer = new Recognizer(Global.this, true, new NeuralNetworkApi.InitListener() {
+                @Override
+                public void onInitializationFinished() {
+                    InitEngineListener listener;
+                    synchronized (initEngineListenerLock) {
+                        speechRecognizerInitialized = true;
+                        speechRecognizerInitializing = false;
+                        listener = initEngineListener;
+                    }
+                    if(listener != null) listener.onSpeechRecognizerInitialized();
+                    if(initListener != null) initListener.onInitializationFinished();
+                }
+
+                @Override
+                public void onError(int[] reasons, long value) {
+                    InitEngineListener listener;
+                    synchronized (initEngineListenerLock) {
+                        speechRecognizerInitializing = false;
+                        listener = initEngineListener;
+                    }
+                    speechRecognizerError = new ErrorInfo(reasons, value);
+                    if(listener != null) listener.onSpeechRecognizerError(reasons, value);
+                    if(initListener != null) initListener.onError(reasons, value);
+                }
+            });
         }
     }
 
@@ -215,31 +402,31 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
 
     public boolean areModelsLoaded() {
-        return modelsLoaded;
+        return translatorInitialized && (ONLY_TEXT_TRANSLATION_MODE || speechRecognizerInitialized);
     }
 
-    public void setModelsLoaded(boolean areModelsLoaded) {
-        this.modelsLoaded = areModelsLoaded;
+    public boolean areModelsLoading() {
+        return translatorInitializing || speechRecognizerInitializing;
     }
 
     public void getLanguagesAndCheckTTS(final boolean recycleResult, boolean ignoreTTSError, final GetLocalesListListener responseListener) {
-        if (recycleResult && !languages.isEmpty()) {
-            responseListener.onSuccess(languages);
-        } else {
-            long time = System.currentTimeMillis();
-            TTS.getSupportedLanguages(this, new TTS.SupportedLanguagesListener() {    //we load TTS languages to catch eventual TTS errors
-                @Override
-                public void onLanguagesListAvailable(ArrayList<CustomLocale> ttsLanguages) {
-                    android.util.Log.i("performance_lang", "TTS language loading: " + (System.currentTimeMillis() - time) + "ms");
-                    responseListener.onSuccess(getLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, recycleResult));
-                }
+        ArrayList<CustomLocale> languages = getLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, recycleResult);
+        TTS.getSupportedLanguages(this, new TTS.SupportedLanguagesListener() {    //we load TTS languages to catch eventual TTS errors
+            @Override
+            public void onLanguagesListAvailable(ArrayList<CustomLocale> ttsLanguages) {
+                Global.this.ttsLanguages = ttsLanguages;
+                responseListener.onSuccess(languages);
+            }
 
-                @Override
-                public void onError(int reason) {
+            @Override
+            public void onError(int reason) {
+                if(ignoreTTSError){
+                    responseListener.onSuccess(new ArrayList<>());
+                }else {
                     responseListener.onFailure(new int[]{reason}, 0);
                 }
-            });
-        }
+            }
+        });
     }
 
     public ArrayList<CustomLocale> getLanguages(RTranslatorMode rtranslatorMode, final boolean recycleResult) {
@@ -330,7 +517,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
     }
 
-    public void getTTSLanguages(final boolean recycleResult, final GetLocalesListListener responseListener){
+    public void getTTSLanguages(final boolean recycleResult, boolean ignoreError, final GetLocalesListListener responseListener){
         if(recycleResult && !ttsLanguages.isEmpty()){
             responseListener.onSuccess(ttsLanguages);
         }else{
@@ -343,7 +530,11 @@ public class Global extends Application implements DefaultLifecycleObserver {
 
                 @Override
                 public void onError(int reason) {
-                    responseListener.onSuccess(new ArrayList<>());
+                    if(ignoreError) {
+                        responseListener.onSuccess(new ArrayList<>());
+                    }else{
+                        responseListener.onFailure(new int[]{reason}, 0);
+                    }
                 }
             });
         }
@@ -929,7 +1120,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         return whisperReducedRam;
     }
 
-    public void setWhisperReducedRam(boolean whisperReducedRam, @Nullable Translator.GeneralListener listener) {
+    public void setWhisperReducedRam(boolean whisperReducedRam, @NonNull Translator.GeneralListener listener) {
         boolean changed = this.whisperReducedRam != whisperReducedRam;
         if(changed){
             this.whisperReducedRam = whisperReducedRam;
@@ -942,20 +1133,47 @@ public class Global extends Application implements DefaultLifecycleObserver {
                 @Override
                 public void run() {
                     try {
-                        if(speechRecognizer != null) speechRecognizer.initializeEncoderSession();
-                        mainHandler.post(() -> {
-                            if(listener != null) listener.onSuccess();
+                        boolean isSpeechRecognizerInitialized = !registerInitEngineListenerIfRecognizerNotInitialized(new InitEngineListener() {
+                            @Override
+                            public void onSpeechRecognizerInitialized() {
+                                try {
+                                    speechRecognizer.initializeEncoderSession();
+                                    mainHandler.post(listener::onSuccess);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    mainHandler.post(() -> {
+                                        listener.onFailure(new int[]{ErrorCodes.ERROR}, 0);
+                                    });
+                                }
+                            }
+
+                            @Override
+                            public void onSpeechRecognizerError(int[] reasons, long value) {
+                                // we ignore the error and return a success, this error will be managed
+                                // when the user will open WalkieTalkie or Conversation mode
+                                mainHandler.post(listener::onSuccess);
+                            }
                         });
+                        if(isSpeechRecognizerInitialized){
+                            speechRecognizer.initializeEncoderSession();
+                            mainHandler.post(listener::onSuccess);
+                        }else {
+                            if (!speechRecognizerInitializing) {
+                                // we ignore the error and return a success, this error will be managed
+                                // when the user will open WalkieTalkie or Conversation mode
+                                mainHandler.post(listener::onSuccess);
+                            }
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                         mainHandler.post(() -> {
-                            if (listener != null) listener.onFailure(new int[]{ErrorCodes.ERROR}, 0);
+                            listener.onFailure(new int[]{ErrorCodes.ERROR}, 0);
                         });
                     }
                 }
             }).start();
         }else{
-            if(listener != null) listener.onSuccess();
+            listener.onSuccess();
         }
     }
 
@@ -980,11 +1198,26 @@ public class Global extends Application implements DefaultLifecycleObserver {
             editor.putBoolean("useTatoeba", useTatoeba);
             editor.putBoolean("useTranslationDictionaries", useTranslationDicts);
             editor.apply();
-            // update of the translator status (if the translator is already initialized)
-            if (translator != null) {
+            // update of the translator status
+            boolean isTranslatorInitialized = !registerInitEngineListenerIfTranslatorNotInitialized(new InitEngineListener() {
+                @Override
+                public void onTranslatorInitialized() {
+                    setInitEngineListener(null);
+                    translator.setTranslationStatus(translationMode, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts, listener);
+                }
+
+                @Override
+                public void onTranslatorError(int[] reasons, long value) {
+                    setInitEngineListener(null);
+                    listener.onFailure(new int[]{ErrorCodes.ERROR_LOADING_MODEL}, 0);
+                }
+            });
+            if(isTranslatorInitialized){
                 translator.setTranslationStatus(translationMode, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts, listener);
             }else{
-                listener.onSuccess();
+                if(!translatorInitializing){
+                    initializeTranslator(null);  //the listener will be the engine we registered above
+                }
             }
         }else{
             listener.onSuccess();
@@ -1213,9 +1446,32 @@ public class Global extends Application implements DefaultLifecycleObserver {
 
     private void loadLanguagesResources(CustomLocale firstLanguage, CustomLocale secondLanguage, RTranslatorMode mode, Translator.GeneralListener listener){
         if(translator != null) {
+            // if the translator is initialized we load the language resource.
+            // We do that even if the translator is still initializing but it is not null,
+            // in this case the concurrency will be managed by the langResourcesLock,
+            // and in case of errors this method will just do nothing.
             translator.loadLanguageResources(firstLanguage, secondLanguage, mode, listener);
         }else{
             listener.onSuccess();  //if the translator is not initialized yet we do not load the language resources
+        }
+    }
+
+    public static abstract class InitEngineListener{
+        public void onTranslatorInitialized(){}
+        public void onSpeechRecognizerInitialized(){}
+        public void onTTSInitialized(){}
+        public void onTranslatorError(int[] reasons, long value){}
+        public void onSpeechRecognizerError(int[] reasons, long value){}
+        public void onTTSError(int[] reasons, long value){}
+    }
+
+    public static class ErrorInfo{
+        public int[] reasons;
+        public long value;
+
+        public ErrorInfo(int[] reasons, long value) {
+            this.reasons = reasons;
+            this.value = value;
         }
     }
 }

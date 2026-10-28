@@ -23,6 +23,7 @@ import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -101,6 +102,14 @@ public class ButtonMic extends DeactivableButton {
         colorMutedActivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorPrimaryStrong), GuiTools.getColorStateList(context,R.attr.colorBackgroundColored));
         colorDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorTextInverted), GuiTools.getColorStateList(context,R.attr.colorDeactivated));
         colorMutedDeactivated = new ButtonMicColor(GuiTools.getColorStateList(context,R.attr.colorTextLevel3), GuiTools.getColorStateList(context,R.attr.colorDeactivatedLite));
+    }
+
+    public void initialize(@Nullable MicrophoneComunicable fragment, boolean isMute, View leftLine, View centerLine, View rightLine) {
+        this.fragment = fragment;
+        this.isMute = isMute;
+        this.leftLine = leftLine;
+        this.centerLine = centerLine;
+        this.rightLine = rightLine;
     }
 
     public void deleteEditText(VoiceTranslationActivity activity, final ConversationMainFragment fragment, final ButtonKeyboard buttonKeyboard, final EditText editText, ImageButton micPlaceHolder) {
@@ -214,6 +223,7 @@ public class ButtonMic extends DeactivableButton {
     }
 
     public void setMute(boolean mute, boolean animate) {
+        Log.i("mic", "mic muted: "+ Boolean.valueOf(mute).toString() + ", animated: "+Boolean.valueOf(animate).toString());
         isMute = mute;
         if (state == STATE_NORMAL) {
             if (mute) {
@@ -224,12 +234,16 @@ public class ButtonMic extends DeactivableButton {
                     rightLine.setVisibility(GONE);
                     volumeLevel = -1;
                 }
-                animator.animateMute(context, this, !animate);
-                currentColor = colorMutedActivated;   //setMute can be called only when the mic is activated
+                ButtonMicColor initialColor = currentColor;
+                ButtonMicColor finalColor = activated ? colorMutedActivated : colorMutedDeactivated;
+                animator.animateMute(context, this, initialColor, finalColor, !animate);
+                currentColor = finalColor;
                 setContentDescription(getResources().getString(R.string.description_start_microphone)); // change accessibility description
             } else {
-                animator.animateUnmute(context, this, !animate);
-                currentColor = colorActivated;     //setMute can be called only when the mic is activated
+                ButtonMicColor initialColor = currentColor;
+                ButtonMicColor finalColor = activated ? colorActivated : colorDeactivated;
+                animator.animateUnmute(context, this, initialColor, finalColor, !animate);
+                currentColor = finalColor;
                 setContentDescription(getResources().getString(R.string.description_stop_microphone));  // change accessibility description
             }
         }
@@ -353,35 +367,24 @@ public class ButtonMic extends DeactivableButton {
         super.deactivate(reason);
         switch (reason) {
             case DEACTIVATED_FOR_MISSING_MIC_PERMISSION:
-                //setImageDrawable(getDrawable(R.drawable.mic));
                 animator.animateDeactivation(context, this);
                 currentColor = isMute ? colorMutedDeactivated : colorDeactivated;
                 if(fragment != null) {
                     fragment.stopMicrophone(false);
                 }
                 break;
+            case DEACTIVATED_FOR_WAIT_ENGINE:
+            case DEACTIVATED_FOR_ENGINE_ERROR:
             case DEACTIVATED:
                 if (currentColor == null) {  //for differentiating the deactivate at the start of WalkieTalkie mode (color == null) from the one caused by programmatic stop of mic
                     currentColor = isMute ? colorMutedDeactivated : colorDeactivated;
-                    //setImageDrawable(getDrawable(R.drawable.mic));
+                    getBackground().setColorFilter(currentColor.backgroundColor.getDefaultColor(), PorterDuff.Mode.SRC_IN);
                 } else {
-                    //setImageDrawable(getDrawable(R.drawable.mic));
                     animator.animateDeactivation(context, this);
                     currentColor = isMute ? colorMutedDeactivated : colorDeactivated;
                 }
                 break;
         }
-    }
-
-    public void initialize(@Nullable MicrophoneComunicable fragment) {  //da fare: cancellarlo quando avrò implementato l'animazione in base al volume anche in Conversation
-        this.fragment = fragment;
-    }
-
-    public void initialize(@Nullable MicrophoneComunicable fragment, View leftLine, View centerLine, View rightLine) {
-        this.fragment = fragment;
-        this.leftLine = leftLine;
-        this.centerLine = centerLine;
-        this.rightLine = rightLine;
     }
 
     public Drawable getDrawable(int id) {

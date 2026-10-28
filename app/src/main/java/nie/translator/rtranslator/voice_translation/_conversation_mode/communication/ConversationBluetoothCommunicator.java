@@ -182,13 +182,16 @@ public class ConversationBluetoothCommunicator {
                     }
                     case "l": {
                         //we have received an empty message that contains only the other peer language, we load that language resources
-                        String completeText = message.getText();
-                        int srcLanguageCodeSize = Integer.valueOf(completeText.substring(completeText.length() - 1));
-                        String srcLanguageCode = completeText.substring(completeText.length() - (srcLanguageCodeSize + 1), completeText.length() - 1);
-                        CustomLocale srcLanguage = new CustomLocale(srcLanguageCode);
-                        Log.d("ConvBluetoothCommunicator", "language received: "+srcLanguageCode);
-                        boolean firstLoad = global.getTranslator().getLanguageResourcesManager().isPeerLoaded(message.getSender());
-                        global.getTranslator().loadSrcLangResourcesForPeer(srcLanguage, message.getSender(), null);
+                        boolean firstLoad = true;
+                        if(global.getTranslator() != null && global.isTranslatorInitialized()) {
+                            String completeText = message.getText();
+                            int srcLanguageCodeSize = Integer.valueOf(completeText.substring(completeText.length() - 1));
+                            String srcLanguageCode = completeText.substring(completeText.length() - (srcLanguageCodeSize + 1), completeText.length() - 1);
+                            CustomLocale srcLanguage = new CustomLocale(srcLanguageCode);
+                            Log.d("ConvBluetoothCommunicator", "language received: " + srcLanguageCode);
+                            firstLoad = global.getTranslator().getLanguageResourcesManager().isPeerLoaded(message.getSender());
+                            global.getTranslator().loadSrcLangResourcesForPeer(srcLanguage, message.getSender(), null);
+                        }
                         // if we are the server and the language indication received is the one sent at the beginning of connection (and not after, when the peer updates the language), we respond with our language
                         if (source == BluetoothCommunicator.SERVER && firstLoad) {
                             sendLanguage(global.getLanguage(true), message.getSender());

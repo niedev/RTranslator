@@ -45,18 +45,17 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
+        android:ellipsize="end"
         android:fontFamily="@font/nunito_sans_semibold"
         android:maxLines="1"
+        android:scrollHorizontally="true"
         android:text="@string/title_fragment_walkie_talkie"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textColor="?attr/colorPrimaryStrong"
         android:textSize="22sp"
         android:textStyle="bold"
-        android:scrollHorizontally="true"
-        android:ellipsize="end"
         app:layout_constraintBottom_toBottomOf="@+id/toolbarWalkieTalkie"
-        app:layout_constraintEnd_toStartOf="@+id/soundButton"
+        app:layout_constraintEnd_toStartOf="@+id/progressBar"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@+id/exitButton"
         app:layout_constraintTop_toTopOf="@+id/toolbarWalkieTalkie" />
@@ -96,6 +95,22 @@
         app:layout_constraintStart_toStartOf="@+id/toolbarWalkieTalkie"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/settings_icon" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:indeterminateTint="?attr/colorPrimaryStrong"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/toolbarWalkieTalkie"
+        app:layout_constraintEnd_toStartOf="@+id/soundButton"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <nie.translator.rtranslator.tools.gui.ButtonSound
         android:id="@+id/soundButton"
@@ -200,40 +215,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0"
             tools:text="Italian"/>
-
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/settingsButton2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:alpha="0"
-            android:backgroundTint="@android:color/transparent"
-            android:clickable="false"
-            android:tint="?attr/colorPrimaryStrong"
-            android:contentDescription="@string/title_activity_settings"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.9"
-            app:layout_constraintStart_toStartOf="@+id/guideline13"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/settings_icon" />
-
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/backButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:alpha="0"
-            android:visibility="visible"
-            android:backgroundTint="@android:color/transparent"
-            android:clickable="false"
-            android:tint="?attr/colorPrimaryStrong"
-            android:contentDescription="@string/back"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/guideline10"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/back_arrow_icon" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

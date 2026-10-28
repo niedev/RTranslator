@@ -30,6 +30,7 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -66,6 +67,7 @@ import nie.translator.rtranslator.tools.services_communication.ServiceCommunicat
 import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationFragment;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationService;
+import nie.translator.rtranslator.voice_translation.VoiceTranslationService.EngineStatus;
 
 
 public class WalkieTalkieFragment extends VoiceTranslationFragment {
@@ -85,6 +87,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
     private MaterialButton secondLanguageSelector;
     private AppCompatImageButton settingsButton;
     private ButtonSound sound;
+    private ProgressBar progressBar;
     private long lastPressedLeftMic = -1;
     private long lastPressedRightMic = -1;
     private Handler mHandler = new Handler();
@@ -119,16 +122,17 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         exitButton = view.findViewById(R.id.exitButton);
         sound = view.findViewById(R.id.soundButton);
         microphone = view.findViewById(R.id.buttonMic);
-        microphone.initialize(this, view.findViewById(R.id.leftLine), view.findViewById(R.id.centerLine), view.findViewById(R.id.rightLine));
+        microphone.initialize(this, false, view.findViewById(R.id.leftLine), view.findViewById(R.id.centerLine), view.findViewById(R.id.rightLine));
         leftMicrophone = view.findViewById(R.id.buttonMicFirst);
-        leftMicrophone.initialize(null, view.findViewById(R.id.leftLineL), view.findViewById(R.id.centerLineL), view.findViewById(R.id.rightLineL));
+        leftMicrophone.initialize(null, true, view.findViewById(R.id.leftLineL), view.findViewById(R.id.centerLineL), view.findViewById(R.id.rightLineL));
         rightMicrophone = view.findViewById(R.id.buttonMicSecond);
-        rightMicrophone.initialize(null, view.findViewById(R.id.leftLineR), view.findViewById(R.id.centerLineR), view.findViewById(R.id.rightLineR));
+        rightMicrophone.initialize(null, true, view.findViewById(R.id.leftLineR), view.findViewById(R.id.centerLineR), view.findViewById(R.id.rightLineR));
         leftMicLanguage = view.findViewById(R.id.textButton1);
         rightMicLanguage = view.findViewById(R.id.textButton2);
         settingsButton = view.findViewById(R.id.settingsButton);
+        progressBar = view.findViewById(R.id.progressBar);
         description.setText(R.string.description_walkie_talkie);
-        deactivateInputs(DeactivableButton.DEACTIVATED);
+        deactivateInputs(DeactivableButton.DEACTIVATED_FOR_WAIT_ENGINE);
         //container.setVisibility(View.INVISIBLE);  //we make the UI invisible until the restore of the attributes from the service (to avoid instant changes of the UI).
         Global globalApp = (Global) requireActivity().getApplication();
         //Set TalkBack initial brief
@@ -164,6 +168,12 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
             @Override
             public void onClick(View v) {
                 activity.showPermissionDialog(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT);
+            }
+        };
+        final View.OnClickListener waitingEngineLoadClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(activity, getResources().getString(R.string.error_wait_initialization), Toast.LENGTH_SHORT).show();
             }
         };
         Toolbar toolbar = activity.findViewById(R.id.toolbarWalkieTalkie);
@@ -224,6 +234,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         });
         microphone.setOnClickListenerForDeactivatedForMissingMicPermission(micMissingClickListener);
         microphone.setOnClickListenerForDeactivated(deactivatedClickListener);
+        microphone.setOnClickListenerForEngineWait(waitingEngineLoadClickListener);
         setAutoMicDescriptionHandlerForAccessibility(microphone);
 
         leftMicrophone.setOnTouchListener(new View.OnTouchListener() {
@@ -268,6 +279,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         });
         leftMicrophone.setOnClickListenerForDeactivatedForMissingMicPermission(micMissingClickListener);
         leftMicrophone.setOnClickListenerForDeactivated(deactivatedClickListener);
+        leftMicrophone.setOnClickListenerForEngineWait(waitingEngineLoadClickListener);
         setManualMicClickListenerForAccessibility(leftMicrophone, Global.LanguageNumber.FIRST);
         setManualMicDescriptionHandlerForAccessibility(leftMicrophone, Global.LanguageNumber.FIRST);
 
@@ -311,6 +323,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         });
         rightMicrophone.setOnClickListenerForDeactivatedForMissingMicPermission(micMissingClickListener);
         rightMicrophone.setOnClickListenerForDeactivated(deactivatedClickListener);
+        rightMicrophone.setOnClickListenerForEngineWait(waitingEngineLoadClickListener);
         setManualMicClickListenerForAccessibility(rightMicrophone, Global.LanguageNumber.SECOND);
         setManualMicDescriptionHandlerForAccessibility(rightMicrophone, Global.LanguageNumber.SECOND);
 
@@ -364,20 +377,6 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                     }
                 });
                 Log.d("restore_attributes", "language selector listeners");
-
-                // setting of the selected languages (redundant, todo: decide if I can remove it safely)
-                /*walkieTalkieServiceCommunicator.getFirstLanguage(new WalkieTalkieService.LanguageListener() {
-                    @Override
-                    public void onLanguage(CustomLocale language) {
-                        setFirstLanguage(language);
-                    }
-                });
-                walkieTalkieServiceCommunicator.getSecondLanguage(new WalkieTalkieService.LanguageListener() {
-                    @Override
-                    public void onLanguage(CustomLocale language) {
-                        setSecondLanguage(language);
-                    }
-                });*/
             }
 
             @Override
@@ -391,7 +390,9 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
     public void restoreAttributesFromService() {
         walkieTalkieServiceCommunicator.getAttributes(new VoiceTranslationService.AttributesListener() {
             @Override
-            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic) {
+            public void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError,
+                                  VoiceTranslationService.EngineStatus translatorEngineStatus, VoiceTranslationService.EngineStatus speechRecognizerEngineStatus,
+                                  final boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic) {
                 // initialization with service values
                 //container.setVisibility(View.VISIBLE);
                 mAdapter = new MessagesAdapter(messages, global, speakingUtteranceId, new MessagesAdapter.Callback() {
@@ -416,47 +417,49 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                 mRecyclerView.setAdapter(mAdapter);
                 Log.d("restore_attributes", "adapter");
                 // restore microphone and sound status
+                boolean animate = true;
                 if(isMicAutomatic) {
-                    microphone.setMute(isMicMute, false);
-                    leftMicrophone.setMute(true, false);
-                    rightMicrophone.setMute(true, false);
+                    microphone.setMute(isMicMute, animate);
+                    leftMicrophone.setMute(true, animate);
+                    rightMicrophone.setMute(true, animate);
                     if(isMicActivated) {
                         if (listeningMic == VoiceTranslationService.AUTO_LANGUAGE) {
-                            microphone.onVoiceStarted(false);
+                            microphone.onVoiceStarted(animate);
                         } else {
-                            microphone.onVoiceEnded(false);
+                            microphone.onVoiceEnded(animate);
                         }
                     }else{
-                        microphone.onVoiceEnded(false);
+                        microphone.onVoiceEnded(animate);
                     }
-                    leftMicrophone.onVoiceEnded(false);
-                    rightMicrophone.onVoiceEnded(false);
+                    leftMicrophone.onVoiceEnded(animate);
+                    rightMicrophone.onVoiceEnded(animate);
                 }else{
                     WalkieTalkieFragment.this.isMicAutomatic = false;
-                    microphone.setMute(true, false);
-                    leftMicrophone.setMute(false, false);
-                    rightMicrophone.setMute(false, false);
+                    microphone.setMute(true, animate);
+                    leftMicrophone.setMute(false, animate);
+                    rightMicrophone.setMute(false, animate);
                     if(isMicActivated) {
                         if (listeningMic == VoiceTranslationService.FIRST_LANGUAGE) {
-                            leftMicrophone.onVoiceStarted(false);
+                            leftMicrophone.onVoiceStarted(animate);
                         } else {
-                            leftMicrophone.onVoiceEnded(false);
+                            leftMicrophone.onVoiceEnded(animate);
                         }
                         if (listeningMic == VoiceTranslationService.SECOND_LANGUAGE) {
-                            rightMicrophone.onVoiceStarted(false);
+                            rightMicrophone.onVoiceStarted(animate);
                         } else {
-                            rightMicrophone.onVoiceEnded(false);
+                            rightMicrophone.onVoiceEnded(animate);
                         }
                     }else{
-                        leftMicrophone.onVoiceEnded(false);
-                        rightMicrophone.onVoiceEnded(false);
+                        leftMicrophone.onVoiceEnded(animate);
+                        rightMicrophone.onVoiceEnded(animate);
                     }
-                    microphone.onVoiceEnded(false);
+                    microphone.onVoiceEnded(animate);
                 }
                 Log.d("restore_attributes", "mics");
 
                 sound.setMute(isAudioMute);
                 if(isTTSError){
+                    activity.manageTTSError();
                     sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
                 }
                 Log.d("restore_attributes", "sound");
@@ -464,25 +467,41 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                 if(!Tools.hasPermissions(activity, Global.REQUIRED_PERMISSIONS_VOICE)){
                     deactivateInputs(DeactivableButton.DEACTIVATED_FOR_MISSING_MIC_PERMISSION);
                 } else {
-                    if (isMicActivated) {
-                        if (!microphone.isMute()) {
-                            if(GuiTools.isTalkBackActive(global)) {
-                                // if talkBack is used we delay the inputs and mic activations to have the time to read the initial brief.
-                                // Only in this mode, system animation of the mic recording interrupts the initial brief, so this is necessary.
-                                // Plus a user wouldn't speak when he/she hears the initia brief, so this shouldn't be a problem.
-                                mHandler.postDelayed(() -> activateInputs(true), ACCESSIBILITY_ACTIVATE_INPUTS_DELAY);
-                            }else{
-                                activateInputs(true);
-                            }
-                        } else {
-                            activateInputs(false);
-                        }
-                    } else {
-                        deactivateInputs(DeactivableButton.DEACTIVATED);
+                    if(translatorEngineStatus == EngineStatus.INITIALIZED && speechRecognizerEngineStatus == EngineStatus.INITIALIZED) {
+                        Log.i("restore_attributes", "engine loaded");
+                        initializeInputs(isMicActivated);
+                    } else if(translatorEngineStatus == EngineStatus.ERROR){
+                        manageTranslatorError();
+                    } else if(speechRecognizerEngineStatus == EngineStatus.ERROR){
+                        manageSpeechRecognizerError();
+                    }else{
+                        Log.i("restore_attributes", "engine loading");
+                        progressBar.setVisibility(View.VISIBLE);
                     }
                 }
             }
         });
+    }
+
+    public void initializeInputs(boolean isMicActivated){
+        if (isMicActivated) {
+            if (!microphone.isMute()) {
+                if (GuiTools.isTalkBackActive(global)) {
+                    // if talkBack is used we delay the inputs and mic activations to have the time to read the initial brief.
+                    // Only in this mode, system animation of the mic recording interrupts the initial brief, so this is necessary.
+                    // Plus a user wouldn't speak when he/she hears the initia brief, so this shouldn't be a problem.
+                    mHandler.postDelayed(() -> activateInputs(true), ACCESSIBILITY_ACTIVATE_INPUTS_DELAY);
+                } else {
+                    activateInputs(true);
+                }
+            } else {
+                activateInputs(false);
+            }
+        } else {
+            deactivateInputs(DeactivableButton.DEACTIVATED);
+        }
+        //we hide the loading
+        progressBar.setVisibility(View.GONE);
     }
 
 
@@ -703,9 +722,23 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         });
     }
 
+    private void manageSpeechRecognizerError() {
+        activity.manageSpeechRecognizerError();
+    }
+
+    private void manageTranslatorError(){
+        activity.manageTranslatorError();
+    }
+
 
 
     public class WalkieTalkieServiceCallback extends VoiceTranslationService.VoiceTranslationServiceCallback {
+        @Override
+        public void onEngineLoaded() {
+            Log.d("engine", "onEngineLoaded");
+            initializeInputs(true);
+        }
+
         @Override
         public void onTTSStarted(String utteranceId) {
             super.onTTSStarted(utteranceId);
@@ -823,12 +856,15 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                         activity.showInternetLackDialog(R.string.error_internet_lack_services, null);
                         break;
                     case ErrorCodes.MISSING_GOOGLE_TTS:
-                        sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
-                        //activity.showMissingGoogleTTSDialog();
-                        break;
                     case ErrorCodes.GOOGLE_TTS_ERROR:
+                        activity.manageTTSError();
                         sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
-                        //activity.showGoogleTTSErrorDialog();
+                        break;
+                    case ErrorCodes.ERROR_LOADING_TRANSLATOR:
+                        manageTranslatorError();
+                        break;
+                    case ErrorCodes.ERROR_LOADING_SPEECH_RECOGNIZER:
+                        manageSpeechRecognizerError();
                         break;
                     /*case ErrorCodes.MISSING_MIC_PERMISSION: {
                         if(getContext() != null) {

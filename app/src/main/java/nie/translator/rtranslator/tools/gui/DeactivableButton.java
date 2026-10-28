@@ -28,15 +28,16 @@ public class DeactivableButton extends AppCompatImageButton {
     public static final int DEACTIVATED=1;
     public static final int DEACTIVATED_FOR_MISSING_MIC_PERMISSION =3;
     public static final int DEACTIVATED_FOR_TTS_ERROR=5;
+    public static final int DEACTIVATED_FOR_WAIT_ENGINE=6;
+    public static final int DEACTIVATED_FOR_ENGINE_ERROR=7;
     protected int activationStatus=0;
     private OnClickListener activatedClickListener;
     private OnClickListener deactivatedClickListener;
     private OnClickListener deactivatedForMissingMicPermissionClickListener;
     private OnClickListener deactivatedForTTSErrorClickListener;
+    private OnClickListener deactivatedForEngineLoadWaitClickListener;
+    private OnClickListener deactivatedForEngineLoadErrorClickListener;
     public boolean activated = true;
-    //public static ColorStateList deactivatedColor;
-    //public static ColorStateList activatedColor;
-    //protected ColorStateList color;
 
     public DeactivableButton(Context context) {
         super(context);
@@ -52,21 +53,21 @@ public class DeactivableButton extends AppCompatImageButton {
 
     public void setOnClickListenerForActivated(@Nullable OnClickListener l) {
         activatedClickListener =l;
-        if(activationStatus==ACTIVATED) {
+        if(activationStatus == ACTIVATED) {
             super.setOnClickListener(l);
         }
     }
 
     public void setOnClickListenerForDeactivated(@Nullable OnClickListener l) {
         deactivatedClickListener =l;
-        if(activationStatus==DEACTIVATED) {
+        if(activationStatus == DEACTIVATED) {
             super.setOnClickListener(l);
         }
     }
 
     public void setOnClickListenerForDeactivatedForMissingMicPermission(@Nullable OnClickListener l) {
         deactivatedForMissingMicPermissionClickListener =l;
-        if(activationStatus== DEACTIVATED_FOR_MISSING_MIC_PERMISSION) {
+        if(activationStatus == DEACTIVATED_FOR_MISSING_MIC_PERMISSION) {
             super.setOnClickListener(l);
         }
     }
@@ -74,6 +75,20 @@ public class DeactivableButton extends AppCompatImageButton {
     public void setOnClickListenerForTTSError(@Nullable OnClickListener l){
         deactivatedForTTSErrorClickListener = l;
         if(activationStatus == DEACTIVATED_FOR_TTS_ERROR){
+            super.setOnClickListener(l);
+        }
+    }
+
+    public void setOnClickListenerForEngineWait(@Nullable OnClickListener l){
+        deactivatedForEngineLoadWaitClickListener = l;
+        if(activationStatus == DEACTIVATED_FOR_WAIT_ENGINE){
+            super.setOnClickListener(l);
+        }
+    }
+
+    public void setOnClickListenerForEngineError(@Nullable OnClickListener l){
+        deactivatedForEngineLoadErrorClickListener = l;
+        if(activationStatus == DEACTIVATED_FOR_ENGINE_ERROR){
             super.setOnClickListener(l);
         }
     }
@@ -92,6 +107,14 @@ public class DeactivableButton extends AppCompatImageButton {
             }
             case DEACTIVATED_FOR_TTS_ERROR: {
                 super.setOnClickListener(deactivatedForTTSErrorClickListener);
+                break;
+            }
+            case DEACTIVATED_FOR_WAIT_ENGINE: {
+                super.setOnClickListener(deactivatedForEngineLoadWaitClickListener);
+                break;
+            }
+            case DEACTIVATED_FOR_ENGINE_ERROR: {
+                super.setOnClickListener(deactivatedForEngineLoadErrorClickListener);
                 break;
             }
         }

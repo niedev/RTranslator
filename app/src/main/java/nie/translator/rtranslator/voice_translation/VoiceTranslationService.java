@@ -41,6 +41,7 @@ import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.bluetooth.Message;
 import nie.translator.rtranslator.bluetooth.tools.Timer;
 import nie.translator.rtranslator.tools.CustomLocale;
+import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.messages.GuiMessage;
 import nie.translator.rtranslator.tools.services_communication.ServiceCallback;
@@ -79,6 +80,7 @@ public abstract class VoiceTranslationService extends GeneralService {
     public static final int ON_CONNECTED_BLUETOOTH_HEADSET = 15;
     public static final int ON_DISCONNECTED_BLUETOOTH_HEADSET = 16;
     public static final int ON_STOPPED = 6;
+    public static final int ON_ENGINE_LOADED = 27;
 
     // errors
     public static final int MISSING_MIC_PERMISSION = 400;
@@ -109,6 +111,7 @@ public abstract class VoiceTranslationService extends GeneralService {
     protected boolean manualRecognizingFirstLanguage = false;
     protected boolean manualRecognizingSecondLanguage = false;
     protected boolean manualRecognizingAutoLanguage = false;
+    protected Global global;
 
 
     @Override
@@ -116,6 +119,7 @@ public abstract class VoiceTranslationService extends GeneralService {
         super.onCreate();
         mainHandler = new Handler(this.getMainLooper());
         mainTTSHandler = new Handler(this.getMainLooper());
+        global = (Global) getApplication();
         //reset translator last input and last output text
         /*if(((Global) getApplication())!=null){
             Translator translator = ((Global) getApplication()).getTranslator();
@@ -338,9 +342,19 @@ public abstract class VoiceTranslationService extends GeneralService {
         });
     }
 
+    protected void manageTranslatorError(){
+        notifyError(new int[]{ErrorCodes.ERROR_LOADING_TRANSLATOR}, 0);
+    }
+
+    protected void manageSpeechRecognizerError(){
+        notifyError(new int[]{ErrorCodes.ERROR_LOADING_TRANSLATOR}, 0);
+    }
+
     @Override
     public synchronized void onDestroy() {
         super.onDestroy();
+        // stop engine listener
+        global.setInitEngineListener(null);
         // Stop listening to voice
         stopVoiceRecorder();
         if(mVoiceRecorder != null) {
@@ -432,12 +446,34 @@ public abstract class VoiceTranslationService extends GeneralService {
                     }
                     return true;
                 case GET_ATTRIBUTES:
+                    EngineStatus translatorEngineStatus;
+                    if(global.getTranslatorError() != null){
+                        translatorEngineStatus = EngineStatus.ERROR;
+                    }else{
+                        if(global.isTranslatorInitialized()){
+                            translatorEngineStatus = EngineStatus.INITIALIZED;
+                        }else{
+                            translatorEngineStatus = EngineStatus.INITIALIZING;
+                        }
+                    }
+                    EngineStatus speechRecognizerEngineStatus;
+                    if(global.getSpeechRecognizerError() != null){
+                        speechRecognizerEngineStatus = EngineStatus.ERROR;
+                    }else{
+                        if(global.isSpeechRecognizerInitialized()){
+                            speechRecognizerEngineStatus = EngineStatus.INITIALIZED;
+                        }else{
+                            speechRecognizerEngineStatus = EngineStatus.INITIALIZING;
+                        }
+                    }
                     Bundle bundle = new Bundle();
                     bundle.putInt("callback", ON_ATTRIBUTES);
                     bundle.putParcelableArrayList("messages", messages);
                     bundle.putBoolean("isMicMute", isMicMute);
                     bundle.putBoolean("isAudioMute", isAudioMute);
                     bundle.putBoolean("isTTSError", ttsEngine == null);
+                    bundle.putInt("translatorEngineStatus", translatorEngineStatus.ordinal());
+                    bundle.putInt("speechRecognizerEngineStatus", speechRecognizerEngineStatus.ordinal());
                     bundle.putBoolean("isEditTextOpen", isEditTextOpen);
                     bundle.putBoolean("isBluetoothHeadsetConnected", isBluetoothHeadsetConnected());
                     bundle.putBoolean("isMicAutomatic", isMicAutomatic);
@@ -460,6 +496,13 @@ public abstract class VoiceTranslationService extends GeneralService {
             return false;
         }
         return true;
+    }
+
+    public void notifyEngineLoaded(){
+        Bundle bundle = new Bundle();
+        bundle.clear();
+        bundle.putInt("callback", ON_ENGINE_LOADED);
+        super.notifyToClient(bundle);
     }
 
     public void notifyMessage(GuiMessage message) {
@@ -551,6 +594,8 @@ public abstract class VoiceTranslationService extends GeneralService {
                         boolean isMicMute = data.getBoolean("isMicMute");
                         boolean isAudioMute = data.getBoolean("isAudioMute");
                         boolean isTTSError = data.getBoolean("isTTSError");
+                        EngineStatus translatorEngineStatus = EngineStatus.values()[data.getInt("translatorEngineStatus")];
+                        EngineStatus speechRecognizerEngineStatus = EngineStatus.values()[data.getInt("speechRecognizerEngineStatus")];
                         boolean isEditTextOpen = data.getBoolean("isEditTextOpen");
                         boolean isBluetoothHeadsetConnected = data.getBoolean("isBluetoothHeadsetConnected");
                         boolean isMicAutomatic = data.getBoolean("isMicAutomatic");
@@ -558,10 +603,15 @@ public abstract class VoiceTranslationService extends GeneralService {
                         long speakingUtteranceId = data.getLong("speakingUtteranceId");
                         int listeningMic = data.getInt("listeningMic");
                         while (!attributesListeners.isEmpty()) {
-                            attributesListeners.remove(0).onSuccess(messages, isMicMute, isAudioMute, isTTSError, isEditTextOpen, isBluetoothHeadsetConnected, isMicAutomatic, isMicActivated, speakingUtteranceId, listeningMic);
+                            attributesListeners.remove(0).onSuccess(messages, isMicMute, isAudioMute, isTTSError, translatorEngineStatus, speechRecognizerEngineStatus, isEditTextOpen, isBluetoothHeadsetConnected, isMicAutomatic, isMicActivated, speakingUtteranceId, listeningMic);
                         }
                         return true;
                     }
+                    case ON_ENGINE_LOADED:
+                        for (int i = 0; i < clientCallbacks.size(); i++) {
+                            clientCallbacks.get(i).onEngineLoaded();
+                        }
+                        return true;
                     case ON_VOICE_STARTED: {
                         int mode = data.getInt("mode");
                         for (int i = 0; i < clientCallbacks.size(); i++) {
@@ -726,6 +776,9 @@ public abstract class VoiceTranslationService extends GeneralService {
     }
 
     public static abstract class VoiceTranslationServiceCallback extends ServiceCallback {
+        public void onEngineLoaded(){
+        }
+
         public void onVoiceStarted(int mode) {
         }
 
@@ -758,7 +811,7 @@ public abstract class VoiceTranslationService extends GeneralService {
     }
 
     public interface AttributesListener {
-        void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic);
+        void onSuccess(ArrayList<GuiMessage> messages, boolean isMicMute, boolean isAudioMute, boolean isTTSError, EngineStatus translatorEngineStatus, EngineStatus speechRecognizerEngineStatus, boolean isEditTextOpen, boolean isBluetoothHeadsetConnected, boolean isMicAutomatic, boolean isMicActivated, long speakingUtteranceId, int listeningMic);
     }
 
     protected abstract class VoiceTranslationServiceRecognizerListener implements RecognizerListener {
@@ -766,5 +819,11 @@ public abstract class VoiceTranslationService extends GeneralService {
         public void onError(int[] reasons, long value) {
             notifyError(reasons, value);
         }
+    }
+
+    public enum EngineStatus {
+        INITIALIZING,
+        INITIALIZED,
+        ERROR
     }
 }

@@ -22,8 +22,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
@@ -69,7 +71,9 @@ public class WalkieTalkieService extends VoiceTranslationService {
     private RecognizerListener speechRecognizerSingleCallback;
 
     // objects
+    @Nullable
     private Translator translator;
+    @Nullable
     private Recognizer speechRecognizer;
     private CustomLocale firstLanguage;
     private CustomLocale secondLanguage;
@@ -80,8 +84,6 @@ public class WalkieTalkieService extends VoiceTranslationService {
     @Override
     public void onCreate() {
         super.onCreate();
-        translator = ((Global) getApplication()).getTranslator();
-        speechRecognizer = ((Global) getApplication()).getSpeechRecognizer();
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
         isAudioMute = !sharedPreferences.getBoolean("walkieTalkieAutoTTS", true);
         clientHandler = new Handler(new Handler.Callback() {
@@ -136,7 +138,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
                                 break;
                             case RECEIVE_TEXT:
                                 String text = message.getData().getString("text", null);
-                                if (text != null) {
+                                if (text != null && translator != null && global.isTranslatorInitialized()) {
                                     //we stop speech recognition
                                     stopVoiceRecorder();
                                     notifyMicDeactivated();   // we notify the client
@@ -242,21 +244,23 @@ public class WalkieTalkieService extends VoiceTranslationService {
             @Override
             public void onVoice(@NonNull float[] data, int size) {
                 super.onVoice(data,size);
-                if(manualRecognizingFirstLanguage){
-                    // we start the speech recognition in only the first language
-                    speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode());
+                if(speechRecognizer != null && global.isSpeechRecognizerInitialized()) {
+                    if (manualRecognizingFirstLanguage) {
+                        // we start the speech recognition in only the first language
+                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode());
 
-                } else if (manualRecognizingSecondLanguage) {
-                    // we start the speech recognition in only the second language
-                    speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, secondLanguage.getCode());
+                    } else if (manualRecognizingSecondLanguage) {
+                        // we start the speech recognition in only the second language
+                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, secondLanguage.getCode());
 
-                }else if(manualRecognizingAutoLanguage){
-                    // we start the speech recognition in both languages
-                    speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode(), secondLanguage.getCode());
+                    } else if (manualRecognizingAutoLanguage) {
+                        // we start the speech recognition in both languages
+                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode(), secondLanguage.getCode());
 
-                }else if(isMicAutomatic) {
-                    // we start the speech recognition in both languages
-                    speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode(), secondLanguage.getCode());
+                    } else if (isMicAutomatic) {
+                        // we start the speech recognition in both languages
+                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode(), secondLanguage.getCode());
+                    }
                 }
             }
 
@@ -320,7 +324,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
         firstResultTranslateListener = new Translator.TranslateListener() {
             @Override
             public void onTranslatedText(String textToTranslate, String translatedText, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale inputLanguage, CustomLocale outputLanguage) {
-                ((Global) getApplication()).getTTSLanguages(true, new Global.GetLocalesListListener() {
+                global.getTTSLanguages(true, false, new Global.GetLocalesListListener() {
                     @Override
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
                         GuiMessage message = new GuiMessage(new Message(textToTranslate, WalkieTalkieService.this, translatedText), inputLanguage, outputLanguage, resultID, true, isFinal);
@@ -363,7 +367,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
         secondResultTranslateListener = new Translator.TranslateListener() {
             @Override
             public void onTranslatedText(String textToTranslate, String translatedText, String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale inputLanguage, CustomLocale outputLanguage) {
-                ((Global) getApplication()).getTTSLanguages(true, new Global.GetLocalesListListener() {
+                global.getTTSLanguages(true, false, new Global.GetLocalesListListener() {
                     @Override
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
                         GuiMessage message = new GuiMessage(new Message(textToTranslate, WalkieTalkieService.this, translatedText), inputLanguage, outputLanguage, resultID, false, isFinal);
@@ -425,22 +429,58 @@ public class WalkieTalkieService extends VoiceTranslationService {
         firstLanguage = (CustomLocale) intent.getSerializableExtra("firstLanguage");
         secondLanguage = (CustomLocale) intent.getSerializableExtra("secondLanguage");
 
-        if(finalFirstLanguage==null || finalSecondLanguage==null ) {  //se è il primo avvio
-            //we attach the speech recognition callbacks
-            speechRecognizer.addMultiCallback(speechRecognizerCallback);
-            speechRecognizer.addCallback(speechRecognizerSingleCallback);
+        if(finalFirstLanguage==null || finalSecondLanguage==null ) {  //if it is the first start
+            // speech recognition and translation initialization
+            boolean isSpeechRecognizerInitialized = !global.registerInitEngineListenerIfRecognizerNotInitialized(new Global.InitEngineListener() {
+                @Override
+                public void onSpeechRecognizerInitialized() {
+                    initSpeechRecognitionAndTranslation();
+                    notifyEngineLoaded();
+                }
+
+                @Override
+                public void onTranslatorError(int[] reasons, long value) {
+                    manageTranslatorError();
+                }
+
+                @Override
+                public void onSpeechRecognizerError(int[] reasons, long value) {
+                    manageSpeechRecognizerError();
+                }
+            });
+
+            if(isSpeechRecognizerInitialized) {
+                initSpeechRecognitionAndTranslation();
+            }else{
+                if(global.getTranslatorError() != null){
+                    manageTranslatorError();
+                } else if(global.getSpeechRecognizerError() != null){
+                    manageSpeechRecognizerError();
+                }
+            }
         }
         return startType;
+    }
+
+    private void initSpeechRecognitionAndTranslation(){
+        // speech recognition and translation initialization
+        translator = global.getTranslator();
+        speechRecognizer = global.getSpeechRecognizer();
+        //we attach the speech recognition callbacks
+        speechRecognizer.addMultiCallback(speechRecognizerCallback);
+        speechRecognizer.addCallback(speechRecognizerSingleCallback);
     }
 
     @Override
     public void onDestroy() {
         Log.i("walkieTalkie", "WalkieTalkie service destroyed");
-        //disconnect speechRecognizerCallback
-        speechRecognizer.removeMultiCallback(speechRecognizerCallback);
-        speechRecognizer.removeCallback(speechRecognizerSingleCallback);
-        // Stop recognizer
-        speechRecognizer.stop();
+        if(speechRecognizer != null && global.isSpeechRecognizerInitialized()) {
+            //disconnect speechRecognizerCallback
+            speechRecognizer.removeMultiCallback(speechRecognizerCallback);
+            speechRecognizer.removeCallback(speechRecognizerSingleCallback);
+            // Stop recognizer
+            speechRecognizer.stop();
+        }
         super.onDestroy();
     }
 
@@ -453,41 +493,43 @@ public class WalkieTalkieService extends VoiceTranslationService {
             translate(firstResult.getText(), firstLanguage, secondLanguage, TRANSLATOR_BEAM_SIZE, false, firstResultTranslateListener);
             return;
         }
-        translator.detectLanguage(firstResult, secondResult, false, new CustomLocale[]{firstLanguage, secondLanguage}, new Translator.DetectMultiLanguageListener() {
-            @Override
-            public void onDetectedText(NeuralNetworkApiResult firstResult, NeuralNetworkApiResult secondResult, int message) {
-                if (message == ErrorCodes.BOTH_RESULTS_SUCCESS){  // if both results languages were found
-                    if (firstResult.getLanguage().equalsLanguage(firstLanguage)) {
-                        if (secondResult.getLanguage().equalsLanguage(secondLanguage)) {  // if both have recognized their respective language
-                            compareResultsConfidence(firstResult, secondResult);
-                        } else {  // if only the first result language is recognized
-                            translate(firstResult.getText(), firstLanguage, secondLanguage, TRANSLATOR_BEAM_SIZE, false, firstResultTranslateListener);
-                        }
-                    } else {
-                        if (secondResult.getLanguage().equalsLanguage(secondLanguage)) {  // if only the second result language is recognized
+        if(translator != null && global.isTranslatorInitialized()) {
+            translator.detectLanguage(firstResult, secondResult, false, new CustomLocale[]{firstLanguage, secondLanguage}, new Translator.DetectMultiLanguageListener() {
+                @Override
+                public void onDetectedText(NeuralNetworkApiResult firstResult, NeuralNetworkApiResult secondResult, int message) {
+                    if (message == ErrorCodes.BOTH_RESULTS_SUCCESS) {  // if both results languages were found
+                        if (firstResult.getLanguage().equalsLanguage(firstLanguage)) {
+                            if (secondResult.getLanguage().equalsLanguage(secondLanguage)) {  // if both have recognized their respective language
+                                compareResultsConfidence(firstResult, secondResult);
+                            } else {  // if only the first result language is recognized
+                                translate(firstResult.getText(), firstLanguage, secondLanguage, TRANSLATOR_BEAM_SIZE, false, firstResultTranslateListener);
+                            }
+                        } else {
+                            if (secondResult.getLanguage().equalsLanguage(secondLanguage)) {  // if only the second result language is recognized
 
-                            translate(secondResult.getText(), secondLanguage, firstLanguage, TRANSLATOR_BEAM_SIZE, false, secondResultTranslateListener);
-                        } else {  // if neither of them recognized his language but another (or none)
-                            compareResultsConfidence(firstResult, secondResult);
+                                translate(secondResult.getText(), secondLanguage, firstLanguage, TRANSLATOR_BEAM_SIZE, false, secondResultTranslateListener);
+                            } else {  // if neither of them recognized his language but another (or none)
+                                compareResultsConfidence(firstResult, secondResult);
+                            }
                         }
+                    } else if (message == ErrorCodes.SECOND_RESULT_FAIL) {  // if only the first result language was found
+                        translate(firstResult.getText(), firstLanguage, secondLanguage, TRANSLATOR_BEAM_SIZE, false, firstResultTranslateListener);
+                    } else if (message == ErrorCodes.FIRST_RESULT_FAIL) {   // if only the second result language was found
+                        translate(secondResult.getText(), secondLanguage, firstLanguage, TRANSLATOR_BEAM_SIZE, false, secondResultTranslateListener);
                     }
-                }else if(message == ErrorCodes.SECOND_RESULT_FAIL){  // if only the first result language was found
-                    translate(firstResult.getText(), firstLanguage, secondLanguage, TRANSLATOR_BEAM_SIZE, false, firstResultTranslateListener);
-                }else if(message == ErrorCodes.FIRST_RESULT_FAIL){   // if only the second result language was found
-                    translate(secondResult.getText(), secondLanguage, firstLanguage, TRANSLATOR_BEAM_SIZE, false, secondResultTranslateListener);
+                    // if both results languages were not found the onFailure method is called
                 }
-                // if both results languages were not found the onFailure method is called
-            }
 
-            @Override
-            public void onFailure(int[] reasons, long value) {  // if both results languages were not found
-                compareResultsConfidence(firstResult, secondResult);
-            }
-        });
+                @Override
+                public void onFailure(int[] reasons, long value) {  // if both results languages were not found
+                    compareResultsConfidence(firstResult, secondResult);
+                }
+            });
+        }
     }
 
     private void translate(final String textToTranslate, final CustomLocale languageInput, final CustomLocale languageOutput, int beamSize, boolean saveResults, final Translator.TranslateListener responseListener){
-        if(!isMetaText(textToTranslate)) {
+        if(!isMetaText(textToTranslate) && translator != null && global.isTranslatorInitialized()) {
             translator.translate(textToTranslate, languageInput, languageOutput, beamSize, saveResults, Global.RTranslatorMode.WALKIE_TALKIE_MODE, responseListener);
         }else{
             Log.i("walkieTalkie", "skipped translation of: "+textToTranslate+" because it is meta text");

@@ -59,7 +59,7 @@ public class LanguagePreference extends Preference {
         Global global = (Global) fragment.requireActivity().getApplication();
         final String summary = (String) getSummary();
         CustomLocale result = global.getLanguage(false);
-        global.getTTSLanguages(false, new Global.GetLocalesListListener() {
+        global.getTTSLanguages(false, true, new Global.GetLocalesListListener() {
             @Override
             public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
                 if (getSummary() == null || "".equals((String) getSummary())) {    // to avoid changing the summary after a language change after the initializeLanguageList () call
@@ -96,7 +96,7 @@ public class LanguagePreference extends Preference {
         GuiTools.showLanguageListDialog(activity, title, languages, selectedLanguage, true, new GuiTools.OnLanguageClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id, CustomLocale item) {
-                global.getTTSLanguages(true, new Global.GetLocalesListListener() {
+                global.getTTSLanguages(true, true, new Global.GetLocalesListListener() {
                     @Override
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
                         if (item != null && languages.contains(item)) {

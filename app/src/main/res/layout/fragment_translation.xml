@@ -73,6 +73,23 @@
             app:layout_constraintStart_toEndOf="@+id/title2"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/settings_icon" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="8dp"
+            android:indeterminateTint="?attr/colorPrimaryStrong"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/settingsButton"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/title2"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="invisible"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -565,7 +582,7 @@
                         android:id="@+id/buttonTranslate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="?attr/colorPrimary"
+                        android:backgroundTint="?attr/colorDeactivated"
                         android:maxWidth="150dp"
                         android:text="@string/translate"
                         android:textColor="?attr/colorTextInverted"
@@ -576,7 +593,8 @@
                         app:layout_constraintBottom_toBottomOf="@+id/buttonMicFirst"
                         app:layout_constraintEnd_toStartOf="@+id/buttonMicSecond"
                         app:layout_constraintStart_toEndOf="@+id/buttonMicFirst"
-                        app:layout_constraintTop_toTopOf="@+id/buttonMicFirst" />
+                        app:layout_constraintTop_toTopOf="@+id/buttonMicFirst"
+                        tools:backgroundTint="?attr/colorPrimary"/>
 
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/buttonWalkieTalkieSmall"
