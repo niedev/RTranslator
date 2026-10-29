@@ -127,7 +127,7 @@ public class Translator extends NeuralNetworkApi {
         setTranslationStatus(mode, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts, initListener);
     }
 
-    public void setTranslationStatus(int modelMode, boolean useMozillaForVoiceTranslation, boolean useTatoeba, boolean useTranslationDicts, GeneralListener listener){
+    public void setTranslationStatus(int modelMode, boolean useMozillaForVoiceTranslation, boolean useTatoeba, boolean useTranslationDicts, @NonNull GeneralListener listener){
         final Thread t = new Thread("textTranslation") {
             public void run() {
                 try {
@@ -1882,7 +1882,7 @@ public class Translator extends NeuralNetworkApi {
             for (int i = 0; i < list.getLength(); i++) {
                 languages.add(CustomLocale.getInstance(list.item(i).getTextContent()));
             }
-        } catch (IOException | SAXException | ParserConfigurationException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return languages;

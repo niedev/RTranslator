@@ -38,6 +38,7 @@ import nie.translator.rtranslator.downloader.DownloadGroupInfo;
 import nie.translator.rtranslator.downloader.DownloadInfo;
 import nie.translator.rtranslator.downloader.DownloadManager;
 import nie.translator.rtranslator.settings.SettingsActivity;
+import nie.translator.rtranslator.settings.SettingsFragment;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.tools.ErrorCodes;
@@ -106,14 +107,14 @@ public class LoadingActivity extends GeneralActivity {
         global = (Global) getApplication();
         if (isFirstStart()) {
             startAccessActivity();
-        } else if (global.isTranslatorInitialized() && (Global.ONLY_TEXT_TRANSLATION_MODE || global.isSpeechRecognizerInitialized())) {  //todo: gestire meglio questa parte (dovremmo avviarla solo se il check del TTS è finito, non se i modelli sono stati inizializzati, inoltre capire come gestire per bene l'avvio della schermata del model manager)
+        } else if (global.isTranslatorInitializing() || global.isTranslatorInitialized()) {
             if(checkIfResourcesPreferencesRespectDownloads()) {
                 startVoiceTranslationActivity();
             }else{
                 startSettingsActivityWithModelManager();
             }
         } else {
-            initializeApp(false);
+            initializeApp();
         }
     }
 
@@ -166,9 +167,8 @@ public class LoadingActivity extends GeneralActivity {
         }
     }
 
-    private void initializeApp(boolean ignoreTTSError) {
+    private void initializeApp() {
         Log.i("app", "App initialization");
-        final long initTime = System.currentTimeMillis();
         adaptResourcesPreferencesToDownloads();
         mainHandler.postDelayed(new Runnable() {
             @Override
@@ -235,7 +235,7 @@ public class LoadingActivity extends GeneralActivity {
     private void startSettingsActivityWithModelManager(){
         Intent intent = new Intent(this, SettingsActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("startWithModelManager", true);
+        intent.putExtra("start_mode", SettingsActivity.MODEL_MANAGER);
         startActivity(intent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
@@ -341,148 +341,5 @@ public class LoadingActivity extends GeneralActivity {
             editor.apply();
         }
         android.util.Log.i("performance", "adaptResourcesPreferencesToDownloads done in: " + (System.currentTimeMillis() - initTime) + "ms");
-    }
-
-    private void notifyGoogleTTSErrorDialog() {
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                showGoogleTTSErrorDialog(new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        initializeApp(true);
-                    }
-                });
-            }
-        });
-    }
-
-    public void notifyInternetLack() {
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (isVisible) {
-                    // creation of the dialog.
-                    AlertDialog.Builder builder = new AlertDialog.Builder(LoadingActivity.this);
-                    //builder.setCancelable(true);
-                    builder.setMessage(R.string.error_internet_lack_loading);
-                    builder.setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finish();
-                        }
-                    });
-                    builder.setPositiveButton(R.string.retry, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            initializeApp(false);
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.setCanceledOnTouchOutside(false);
-                    dialog.show();
-                }
-            }
-        });
-    }
-
-    public void notifyModelsLoadingError() {
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (isVisible) {
-                    // creation of the dialog.
-                    AlertDialog.Builder builder = new AlertDialog.Builder(LoadingActivity.this);
-                    //builder.setCancelable(true);
-                    builder.setMessage(R.string.error_models_loading);
-                    builder.setPositiveButton(R.string.fix, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if(global != null){
-                                restartDownload();
-                            }
-                        }
-                    });
-                    builder.setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finish();
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.setCanceledOnTouchOutside(false);
-                    dialog.show();
-                }
-            }
-        });
-    }
-
-    private void notifyMissingGoogleTTSDialog() {
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (isVisible) {
-                    showMissingGoogleTTSDialog(new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            initializeApp(true);
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-
-    private void restartDownload(){
-        //we reset all the download shared preferences
-        SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor;
-        editor = sharedPreferences.edit();
-        editor.putLong("currentDownloadId", -1);
-        editor.apply();
-        editor = sharedPreferences.edit();
-        editor.putString("lastDownloadSuccess", "");
-        editor.apply();
-        editor = sharedPreferences.edit();
-        editor.putString("lastTransferSuccess", "");
-        editor.apply();
-        editor = sharedPreferences.edit();
-        editor.putString("lastTransferFailure", "");
-        editor.apply();
-        //we restart the download (only the corrupted files will be re-downloaded)
-        global.setFirstStart(true);
-        Intent intent = new Intent(LoadingActivity.this, AccessActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        finish();
-    }
-
-    private void onFailure(int[] reasons, long value) {
-        for (int aReason : reasons) {
-            switch (aReason) {
-                case ErrorCodes.ERROR_LOADING_MODEL:
-                    showingError = true;
-                    notifyModelsLoadingError();
-                    break;
-                case ErrorCodes.SAFETY_NET_EXCEPTION:
-                case ErrorCodes.MISSED_CONNECTION:
-                    showingError = true;
-                    notifyInternetLack();
-                    break;
-                case ErrorCodes.MISSING_GOOGLE_TTS:
-                    showingError = true;
-                    notifyMissingGoogleTTSDialog();
-                    break;
-                case ErrorCodes.GOOGLE_TTS_ERROR:
-                    showingError = true;
-                    notifyGoogleTTSErrorDialog();
-                    break;
-                default:
-                    onError(aReason, value);
-                    break;
-            }
-        }
     }
 }

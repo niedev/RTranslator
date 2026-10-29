@@ -54,11 +54,16 @@ import java.util.List;
 
 import nie.translator.rtranslator.GeneralActivity;
 import nie.translator.rtranslator.Global;
+import nie.translator.rtranslator.LoadingActivity;
 import nie.translator.rtranslator.R;
+import nie.translator.rtranslator.access.AccessActivity;
 import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
 import nie.translator.rtranslator.bluetooth.Peer;
+import nie.translator.rtranslator.settings.ModelManagerFragment;
+import nie.translator.rtranslator.settings.SettingsActivity;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.CustomServiceConnection;
+import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.tools.Tools;
 import nie.translator.rtranslator.tools.gui.peers.GuiPeer;
 import nie.translator.rtranslator.tools.services_communication.ServiceCommunicatorListener;
@@ -804,11 +809,82 @@ public class VoiceTranslationActivity extends GeneralActivity {
     }
 
     public void manageTranslatorError(){
-
+        showTranslatorLoadErrorDialog();
     }
 
     public void manageSpeechRecognizerError(){
+        showSpeechRecognizerLoadErrorDialog();
+    }
 
+    public void showTranslatorLoadErrorDialog(){
+        final View editDialogLayout = getLayoutInflater().inflate(R.layout.dialog_translator_error, null);
+
+        final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MyThemeOverlay_MaterialComponents_MaterialAlertDialog);
+        builder.setCancelable(false);
+
+        AlertDialog dialog = builder.create();
+        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(this, 16), 0, 0);
+        dialog.show();
+
+        MaterialButton fixButton = editDialogLayout.findViewById(R.id.fix_button);
+        MaterialButton cancelButton = editDialogLayout.findViewById(R.id.exit_button);
+
+        fixButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                // we start the SettingsActivity with the ModelManager Fragment
+                Intent intent = new Intent(VoiceTranslationActivity.this, SettingsActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra("start_mode", SettingsActivity.MODEL_MANAGER);
+                startActivity(intent);
+            }
+        });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                finishAndRemoveTask(); //closes the app
+            }
+        });
+    }
+
+    public void showSpeechRecognizerLoadErrorDialog(){
+        final View editDialogLayout = getLayoutInflater().inflate(R.layout.dialog_speech_recognizer_error, null);
+
+        final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MyThemeOverlay_MaterialComponents_MaterialAlertDialog);
+        builder.setCancelable(false);
+
+        AlertDialog dialog = builder.create();
+        dialog.setView(editDialogLayout, 0, Tools.convertDpToPixels(this, 16), 0, 0);
+        dialog.show();
+
+        MaterialButton textModeButton = editDialogLayout.findViewById(R.id.text_mode_button);
+        MaterialButton fixButton = editDialogLayout.findViewById(R.id.fix_button);
+        MaterialButton cancelButton = editDialogLayout.findViewById(R.id.exit_button);
+
+        textModeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                Global.ONLY_TEXT_TRANSLATION_MODE = true;
+                setFragment(TRANSLATION_FRAGMENT);
+            }
+        });
+        fixButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                DownloaderTools.restartInitialDownload(global, VoiceTranslationActivity.this);
+            }
+        });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                finishAndRemoveTask(); //closes the app
+            }
+        });
     }
 
     public CoordinatorLayout getFragmentContainer() {

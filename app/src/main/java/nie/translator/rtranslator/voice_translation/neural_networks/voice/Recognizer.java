@@ -173,7 +173,6 @@ public class Recognizer extends NeuralNetworkApi {
     private final int TRANSCRIBE_TOKEN_ID = 50359;
     private final int NO_TIMESTAMPS_TOKEN_ID = 50363;
 
-    private OrtSession session;
     private OrtSession initSession;
     private OrtSession encoderSession;
     private OrtSession cacheInitSession;
@@ -674,7 +673,37 @@ public class Recognizer extends NeuralNetworkApi {
     }
 
     public void destroy() {
-        //eventually if in the future I decide to load Whisper only for WalkieTalkie and Conversation then all the resources will be released here
+        // all the resources are released here
+        try {
+            initSession.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
+            encoderSession.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
+            cacheInitSession.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
+            cacheInitBatchSession.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
+            decoderSession.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
+            detokenizerSession.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public int getLanguageID(String language){

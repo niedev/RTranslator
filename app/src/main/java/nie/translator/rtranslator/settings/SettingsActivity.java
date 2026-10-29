@@ -16,6 +16,7 @@
 
 package nie.translator.rtranslator.settings;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -72,54 +73,92 @@ public class SettingsActivity extends GeneralActivity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         );
 
-        Bundle b = getIntent().getExtras();
-        boolean startWithModelManager = b != null && b.getBoolean("startWithModelManager");
-        if (savedInstanceState != null) {
+        Intent intent = getIntent();
+        String action = null;
+        if(intent != null && intent.hasExtra("start_mode")) {
+            action = intent.getStringExtra("start_mode");
+        }
+        if(action != null){
+            startFragment(action, null);
+        }else if (savedInstanceState != null) {
             //Restore the fragment's instance
             fragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment_inizialization");
-        } else if(startWithModelManager){
-            startFragment(MODEL_MANAGER, null);
         }else {
             startFragment(SETTINGS_FRAGMENT, null);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Update the original intent with the new one.
+        // This is used when this activity is launched when it is already running.
+        // If we don't set the newIntent, the new one passed in the launch is ignored.
+        setIntent(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // This is in case the intent with the command to start a fragment has been called
+        // when this activity was already started, in this case we start it here and not in onCreate
+        Intent intent = getIntent();
+        if(intent != null && intent.hasExtra("start_mode")) {
+            String action = intent.getStringExtra("start_mode");
+            if(action != null){
+                /* We remove the extra from the activity intent.
+                 * This is because otherwise, the next time we launch this Activity without an intent, this intent will be used again and again.
+                 * For this reason, the intent request must be executed only one time for each time it is passed from outside.
+                 */
+                intent.removeExtra("start_mode");
+                // we start the requested fragment (if it has not already started in onCreate)
+                startFragment(action, null);
+            }
         }
     }
 
     public void startFragment(String action, Bundle bundle) {
         switch (action) {
             case SETTINGS_FRAGMENT: {
-                SettingsFragment accessFragment = new SettingsFragment();
-                if (bundle != null) {
-                    accessFragment.setArguments(bundle);
+                if(!(fragment instanceof SettingsFragment)) {
+                    SettingsFragment settingsFragment = new SettingsFragment();
+                    if (bundle != null) {
+                        settingsFragment.setArguments(bundle);
+                    }
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
+                    transaction.replace(R.id.fragment_settings_container, settingsFragment);
+                    transaction.commit();
+                    fragment = settingsFragment;
                 }
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
-                transaction.replace(R.id.fragment_settings_container, accessFragment);
-                transaction.commit();
-                fragment = accessFragment;
                 break;
             }
             case MODEL_MANAGER: {
-                ModelManagerFragment modelManagerFragment = new ModelManagerFragment();
-                if (bundle != null) {
-                    modelManagerFragment.setArguments(bundle);
+                if(!(fragment instanceof ModelManagerFragment)) {
+                    ModelManagerFragment modelManagerFragment = new ModelManagerFragment();
+                    if (bundle != null) {
+                        modelManagerFragment.setArguments(bundle);
+                    }
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
+                    transaction.replace(R.id.fragment_settings_container, modelManagerFragment);
+                    transaction.commit();
+                    fragment = modelManagerFragment;
                 }
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
-                transaction.replace(R.id.fragment_settings_container, modelManagerFragment);
-                transaction.commit();
-                fragment = modelManagerFragment;
                 break;
             }
             case MOZILLA_MANAGER: {
-                MozillaManagerFragment mozillaManagerFragment = new MozillaManagerFragment();
-                if (bundle != null) {
-                    mozillaManagerFragment.setArguments(bundle);
+                if(!(fragment instanceof MozillaManagerFragment)) {
+                    MozillaManagerFragment mozillaManagerFragment = new MozillaManagerFragment();
+                    if (bundle != null) {
+                        mozillaManagerFragment.setArguments(bundle);
+                    }
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
+                    transaction.replace(R.id.fragment_settings_container, mozillaManagerFragment);
+                    transaction.commit();
+                    fragment = mozillaManagerFragment;
                 }
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
-                transaction.replace(R.id.fragment_settings_container, mozillaManagerFragment);
-                transaction.commit();
-                fragment = mozillaManagerFragment;
                 break;
             }
         }

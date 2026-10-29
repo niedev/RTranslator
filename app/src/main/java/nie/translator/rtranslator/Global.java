@@ -76,7 +76,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         FIRST,
         SECOND
     }
-    public static final boolean ONLY_TEXT_TRANSLATION_MODE = false;
+    public static boolean ONLY_TEXT_TRANSLATION_MODE = false;
     public static final boolean USE_EXTERNAL_MEMORY_FOR_RESOURCES = false;
 
     public static final int REQUEST_CODE_PERMISSIONS_NOTIFICATIONS = 5;
@@ -223,7 +223,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                     });
 
                     // speech recognizer initialization
-                    if(!ONLY_TEXT_TRANSLATION_MODE) {
+                    if(!ONLY_TEXT_TRANSLATION_MODE && speechRecognizer == null) {
                         initializeSpeechRecognizer(new NeuralNetworkApi.InitListener() {
                             @Override
                             public void onInitializationFinished() {
@@ -297,6 +297,10 @@ public class Global extends Application implements DefaultLifecycleObserver {
 
     public void resetSpeechRecognizerError(){
         speechRecognizerError = null;
+        if(speechRecognizer != null) {
+            speechRecognizer.destroy();
+            speechRecognizer = null;
+        }
     }
 
     @Nullable
@@ -310,66 +314,62 @@ public class Global extends Application implements DefaultLifecycleObserver {
     }
 
     public void initializeTranslator(@Nullable Translator.GeneralListener initListener){
-        if(translator == null){
-            translatorInitializing = true;
-            // translator initialization
-            translator = new Translator(this, getTranslationMode(), isUseMozillaForVoiceTranslation(), isUseTatoeba(), isUseTranslationDictionaries(), new Translator.GeneralListener() {
-                @Override
-                public void onSuccess() {
-                    InitEngineListener listener;
-                    synchronized (initEngineListenerLock) {
-                        translatorInitialized = true;
-                        translatorInitializing = false;
-                        listener = initEngineListener;
-                    }
-                    if (listener != null) listener.onTranslatorInitialized();
-                    if(initListener != null) initListener.onSuccess();
+        translatorInitializing = true;
+        // translator initialization
+        translator = new Translator(this, getTranslationMode(), isUseMozillaForVoiceTranslation(), isUseTatoeba(), isUseTranslationDictionaries(), new Translator.GeneralListener() {
+            @Override
+            public void onSuccess() {
+                InitEngineListener listener;
+                synchronized (initEngineListenerLock) {
+                    translatorInitialized = true;
+                    translatorInitializing = false;
+                    listener = initEngineListener;
                 }
+                if (listener != null) listener.onTranslatorInitialized();
+                if(initListener != null) initListener.onSuccess();
+            }
 
-                @Override
-                public void onFailure(int[] reasons, long value) {
-                    InitEngineListener listener;
-                    synchronized (initEngineListenerLock) {
-                        translatorInitializing = false;
-                        listener = initEngineListener;
-                    }
-                    translatorError = new ErrorInfo(reasons, value);
-                    if(listener != null) listener.onTranslatorError(reasons, value);
-                    if(initListener != null) initListener.onFailure(reasons, value);
+            @Override
+            public void onFailure(int[] reasons, long value) {
+                InitEngineListener listener;
+                synchronized (initEngineListenerLock) {
+                    translatorInitializing = false;
+                    listener = initEngineListener;
                 }
-            });
-        }
+                translatorError = new ErrorInfo(reasons, value);
+                if(listener != null) listener.onTranslatorError(reasons, value);
+                if(initListener != null) initListener.onFailure(reasons, value);
+            }
+        });
     }
 
     public void initializeSpeechRecognizer(@Nullable NeuralNetworkApi.InitListener initListener){
-        if(speechRecognizer == null) {
-            speechRecognizerInitializing = true;
-            speechRecognizer = new Recognizer(Global.this, true, new NeuralNetworkApi.InitListener() {
-                @Override
-                public void onInitializationFinished() {
-                    InitEngineListener listener;
-                    synchronized (initEngineListenerLock) {
-                        speechRecognizerInitialized = true;
-                        speechRecognizerInitializing = false;
-                        listener = initEngineListener;
-                    }
-                    if(listener != null) listener.onSpeechRecognizerInitialized();
-                    if(initListener != null) initListener.onInitializationFinished();
+        speechRecognizerInitializing = true;
+        speechRecognizer = new Recognizer(Global.this, true, new NeuralNetworkApi.InitListener() {
+            @Override
+            public void onInitializationFinished() {
+                InitEngineListener listener;
+                synchronized (initEngineListenerLock) {
+                    speechRecognizerInitialized = true;
+                    speechRecognizerInitializing = false;
+                    listener = initEngineListener;
                 }
+                if(listener != null) listener.onSpeechRecognizerInitialized();
+                if(initListener != null) initListener.onInitializationFinished();
+            }
 
-                @Override
-                public void onError(int[] reasons, long value) {
-                    InitEngineListener listener;
-                    synchronized (initEngineListenerLock) {
-                        speechRecognizerInitializing = false;
-                        listener = initEngineListener;
-                    }
-                    speechRecognizerError = new ErrorInfo(reasons, value);
-                    if(listener != null) listener.onSpeechRecognizerError(reasons, value);
-                    if(initListener != null) initListener.onError(reasons, value);
+            @Override
+            public void onError(int[] reasons, long value) {
+                InitEngineListener listener;
+                synchronized (initEngineListenerLock) {
+                    speechRecognizerInitializing = false;
+                    listener = initEngineListener;
                 }
-            });
-        }
+                speechRecognizerError = new ErrorInfo(reasons, value);
+                if(listener != null) listener.onSpeechRecognizerError(reasons, value);
+                if(initListener != null) initListener.onError(reasons, value);
+            }
+        });
     }
 
     public void initializeBluetoothCommunicator(){
@@ -1122,7 +1122,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
 
     public void setWhisperReducedRam(boolean whisperReducedRam, @NonNull Translator.GeneralListener listener) {
         boolean changed = this.whisperReducedRam != whisperReducedRam;
-        if(changed){
+        if(changed || !speechRecognizerInitialized){
             this.whisperReducedRam = whisperReducedRam;
             final SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -1186,7 +1186,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                 || this.useMozillaForVoiceTranslation != useMozillaForVoiceTranslation
                 || this.useTatoeba != useTatoeba
                 || this.useTranslationDictionaries != useTranslationDicts;
-        if(changed) {
+        if(changed || !translatorInitialized) {
             this.translationMode = translationMode;
             this.useMozillaForVoiceTranslation = useMozillaForVoiceTranslation;
             this.useTatoeba = useTatoeba;
@@ -1199,6 +1199,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             editor.putBoolean("useTranslationDictionaries", useTranslationDicts);
             editor.apply();
             // update of the translator status
+            resetTranslationError();
             boolean isTranslatorInitialized = !registerInitEngineListenerIfTranslatorNotInitialized(new InitEngineListener() {
                 @Override
                 public void onTranslatorInitialized() {
@@ -1212,11 +1213,16 @@ public class Global extends Application implements DefaultLifecycleObserver {
                     listener.onFailure(new int[]{ErrorCodes.ERROR_LOADING_MODEL}, 0);
                 }
             });
-            if(isTranslatorInitialized){
+            if(isTranslatorInitialized){  //we have not registered the engine init listener
                 translator.setTranslationStatus(translationMode, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts, listener);
-            }else{
+            }else{   //we have registered the engine init listener
                 if(!translatorInitializing){
-                    initializeTranslator(null);  //the listener will be the engine we registered above
+                    if(translator != null){
+                        translator.setTranslationStatus(translationMode, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts, listener);  //the listener we registered above will not be called for this
+                        setInitEngineListener(null);
+                    }else{
+                        initializeTranslator(null);  //the listener will be the engine we registered above
+                    }
                 }
             }
         }else{

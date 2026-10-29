@@ -1,6 +1,8 @@
 package nie.translator.rtranslator.tools;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
@@ -12,7 +14,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import nie.translator.rtranslator.Global;
+import nie.translator.rtranslator.LoadingActivity;
+import nie.translator.rtranslator.access.AccessActivity;
 import nie.translator.rtranslator.downloader.DownloadGroupInfo;
+import nie.translator.rtranslator.downloader.DownloadInfo;
 import nie.translator.rtranslator.downloader.DownloadManager;
 
 public class DownloaderTools {
@@ -136,5 +142,35 @@ public class DownloaderTools {
                 }
             }
         }
+    }
+
+    public static void restartInitialDownload(Global global, Activity activity){
+        global.resetSpeechRecognizerError();
+        //we set to false the integrityTested attribute of all the initial download infos saved in the shared preferences
+        SharedPreferences sharedPreferences = global.getSharedPreferences("default", Context.MODE_PRIVATE);
+        String downloadsStatusString = sharedPreferences.getString("downloadsStatus", "");
+        if (!downloadsStatusString.isEmpty()) {
+            Gson gson = new Gson();
+            ArrayList<DownloadGroupInfo> downloadGroupInfos = gson.fromJson(downloadsStatusString, new TypeToken<ArrayList<DownloadGroupInfo>>() {
+            }.getType());
+            if (downloadGroupInfos != null) {
+                int index = downloadGroupInfos.indexOf(global.getInitialDownloadInfo());
+                if(index != -1){
+                    DownloadGroupInfo downloadGroupInfo = downloadGroupInfos.get(index);
+                    for(DownloadInfo downloadInfo: downloadGroupInfo.downloadsInfo){
+                        downloadInfo.setIntegrityTested(false);
+                    }
+                    updateDownloadGroupInfoPreference(global, downloadGroupInfo);
+                }
+            }
+        }
+
+        //we restart the download (only the corrupted files will be re-downloaded)
+        global.setFirstStart(true);
+        Intent intent = new Intent(activity, AccessActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        activity.startActivity(intent);
+        activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        activity.finish();
     }
 }
