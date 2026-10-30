@@ -108,6 +108,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     private volatile boolean speechRecognizerInitializing = false;
     private volatile boolean translatorInitialized = false;
     private volatile boolean speechRecognizerInitialized = false;
+    private volatile boolean modelsInitializing = false;
     @Nullable
     private ErrorInfo translatorError = null;
     @Nullable
@@ -189,10 +190,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             Log.i("app", "Engine initialization");
             final long initTime = System.currentTimeMillis();
             final long[] time = {System.currentTimeMillis()};
-            translatorInitializing = true;
-            if (!ONLY_TEXT_TRANSLATION_MODE && speechRecognizer == null) {
-                speechRecognizerInitializing = true;
-            }
+            modelsInitializing = true;
             // translator initialization
             initializeTranslator(new Translator.GeneralListener() {
                 @Override
@@ -227,21 +225,27 @@ public class Global extends Application implements DefaultLifecycleObserver {
                         initializeSpeechRecognizer(new NeuralNetworkApi.InitListener() {
                             @Override
                             public void onInitializationFinished() {
+                                modelsInitializing = false;
                                 android.util.Log.i("performance_init", "Speech recognizer initialization: " + (System.currentTimeMillis() - time[0]) + "ms");
                                 android.util.Log.i("performance_init", "App initialization: " + (System.currentTimeMillis() - initTime) + "ms");
+                                //here we do nothing else, the engine callback is already managed inside the method initializeSpeechRecognizer
                             }
 
                             @Override
                             public void onError(int[] reasons, long value) {
-                                //here we do nothing, the error is already managed inside the method initializeSpeechRecognizer
+                                modelsInitializing = false;
+                                //here we do nothing else, the error is already managed inside the method initializeSpeechRecognizer
                             }
                         });
+                    }else{
+                        modelsInitializing = false;
                     }
                 }
 
                 @Override
                 public void onFailure(int[] reasons, long value) {
-                    //here we do nothing, the error is already managed inside the method initializeTranslator
+                    modelsInitializing = false;
+                    //here we do nothing else, the error is already managed inside the method initializeTranslator
                 }
             });
         }
@@ -401,12 +405,12 @@ public class Global extends Application implements DefaultLifecycleObserver {
         return vad;
     }
 
-    public boolean areModelsLoaded() {
-        return translatorInitialized && (ONLY_TEXT_TRANSLATION_MODE || speechRecognizerInitialized);
+    public boolean doModelsExist() {
+        return translator != null && (ONLY_TEXT_TRANSLATION_MODE || speechRecognizer != null);
     }
 
     public boolean areModelsLoading() {
-        return translatorInitializing || speechRecognizerInitializing;
+        return modelsInitializing || translatorInitializing || speechRecognizerInitializing;
     }
 
     public void getLanguagesAndCheckTTS(final boolean recycleResult, boolean ignoreTTSError, final GetLocalesListListener responseListener) {
@@ -1154,14 +1158,23 @@ public class Global extends Application implements DefaultLifecycleObserver {
                                 mainHandler.post(listener::onSuccess);
                             }
                         });
-                        if(isSpeechRecognizerInitialized){
+                        if(isSpeechRecognizerInitialized){  //we have not registered the engine init listener
                             speechRecognizer.initializeEncoderSession();
                             mainHandler.post(listener::onSuccess);
-                        }else {
+                        }else {   //we have registered the engine init listener
                             if (!speechRecognizerInitializing) {
-                                // we ignore the error and return a success, this error will be managed
-                                // when the user will open WalkieTalkie or Conversation mode
-                                mainHandler.post(listener::onSuccess);
+                                if(speechRecognizer == null){
+                                    // this means that the speech recognizer initialization has not been started
+                                    // due to a previous error in the translator init, if we are here it means that this
+                                    // problem has been solved (by setTranslationStatus) and we will start the initialization.
+                                    // of the speech recognizer
+                                    initializeSpeechRecognizer(null);  //the listener will be the engine we registered above
+                                }else{
+                                    // if the speech recognizer is not initializing and it is != null,
+                                    // it means we had an error, so we will return a success, this error will be managed
+                                    // when the user will open WalkieTalkie or Conversation mode
+                                    mainHandler.post(listener::onSuccess);
+                                }
                             }
                         }
                     } catch (Exception e) {
@@ -1219,6 +1232,10 @@ public class Global extends Application implements DefaultLifecycleObserver {
                 if(!translatorInitializing){
                     if(translator != null){
                         translator.setTranslationStatus(translationMode, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts, listener);  //the listener we registered above will not be called for this
+                        synchronized (initEngineListenerLock) {
+                            translatorInitialized = true;
+                            translatorInitializing = false;
+                        }
                         setInitEngineListener(null);
                     }else{
                         initializeTranslator(null);  //the listener will be the engine we registered above

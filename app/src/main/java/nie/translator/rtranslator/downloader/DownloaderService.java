@@ -134,10 +134,15 @@ public class DownloaderService extends Service {
                 if (downloadGroupInfos != null) {
                     for (DownloadGroupInfo groupInfo : downloadGroupInfos) {
                         if (!groupInfo.isAllDownloadCompleted()){
-                            DownloadInfo lastDownload = groupInfo.downloadsInfo[groupInfo.downloadsInfo.length-1];
-                            if(lastDownload.isAllCompleted()){
+                            boolean allSubDownloadCompleted = true;
+                            for(DownloadInfo download : groupInfo.downloadsInfo){
+                                if(!download.isAllCompleted()){
+                                    allSubDownloadCompleted = false;
+                                }
+                            }
+                            if(allSubDownloadCompleted){
                                 // here we check if a download from the preferences is not marked as all completed
-                                // but it is actually completed because the last download is completed (if there has been an error in the update of the preference during the completion of the download).
+                                // but it is actually completed because all its sub download are completed (if there has been an error in the update of the preference during the completion of the download).
                                 // In this case we simply mark it as all completed, update the preferences with the new status and move on.
                                 groupInfo.setAllDownloadCompleted(true);
                                 updateDownloadGroupInfoPreference(groupInfo);

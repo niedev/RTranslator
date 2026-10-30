@@ -157,6 +157,8 @@ public class DownloaderTools {
                 int index = downloadGroupInfos.indexOf(global.getInitialDownloadInfo());
                 if(index != -1){
                     DownloadGroupInfo downloadGroupInfo = downloadGroupInfos.get(index);
+                    downloadGroupInfo.setRunningDownloadIndex(0);
+                    downloadGroupInfo.setAllDownloadCompleted(false);
                     for(DownloadInfo downloadInfo: downloadGroupInfo.downloadsInfo){
                         downloadInfo.setIntegrityTested(false);
                     }

@@ -23,7 +23,6 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 
 import javax.annotation.Nullable;
 
@@ -35,14 +34,14 @@ public abstract class GeneralActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@androidx.annotation.Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // if the models are not loading or loaded, don't have errors, and an activity different than LoadingActivity or AccessActivity is created,
+        // if the models are not loading or are null, don't have errors, and an activity different than LoadingActivity or AccessActivity is created,
         // that means that the system has killed the app, and now it is launching the app with the last activity (restoring it).
         // In this case we start the loading activity instead, otherwise the app will crash for the lack of loaded models.
         // After the loading of the models, the app will handle itself the restore of the latest opened fragment (using the "fragment" key in sharedPreferences).
         boolean isLoadingActivity = this instanceof LoadingActivity;
         boolean isAccessActivity = this instanceof AccessActivity;
         Global global = (Global) getApplication();
-        if(!isLoadingActivity && !isAccessActivity && !(global.areModelsLoaded() || global.areModelsLoading() || global.getTranslatorError() != null || global.getSpeechRecognizerError() != null)){
+        if(!isLoadingActivity && !isAccessActivity && !(global.doModelsExist() || global.areModelsLoading() || global.getTranslatorError() != null || global.getSpeechRecognizerError() != null)){
             //start LoadingActivity
             Intent intent = new Intent(this, LoadingActivity.class);
             intent.putExtra("activity", "general");
