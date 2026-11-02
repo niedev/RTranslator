@@ -68,6 +68,7 @@
     <string name="system_default">Predefinito di sistema</string>
     <string name="light">Chiaro</string>
     <string name="dark">Scuro</string>
+    <string name="use_only_text_mode">Usa solo la modalità testo</string>
 
     <string name="description_button_tts_manual">Lettura manuale dei messaggi</string>
     <string name="description_button_tts_auto">Lettura automatica dei messaggi</string>
@@ -134,8 +135,7 @@
     <string name="error_missing_location_permissions">Non é possibile eseguire la modalità Conversazione senza il permesso per la posizione e del bluetooth, andare nelle impostazioni per concederli, oppure reinstallare l\' app</string>
     <string name="error_missing_mic_permissions">Senza il permesso per il microfono il riconoscimento vocale non funziona, andare nelle impostazioni per concedere il permesso oppure reinstalla l\' app</string>
     <string name="error_missing_mic_permissions_walkietalkie">Non è possibile usare la modalità WalkieTalkie senza il permesso del microfono. Vai nelle impostazioni per concederlo, oppure reinstalla l\'app</string>
-    <string name="error_tts_toast">TTS mancante</string>
-    <string name="error_tts">C\'è stato un errore con l\'inizializzazione del tts, vuoi continuare senza tts?</string>
+    <string name="error_tts_toast">Errore di connessione al TTS</string>
     <string name="error_missing_tts">In questo device non è presente il motore di sintesi vocale di google, scaricalo per poter usare il tts</string>
     <string name="error_missing_bluetooth_le">Non é possibile eseguire la modalità Conversazione perché questo dispositivo non ha il Bluetooth Low Energy</string>
     <string name="error_internet_lack_loading">Per avviare RTranslator è necessaria una connessione a internet, controllare la propria connessione</string>
@@ -154,7 +154,7 @@
     <string name="error_privacy_unchecked">Devi aver letto la privacy policy per usare l\'app</string>
     <string name="error_missing_username">Inserire un nome</string>
     <string name="error_wrong_username">Il testo contiene caratteri non ammessi, sono ammessi solo i seguenti caratteri: </string>
-    <string name="error_models_loading">C\'è stato un errore nel caricamento dei file dei modelli di rete neurale per la traduzione e il riconoscimento vocale, probabilmente qualche file è danneggiato, provare a riavviare l\'app, se il problema persiste allora premere il pulsante "correggi" e solo i file danneggiati verranno riscaricati.</string>
+    <string name="error_models_loading">Si è verificato un errore durante il caricamento dei file dei modelli per il riconoscimento vocale, probabilmente alcuni file sono danneggiati. Prova a riavviare l\'app; se il problema persiste, premi il pulsante di correzione e verranno scaricati di nuovo solo i file danneggiati.</string>
     <string name="error_models_loading_short">Errore nel caricamento del nuovo modello</string>
     <string name="error_download">Errore nel download, assicurati di avere una connessione a internet e riprova:</string>
     <string name="error_transfer">Errore nel trasferimento del file scaricato dalla memoria esterna a quella interna, assicurati di non aver rimosso una scheda SD o altri dispositivi di archiviazione esterni e riprova tenendo aperta l\'app:</string>
@@ -169,6 +169,9 @@
     <string name="error_apply_unknown">Errore sconosciuto, riprova.</string>
     <string name="error_delete_last_download">Questo è l\'ultimo modello di traduzione scaricato. Non puoi eliminare tutti i modelli di traduzione: scaricane un altro prima di eliminare questo.</string>
     <string name="error_bluetooth_off">Non è possibile usare la modalità Conversazione perché il Bluetooth è disattivato, attivalo per iniziare a usare questa modalità.</string>
+    <string name="error_text_mode">È attiva solo la modalità di traduzione testuale</string>
+    <string name="error_tts_missing_lang">Lingua non supportata dal TTS</string>
+    <string name="error_translating">Errore durante la traduzione</string>
 
     <string name="title_image_selector">immagine del profilo</string>
 

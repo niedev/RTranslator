@@ -439,7 +439,6 @@ public class ModelManagerFragment extends Fragment {
 
         switch (error) {
             case ErrorCodes.ERROR_LOADING_MODEL: {
-                //todo: insert a better description of the error
                 textView.setText(getString(R.string.error_models_loading_short));
                 break;
             }

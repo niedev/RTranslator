@@ -74,26 +74,6 @@ public abstract class GeneralActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-    public void showGoogleTTSErrorDialog() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.error_tts);
-        builder.setPositiveButton(android.R.string.ok, null);
-        builder.create().show();
-    }
-
-    public void showGoogleTTSErrorDialog(DialogInterface.OnClickListener continueListener) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.error_tts);
-        builder.setPositiveButton(R.string.continue_without_tts, continueListener);
-        builder.setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-        builder.create().show();
-    }
-
     public void showInternetLackDialog(int message, DialogInterface.OnClickListener listener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setCancelable(true);

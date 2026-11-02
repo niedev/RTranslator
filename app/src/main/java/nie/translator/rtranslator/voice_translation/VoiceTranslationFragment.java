@@ -136,15 +136,8 @@ public abstract class VoiceTranslationFragment extends Fragment implements Micro
                     dialog.show();
                     break;
                 case ErrorCodes.MISSING_GOOGLE_TTS:
-                    activity.showMissingGoogleTTSDialog(null);
-                    break;
                 case ErrorCodes.GOOGLE_TTS_ERROR:
-                    activity.showGoogleTTSErrorDialog(new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            connectToService();
-                        }
-                    });
+                    activity.showMissingGoogleTTSDialog(null);
                     break;
                 default:
                     activity.onError(aReason, value);

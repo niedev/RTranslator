@@ -805,7 +805,7 @@ public class VoiceTranslationActivity extends GeneralActivity {
     }
 
     public void manageTTSError(){
-        Toast.makeText(this, "Error connecting to TTS", Toast.LENGTH_LONG).show();  //todo: convert text
+        Toast.makeText(this, getString(R.string.error_tts_toast), Toast.LENGTH_SHORT).show();
     }
 
     public void manageTranslatorError(){

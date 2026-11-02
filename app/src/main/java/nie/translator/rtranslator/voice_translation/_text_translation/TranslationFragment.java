@@ -206,7 +206,7 @@ public class TranslationFragment extends Fragment {
                 if(!Global.ONLY_TEXT_TRANSLATION_MODE) {
                     activity.setFragment(VoiceTranslationActivity.WALKIE_TALKIE_FRAGMENT, true);
                 }else{
-                    Toast.makeText(global, "'Only text translation mode' is active", Toast.LENGTH_SHORT).show();  //todo: convert text
+                    Toast.makeText(global, getString(R.string.error_text_mode), Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -216,7 +216,7 @@ public class TranslationFragment extends Fragment {
                 if(!Global.ONLY_TEXT_TRANSLATION_MODE) {
                     activity.setFragment(VoiceTranslationActivity.PAIRING_FRAGMENT, true);
                 }else{
-                    Toast.makeText(global, "'Only text translation mode' is active", Toast.LENGTH_SHORT).show();  //todo: convert text
+                    Toast.makeText(global, getString(R.string.error_text_mode), Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -273,7 +273,7 @@ public class TranslationFragment extends Fragment {
 
             @Override
             public void onFailure(int[] reasons, long value) {
-                Toast.makeText(activity, "Error translating", Toast.LENGTH_SHORT).show();  //todo: convert text
+                Toast.makeText(activity, getString(R.string.error_translating), Toast.LENGTH_SHORT).show();
                 activateTranslationButton();
             }
         };
@@ -717,7 +717,7 @@ public class TranslationFragment extends Fragment {
                                 ttsInputButton.setImageResource(R.drawable.stop_icon);
                                 ttsInputButton.setTag(R.drawable.stop_icon);
                             }else{
-                                Toast.makeText(activity, "Language not supported by TTS", Toast.LENGTH_LONG).show();  //todo: convert text
+                                Toast.makeText(activity, getString(R.string.error_tts_missing_lang), Toast.LENGTH_LONG).show();
                             }
                         }
 
@@ -748,7 +748,7 @@ public class TranslationFragment extends Fragment {
                                 ttsOutputButton.setImageResource(R.drawable.stop_icon);
                                 ttsOutputButton.setTag(R.drawable.stop_icon);
                             }else{
-                                Toast.makeText(activity, "Language not supported by TTS", Toast.LENGTH_LONG).show();  //todo: convert text
+                                Toast.makeText(activity, getString(R.string.error_tts_missing_lang), Toast.LENGTH_LONG).show();
                             }
                         }
 

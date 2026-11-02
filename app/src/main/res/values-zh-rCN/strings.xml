@@ -52,6 +52,7 @@
     <string name="system_default">跟随系统</string>
     <string name="light">浅色</string>
     <string name="dark">深色</string>
+    <string name="use_only_text_mode">仅使用文本模式</string>
 
     <string name="description_button_tts_manual">手动朗读消息</string>
     <string name="description_button_tts_auto">自动朗读消息</string>
@@ -119,8 +120,7 @@
     <string name="error_missing_location_permissions">无法在没有位置和蓝牙权限的情况下使用对话模式，请在设置中授予权限，或重新安装应用程序</string>
     <string name="error_missing_mic_permissions">没有麦克风权限，语音识别无法运作，请在设置中授予权限或重新安装应用程序</string>
     <string name="error_missing_mic_permissions_walkietalkie">未授予麦克风权限，无法使用 WalkieTalkie 模式。请前往设置授予权限，或重新安装应用</string>
-    <string name="error_tts_toast">缺少 TTS</string>
-    <string name="error_tts">TTS 初始化时出现错误，是否要在没有 TTS 的情况下继续？</string>
+    <string name="error_tts_toast">连接 TTS 时出错</string>
     <string name="error_missing_tts">此设备上没有 Google TTS 引擎，请下载以使用 TTS</string>
     <string name="error_missing_bluetooth_le">此设备不支持低功耗蓝牙，无法使用交互方式</string>
     <string name="error_internet_lack_loading">启动 RTranslator 需要网络连接，请检查您的网络</string>
@@ -139,7 +139,7 @@
     <string name="error_privacy_unchecked">您必须阅读隐私政策才能使用此应用程序</string>
     <string name="error_missing_username">请输入名字</string>
     <string name="error_wrong_username">文字包含非法字符，仅允许以下字符：</string>
-    <string name="error_models_loading">加载翻译和语音识别模型档案时出错，部分档案可能损坏，请尝试重新启动应用程序，如果问题仍然存在，请点击修复按钮，这将重新下载损坏的档案。</string>
+    <string name="error_models_loading">加载语音识别模型文件时出错，可能是部分文件已损坏。请尝试重启应用；如果问题仍然存在，请点击“修复”按钮，系统将仅重新下载损坏的文件。</string>
     <string name="error_models_loading_short">加载新模型时出错</string>
     <string name="error_download">下载时出错，请确保您有因特网联机并重试：</string>
     <string name="error_transfer">从外部内存到内部存储器传输下载文件时出错，请确保您没有取出 SD 卡或其他外部存储设备，并保持应用程序开启重新尝试：</string>
@@ -154,6 +154,9 @@
     <string name="error_apply_unknown">未知错误，请重试。</string>
     <string name="error_delete_last_download">这是最后一个已下载的翻译模型，无法删除所有翻译模型。请先下载另一个翻译模型，再删除此模型。</string>
     <string name="error_bluetooth_off">蓝牙已关闭，无法使用对话模式，请开启蓝牙后再使用此模式。</string>
+    <string name="error_text_mode">当前仅启用文本翻译模式</string>
+    <string name="error_tts_missing_lang">TTS 不支持该语言</string>
+    <string name="error_translating">翻译出错</string>
 
     <string name="title_image_selector">用户头像</string>
 

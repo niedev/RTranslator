@@ -82,7 +82,7 @@
                 android:padding="12dp"
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp"
-                android:text="Use Only Text Mode"
+                android:text="@string/use_only_text_mode"
                 android:textColor="?attr/colorTextInverted"
                 android:visibility="visible"
                 app:cornerRadius="24dp"

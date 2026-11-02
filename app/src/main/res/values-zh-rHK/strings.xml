@@ -52,6 +52,7 @@
     <string name="system_default">跟隨系統</string>
     <string name="light">淺色</string>
     <string name="dark">深色</string>
+    <string name="use_only_text_mode">僅使用文字模式</string>
 
     <string name="description_button_tts_manual">手動朗讀訊息</string>
     <string name="description_button_tts_auto">自動朗讀訊息</string>
@@ -119,8 +120,7 @@
     <string name="error_missing_location_permissions">無法在沒有位置和藍牙權限的情況下使用對話模式，請前往設定授予權限，或重新安裝應用程式</string>
     <string name="error_missing_mic_permissions">沒有麥克風權限，語音辨識無法運作，請前往設定授予權限或重新安裝應用程式</string>
     <string name="error_missing_mic_permissions_walkietalkie">未授予麥克風權限，無法使用 WalkieTalkie 模式。請前往設定授予權限，或重新安裝應用程式</string>
-    <string name="error_tts_toast">缺少 TTS</string>
-    <string name="error_tts">TTS 初始化時出現錯誤，是否要在沒有 TTS 的情況下繼續？</string>
+    <string name="error_tts_toast">連線至 TTS 時發生錯誤</string>
     <string name="error_missing_tts">此裝置上沒有 Google TTS 引擎，請下載以使用 TTS</string>
     <string name="error_missing_bluetooth_le">此裝置不支援低功耗藍牙，無法使用對話模式</string>
     <string name="error_internet_lack_loading">啟動 RTranslator 需要網際網路連線，請檢查您的連線</string>
@@ -139,7 +139,7 @@
     <string name="error_privacy_unchecked">您必須閱讀隱私政策才能使用此應用程式</string>
     <string name="error_missing_username">請輸入名字</string>
     <string name="error_wrong_username">文字包含非法字符，僅允許以下字符：</string>
-    <string name="error_models_loading">載入翻譯和語音辨識模型檔案時出錯，可能有些檔案損壞，請嘗試重新啟動應用程式，如果問題仍然存在，請按下修復按鈕，僅重新下載損壞的檔案。</string>
+    <string name="error_models_loading">載入語音辨識模型檔案時發生錯誤，可能是部分檔案已損毀。請嘗試重新啟動應用程式；若問題仍然存在，請按下「修復」按鈕，系統將只重新下載損毀的檔案。</string>
     <string name="error_models_loading_short">載入新模型時發生錯誤</string>
     <string name="error_download">下載時出錯，請確保您有網際網路連線並重試：</string>
     <string name="error_transfer">從外部記憶體到內部記憶體傳輸下載檔案時出錯，請確保您沒有取出 SD 卡或其他外部存儲設備，並保持應用程式開啟重新嘗試：</string>
@@ -154,6 +154,9 @@
     <string name="error_apply_unknown">未知錯誤，請重試。</string>
     <string name="error_delete_last_download">這是最後一個已下載的翻譯模型，無法刪除所有翻譯模型。請先下載另一個翻譯模型，再刪除此模型。</string>
     <string name="error_bluetooth_off">藍牙已關閉，無法使用對話模式，請開啟藍牙後再使用此模式。</string>
+    <string name="error_text_mode">目前僅啟用文字翻譯模式</string>
+    <string name="error_tts_missing_lang">TTS 不支援此語言</string>
+    <string name="error_translating">翻譯時發生錯誤</string>
 
     <string name="title_image_selector">用户頭像</string>
 

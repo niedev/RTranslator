@@ -414,7 +414,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                                     if (CustomLocale.containsLanguage(ttsLanguages, language)) { // check if the language can be spoken
                                         walkieTalkieServiceCommunicator.speakText(textToSpeak, language.getCode(), utteranceId);
                                     }else{
-                                        Toast.makeText(activity, "Language not supported by TTS", Toast.LENGTH_LONG).show();  //todo: convert text
+                                        Toast.makeText(activity, getString(R.string.error_tts_missing_lang), Toast.LENGTH_LONG).show();
                                     }
                                 }
 
@@ -881,7 +881,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                         manageSpeechRecognizerError();
                         break;
                     case ErrorCodes.ERROR_EXECUTING_MODEL:
-                        Toast.makeText(activity, "Error translating", Toast.LENGTH_SHORT).show();  //todo: convert text
+                        Toast.makeText(activity, getString(R.string.error_translating), Toast.LENGTH_SHORT).show();
                         break;
                     /*case ErrorCodes.MISSING_MIC_PERMISSION: {
                         if(getContext() != null) {

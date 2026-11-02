@@ -71,6 +71,7 @@
     <string name="system_default">System default</string>
     <string name="light">Light</string>
     <string name="dark">Dark</string>
+    <string name="use_only_text_mode">Use Only Text Mode</string>
 
     <string name="description_button_tts_manual">Manual message reading</string>
     <string name="description_button_tts_auto">Automatic message reading</string>
@@ -137,8 +138,7 @@
     <string name="error_missing_location_permissions">It is not possible to use the Conversation mode without location and bluetooth permissions, go to the settings to grant them, or reinstall the app</string>
     <string name="error_missing_mic_permissions">Without the microphone permission the voice recognition does not work, go to the settings to grant the permission or reinstall the app</string>
     <string name="error_missing_mic_permissions_walkietalkie">It is not possible to use the WalkieTalkie mode without microphone permission, go to the settings to grant it, or reinstall the app</string>
-    <string name="error_tts_toast">Missing tts</string>
-    <string name="error_tts">There was an error with the tts initialization, do you want to continue without tts?</string>
+    <string name="error_tts_toast">Error connecting to TTS</string>
     <string name="error_missing_tts">In this device there is no google tts engine, download it to be able to use the tts</string>
     <string name="error_missing_bluetooth_le">It is not possible to use the Conversation mode because this device does not have Bluetooth Low Energy</string>
     <string name="error_internet_lack_loading">To start RTranslator an internet connection is required, check your connection</string>
@@ -157,7 +157,7 @@
     <string name="error_privacy_unchecked">You must have read the privacy policy to use the app</string>
     <string name="error_missing_username">Insert a name</string>
     <string name="error_wrong_username">The text contains illegal characters, only the following characters are allowed: </string>
-    <string name="error_models_loading">There was an error loading the files of the models for translation and speech recognition, probably some files are corrupted, try restarting the app, if the problem persists then press the fix button and only the corrupted files will be re-downloaded.</string>
+    <string name="error_models_loading">There was an error loading the files of the models for speech recognition, probably some files are corrupted, try restarting the app, if the problem persists then press the fix button and only the corrupted files will be re-downloaded.</string>
     <string name="error_models_loading_short">Error loading the new model</string>
     <string name="error_download">Error in the download, please ensure you have internet connection and retry:</string>
     <string name="error_transfer">Error in the transfer of the downloaded file from external to internal memory, please ensure you have not removed an sd card or other external storage devices and retry keeping the app open:</string>
@@ -172,6 +172,9 @@
     <string name="error_apply_unknown">Unknown error, please retry.</string>
     <string name="error_delete_last_download">This is the last downloaded translation model, you cannot delete all the translation models, please download another translation model before deleting this one.</string>
     <string name="error_bluetooth_off">It is not possible to use the Conversation mode because Bluetooth is turned off, please turn it on to start using this mode.</string>
+    <string name="error_text_mode">Only text translation mode is active</string>
+    <string name="error_tts_missing_lang">Language not supported by TTS</string>
+    <string name="error_translating">Error translating</string>
 
     <string name="title_image_selector">user image</string>
 
