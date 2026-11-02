@@ -17,8 +17,10 @@
 package nie.translator.rtranslator;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.Application;
+import android.app.ApplicationExitInfo;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -35,6 +37,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.konovalov.vad.silero.Vad;
 import com.konovalov.vad.silero.VadSilero;
@@ -44,6 +47,7 @@ import com.konovalov.vad.silero.config.SampleRate;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import nie.translator.rtranslator.access.AccessActivity;
 import nie.translator.rtranslator.bluetooth.BluetoothCommunicator;
@@ -134,6 +138,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
     private boolean whisperReducedRam;
     private int translationMode;
     private VadSilero vad;
+    private boolean unhandledAppCrashOnLastRun = false;
 
     @Override
     public void onCreate() {
@@ -141,7 +146,9 @@ public class Global extends Application implements DefaultLifecycleObserver {
         mainHandler = new Handler(Looper.getMainLooper());
         recentPeersDataManager = new RecentPeersDataManager(this);
         ThemeManager.restore(this);  //this will apply the night mode chose in the settings
-        //initializeBluetoothCommunicator();
+
+        unhandledAppCrashOnLastRun = checkAppCrashOnLastRun();
+
         getMicSensitivity();
         createNotificationChannel();
         SharedPreferences sharedPreferences = getSharedPreferences("default", Context.MODE_PRIVATE);
@@ -182,6 +189,64 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }else{
             REQUIRED_PERMISSIONS_NOTIFICATIONS = new String[0];
         }
+    }
+
+    private boolean checkAppCrashOnLastRun() {
+        boolean appCrashedOnLastRun = false;
+        SharedPreferences prefs = getSharedPreferences("default", Context.MODE_PRIVATE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+
+            // Get the most recent exit reason (0 = current process, 1 = max records to return)
+            List<ApplicationExitInfo> exitInfoList = am.getHistoricalProcessExitReasons(getPackageName(), 0, 1);
+
+            if (!exitInfoList.isEmpty()) {
+                ApplicationExitInfo exitInfo = exitInfoList.get(0);
+
+                // Check if the app was actively being used by the user when it died
+                boolean wasInForeground = exitInfo.getImportance() == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+
+                if (wasInForeground) {
+                    switch (exitInfo.getReason()) {
+
+                        case ApplicationExitInfo.REASON_LOW_MEMORY:
+                        case ApplicationExitInfo.REASON_CRASH_NATIVE:
+                        case ApplicationExitInfo.REASON_CRASH:
+                            appCrashedOnLastRun = true;
+                            Log.e("CrashDetection", "App crashed in the previous run.");
+                            break;
+                    }
+                }
+            }
+        }else{
+            // Check the flag on startup
+            boolean dirtyExit = prefs.getBoolean("is_running_in_foreground", false);
+
+            if (dirtyExit) {
+                appCrashedOnLastRun = true;
+                Log.e("CrashDetection", "App crashed in the previous run.");
+            }
+        }
+
+        // Register lifecycle observer to track foreground/background transitions, for API <= 29 (Android 10) check
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(new DefaultLifecycleObserver() {
+            @SuppressLint("ApplySharedPref")
+            @Override
+            public void onStart(@NonNull LifecycleOwner owner) {
+                // App is entering the foreground
+                prefs.edit().putBoolean("is_running_in_foreground", true).commit();
+            }
+
+            @SuppressLint("ApplySharedPref")
+            @Override
+            public void onStop(@NonNull LifecycleOwner owner) {
+                // App safely entered the background.
+                // If the OS kills it now (background kill), it's normal system behavior, not a foreground crash.
+                prefs.edit().putBoolean("is_running_in_foreground", false).commit();
+            }
+        });
+
+        return appCrashedOnLastRun;
     }
 
 
@@ -1192,6 +1257,14 @@ public class Global extends Application implements DefaultLifecycleObserver {
 
     public int getTranslationMode() {
         return translationMode;
+    }
+
+    public boolean isUnhandledAppCrashOnLastRun() {
+        return unhandledAppCrashOnLastRun;
+    }
+
+    public void resetUnhandledAppCrashOnLastRun() {
+        this.unhandledAppCrashOnLastRun = false;
     }
 
     public void setTranslationStatus(int translationMode, boolean useMozillaForVoiceTranslation, boolean useTatoeba, boolean useTranslationDicts, @NonNull Translator.GeneralListener listener) {

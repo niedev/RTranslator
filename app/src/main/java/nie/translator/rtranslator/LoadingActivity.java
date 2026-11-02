@@ -86,10 +86,6 @@ public class LoadingActivity extends GeneralActivity {
                 }
             });
         }
-        /*super.onCreate(savedInstanceState);
-        setTheme(R.style.Theme_RTranslator);
-        setContentView(R.layout.activity_loading);
-        mainHandler = new Handler(Looper.getMainLooper());*/
     }
 
     @Override
@@ -107,10 +103,19 @@ public class LoadingActivity extends GeneralActivity {
         global = (Global) getApplication();
         if (isFirstStart()) {
             startAccessActivity();
+        } else if(global.isUnhandledAppCrashOnLastRun()){
+            global.resetUnhandledAppCrashOnLastRun();
+            // We start the access activity, that will start with the model manager fragment.
+            // We don't use startSettingsActivityWithModelManager(), because in this way, after the apply, this LoadingActivity
+            // will be opened (instead of the main page of the settings activity), and the models will be loaded before starting the main app
+            // (like in the first configuration of the app).
+            startAccessActivity();
         } else if (global.isTranslatorInitializing() || global.isTranslatorInitialized()) {
             if(checkIfResourcesPreferencesRespectDownloads()) {
                 startVoiceTranslationActivity();
             }else{
+                // We get here if the user has deleted some resources that were previously selected in the preferences,
+                // and then he exited the app and re-open it by clicking the app icon.
                 startSettingsActivityWithModelManager();
             }
         } else {

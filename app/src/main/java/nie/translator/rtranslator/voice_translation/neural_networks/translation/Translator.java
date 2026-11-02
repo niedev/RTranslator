@@ -282,7 +282,7 @@ public class Translator extends NeuralNetworkApi {
         }
 
         // we load the models (in parallel)
-        final OrtSession.SessionOptions.OptLevel optDefaultLevel = OrtSession.SessionOptions.OptLevel.NO_OPT;  //todo: revert to EXTENDED_OPT or optimize the models offline
+        final OrtSession.SessionOptions.OptLevel optDefaultLevel = OrtSession.SessionOptions.OptLevel.EXTENDED_OPT;  //todo: revert to NO_OPT and optimize the models offline with EXTENDED_OPT
         boolean arena = true;
 
         // Fixed ordering for assigning the results after loading:
