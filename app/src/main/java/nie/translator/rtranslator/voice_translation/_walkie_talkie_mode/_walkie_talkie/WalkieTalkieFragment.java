@@ -407,8 +407,22 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                         if(play){
                             final String textToSpeak = message.getMessage().getText();
                             final String utteranceId = String.valueOf(message.getMessageID());
-                            String localeCode = message.isMine() ? global.getSecondLanguage(true).getCode() : global.getFirstLanguage(true).getCode();
-                            walkieTalkieServiceCommunicator.speakText(textToSpeak, localeCode, utteranceId);
+                            CustomLocale language = message.getContentLanguage();
+                            global.getTTSLanguages(true, false, new Global.GetLocalesListListener() {
+                                @Override
+                                public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
+                                    if (CustomLocale.containsLanguage(ttsLanguages, language)) { // check if the language can be spoken
+                                        walkieTalkieServiceCommunicator.speakText(textToSpeak, language.getCode(), utteranceId);
+                                    }else{
+                                        Toast.makeText(activity, "Language not supported by TTS", Toast.LENGTH_LONG).show();  //todo: convert text
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(int[] reasons, long value) {
+                                    activity.manageTTSError();
+                                }
+                            });
                         }else{
                             walkieTalkieServiceCommunicator.stopSpeakingText();
                         }

@@ -16,6 +16,7 @@
 
 package nie.translator.rtranslator.tools.gui.messages;
 
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -98,8 +99,13 @@ public class GuiMessage implements Parcelable {
         messageID = in.readLong();
         isMine = in.readByte() != 0;
         isFinal = in.readByte() != 0;
-        sourceLanguage = in.readSerializable(CustomLocale.class.getClassLoader(), CustomLocale.class);
-        contentLanguage = in.readSerializable(CustomLocale.class.getClassLoader(), CustomLocale.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            sourceLanguage = in.readSerializable(CustomLocale.class.getClassLoader(), CustomLocale.class);
+            contentLanguage = in.readSerializable(CustomLocale.class.getClassLoader(), CustomLocale.class);
+        }else{
+            sourceLanguage = (CustomLocale) in.readSerializable();
+            contentLanguage = (CustomLocale) in.readSerializable();
+        }
     }
 
     @Override
