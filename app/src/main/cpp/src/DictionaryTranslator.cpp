@@ -44,7 +44,7 @@ void initializeService(const std::string& dbPath) {
     std::lock_guard <std::mutex> lock(service_mutex);
     databasePath = dbPath;
     __android_log_print(
-            ANDROID_LOG_INFO, "DictionaryTranslator",
+            ANDROID_LOG_INFO, "dictionary_translator",
             "SQLite SQLITE_THREADSAFE=%d", sqlite3_threadsafe());
 }
 
@@ -236,8 +236,7 @@ Java_nie_translator_rtranslator_voice_1translation_neural_1networks_translation_
         std::string dbPath_str(c_dbPath);
         initializeService(dbPath_str);
     } catch(const std::exception &e) {
-        jclass exceptionClass = env->FindClass("java/lang/RuntimeException");
-        env->ThrowNew(exceptionClass, e.what());
+        __android_log_print(ANDROID_LOG_ERROR, "dictionary_translator", "C++ Exception in unloadModelFromCacheNative: %s", e.what());
     }
 }
 
@@ -253,8 +252,7 @@ Java_nie_translator_rtranslator_voice_1translation_neural_1networks_translation_
         std::string lang_str(c_lang);
         loadTranslationDictionary(lang_str);
     } catch(const std::exception &e) {
-        jclass exceptionClass = env->FindClass("java/lang/RuntimeException");
-        env->ThrowNew(exceptionClass, e.what());
+        __android_log_print(ANDROID_LOG_ERROR, "dictionary_translator", "C++ Exception in unloadModelFromCacheNative: %s", e.what());
     }
 
     env->ReleaseStringUTFChars(lang, c_lang);
@@ -272,8 +270,7 @@ Java_nie_translator_rtranslator_voice_1translation_neural_1networks_translation_
         std::string lang_str(c_lang);
         unloadTranslationDictionary(lang_str);
     } catch(const std::exception &e) {
-        jclass exceptionClass = env->FindClass("java/lang/RuntimeException");
-        env->ThrowNew(exceptionClass, e.what());
+        __android_log_print(ANDROID_LOG_ERROR, "dictionary_translator", "C++ Exception in unloadModelFromCacheNative: %s", e.what());
     }
 
     env->ReleaseStringUTFChars(lang, c_lang);

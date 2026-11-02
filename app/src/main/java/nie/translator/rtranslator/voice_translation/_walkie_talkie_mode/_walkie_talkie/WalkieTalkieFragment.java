@@ -624,7 +624,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // new language setting in the WalkieTalkieService
         walkieTalkieServiceCommunicator.changeFirstLanguage(language);
         // save firstLanguage selected
-        global.setFirstLanguage(language, null);
+        global.setFirstLanguage(language, true, null);
         // change language displayed
         firstLanguageSelector.setText(language.getDisplayNameWithoutTTS());
         leftMicLanguage.setText(language.getDisplayNameWithoutTTS());
@@ -634,7 +634,7 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // new language setting in the WalkieTalkieService
         walkieTalkieServiceCommunicator.changeSecondLanguage(language);
         // save secondLanguage selected
-        global.setSecondLanguage(language, null);
+        global.setSecondLanguage(language, true, null);
         // change language displayed
         secondLanguageSelector.setText(language.getDisplayNameWithoutTTS());
         rightMicLanguage.setText(language.getDisplayNameWithoutTTS());
@@ -865,6 +865,9 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                         break;
                     case ErrorCodes.ERROR_LOADING_SPEECH_RECOGNIZER:
                         manageSpeechRecognizerError();
+                        break;
+                    case ErrorCodes.ERROR_EXECUTING_MODEL:
+                        Toast.makeText(activity, "Error translating", Toast.LENGTH_SHORT).show();  //todo: convert text
                         break;
                     /*case ErrorCodes.MISSING_MIC_PERMISSION: {
                         if(getContext() != null) {

@@ -174,8 +174,7 @@ Java_nie_translator_rtranslator_voice_1translation_neural_1networks_translation_
         std::string lang_str(c_lang);
         unloadModelFromCache(lang_str);
     } catch(const std::exception &e) {
-        jclass exceptionClass = env->FindClass("java/lang/RuntimeException");
-        env->ThrowNew(exceptionClass, e.what());
+        __android_log_print(ANDROID_LOG_ERROR, "bergamot", "C++ Exception in unloadModelFromCacheNative: %s", e.what());
     }
 
     env->ReleaseStringUTFChars(lang, c_lang);

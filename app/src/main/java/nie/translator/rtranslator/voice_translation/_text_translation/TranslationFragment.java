@@ -273,6 +273,7 @@ public class TranslationFragment extends Fragment {
 
             @Override
             public void onFailure(int[] reasons, long value) {
+                Toast.makeText(activity, "Error translating", Toast.LENGTH_SHORT).show();  //todo: convert text
                 activateTranslationButton();
             }
         };
@@ -970,7 +971,7 @@ public class TranslationFragment extends Fragment {
     private void setFirstLanguage(CustomLocale language) {
         deactivateTranslationButton();
         // save firstLanguage selected
-        global.setFirstTextLanguage(language, new Translator.GeneralListener() {
+        global.setFirstTextLanguage(language, true, new Translator.GeneralListener() {
             @Override
             public void onSuccess() {
                 activateTranslationButton();
@@ -983,7 +984,7 @@ public class TranslationFragment extends Fragment {
     private void setSecondLanguage(CustomLocale language) {
         deactivateTranslationButton();
         // save secondLanguage selected
-        global.setSecondTextLanguage(language, new Translator.GeneralListener() {
+        global.setSecondTextLanguage(language, true, new Translator.GeneralListener() {
             @Override
             public void onSuccess() {
                 activateTranslationButton();
@@ -1005,7 +1006,7 @@ public class TranslationFragment extends Fragment {
 
     private void switchLanguages() {
         deactivateTranslationButton();
-        global.switchTextLanguages(new Translator.GeneralListener() {
+        global.switchTextLanguages(true, new Translator.GeneralListener() {
             @Override
             public void onSuccess() {
                 activateTranslationButton();

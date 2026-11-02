@@ -115,7 +115,7 @@ public class Translator extends NeuralNetworkApi {
     private final int EMPTY_BATCH_SIZE = 1;
     private boolean translatingMessages = false;
     private boolean translating = false;
-    private LanguageResourcesManager languageResourcesManager;
+    private LanguageResourcesManager languageResourcesManager = null;
 
 
     public Translator(@NonNull Global global, int mode, boolean useMozillaForVoiceTranslation, boolean useTatoeba, boolean useTranslationDicts, GeneralListener initListener) {
@@ -588,14 +588,16 @@ public class Translator extends NeuralNetworkApi {
             synchronized (langResourcesLock) {
                 try {
                     //execution of language resource loading
-                    languageResourcesManager.setLanguageResources(srcLang, tgtLang, rtranslatorMode);
+                    if(languageResourcesManager != null) {
+                        languageResourcesManager.setLanguageResources(srcLang, tgtLang, rtranslatorMode);
+                    }
                     //we notify the success of the loading
                     mainHandler.post(() -> {
                         if(listener != null) listener.onSuccess();
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
+                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0));
                 }
             }
         }).start();
@@ -613,7 +615,7 @@ public class Translator extends NeuralNetworkApi {
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
+                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0));
                 }
             }
         }).start();
@@ -631,7 +633,7 @@ public class Translator extends NeuralNetworkApi {
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0)); //todo: implementare una vera gestione degli errori
+                    if(listener != null) mainHandler.post(() -> listener.onFailure(new int[]{0}, 0));
                 }
             }
         }).start();
@@ -655,7 +657,7 @@ public class Translator extends NeuralNetworkApi {
                     e.printStackTrace();
                     mainHandler.post(() -> {
                         if(listener != null) listener.onFailure(new int[]{0}, 0);
-                    });    //todo: implementare una vera gestione degli errori
+                    });
                 }
             }
         }).start();
@@ -675,7 +677,7 @@ public class Translator extends NeuralNetworkApi {
                     e.printStackTrace();
                     mainHandler.post(() -> {
                         if(listener != null) listener.onFailure(new int[]{0}, 0);
-                    });    //todo: implementare una vera gestione degli errori
+                    });
                 }
             }
         }).start();

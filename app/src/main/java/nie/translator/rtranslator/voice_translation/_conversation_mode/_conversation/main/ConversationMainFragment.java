@@ -572,6 +572,9 @@ public class ConversationMainFragment extends VoiceTranslationFragment {
                         activity.manageTTSError();
                         sound.deactivate(DeactivableButton.DEACTIVATED_FOR_TTS_ERROR);
                         break;
+                    case ErrorCodes.ERROR_EXECUTING_MODEL:
+                        Toast.makeText(activity, "Error translating", Toast.LENGTH_SHORT).show();  //todo: convert text
+                        break;
                     /*case ErrorCodes.MISSING_MIC_PERMISSION: {
                         if(getContext() != null) {
                             requestPermissions(VoiceTranslationService.REQUIRED_PERMISSIONS, VoiceTranslationService.REQUEST_CODE_REQUIRED_PERMISSIONS);

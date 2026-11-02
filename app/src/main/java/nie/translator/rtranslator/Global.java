@@ -977,44 +977,44 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
     }
 
-    public void setFirstLanguage(CustomLocale language, @Nullable Translator.GeneralListener listener) {
+    public void setFirstLanguage(CustomLocale language, boolean ignoreError, @Nullable Translator.GeneralListener listener) {
         this.firstLanguage = language;
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("firstLanguage", language.getCode());
         editor.apply();
-        loadLanguagesResources(language, getSecondLanguage(true), RTranslatorMode.WALKIE_TALKIE_MODE, listener);
+        loadLanguagesResources(language, getSecondLanguage(true), RTranslatorMode.WALKIE_TALKIE_MODE, ignoreError, listener);
     }
 
-    public void setSecondLanguage(CustomLocale language, @Nullable Translator.GeneralListener listener) {
+    public void setSecondLanguage(CustomLocale language, boolean ignoreError, @Nullable Translator.GeneralListener listener) {
         this.secondLanguage = language;
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("secondLanguage", language.getCode());
         editor.apply();
-        loadLanguagesResources(getFirstLanguage(true), language, RTranslatorMode.WALKIE_TALKIE_MODE, listener);
+        loadLanguagesResources(getFirstLanguage(true), language, RTranslatorMode.WALKIE_TALKIE_MODE, ignoreError, listener);
     }
 
-    public void setFirstTextLanguage(CustomLocale language, @Nullable Translator.GeneralListener listener) {
+    public void setFirstTextLanguage(CustomLocale language, boolean ignoreError, @Nullable Translator.GeneralListener listener) {
         this.firstTextLanguage = language;
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("firstTextLanguage", language.getCode());
         editor.apply();
-        loadLanguagesResources(language, getSecondTextLanguage(true), RTranslatorMode.TEXT_TRANSLATION_MODE, listener);
+        loadLanguagesResources(language, getSecondTextLanguage(true), RTranslatorMode.TEXT_TRANSLATION_MODE, ignoreError, listener);
     }
 
-    public void setSecondTextLanguage(CustomLocale language, @Nullable Translator.GeneralListener listener) {
+    public void setSecondTextLanguage(CustomLocale language, boolean ignoreError, @Nullable Translator.GeneralListener listener) {
         this.secondTextLanguage = language;
         CustomLocale firstLanguage = getFirstTextLanguage(true);
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("secondTextLanguage", language.getCode());
         editor.apply();
-        loadLanguagesResources(getFirstTextLanguage(true), language, RTranslatorMode.TEXT_TRANSLATION_MODE, listener);
+        loadLanguagesResources(getFirstTextLanguage(true), language, RTranslatorMode.TEXT_TRANSLATION_MODE, ignoreError, listener);
     }
 
-    public void switchTextLanguages(@Nullable Translator.GeneralListener listener) {
+    public void switchTextLanguages(boolean ignoreError, @Nullable Translator.GeneralListener listener) {
         CustomLocale firstLanguage = getFirstTextLanguage(true);
         CustomLocale secondLanguage = getSecondTextLanguage(true);
         this.firstTextLanguage = secondLanguage;
@@ -1024,7 +1024,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         editor.putString("firstTextLanguage", this.firstTextLanguage.getCode());
         editor.putString("secondTextLanguage", this.secondTextLanguage.getCode());
         editor.apply();
-        loadLanguagesResources(secondLanguage, firstLanguage, RTranslatorMode.TEXT_TRANSLATION_MODE, listener);
+        loadLanguagesResources(secondLanguage, firstLanguage, RTranslatorMode.TEXT_TRANSLATION_MODE, ignoreError, listener);
     }
 
 
@@ -1269,16 +1269,16 @@ public class Global extends Application implements DefaultLifecycleObserver {
      */
     public void updateLanguagesAndResources(Translator.GeneralListener listener){
         getLanguages(RTranslatorMode.TEXT_TRANSLATION_MODE, false);  //this will update the recognizer langs, the translator langs and also the mozilla langs (for all the RTranslator modes)
-        setFirstTextLanguage(getFirstTextLanguage(false), new Translator.GeneralListener() {
+        setFirstTextLanguage(getFirstTextLanguage(false), true, new Translator.GeneralListener() {
             @Override
             public void onSuccess() {
-                setSecondTextLanguage(getSecondTextLanguage(false), new Translator.GeneralListener() {
+                setSecondTextLanguage(getSecondTextLanguage(false), true, new Translator.GeneralListener() {
                     @Override
                     public void onSuccess() {
-                        setFirstLanguage(getFirstLanguage(false), new Translator.GeneralListener() {
+                        setFirstLanguage(getFirstLanguage(false), true, new Translator.GeneralListener() {
                             @Override
                             public void onSuccess() {
-                                setSecondLanguage(getSecondLanguage(false), new Translator.GeneralListener() {
+                                setSecondLanguage(getSecondLanguage(false), true, new Translator.GeneralListener() {
                                     @Override
                                     public void onSuccess() {
                                         setLanguage(getLanguage(false));
@@ -1467,13 +1467,29 @@ public class Global extends Application implements DefaultLifecycleObserver {
         }
     }
 
-    private void loadLanguagesResources(CustomLocale firstLanguage, CustomLocale secondLanguage, RTranslatorMode mode, Translator.GeneralListener listener){
+    private void loadLanguagesResources(CustomLocale firstLanguage, CustomLocale secondLanguage, RTranslatorMode mode, boolean ignoreError, Translator.GeneralListener listener){
         if(translator != null) {
             // if the translator is initialized we load the language resource.
             // We do that even if the translator is still initializing but it is not null,
             // in this case the concurrency will be managed by the langResourcesLock,
             // and in case of errors this method will just do nothing.
-            translator.loadLanguageResources(firstLanguage, secondLanguage, mode, listener);
+            translator.loadLanguageResources(firstLanguage, secondLanguage, mode, new Translator.GeneralListener() {
+                @Override
+                public void onSuccess() {
+                    if(listener != null) listener.onSuccess();
+                }
+
+                @Override
+                public void onFailure(int[] reasons, long value) {
+                    if(listener != null) {
+                        if (ignoreError) {
+                            listener.onSuccess();
+                        }else{
+                            listener.onFailure(reasons, value);
+                        }
+                    }
+                }
+            });
         }else{
             listener.onSuccess();  //if the translator is not initialized yet we do not load the language resources
         }

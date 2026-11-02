@@ -194,6 +194,7 @@ public class LanguageResourcesManager {
                 // cannot use this method for conversation mode
                 return;
         }
+        if(currentModeResources == null || currentModeResources.length < 2) return;
         //we unload the resources of these languages of this mode that will no longer be used by this mode or the others
         for (CustomLocale resource : currentModeResources) {
             if (resource != null && !resource.equals(srcLang) && !resource.equals(tgtLang) && !languageResourcesIndicator.isResourceContainedInOtherModes(resource, rtranslatorMode)) {
