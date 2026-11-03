@@ -155,6 +155,14 @@ public class GuiTools {
             }
         });
 
+        // set the initial scroll position to have the selected language in the middle of the screen
+        listView.post(() -> {  // wait for layout before using the ListView's height.
+            int position = listViewAdapter.getSelectedPosition();
+            if (position >= 0) {
+                listView.setSelectionFromTop(position, listView.getHeight() / 2);
+            }
+        });
+
         //initialize search bar
         searchView.setOnClickListener(v -> searchView.setIconified(false));   //make the whole search bar clickable
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

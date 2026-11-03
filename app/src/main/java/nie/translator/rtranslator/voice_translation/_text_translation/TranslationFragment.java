@@ -286,6 +286,12 @@ public class TranslationFragment extends Fragment {
                     if (text.isEmpty()) {   //test code  todo: remove before release
                         text = "Also unlike 2014, there aren’t nearly as many loopholes. You can’t just buy a 150-watt incandescent or a three-way bulb — the ban covers any normal bulb that generates less than 45 lumens per watt, which pretty much rules out both incandescent and halogen tech in their entirety.";
                         inputText.setText(text);
+                        /*ArrayList<CustomLocale> languages = new ArrayList<>(global.getTranslatorLanguages(Global.RTranslatorMode.TEXT_TRANSLATION_MODE, true));
+                        if (global.getTranslator() != null) {
+                            Log.i("translator_test", "Start testing translation of :"+inputText+ " From eng to every language:");
+                            global.getTranslator().testAllLanguages(languages);
+                        }
+                        return;*/
                     }
 
                     if (!text.isEmpty()) {

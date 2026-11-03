@@ -143,6 +143,10 @@ public class LanguageListAdapter extends BaseAdapter implements Filterable {
         });
     }
 
+    public int getSelectedPosition() {
+        return filteredLanguages.indexOf(selectedLanguage);
+    }
+
     //this class is used to apply filters to the language list (for now it is used for search)
     private class LanguageFilter extends Filter {
         @Override

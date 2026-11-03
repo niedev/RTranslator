@@ -17,9 +17,6 @@
 
 <languages>
     <language>
-        <code>abt</code>
-    </language>
-    <language>
         <code>ace</code>
     </language>
     <language>
@@ -29,19 +26,10 @@
         <code>ada</code>
     </language>
     <language>
-        <code>adh</code>
-    </language>
-    <language>
         <code>ady</code>
     </language>
     <language>
         <code>af</code>
-    </language>
-    <language>
-        <code>agr</code>
-    </language>
-    <language>
-        <code>ahk</code>
     </language>
     <language>
         <code>ak</code>
@@ -53,13 +41,7 @@
         <code>alt</code>
     </language>
     <language>
-        <code>alz</code>
-    </language>
-    <language>
         <code>am</code>
-    </language>
-    <language>
-        <code>amu</code>
     </language>
     <language>
         <code>an</code>
@@ -71,13 +53,7 @@
         <code>ann</code>
     </language>
     <language>
-        <code>ape</code>
-    </language>
-    <language>
         <code>ar</code>
-    </language>
-    <language>
-        <code>arn</code>
     </language>
     <language>
         <code>ary</code>
@@ -116,9 +92,6 @@
         <code>bbc</code>
     </language>
     <language>
-        <code>bci</code>
-    </language>
-    <language>
         <code>be</code>
     </language>
     <language>
@@ -131,13 +104,7 @@
         <code>bg</code>
     </language>
     <language>
-        <code>bgp</code>
-    </language>
-    <language>
         <code>bho</code>
-    </language>
-    <language>
-        <code>bi</code>
     </language>
     <language>
         <code>bik</code>
@@ -149,25 +116,13 @@
         <code>bjn</code>
     </language>
     <language>
-        <code>bm</code>
-    </language>
-    <language>
         <code>bn</code>
-    </language>
-    <language>
-        <code>bo</code>
-    </language>
-    <language>
-        <code>bqc</code>
     </language>
     <language>
         <code>br</code>
     </language>
     <language>
         <code>bru</code>
-    </language>
-    <language>
-        <code>brx</code>
     </language>
     <language>
         <code>bs</code>
@@ -185,12 +140,6 @@
         <code>bug</code>
     </language>
     <language>
-        <code>bum</code>
-    </language>
-    <language>
-        <code>bus</code>
-    </language>
-    <language>
         <code>bzj</code>
     </language>
     <language>
@@ -203,19 +152,10 @@
         <code>cac</code>
     </language>
     <language>
-        <code>cak</code>
-    </language>
-    <language>
         <code>cbk</code>
     </language>
     <language>
         <code>cce</code>
-    </language>
-    <language>
-        <code>ce</code>
-    </language>
-    <language>
-        <code>ceb</code>
     </language>
     <language>
         <code>cfm</code>
@@ -225,12 +165,6 @@
     </language>
     <language>
         <code>chk</code>
-    </language>
-    <language>
-        <code>chm</code>
-    </language>
-    <language>
-        <code>chr</code>
     </language>
     <language>
         <code>ckb</code>
@@ -249,12 +183,6 @@
     </language>
     <language>
         <code>cs</code>
-    </language>
-    <language>
-        <code>ctu</code>
-    </language>
-    <language>
-        <code>cuk</code>
     </language>
     <language>
         <code>cv</code>
@@ -281,13 +209,7 @@
         <code>dln</code>
     </language>
     <language>
-        <code>doi</code>
-    </language>
-    <language>
         <code>dov</code>
-    </language>
-    <language>
-        <code>dtp</code>
     </language>
     <language>
         <code>dv</code>
@@ -299,22 +221,13 @@
         <code>dyu</code>
     </language>
     <language>
-        <code>dz</code>
-    </language>
-    <language>
         <code>ee</code>
     </language>
     <language>
         <code>el</code>
     </language>
     <language>
-        <code>emp</code>
-    </language>
-    <language>
         <code>en</code>
-    </language>
-    <language>
-        <code>enq</code>
     </language>
     <language>
         <code>eo</code>
@@ -344,13 +257,7 @@
         <code>fil</code>
     </language>
     <language>
-        <code>fip</code>
-    </language>
-    <language>
         <code>fj</code>
-    </language>
-    <language>
-        <code>fo</code>
     </language>
     <language>
         <code>fon</code>
@@ -389,9 +296,6 @@
         <code>gn</code>
     </language>
     <language>
-        <code>gof</code>
-    </language>
-    <language>
         <code>gom</code>
     </language>
     <language>
@@ -413,13 +317,7 @@
         <code>guc</code>
     </language>
     <language>
-        <code>guh</code>
-    </language>
-    <language>
         <code>gui</code>
-    </language>
-    <language>
-        <code>gv</code>
     </language>
     <language>
         <code>gvl</code>
@@ -464,12 +362,6 @@
         <code>hu</code>
     </language>
     <language>
-        <code>hui</code>
-    </language>
-    <language>
-        <code>hus</code>
-    </language>
-    <language>
         <code>hvn</code>
     </language>
     <language>
@@ -485,22 +377,10 @@
         <code>id</code>
     </language>
     <language>
-        <code>ify</code>
-    </language>
-    <language>
         <code>ig</code>
     </language>
     <language>
         <code>ilo</code>
-    </language>
-    <language>
-        <code>inb</code>
-    </language>
-    <language>
-        <code>io</code>
-    </language>
-    <language>
-        <code>is</code>
     </language>
     <language>
         <code>iso</code>
@@ -512,12 +392,6 @@
         <code>iu</code>
     </language>
     <language>
-        <code>ium</code>
-    </language>
-    <language>
-        <code>izz</code>
-    </language>
-    <language>
         <code>ja</code>
     </language>
     <language>
@@ -527,16 +401,10 @@
         <code>jam</code>
     </language>
     <language>
-        <code>jiv</code>
-    </language>
-    <language>
         <code>jv</code>
     </language>
     <language>
         <code>jvn</code>
-    </language>
-    <language>
-        <code>ka</code>
     </language>
     <language>
         <code>kaa</code>
@@ -545,28 +413,10 @@
         <code>kac</code>
     </language>
     <language>
-        <code>kbd</code>
-    </language>
-    <language>
-        <code>kbp</code>
-    </language>
-    <language>
         <code>kek</code>
     </language>
     <language>
-        <code>kg</code>
-    </language>
-    <language>
         <code>kha</code>
-    </language>
-    <language>
-        <code>kj</code>
-    </language>
-    <language>
-        <code>kjg</code>
-    </language>
-    <language>
-        <code>kjh</code>
     </language>
     <language>
         <code>kk</code>
@@ -590,12 +440,6 @@
         <code>ko</code>
     </language>
     <language>
-        <code>koi</code>
-    </language>
-    <language>
-        <code>kos</code>
-    </language>
-    <language>
         <code>kr</code>
     </language>
     <language>
@@ -608,46 +452,19 @@
         <code>ks</code>
     </language>
     <language>
-        <code>ksd</code>
-    </language>
-    <language>
-        <code>ksw</code>
-    </language>
-    <language>
-        <code>ktu</code>
-    </language>
-    <language>
         <code>ku</code>
     </language>
     <language>
         <code>kum</code>
     </language>
     <language>
-        <code>kv</code>
-    </language>
-    <language>
-        <code>kw</code>
-    </language>
-    <language>
-        <code>kwi</code>
-    </language>
-    <language>
         <code>ky</code>
-    </language>
-    <language>
-        <code>la</code>
-    </language>
-    <language>
-        <code>laj</code>
     </language>
     <language>
         <code>lb</code>
     </language>
     <language>
         <code>lg</code>
-    </language>
-    <language>
-        <code>lhu</code>
     </language>
     <language>
         <code>li</code>
@@ -657,9 +474,6 @@
     </language>
     <language>
         <code>lmo</code>
-    </language>
-    <language>
-        <code>ln</code>
     </language>
     <language>
         <code>lo</code>
@@ -672,9 +486,6 @@
     </language>
     <language>
         <code>ltg</code>
-    </language>
-    <language>
-        <code>lu</code>
     </language>
     <language>
         <code>lus</code>
@@ -698,16 +509,7 @@
         <code>mam</code>
     </language>
     <language>
-        <code>mas</code>
-    </language>
-    <language>
-        <code>maz</code>
-    </language>
-    <language>
         <code>mbt</code>
-    </language>
-    <language>
-        <code>mdf</code>
     </language>
     <language>
         <code>meo</code>
@@ -722,9 +524,6 @@
         <code>mg</code>
     </language>
     <language>
-        <code>mgh</code>
-    </language>
-    <language>
         <code>mh</code>
     </language>
     <language>
@@ -732,9 +531,6 @@
     </language>
     <language>
         <code>min</code>
-    </language>
-    <language>
-        <code>miq</code>
     </language>
     <language>
         <code>mk</code>
@@ -752,19 +548,7 @@
         <code>mni</code>
     </language>
     <language>
-        <code>mps</code>
-    </language>
-    <language>
-        <code>mqy</code>
-    </language>
-    <language>
         <code>mr</code>
-    </language>
-    <language>
-        <code>mrj</code>
-    </language>
-    <language>
-        <code>mrw</code>
     </language>
     <language>
         <code>ms</code>
@@ -776,9 +560,6 @@
         <code>msi</code>
     </language>
     <language>
-        <code>msm</code>
-    </language>
-    <language>
         <code>mt</code>
     </language>
     <language>
@@ -786,9 +567,6 @@
     </language>
     <language>
         <code>my</code>
-    </language>
-    <language>
-        <code>myv</code>
     </language>
     <language>
         <code>nds</code>
@@ -812,9 +590,6 @@
         <code>nij</code>
     </language>
     <language>
-        <code>niq</code>
-    </language>
-    <language>
         <code>nl</code>
     </language>
     <language>
@@ -830,19 +605,10 @@
         <code>noa</code>
     </language>
     <language>
-        <code>nog</code>
-    </language>
-    <language>
-        <code>nr</code>
-    </language>
-    <language>
         <code>nso</code>
     </language>
     <language>
         <code>nus</code>
-    </language>
-    <language>
-        <code>nut</code>
     </language>
     <language>
         <code>nv</code>
@@ -851,16 +617,10 @@
         <code>ny</code>
     </language>
     <language>
-        <code>nyu</code>
-    </language>
-    <language>
         <code>nzi</code>
     </language>
     <language>
         <code>oc</code>
-    </language>
-    <language>
-        <code>oj</code>
     </language>
     <language>
         <code>om</code>
@@ -872,9 +632,6 @@
         <code>os</code>
     </language>
     <language>
-        <code>otq</code>
-    </language>
-    <language>
         <code>pa</code>
     </language>
     <language>
@@ -882,9 +639,6 @@
     </language>
     <language>
         <code>pap</code>
-    </language>
-    <language>
-        <code>pau</code>
     </language>
     <language>
         <code>pck</code>
@@ -897,9 +651,6 @@
     </language>
     <language>
         <code>pon</code>
-    </language>
-    <language>
-        <code>ppk</code>
     </language>
     <language>
         <code>prs</code>
@@ -917,12 +668,6 @@
         <code>qub</code>
     </language>
     <language>
-        <code>quc</code>
-    </language>
-    <language>
-        <code>quf</code>
-    </language>
-    <language>
         <code>quh</code>
     </language>
     <language>
@@ -932,13 +677,7 @@
         <code>quy</code>
     </language>
     <language>
-        <code>qvc</code>
-    </language>
-    <language>
         <code>qvi</code>
-    </language>
-    <language>
-        <code>qvz</code>
     </language>
     <language>
         <code>qxr</code>
@@ -948,9 +687,6 @@
     </language>
     <language>
         <code>rcf</code>
-    </language>
-    <language>
-        <code>rki</code>
     </language>
     <language>
         <code>rm</code>
@@ -969,9 +705,6 @@
     </language>
     <language>
         <code>ru</code>
-    </language>
-    <language>
-        <code>rw</code>
     </language>
     <language>
         <code>rwo</code>
@@ -998,9 +731,6 @@
         <code>se</code>
     </language>
     <language>
-        <code>seh</code>
-    </language>
-    <language>
         <code>sg</code>
     </language>
     <language>
@@ -1010,13 +740,7 @@
         <code>shn</code>
     </language>
     <language>
-        <code>shp</code>
-    </language>
-    <language>
         <code>si</code>
-    </language>
-    <language>
-        <code>sja</code>
     </language>
     <language>
         <code>sk</code>
@@ -1040,9 +764,6 @@
         <code>so</code>
     </language>
     <language>
-        <code>spp</code>
-    </language>
-    <language>
         <code>sq</code>
     </language>
     <language>
@@ -1064,13 +785,7 @@
         <code>stq</code>
     </language>
     <language>
-        <code>su</code>
-    </language>
-    <language>
         <code>sus</code>
-    </language>
-    <language>
-        <code>suz</code>
     </language>
     <language>
         <code>sv</code>
@@ -1079,43 +794,19 @@
         <code>sw</code>
     </language>
     <language>
-        <code>sxn</code>
-    </language>
-    <language>
-        <code>syr</code>
-    </language>
-    <language>
         <code>szl</code>
     </language>
     <language>
         <code>ta</code>
     </language>
     <language>
-        <code>tab</code>
-    </language>
-    <language>
-        <code>taj</code>
-    </language>
-    <language>
         <code>taq</code>
-    </language>
-    <language>
-        <code>tbz</code>
-    </language>
-    <language>
-        <code>tca</code>
-    </language>
-    <language>
-        <code>tcy</code>
     </language>
     <language>
         <code>tdx</code>
     </language>
     <language>
         <code>te</code>
-    </language>
-    <language>
-        <code>teo</code>
     </language>
     <language>
         <code>tet</code>
@@ -1139,55 +830,19 @@
         <code>tks</code>
     </language>
     <language>
-        <code>tlh</code>
-    </language>
-    <language>
-        <code>tll</code>
-    </language>
-    <language>
-        <code>tn</code>
-    </language>
-    <language>
         <code>to</code>
-    </language>
-    <language>
-        <code>toj</code>
     </language>
     <language>
         <code>tr</code>
     </language>
     <language>
-        <code>trp</code>
-    </language>
-    <language>
         <code>ts</code>
-    </language>
-    <language>
-        <code>tsc</code>
-    </language>
-    <language>
-        <code>tsg</code>
     </language>
     <language>
         <code>tt</code>
     </language>
     <language>
-        <code>tuc</code>
-    </language>
-    <language>
-        <code>tvl</code>
-    </language>
-    <language>
-        <code>twu</code>
-    </language>
-    <language>
         <code>tyv</code>
-    </language>
-    <language>
-        <code>tyz</code>
-    </language>
-    <language>
-        <code>tzh</code>
     </language>
     <language>
         <code>tzj</code>
@@ -1197,9 +852,6 @@
     </language>
     <language>
         <code>tzo</code>
-    </language>
-    <language>
-        <code>ubu</code>
     </language>
     <language>
         <code>udm</code>
@@ -1232,22 +884,13 @@
         <code>wal</code>
     </language>
     <language>
-        <code>war</code>
-    </language>
-    <language>
         <code>wo</code>
     </language>
     <language>
         <code>wuu</code>
     </language>
     <language>
-        <code>xal</code>
-    </language>
-    <language>
         <code>xh</code>
-    </language>
-    <language>
-        <code>yap</code>
     </language>
     <language>
         <code>yi</code>
@@ -1259,9 +902,6 @@
         <code>yua</code>
     </language>
     <language>
-        <code>zap</code>
-    </language>
-    <language>
         <code>zh</code>
     </language>
     <language>
@@ -1269,8 +909,5 @@
     </language>
     <language>
         <code>zu</code>
-    </language>
-    <language>
-        <code>zza</code>
     </language>
 </languages>

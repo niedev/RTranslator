@@ -1907,6 +1907,31 @@ public class Translator extends NeuralNetworkApi {
         return languages;
     }
 
+    public void testAllLanguages(ArrayList<CustomLocale> languages){
+        String inputText = "Hello, how are you?";
+        CustomLocale inputLanguage = new CustomLocale("en");
+        CustomLocale language = languages.remove(languages.size()-1);
+        if(!languages.isEmpty()) {
+            performTextTranslation(inputText, inputLanguage, language, 1, false, Global.RTranslatorMode.TEXT_TRANSLATION_MODE, new TranslateListener() {
+                @Override
+                public void onTranslatedText(String textToTranslate, String translatedText, @Nullable String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale inputLanguage, CustomLocale outputLanguage) {
+                    if (isFinal) {
+                        Log.i("translator_test", "Language: " + language.getDisplayNameWithoutTTS() + ", language code: " + language.getISO3Language() +
+                                ", tokenizer lang code: " + language.getCode() + ", translation: " + translatedText);
+                        testAllLanguages(languages);
+                    }
+                }
+
+                @Override
+                public void onFailure(int[] reasons, long value) {
+                    Log.i("translator_test", "Language: " + language.getDisplayNameWithoutTTS() + ", language code: " + language.getISO3Language() +
+                            ", tokenizer lang code: " + language.getCode() + " translation: ERROR");
+                    testAllLanguages(languages);
+                }
+            });
+        }
+    }
+
     public static class HyLanguageInfo {
         public String enName;
         public String zhName;
