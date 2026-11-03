@@ -565,7 +565,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
                     mozillaInstalledLanguages.add(langDownloadInfo.lang);
                 }
             }
-            mozillaInstalledLanguages.add(new CustomLocale("en"));  //English is always present, but it isn't present in the getMozillaLanguagesDownloadInfo list, so we add it manually
+            mozillaInstalledLanguages.add(new CustomLocale(this, "en"));  //English is always present, but it isn't present in the getMozillaLanguagesDownloadInfo list, so we add it manually
             this.mozillaInstalledLanguages = mozillaInstalledLanguages;
             return mozillaInstalledLanguages;
         }
@@ -875,7 +875,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
 
     public CustomLocale getLanguage(final boolean recycleResult) {
         ArrayList<CustomLocale> languages = getLanguages(RTranslatorMode.CONVERSATION_MODE, true);
-        CustomLocale predefinedLanguage = CustomLocale.getDefault();
+        CustomLocale predefinedLanguage = CustomLocale.getDefault(this);
         CustomLocale language = null;
         if (recycleResult && Global.this.language != null) {
             language = Global.this.language;
@@ -883,7 +883,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             SharedPreferences sharedPreferences = Global.this.getSharedPreferences("default", Context.MODE_PRIVATE);
             String code = sharedPreferences.getString("language", predefinedLanguage.getCode());
             if (code != null) {
-                language = CustomLocale.getInstance(code);
+                language = CustomLocale.getInstance(this, code);
             }
         }
 
@@ -895,7 +895,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             if (index2 != -1) {
                 language = predefinedLanguage;
             } else {
-                language = new CustomLocale("en");
+                language = new CustomLocale(this, "en");
             }
         }
 
@@ -913,7 +913,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             SharedPreferences sharedPreferences = Global.this.getSharedPreferences("default", Context.MODE_PRIVATE);
             String code = sharedPreferences.getString("firstLanguage", predefinedLanguage.getCode());
             if (code != null) {
-                language = CustomLocale.getInstance(code);
+                language = CustomLocale.getInstance(this, code);
             }
         }
 
@@ -927,7 +927,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             } else if(!languages.isEmpty()) {
                 language = languages.get(0);  //we pick the first language of the list
             } else {
-                language = new CustomLocale("en");
+                language = new CustomLocale(this, "en");
             }
         }
 
@@ -937,7 +937,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
 
     public CustomLocale getSecondLanguage(final boolean recycleResult) {
         ArrayList<CustomLocale> languages = getLanguages(RTranslatorMode.WALKIE_TALKIE_MODE, true);
-        CustomLocale predefinedLanguage = CustomLocale.getDefault();
+        CustomLocale predefinedLanguage = CustomLocale.getDefault(this);
         CustomLocale language = null;
         if (recycleResult && Global.this.secondLanguage != null) {
             language = Global.this.secondLanguage;
@@ -945,7 +945,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             SharedPreferences sharedPreferences = Global.this.getSharedPreferences("default", Context.MODE_PRIVATE);
             String code = sharedPreferences.getString("secondLanguage", null);
             if (code != null) {
-                language = CustomLocale.getInstance(code);
+                language = CustomLocale.getInstance(this, code);
             }
         }
 
@@ -953,7 +953,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         if (index != -1) {
             language = languages.get(index);
         } else {
-            language = new CustomLocale("en");
+            language = new CustomLocale(this, "en");
         }
 
         Global.this.secondLanguage = language;
@@ -970,7 +970,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             SharedPreferences sharedPreferences = Global.this.getSharedPreferences("default", Context.MODE_PRIVATE);
             String code = sharedPreferences.getString("firstTextLanguage", predefinedLanguage.getCode());
             if (code != null) {
-                language = CustomLocale.getInstance(code);
+                language = CustomLocale.getInstance(this, code);
             }
         }
 
@@ -984,7 +984,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             } else if(!languages.isEmpty()) {
                 language = languages.get(0);  //we pick the first language of the list
             } else {
-                language = new CustomLocale("en");
+                language = new CustomLocale(this, "en");
             }
         }
 
@@ -1001,7 +1001,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             SharedPreferences sharedPreferences = Global.this.getSharedPreferences("default", Context.MODE_PRIVATE);
             String code = sharedPreferences.getString("secondTextLanguage", null);
             if (code != null) {
-                language = CustomLocale.getInstance(code);
+                language = CustomLocale.getInstance(this, code);
             }
         }
 
@@ -1009,7 +1009,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         if (index != -1) {
             language = languages.get(index);
         } else {
-            language = new CustomLocale("en");
+            language = new CustomLocale(this, "en");
         }
 
         Global.this.secondTextLanguage = language;

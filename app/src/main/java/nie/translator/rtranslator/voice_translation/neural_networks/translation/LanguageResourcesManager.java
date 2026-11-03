@@ -86,7 +86,7 @@ public class LanguageResourcesManager {
         Log.d("perf_lang_res", "Initializing lang res manager in "+(System.currentTimeMillis()-time)+" ms");
         // we load the deu translation dictionary (to and from English) because it will be used for the LID for the English language (I chose to use the deu dict because it is by far the biggest)
         time = System.currentTimeMillis();
-        DictionaryTranslator.loadDictionary(new CustomLocale("deu"));
+        DictionaryTranslator.loadDictionary(global, new CustomLocale(global, "deu"));
         Log.d("perf_lang_res", "Loaded eng dict for LID in "+(System.currentTimeMillis()-time)+" ms");
         // load the resources
         setStatus(useMozillaForTranslation, useMozillaForVoiceTranslation, useTatoeba, useTranslationDictionaries,
@@ -199,7 +199,7 @@ public class LanguageResourcesManager {
         for (CustomLocale resource : currentModeResources) {
             if (resource != null && !resource.equals(srcLang) && !resource.equals(tgtLang) && !languageResourcesIndicator.isResourceContainedInOtherModes(resource, rtranslatorMode)) {
                 BergamotTranslator.unloadModelFromCache(resource);
-                DictionaryTranslator.unloadDictionary(resource);
+                DictionaryTranslator.unloadDictionary(global, resource);
             }
         }
         if (currentModeResources[0] != null &&
@@ -246,7 +246,7 @@ public class LanguageResourcesManager {
         if(resource != null && !resource.equals(tgtLang)){
             if(!languageResourcesIndicator.isResourceContainedInOtherModes(resource, Global.RTranslatorMode.CONVERSATION_MODE)){
                 BergamotTranslator.unloadModelFromCache(resource);
-                DictionaryTranslator.unloadDictionary(resource);
+                DictionaryTranslator.unloadDictionary(global, resource);
             }
         }
         for(CustomLocale srcResource: languageResourcesIndicator.conversationSrcResources.values()) {
@@ -297,7 +297,7 @@ public class LanguageResourcesManager {
         if(resource != null && !resource.equals(srcLang)){
             if(!languageResourcesIndicator.isSrcResourceContainedInOtherPeers(resource, peer) && !languageResourcesIndicator.isResourceContainedInOtherModes(resource, Global.RTranslatorMode.CONVERSATION_MODE)){
                 BergamotTranslator.unloadModelFromCache(resource);
-                DictionaryTranslator.unloadDictionary(resource);
+                DictionaryTranslator.unloadDictionary(global, resource);
             }
         }
         if (resource != null &&
@@ -342,7 +342,7 @@ public class LanguageResourcesManager {
         if(resource != null){
             if(!languageResourcesIndicator.isSrcResourceContainedInOtherPeers(resource, peer) && !languageResourcesIndicator.isResourceContainedInOtherModes(resource, Global.RTranslatorMode.CONVERSATION_MODE)){
                 BergamotTranslator.unloadModelFromCache(resource);
-                DictionaryTranslator.unloadDictionary(resource);
+                DictionaryTranslator.unloadDictionary(global, resource);
             }
         }
         if (resource != null &&
@@ -368,7 +368,7 @@ public class LanguageResourcesManager {
         for(CustomLocale srcResource : conversationSrcResources.values()){
             if(srcResource != null && !languageResourcesIndicator.isResourceContainedInOtherModes(srcResource, Global.RTranslatorMode.CONVERSATION_MODE)){
                 BergamotTranslator.unloadModelFromCache(srcResource);
-                DictionaryTranslator.unloadDictionary(srcResource);
+                DictionaryTranslator.unloadDictionary(global, srcResource);
             }
         }
         for(CustomLocale srcResource: languageResourcesIndicator.conversationSrcResources.values()) {
@@ -381,7 +381,7 @@ public class LanguageResourcesManager {
         CustomLocale resource = languageResourcesIndicator.conversationTgtResource;
         if(resource != null && !languageResourcesIndicator.isResourceContainedInOtherModes(resource, Global.RTranslatorMode.CONVERSATION_MODE)){
             BergamotTranslator.unloadModelFromCache(resource);
-            DictionaryTranslator.unloadDictionary(resource);
+            DictionaryTranslator.unloadDictionary(global, resource);
         }
         //we update the indicator to reflect the new models status
         languageResourcesIndicator.conversationTgtResource = null;
@@ -473,7 +473,7 @@ public class LanguageResourcesManager {
     private void loadTranslationDictionariesResourcesForPeers(){
         if(!languageResourcesIndicator.isResourceTypeLoaded(LanguageResourcesIndicator.ResourceType.TRANSLATION_DICTIONARY)) {
             for (CustomLocale resource : languageResourcesIndicator.getUniqueSrcConversationResources()) {
-                DictionaryTranslator.loadDictionary(resource);
+                DictionaryTranslator.loadDictionary(global, resource);
             }
             languageResourcesIndicator.setResourceTypeLoadStatus(LanguageResourcesIndicator.ResourceType.TRANSLATION_DICTIONARY, true);
         }
@@ -505,7 +505,7 @@ public class LanguageResourcesManager {
                 }
             }
             if(!found){
-                DictionaryTranslator.unloadDictionary(resource);
+                DictionaryTranslator.unloadDictionary(global, resource);
             }
         }
         languageResourcesIndicator.setResourceTypeLoadStatus(LanguageResourcesIndicator.ResourceType.TRANSLATION_DICTIONARY, false);
@@ -527,10 +527,10 @@ public class LanguageResourcesManager {
         if(useTranslationDictionaries || rtranslatorMode == Global.RTranslatorMode.WALKIE_TALKIE_MODE){  // WalkieTalkie mode must always have dicts loaded for LID
             time = System.currentTimeMillis();
             if (!srcLang.getISO3Language().equals("eng")) {
-                DictionaryTranslator.loadDictionary(srcLang);
+                DictionaryTranslator.loadDictionary(global, srcLang);
             }
             if (!tgtLang.getISO3Language().equals("eng")) {
-                DictionaryTranslator.loadDictionary(tgtLang);
+                DictionaryTranslator.loadDictionary(global, tgtLang);
             }
             Log.d("perf_lang_res", "Dicts loading for "+srcLang.getLanguage() +" - "+tgtLang.getLanguage() +" in "+(System.currentTimeMillis()-time)+" ms");
         }

@@ -434,7 +434,7 @@ public abstract class VoiceTranslationService extends GeneralService {
                         ttsEngine.stop();
                     }
                     String text = data.getString("text");
-                    CustomLocale language = nie.translator.rtranslator.tools.CustomLocale.getInstance(data.getString("languageCode"));
+                    CustomLocale language = nie.translator.rtranslator.tools.CustomLocale.getInstance(this, data.getString("languageCode"));
                     String id = data.getString("utteranceId");
                     if(id == null) id = String.valueOf(System.currentTimeMillis());
                     GuiMessage message = new GuiMessage(new Message(text, this, text), language, language, Long.parseLong(id), true, true);

@@ -83,7 +83,7 @@ public class LanguageDetector {
                             }
                             //we use dictionaries for detection
                             for (CustomLocale language: languages) {
-                                if(DictionaryTranslator.containsWord(normalizedText, language)){
+                                if(DictionaryTranslator.containsWord(context, normalizedText, language)){
                                     listener.onSuccess(language.getISO3Language());
                                     return;
                                 }

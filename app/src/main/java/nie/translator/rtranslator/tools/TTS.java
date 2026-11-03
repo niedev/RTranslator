@@ -230,10 +230,10 @@ public class TTS {
                             if (aSet.getQuality() >= quality && (qualityLow || !aSet.getFeatures().contains("legacySetLanguageVoice"))) {
                                 CustomLocale language;
                                 if(aSet.getLocale() != null){
-                                    language = new CustomLocale(aSet.getLocale()); // Use .getLocale() for google
+                                    language = new CustomLocale(context, aSet.getLocale()); // Use .getLocale() for google
                                     foundLanguage = true;
                                 }else{
-                                    language = CustomLocale.getInstance(aSet.getName()); // Use .getName() for samsung/huawei (maybe others also)
+                                    language = CustomLocale.getInstance(context, aSet.getName()); // Use .getName() for samsung/huawei (maybe others also)
                                     foundLanguage = true;
                                 }
 

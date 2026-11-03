@@ -169,7 +169,7 @@ public class ConversationService extends VoiceTranslationService {
                 int languageCodeSize = Integer.valueOf(completeText.substring(completeText.length() - 1));
                 String text = completeText.substring(0, completeText.length() - (languageCodeSize + 1));
                 String languageCode = completeText.substring(completeText.length() - (languageCodeSize + 1), completeText.length() - 1);
-                ConversationMessage conversationMessage = new ConversationMessage(message.getSender(), new NeuralNetworkApiText(text, CustomLocale.getInstance(languageCode)));
+                ConversationMessage conversationMessage = new ConversationMessage(message.getSender(), new NeuralNetworkApiText(text, CustomLocale.getInstance(ConversationService.this, languageCode)));
                 if(translator != null && global.isTranslatorInitialized()) {
                     translator.translateMessage(conversationMessage, language, TRANSLATOR_BEAM_SIZE, new Translator.TranslateListener() {
                         @Override
@@ -266,7 +266,7 @@ public class ConversationService extends VoiceTranslationService {
             @Override
             public void onSpeechRecognizedResult(String text, String languageCode, double confidenceScore, boolean isFinal) {
                 if (text != null && languageCode != null && !text.equals("") && !isMetaText(text)) {
-                    CustomLocale language = CustomLocale.getInstance(languageCode);
+                    CustomLocale language = CustomLocale.getInstance(ConversationService.this, languageCode);
                     GuiMessage guiMessage = new GuiMessage(new Message(global, text), language, language, global.getTranslator().incrementCurrentResultID(), true, isFinal);
                     if (isFinal) {
                         // send the message

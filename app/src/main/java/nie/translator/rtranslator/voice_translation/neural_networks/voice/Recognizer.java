@@ -654,14 +654,14 @@ public class Recognizer extends NeuralNetworkApi {
                 Document document = documentBuilder.parse(context.getResources().openRawResource(R.raw.whisper_supported_languages));
                 NodeList list = document.getElementsByTagName("code");
                 for (int i = 0; i < list.getLength(); i++) {
-                    languages.add(CustomLocale.getInstance(list.item(i).getTextContent()));
+                    languages.add(CustomLocale.getInstance(context, list.item(i).getTextContent()));
                 }
             } catch (IOException | SAXException | ParserConfigurationException e) {
                 e.printStackTrace();
             }
         }else{
             for (String language : LANGUAGES) {
-                languages.add(CustomLocale.getInstance(language));
+                languages.add(CustomLocale.getInstance(context, language));
             }
         }
         android.util.Log.i("performance_lang", "Recognizer language loading: " + (System.currentTimeMillis() - time) + "ms");

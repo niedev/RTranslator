@@ -132,7 +132,7 @@ public class TTSEngine {
             if (pair != null && tts != null) {
                 if(listener != null) listener.onUtteranceStarting(pair.first, !wasSpeaking);
                 executingMessage = pair;
-                if (tts.getVoice() != null && pair.second.equals(new CustomLocale(tts.getVoice().getLocale()))) {
+                if (tts.getVoice() != null && pair.second.equals(new CustomLocale(context, tts.getVoice().getLocale()))) {
                     tts.speak(pair.first.getMessage().getText(), queueMode, null, String.valueOf(pair.first.getMessageID()));
                 } else {
                     tts.setLanguage(pair.second, context);

@@ -16,6 +16,7 @@
 
 package nie.translator.rtranslator.tools;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -27,6 +28,8 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Set;
 
+import nie.translator.rtranslator.R;
+
 public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     @NonNull
     private Locale locale;
@@ -34,36 +37,42 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     private String cachedDisplayName;
     @Nullable
     private String cachedIso3Language = null;
+    @Nullable
+    private final Context context;
 
-    public CustomLocale(String language, String country, String variant) {
+    public CustomLocale(@Nullable Context context, String language, String country, String variant) {
         locale = new Locale(language, country, variant);
+        this.context = context;
         initCacheValues();
     }
 
-    public CustomLocale(String languageCode, String countryCode) {
+    public CustomLocale(@Nullable Context context, String languageCode, String countryCode) {
         locale = new Locale(languageCode, countryCode);
+        this.context = context;
         initCacheValues();
     }
 
-    public CustomLocale(String languageCode){
+    public CustomLocale(@Nullable Context context, String languageCode){
         locale = new Locale(languageCode);
+        this.context = context;
         initCacheValues();
     }
 
-    public CustomLocale(@NonNull Locale locale) {
+    public CustomLocale(@Nullable Context context, @NonNull Locale locale) {
         this.locale = locale;
+        this.context = context;
         initCacheValues();
     }
 
-    public static CustomLocale getInstance(String code) {
+    public static CustomLocale getInstance(@Nullable Context context, String code) {
         CustomLocale locale = null;
         String[] languageCode = code.split("-");
         if (languageCode.length == 1) {
-            locale = new CustomLocale(new Locale(languageCode[0]));
+            locale = new CustomLocale(context, new Locale(languageCode[0]));
         } else if (languageCode.length == 2) {
-            locale = new CustomLocale(new Locale(languageCode[0], languageCode[1]));
+            locale = new CustomLocale(context, new Locale(languageCode[0], languageCode[1]));
         } else if (languageCode.length >= 3) {
-            locale = new CustomLocale(new Locale(languageCode[0], languageCode[1], languageCode[2]));
+            locale = new CustomLocale(context, new Locale(languageCode[0], languageCode[1], languageCode[2]));
         }
         return locale;
     }
@@ -191,6 +200,16 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
         }
 
         String name = locale.getDisplayName();
+        if(name.length() <= 3){  //if the name of the language is not provided by the locale (in this case we will have the 3 letter language code)
+            int resId = context != null ?
+                    context.getResources().getIdentifier(getISO3Language(), "string", context.getPackageName())
+                    : 0;
+            if(resId != 0){
+                name = context.getString(resId);
+            }else{
+                name = locale.getDisplayName(new Locale("en"));
+            }
+        }
         if (!name.isEmpty()) {
             cachedDisplayName = name.substring(0, 1).toUpperCase(locale) + name.substring(1);   //we convert the first letter to uppercase
         } else {
@@ -273,8 +292,8 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
         return locale;
     }
 
-    public static CustomLocale getDefault() {
-        return new CustomLocale(Locale.getDefault().getLanguage());
+    public static CustomLocale getDefault(Context context) {
+        return new CustomLocale(context, Locale.getDefault().getLanguage());
     }
 
     private void initCacheValues(){

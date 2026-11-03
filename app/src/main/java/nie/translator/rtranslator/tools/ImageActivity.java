@@ -45,7 +45,7 @@ public class ImageActivity extends Activity {
         messages.add(new GuiMessage(new Message(this, new Peer(null, "Carlos11", true), "m", "I'm fine"), false, true));
         messages.add(new GuiMessage(new Message(this, new Peer(null, "Denise12", true), "m", "Me too"), false, true));*/
 
-        CustomLocale languagePlaceHolder = new CustomLocale("en");
+        CustomLocale languagePlaceHolder = new CustomLocale(this, "en");
 
         messages.add(new GuiMessage(new Message(this, new Peer(null, "Alice10", true), "m", "¿Hola, cómo estás?"), languagePlaceHolder, languagePlaceHolder, false, true));
         messages.add(new GuiMessage(new Message(this, "m", "Estoy bien"), languagePlaceHolder, languagePlaceHolder, true, true));

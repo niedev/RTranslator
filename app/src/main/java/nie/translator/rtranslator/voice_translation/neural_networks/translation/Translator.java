@@ -518,7 +518,7 @@ public class Translator extends NeuralNetworkApi {
                     responseListener.onFailure(new int[ErrorCodes.LANGUAGE_UNKNOWN], 0);
                     Log.i("language detection", "Can't identify language.");
                 } else {
-                    result.setLanguage(new CustomLocale(languageCode));
+                    result.setLanguage(new CustomLocale(global, languageCode));
                     responseListener.onDetectedText(result);
                     Log.i("language detection", "Language: " + languageCode);
                 }
@@ -539,7 +539,7 @@ public class Translator extends NeuralNetworkApi {
                     firstResultFailed = true;
                     Log.i("language detection", "Can't identify language.");
                 } else {
-                    firstResult.setLanguage(new CustomLocale(languageCode));
+                    firstResult.setLanguage(new CustomLocale(global, languageCode));
                     Log.i("language detection", "Language: " + languageCode);
                 }
                 detectSecondLanguage(firstResult, secondResult, forceResult, firstResultFailed, languages, responseListener);
@@ -564,7 +564,7 @@ public class Translator extends NeuralNetworkApi {
                     }
                 }else{  //detection of second result success
                     Log.i("language detection", "Language: " + languageCode);
-                    secondResult.setLanguage(new CustomLocale(languageCode));
+                    secondResult.setLanguage(new CustomLocale(global, languageCode));
                     if (firstResultFailed) {  //detection of first result failed
                         responseListener.onDetectedText(firstResult, secondResult, ErrorCodes.FIRST_RESULT_FAIL);
                     }else{    //detection of first result success
@@ -936,7 +936,7 @@ public class Translator extends NeuralNetworkApi {
     private String[] performDictionaryTranslation(String text, CustomLocale inputLanguage, CustomLocale outputLanguage){
         synchronized (langResourcesLock){
             try {
-                return DictionaryTranslator.translateWord(text, inputLanguage, outputLanguage);
+                return DictionaryTranslator.translateWord(global, text, inputLanguage, outputLanguage);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -1882,7 +1882,7 @@ public class Translator extends NeuralNetworkApi {
             }
             NodeList list = document.getElementsByTagName("code");
             for (int i = 0; i < list.getLength(); i++) {
-                languages.add(CustomLocale.getInstance(list.item(i).getTextContent()));
+                languages.add(CustomLocale.getInstance(context, list.item(i).getTextContent()));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1899,7 +1899,7 @@ public class Translator extends NeuralNetworkApi {
             NodeList listCodes = document.getElementsByTagName("code");
             NodeList listSizes = document.getElementsByTagName("size");
             for (int i = 0; i < listCodes.getLength(); i++) {
-                languages.add(new MozillaLanguageInfo(CustomLocale.getInstance(listCodes.item(i).getTextContent()), Integer.parseInt(listSizes.item(i).getTextContent())));
+                languages.add(new MozillaLanguageInfo(CustomLocale.getInstance(context, listCodes.item(i).getTextContent()), Integer.parseInt(listSizes.item(i).getTextContent())));
             }
         } catch (IOException | SAXException | ParserConfigurationException e) {
             e.printStackTrace();
@@ -1909,7 +1909,7 @@ public class Translator extends NeuralNetworkApi {
 
     public void testAllLanguages(ArrayList<CustomLocale> languages){
         String inputText = "Hello, how are you?";
-        CustomLocale inputLanguage = new CustomLocale("en");
+        CustomLocale inputLanguage = new CustomLocale(global, "en");
         CustomLocale language = languages.remove(languages.size()-1);
         if(!languages.isEmpty()) {
             performTextTranslation(inputText, inputLanguage, language, 1, false, Global.RTranslatorMode.TEXT_TRANSLATION_MODE, new TranslateListener() {
