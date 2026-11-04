@@ -38,7 +38,7 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     @Nullable
     private String cachedIso3Language = null;
     @Nullable
-    private final Context context;
+    private final transient Context context;
 
     public CustomLocale(@Nullable Context context, String language, String country, String variant) {
         locale = new Locale(language, country, variant);
