@@ -207,7 +207,6 @@
 
     <string name="preference_title_mic_sensitivity">麦克风灵敏度</string>
     <string name="preference_title_languages_quality">支持低质量语言</string>
-    <string name="preference_title_support_tts_quality">支持低质量 TTS 语言</string>
     <string name="preference_title_language">个人语言</string>
     <string name="preference_title_tts">文字转语音</string>
     <string name="preference_title_speech_timeout">语音超时结束</string>
@@ -219,7 +218,6 @@
     <string name="preference_description_languages_quality">它还允许支持翻译或语音识别质量较低的语言</string>
     <string name="preference_title_show_original_transcription">显示翻译之外的原始转录内容</string>
     <string name="preference_description_show_original_transcription_msg_preference">它允许显示消息翻译之外的原始转录内容。</string>
-    <string name="preference_description_support_tts_quality">此选项允许支持语音合成器质量较低的语言</string>
     <string name="preference_description_tts">TTS 的系统设定，优先引擎的变更将仅在重新启动应用程序后生效</string>
     <string name="preference_description_speech_timeout">选择您停止说话后发送转录文字的时间</string>
     <string name="preference_description_prev_voice_duration">选择开始说话前的录音长度，将包括在语音识别中</string>

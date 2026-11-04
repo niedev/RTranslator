@@ -66,12 +66,6 @@
             android:title="@string/preference_title_languages_quality"
             android:summary="@string/preference_description_languages_quality"
             app:iconSpaceReserved="false" />
-        <nie.translator.rtranslator.settings.SupportTtsQualityPreference
-            android:defaultValue="false"
-            android:key="languagesQualityLow"
-            android:title="@string/preference_title_support_tts_quality"
-            android:summary="@string/preference_description_support_tts_quality"
-            app:iconSpaceReserved="false" />
         <nie.translator.rtranslator.settings.LanguagePreference
             android:key="language"
             android:title="@string/preference_title_language"

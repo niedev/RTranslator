@@ -62,7 +62,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private SupportLanguagesQuality supportLanguagesQualityPreference;
 
     private ShowOriginalTranscriptionMsgPreference showOriginalTranscriptionMsgPreference;
-    private SupportTtsQualityPreference supportTtsQualityPreference;
     private LanguagePreference languagePreference;
 
     private Handler selfHandler = new Handler(new Handler.Callback() {
@@ -71,29 +70,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             final Bundle data = message.getData();
             removeDownload();
             switch (data.getInt("type")) {
-                case ON_INTERNET_LACK: {
-                    //creation of the dialog.
-                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                    builder.setCancelable(false);
-
-                    switch (data.getInt("action")) {
-                        case DOWNLOAD_LANGUAGES: {
-                            builder.setMessage(R.string.error_internet_lack_loading_languages);
-                            builder.setPositiveButton(R.string.retry, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    supportTtsQualityPreference.downloadLanguages();
-                                }
-                            });
-                            builder.setNegativeButton(android.R.string.cancel, null);
-                            break;
-                        }
-                    }
-                    AlertDialog dialog = builder.create();
-                    dialog.setCanceledOnTouchOutside(false);
-                    dialog.show();
-                    break;
-                }
                 case ON_MISSING_GOOGLE_TTS:
                     activity.showMissingGoogleTTSDialog(null);
                     break;
@@ -164,10 +140,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         // show transcription option initialization
         showOriginalTranscriptionMsgPreference = (ShowOriginalTranscriptionMsgPreference) findPreference("ShowOriginalTranscriptionMsgPreference");
         showOriginalTranscriptionMsgPreference.setFragment(this);
-
-        // language support option with low quality tts initialization
-        supportTtsQualityPreference = (SupportTtsQualityPreference) findPreference("languagesQualityLow");
-        supportTtsQualityPreference.setFragment(this);
 
         // languages list initialization
         languagePreference = (LanguagePreference) findPreference("language");
@@ -284,10 +256,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onFailure(int[] reasons, long value, int action, @Nullable String data) {
         for (int aReason : reasons) {
             switch (aReason) {
-                case ErrorCodes.SAFETY_NET_EXCEPTION:
-                case ErrorCodes.MISSED_CONNECTION:
-                    notifyInternetLack(action, data);
-                    break;
                 case ErrorCodes.MISSING_GOOGLE_TTS:
                     notifyMissingGoogleTTSDialog();
                 default:

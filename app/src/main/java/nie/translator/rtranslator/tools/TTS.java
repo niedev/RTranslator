@@ -215,24 +215,18 @@ public class TTS {
                 public void onInit() {
                     android.util.Log.i("performance_lang", "TTS init: " + (System.currentTimeMillis() - time) + "ms");
                     Set<Voice> set = tempTts.getVoices();
-                    SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
-                    boolean qualityLow = sharedPreferences.getBoolean("languagesQualityLow", false);
-                    int quality;
-                    if (qualityLow) {
-                        quality = Voice.QUALITY_VERY_LOW;
-                    } else {
-                        quality = Voice.QUALITY_NORMAL;
-                    }
+                    int quality = Voice.QUALITY_VERY_LOW;
                     boolean foundLanguage = false; // if there is available languages
                     if (set != null) {
                         // we filter the languages that have a tts that reflects the quality characteristics we want
                         for (Voice aSet : set) {
-                            if (aSet.getQuality() >= quality && (qualityLow || !aSet.getFeatures().contains("legacySetLanguageVoice"))) {
+                            if (aSet.getQuality() >= quality) {
+                                aSet.getFeatures();
                                 CustomLocale language;
-                                if(aSet.getLocale() != null){
+                                if (aSet.getLocale() != null) {
                                     language = new CustomLocale(context, aSet.getLocale()); // Use .getLocale() for google
                                     foundLanguage = true;
-                                }else{
+                                } else {
                                     language = CustomLocale.getInstance(context, aSet.getName()); // Use .getName() for samsung/huawei (maybe others also)
                                     foundLanguage = true;
                                 }

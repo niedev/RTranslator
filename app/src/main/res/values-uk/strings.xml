@@ -208,7 +208,6 @@
 
     <string name="preference_title_mic_sensitivity">Чутливість мікрофону</string>
     <string name="preference_title_languages_quality">Підтримка мов низької якості</string>
-    <string name="preference_title_support_tts_quality">Підтримка мов з низькою якістю tts</string>
     <string name="preference_title_language">Особиста мова</string>
     <string name="preference_title_tts">Текст для вимови</string>
     <string name="preference_title_speech_timeout">Час завершення голосу</string>
@@ -220,7 +219,6 @@
     <string name="preference_description_languages_quality">Це дозволяє також підтримувати мови, які мають низьку якість перекладу або розпізнавання мовлення</string>
     <string name="preference_title_show_original_transcription">Показати оригінальні транскрипції крім перекладу</string>
     <string name="preference_description_show_original_transcription_msg_preference">Це дозволяє показувати оригінальну транскрипцію крім перекладу повідомлення.</string>
-    <string name="preference_description_support_tts_quality">Це дозволяє також підтримувати мови, які мають низькое якість синтезу мовлення</string>
     <string name="preference_description_tts">Системні налаштування tts, будь-яка зміна вибраного двигуна буде застосована лише після перезапуску додатка</string>
     <string name="preference_description_speech_timeout">Виберіть час, після якого ви перестаєте говорити, щоб надіслати транскрибований текст</string>
     <string name="preference_description_prev_voice_duration">Виберіть тривалість запису, перед тим як ви почнете говорити, який буде включено до розпізнавання голосу</string>

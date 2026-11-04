@@ -207,7 +207,6 @@
 
     <string name="preference_title_mic_sensitivity">麥克風靈敏度</string>
     <string name="preference_title_languages_quality">支援低品質語言</string>
-    <string name="preference_title_support_tts_quality">支援低品質 TTS 語言</string>
     <string name="preference_title_language">個人語言</string>
     <string name="preference_title_tts">文字轉語音</string>
     <string name="preference_title_speech_timeout">語音超時結束</string>
@@ -219,7 +218,6 @@
     <string name="preference_description_languages_quality">它還允許支援翻譯或語音識別品質較低的語言</string>
     <string name="preference_title_show_original_transcription">顯示翻譯之外的原始轉錄內容</string>
     <string name="preference_description_show_original_transcription_msg_preference">它允許顯示消息翻譯之外的原始轉錄內容。</string>
-    <string name="preference_description_support_tts_quality">此選項允許支持語音合成器品質較低的語言</string>
     <string name="preference_description_tts">TTS 的系統設定，優先引擎的變更將僅在重新啟動應用程式後生效</string>
     <string name="preference_description_speech_timeout">選擇您停止說話後發送轉錄文字的時間</string>
     <string name="preference_description_prev_voice_duration">選擇開始說話前的錄音長度，將包括在語音辨識中</string>
