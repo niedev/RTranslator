@@ -19,16 +19,12 @@ package nie.translator.rtranslator.voice_translation._walkie_talkie_mode._walkie
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.LocaleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
-import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -47,7 +43,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
-import java.util.Locale;
 
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
@@ -68,6 +63,8 @@ import nie.translator.rtranslator.voice_translation.VoiceTranslationActivity;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationFragment;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationService;
 import nie.translator.rtranslator.voice_translation.VoiceTranslationService.EngineStatus;
+import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
+import nie.translator.rtranslator.voice_translation.neural_networks.voice.Recognizer;
 
 
 public class WalkieTalkieFragment extends VoiceTranslationFragment {
@@ -137,8 +134,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         Global globalApp = (Global) requireActivity().getApplication();
         //Set TalkBack initial brief
         String accessibilityBrief = getResources().getString(R.string.title_fragment_walkie_talkie) + ", " + getResources().getString(R.string.from) + " "
-                + globalApp.getFirstLanguage(true).getDisplayNameWithoutTTS() + " " + getResources().getString(R.string.to) + " "
-                + globalApp.getSecondLanguage(true).getDisplayNameWithoutTTS();
+                + globalApp.getFirstLanguage(true).getDisplayName() + " " + getResources().getString(R.string.to) + " "
+                + globalApp.getSecondLanguage(true).getDisplayName();
         view.setAccessibilityPaneTitle(accessibilityBrief);
     }
 
@@ -606,7 +603,15 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
             selectedLanguage = global.getSecondLanguage(false);
         }
 
-        GuiTools.showLanguageListDialog(activity, title, languages, selectedLanguage, true, new GuiTools.OnLanguageClickListener() {
+        ArrayList<CustomLocale> highQualityLanguages = new ArrayList<>();
+        ArrayList<CustomLocale> highQualityTranslatorLanguages = Translator.getSupportedLanguages(global, false, global.getTranslationMode());
+        ArrayList<CustomLocale> highQualityRecognizerLanguages = Recognizer.getSupportedLanguages(global, false);
+        for (CustomLocale translatorLanguage : highQualityTranslatorLanguages) {
+            if (CustomLocale.containsLanguage(highQualityRecognizerLanguages, translatorLanguage)) {
+                highQualityLanguages.add(translatorLanguage);
+            }
+        }
+        GuiTools.showLanguageListDialog(activity, title, languages, highQualityLanguages, selectedLanguage, true,true, new GuiTools.OnLanguageClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id, CustomLocale item) {
                 if (item != null && languages.contains(item)) {
@@ -640,8 +645,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // save firstLanguage selected
         global.setFirstLanguage(language, true, null);
         // change language displayed
-        firstLanguageSelector.setText(language.getDisplayNameWithoutTTS());
-        leftMicLanguage.setText(language.getDisplayNameWithoutTTS());
+        firstLanguageSelector.setText(language.getDisplayName());
+        leftMicLanguage.setText(language.getDisplayName());
     }
 
     private void setSecondLanguage(CustomLocale language) {
@@ -650,8 +655,8 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
         // save secondLanguage selected
         global.setSecondLanguage(language, true, null);
         // change language displayed
-        secondLanguageSelector.setText(language.getDisplayNameWithoutTTS());
-        rightMicLanguage.setText(language.getDisplayNameWithoutTTS());
+        secondLanguageSelector.setText(language.getDisplayName());
+        rightMicLanguage.setText(language.getDisplayName());
     }
 
     private void setManualMicClickListenerForAccessibility(ButtonMic buttonMic, Global.LanguageNumber languageNumber){
@@ -697,9 +702,9 @@ public class WalkieTalkieFragment extends VoiceTranslationFragment {
                 // Grab the current language name
                 String language;
                 if(languageNumber == Global.LanguageNumber.FIRST){
-                    language = global.getFirstLanguage(true).getDisplayNameWithoutTTS();
+                    language = global.getFirstLanguage(true).getDisplayName();
                 }else{
-                    language = global.getSecondLanguage(true).getDisplayNameWithoutTTS();
+                    language = global.getSecondLanguage(true).getDisplayName();
                 }
 
                 // Grab whatever text is currently inside the EditText

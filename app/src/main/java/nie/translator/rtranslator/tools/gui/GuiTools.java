@@ -18,6 +18,7 @@ package nie.translator.rtranslator.tools.gui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -31,6 +32,7 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.AdapterView;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -39,6 +41,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.view.AccessibilityDelegateCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
@@ -115,7 +118,7 @@ public class GuiTools {
     }
 
 
-    public static void showLanguageListDialog(Activity activity, String title, ArrayList<CustomLocale> languages, CustomLocale selectedLanguage, boolean showTTSInfo, OnLanguageClickListener clickListener) {
+    public static void showLanguageListDialog(Activity activity, String title, ArrayList<CustomLocale> languages, ArrayList<CustomLocale> highQualityLanguages, CustomLocale selectedLanguage, boolean showTTSInfo, boolean showLowQualityInfo, OnLanguageClickListener clickListener) {
         LanguageListAdapter listViewAdapter;
         ListView listView;
         AlertDialog dialog;
@@ -135,11 +138,16 @@ public class GuiTools {
         listView = editDialogLayout.findViewById(R.id.list_view_dialog);
         SearchView searchView = editDialogLayout.findViewById(R.id.search);
         TextView emptyTextView = editDialogLayout.findViewById(R.id.empty_text_view);
+        SwitchCompat switchLowQuality = editDialogLayout.findViewById(R.id.switch_low_quality);
 
         titleView.setText(title);
 
+        SharedPreferences sharedPreferences = activity.getSharedPreferences("default", Context.MODE_PRIVATE);
+        boolean qualityLow = sharedPreferences.getBoolean("languagesNNQualityLow", false);
+        boolean allHighQualityLanguages = languages.size() == highQualityLanguages.size();
+
         //initialize and show dialog list
-        listViewAdapter = new LanguageListAdapter(activity, showTTSInfo, languages, selectedLanguage);
+        listViewAdapter = new LanguageListAdapter(activity, showTTSInfo, showLowQualityInfo && !allHighQualityLanguages, languages, highQualityLanguages, selectedLanguage, qualityLow);
         listView.setEmptyView(emptyTextView);
         listView.setAdapter(listViewAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -179,6 +187,23 @@ public class GuiTools {
                 return true;
             }
         });
+
+        //initialize low quality switch
+        if(!allHighQualityLanguages) {
+            switchLowQuality.setChecked(qualityLow);
+            switchLowQuality.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
+                    final SharedPreferences sharedPreferences = activity.getSharedPreferences("default", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putBoolean("languagesNNQualityLow", (Boolean) isChecked);
+                    editor.apply();
+                    listViewAdapter.setIncludeLowQuality(isChecked, searchView.getQuery().toString());
+                }
+            });
+        }else{
+            switchLowQuality.setVisibility(View.INVISIBLE);
+        }
 
         Log.i("languages_list", "List Showed");
     }

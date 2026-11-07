@@ -180,6 +180,7 @@ public class Recognizer extends NeuralNetworkApi {
     private OrtSession decoderSession;
     private OrtSession detokenizerSession;
     private OrtEnvironment onnxEnv;
+    private static ArrayList<CustomLocale> cachedHighQualityLanguages = null;
 
 
     public Recognizer(Global global, final boolean returnResultOnlyAtTheEnd, final NeuralNetworkApi.InitListener initListener) {
@@ -642,19 +643,21 @@ public class Recognizer extends NeuralNetworkApi {
 
     // this method returns only the languages of Whisper-small that have a minimum quality (wer <= 37%)
     // LANGUAGES instead contains all languages supported by Whisper and it is needed for generating the language ID
-    public static ArrayList<CustomLocale> getSupportedLanguages(Context context) {
+    public static ArrayList<CustomLocale> getSupportedLanguages(Context context, boolean qualityLow) {
         long time = System.currentTimeMillis();
         ArrayList<CustomLocale> languages = new ArrayList<>();
-        SharedPreferences sharedPreferences = context.getSharedPreferences("default", Context.MODE_PRIVATE);
-        boolean qualityLow = sharedPreferences.getBoolean("languagesNNQualityLow", false);
         if(!qualityLow) {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
             try {
-                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-                Document document = documentBuilder.parse(context.getResources().openRawResource(R.raw.whisper_supported_languages));
-                NodeList list = document.getElementsByTagName("code");
-                for (int i = 0; i < list.getLength(); i++) {
-                    languages.add(CustomLocale.getInstance(context, list.item(i).getTextContent()));
+                if(cachedHighQualityLanguages != null){
+                    languages = cachedHighQualityLanguages;
+                }else {
+                    DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                    Document document = documentBuilder.parse(context.getResources().openRawResource(R.raw.whisper_supported_languages));
+                    NodeList list = document.getElementsByTagName("code");
+                    for (int i = 0; i < list.getLength(); i++) {
+                        languages.add(CustomLocale.getInstance(context, list.item(i).getTextContent()));
+                    }
                 }
             } catch (IOException | SAXException | ParserConfigurationException e) {
                 e.printStackTrace();

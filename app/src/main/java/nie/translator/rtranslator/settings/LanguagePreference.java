@@ -28,6 +28,8 @@ import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.gui.GuiTools;
+import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
+import nie.translator.rtranslator.voice_translation.neural_networks.voice.Recognizer;
 
 public class LanguagePreference extends Preference {
     private SettingsFragment fragment;
@@ -63,9 +65,9 @@ public class LanguagePreference extends Preference {
             @Override
             public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
                 if (getSummary() == null || "".equals((String) getSummary())) {    // to avoid changing the summary after a language change after the initializeLanguageList () call
-                    setSummary(result.getDisplayName(ttsLanguages));  // if we have an error of lack of internet we simply don't insert the summary
+                    setSummary(result.getDisplayNameWithTTS(ttsLanguages));  // if we have an error of lack of internet we simply don't insert the summary
                 } else if (summary != null && summary.equals((String) getSummary())) {
-                    setSummary(result.getDisplayName(ttsLanguages));  // if we have an error of lack of internet we simply don't insert the summary
+                    setSummary(result.getDisplayNameWithTTS(ttsLanguages));  // if we have an error of lack of internet we simply don't insert the summary
                 }
             }
 
@@ -93,7 +95,15 @@ public class LanguagePreference extends Preference {
         ArrayList<CustomLocale> languages = global.getLanguages(Global.RTranslatorMode.CONVERSATION_MODE, true);
         CustomLocale selectedLanguage = global.getLanguage(false);
 
-        GuiTools.showLanguageListDialog(activity, title, languages, selectedLanguage, true, new GuiTools.OnLanguageClickListener() {
+        ArrayList<CustomLocale> highQualityLanguages = new ArrayList<>();
+        ArrayList<CustomLocale> highQualityTranslatorLanguages = Translator.getSupportedLanguages(global, false, global.getTranslationMode());
+        ArrayList<CustomLocale> highQualityRecognizerLanguages = Recognizer.getSupportedLanguages(global, false);
+        for (CustomLocale translatorLanguage : highQualityTranslatorLanguages) {
+            if (CustomLocale.containsLanguage(highQualityRecognizerLanguages, translatorLanguage)) {
+                highQualityLanguages.add(translatorLanguage);
+            }
+        }
+        GuiTools.showLanguageListDialog(activity, title, languages, highQualityLanguages, selectedLanguage, true, true, new GuiTools.OnLanguageClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id, CustomLocale item) {
                 global.getTTSLanguages(true, true, new Global.GetLocalesListListener() {
@@ -101,7 +111,7 @@ public class LanguagePreference extends Preference {
                     public void onSuccess(ArrayList<CustomLocale> ttsLanguages) {
                         if (item != null && languages.contains(item)) {
                             global.setLanguage(item);
-                            setSummary(item.getDisplayName(ttsLanguages));
+                            setSummary(item.getDisplayNameWithTTS(ttsLanguages));
                         }
                     }
 

@@ -56,7 +56,6 @@ import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OnnxValue;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
-import ai.onnxruntime.OrtLoggingLevel;
 import ai.onnxruntime.OrtSession;
 import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
@@ -115,7 +114,13 @@ public class Translator extends NeuralNetworkApi {
     private final int EMPTY_BATCH_SIZE = 1;
     private boolean translatingMessages = false;
     private boolean translating = false;
-    private LanguageResourcesManager languageResourcesManager = null;
+    private static LanguageResourcesManager languageResourcesManager = null;
+    private static ArrayList<CustomLocale> cachedMadladLanguages = null;
+    private static ArrayList<CustomLocale> cachedMadladLowQualityLanguages = null;
+    private static ArrayList<CustomLocale> cachedNLLBLanguages = null;
+    private static ArrayList<CustomLocale> cachedNLLBLowQualityLanguages = null;
+    private static ArrayList<CustomLocale> cachedHyMtLanguages = null;
+    private static ArrayList<CustomLocale> cachedMozillaLanguages = null;
 
 
     public Translator(@NonNull Global global, int mode, boolean useMozillaForVoiceTranslation, boolean useTatoeba, boolean useTranslationDicts, GeneralListener initListener) {
@@ -1865,27 +1870,70 @@ public class Translator extends NeuralNetworkApi {
             Document document = null;
             if (mode == MADLAD || mode == MADLAD_CACHE) {
                 if (!qualityLow) {
-                    document = documentBuilder.parse(context.getResources().openRawResource(R.raw.madlad_supported_launguages));
+                    if(cachedMadladLanguages != null){
+                        languages = cachedMadladLanguages;
+                    }else {
+                        document = documentBuilder.parse(context.getResources().openRawResource(R.raw.madlad_supported_launguages));
+                        languages = getLanguagesFromDocument(context, document);
+                        cachedMadladLanguages = languages;
+                    }
                 }else{
-                    document = documentBuilder.parse(context.getResources().openRawResource(R.raw.madlad_supported_launguages_all));
+                    if(cachedMadladLowQualityLanguages != null){
+                        languages = cachedMadladLowQualityLanguages;
+                    }else {
+                        document = documentBuilder.parse(context.getResources().openRawResource(R.raw.madlad_supported_launguages_all));
+                        languages = getLanguagesFromDocument(context, document);
+                        cachedMadladLowQualityLanguages = languages;
+                    }
                 }
             } else if (mode == NLLB || mode == NLLB_CACHE) {
                 if (!qualityLow) {
-                    document = documentBuilder.parse(context.getResources().openRawResource(R.raw.nllb_supported_languages));
+                    if(cachedNLLBLanguages != null){
+                        languages = cachedNLLBLanguages;
+                    }else {
+                        document = documentBuilder.parse(context.getResources().openRawResource(R.raw.nllb_supported_languages));
+                        languages = getLanguagesFromDocument(context, document);
+                        cachedNLLBLanguages = languages;
+                    }
                 } else {
-                    document = documentBuilder.parse(context.getResources().openRawResource(R.raw.nllb_supported_languages_all));
+                    if(cachedNLLBLowQualityLanguages != null){
+                        languages = cachedNLLBLowQualityLanguages;
+                    }else {
+                        document = documentBuilder.parse(context.getResources().openRawResource(R.raw.nllb_supported_languages_all));
+                        languages = getLanguagesFromDocument(context, document);
+                        cachedNLLBLowQualityLanguages = languages;
+                    }
                 }
             }else if (mode == HY_MT) {
-                document = documentBuilder.parse(context.getResources().openRawResource(R.raw.hy_mt_supported_languages));
+                if(cachedHyMtLanguages != null){
+                    languages = cachedHyMtLanguages;
+                }else {
+                    document = documentBuilder.parse(context.getResources().openRawResource(R.raw.hy_mt_supported_languages));
+                    languages = getLanguagesFromDocument(context, document);
+                    cachedHyMtLanguages = languages;
+                }
             }else if (mode == MOZILLA) {
-                document = documentBuilder.parse(context.getResources().openRawResource(R.raw.mozilla_supported_languages));
+                if(cachedMozillaLanguages != null) {
+                    languages = cachedMozillaLanguages;
+                }else{
+                    document = documentBuilder.parse(context.getResources().openRawResource(R.raw.mozilla_supported_languages));
+                    languages = getLanguagesFromDocument(context, document);
+                    cachedMozillaLanguages = languages;
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return languages;
+    }
+
+    private static ArrayList<CustomLocale> getLanguagesFromDocument(Context context, @Nullable Document document){
+        ArrayList<CustomLocale> languages = new ArrayList<>();
+        if(document != null) {
             NodeList list = document.getElementsByTagName("code");
             for (int i = 0; i < list.getLength(); i++) {
                 languages.add(CustomLocale.getInstance(context, list.item(i).getTextContent()));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return languages;
     }
@@ -1916,7 +1964,7 @@ public class Translator extends NeuralNetworkApi {
                 @Override
                 public void onTranslatedText(String textToTranslate, String translatedText, @Nullable String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale inputLanguage, CustomLocale outputLanguage) {
                     if (isFinal) {
-                        Log.i("translator_test", "Language: " + language.getDisplayNameWithoutTTS() + ", language code: " + language.getISO3Language() +
+                        Log.i("translator_test", "Language: " + language.getDisplayName() + ", language code: " + language.getISO3Language() +
                                 ", tokenizer lang code: " + language.getCode() + ", translation: " + translatedText);
                         testAllLanguages(languages);
                     }
@@ -1924,7 +1972,7 @@ public class Translator extends NeuralNetworkApi {
 
                 @Override
                 public void onFailure(int[] reasons, long value) {
-                    Log.i("translator_test", "Language: " + language.getDisplayNameWithoutTTS() + ", language code: " + language.getISO3Language() +
+                    Log.i("translator_test", "Language: " + language.getDisplayName() + ", language code: " + language.getISO3Language() +
                             ", tokenizer lang code: " + language.getCode() + " translation: ERROR");
                     testAllLanguages(languages);
                 }

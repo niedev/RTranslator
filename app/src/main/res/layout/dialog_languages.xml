@@ -29,10 +29,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
+        android:layout_marginTop="6dp"
+        android:fontFamily="@font/roboto_medium"
         android:textColor="?attr/colorPrimaryStrong"
         android:textSize="19sp"
         android:textStyle="normal"
-        android:fontFamily="@font/roboto_medium"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -43,9 +44,10 @@
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="26dp"
         android:background="?attr/colorBackground"
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -92,10 +94,10 @@
             android:childDivider="#00000000"
             android:clipToPadding="false"
             android:divider="#00000000"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
             android:paddingStart="4dp"
+            android:paddingTop="12dp"
             android:paddingEnd="4dp"
+            android:paddingBottom="12dp"
             android:visibility="visible"
             app:layout_constrainedHeight="true"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -120,4 +122,22 @@
             app:layout_constraintTop_toBottomOf="@id/searchContainer"
             app:layout_constraintVertical_bias="0.0" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/switch_low_quality"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
+        android:paddingEnd="18dp"
+        android:text="LQ"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:switchPadding="8dp"
+        app:thumbTextPadding="8dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

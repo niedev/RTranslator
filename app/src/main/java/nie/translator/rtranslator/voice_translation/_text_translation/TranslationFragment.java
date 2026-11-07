@@ -935,7 +935,8 @@ public class TranslationFragment extends Fragment {
             selectedLanguage = global.getSecondTextLanguage(false);
         }
 
-        GuiTools.showLanguageListDialog(activity, title, languages, selectedLanguage, false, new GuiTools.OnLanguageClickListener() {
+        ArrayList<CustomLocale> highQualityLanguages = Translator.getSupportedLanguages(global, false, global.getTranslationMode());
+        GuiTools.showLanguageListDialog(activity, title, languages, highQualityLanguages, selectedLanguage, true, true, new GuiTools.OnLanguageClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id, CustomLocale item) {
                 if (item != null && languages.contains(item)) {
@@ -1002,12 +1003,12 @@ public class TranslationFragment extends Fragment {
 
     private void setDisplayedFirstLanguage(CustomLocale language){
         // change language displayed
-        firstLanguageSelector.setText(language.getDisplayNameWithoutTTS());
+        firstLanguageSelector.setText(language.getDisplayName());
     }
 
     private void setDisplayedSecondLanguage(CustomLocale language){
         // change language displayed
-        secondLanguageSelector.setText(language.getDisplayNameWithoutTTS());
+        secondLanguageSelector.setText(language.getDisplayName());
     }
 
     private void switchLanguages() {
@@ -1019,8 +1020,8 @@ public class TranslationFragment extends Fragment {
             }
         });
         // change language displayed
-        firstLanguageSelector.setText(global.getFirstTextLanguage(true).getDisplayNameWithoutTTS());
-        secondLanguageSelector.setText(global.getSecondTextLanguage(true).getDisplayNameWithoutTTS());
+        firstLanguageSelector.setText(global.getFirstTextLanguage(true).getDisplayName());
+        secondLanguageSelector.setText(global.getSecondTextLanguage(true).getDisplayName());
     }
 
     // Helper method to handle focus and keyboard visibility

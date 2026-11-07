@@ -28,8 +28,6 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Set;
 
-import nie.translator.rtranslator.R;
-
 public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     @NonNull
     private Locale locale;
@@ -62,6 +60,13 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
         this.locale = locale;
         this.context = context;
         initCacheValues();
+    }
+
+    public CustomLocale(CustomLocale language){
+        this.context = language.context;
+        this.locale = language.locale;
+        this.cachedDisplayName = language.cachedDisplayName;
+        this.cachedIso3Language = language.cachedIso3Language;
     }
 
     public static CustomLocale getInstance(@Nullable Context context, String code) {
@@ -180,8 +185,8 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
         return locale.getDisplayVariant(inLocale);
     }
 
-    public String getDisplayName(ArrayList<CustomLocale> ttsLanguages) {
-        String name = getDisplayNameWithoutTTS();
+    public String getDisplayNameWithTTS(ArrayList<CustomLocale> ttsLanguages) {
+        String name = getDisplayName();
         if (containsLanguage(ttsLanguages, this)) {
             return name;
         } else {
@@ -189,7 +194,7 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
         }
     }
 
-    public String getDisplayNameWithoutTTS() {
+    public String getDisplayName() {
         /**
          * This method is cached because locale.getDisplayName() and the conversion of the first letter to uppercase, together,
          * are relatively heavy operations (circa 1 ms), and without cache this can impact the performance where this method
@@ -221,13 +226,6 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
 
     public String getDisplayName(Locale locale) {
         return locale.getDisplayName(locale);
-        /*String displayLanguage;
-        if (locale.getDisplayCountry().isEmpty()) {
-            displayLanguage = locale.getDisplayLanguage();
-        } else {
-            displayLanguage = locale.getDisplayLanguage() + " (" + locale.getDisplayCountry() + ")";
-        }
-        return displayLanguage;*/
     }
 
     @Override
@@ -237,7 +235,7 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
 
     @Override
     public int compareTo(CustomLocale o) {
-        return getDisplayNameWithoutTTS().compareTo(((CustomLocale) o).getDisplayNameWithoutTTS());
+        return getDisplayName().compareTo(((CustomLocale) o).getDisplayName());
     }
 
     @Override
@@ -297,7 +295,7 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     }
 
     private void initCacheValues(){
-        getDisplayNameWithoutTTS();
+        getDisplayName();
         getISO3Language();
     }
 }
