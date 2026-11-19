@@ -27,6 +27,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -39,20 +41,23 @@ public class LanguageListAdapter extends BaseAdapter implements Filterable {
     private ArrayList<CustomLocalePlus> filteredLanguages;
     private ArrayList<CustomLocale> highQualityLanguages;
     private LanguageFilter filter;
-    private CustomLocale selectedLanguage;
-    private Activity activity;
-    private LayoutInflater inflater;
+    @Nullable
+    private final CustomLocale selectedLanguage;
+    private final Activity activity;
+    private final LayoutInflater inflater;
     private final boolean showTTSInfo;
     private final boolean showLowQualityInfo;
     private ArrayList<CustomLocale> ttsLanguages = new ArrayList<>();
     private boolean ttsLanguagesInitialized = false;
     private volatile boolean includeLowQuality;
+    private final boolean clickable;
 
-    public LanguageListAdapter(Activity activity, boolean showTTSInfo, boolean showLowQualityInfo, ArrayList<CustomLocale> languages, ArrayList<CustomLocale> highQualityLanguages, CustomLocale selectedLanguage, boolean includeLowQuality) {
+    public LanguageListAdapter(Activity activity, boolean showTTSInfo, boolean showLowQualityInfo, ArrayList<CustomLocale> languages, ArrayList<CustomLocale> highQualityLanguages, @Nullable CustomLocale selectedLanguage, boolean includeLowQuality, boolean clickable) {
         this.activity = activity;
         this.showTTSInfo = showTTSInfo;
         this.showLowQualityInfo = showLowQualityInfo;
         this.includeLowQuality = includeLowQuality;
+        this.clickable = clickable;
         languages.sort(new Comparator<CustomLocale>() {
             @Override
             public int compare(final CustomLocale locale1, CustomLocale locale2) {
@@ -188,6 +193,11 @@ public class LanguageListAdapter extends BaseAdapter implements Filterable {
                 //never called in this case
             }
         });
+    }
+
+    @Override
+    public boolean isEnabled(int position) {
+        return clickable;
     }
 
     public int getSelectedPosition() {

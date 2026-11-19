@@ -62,55 +62,68 @@
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintVertical_bias="0.0" />
 
-                        <TextView
-                            android:id="@+id/titleMozilla"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:layout_marginBottom="2dp"
-                            android:text="@string/performance"
-                            android:textColor="?attr/colorTextLevel2"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:focusable="false"
-                            app:layout_constraintBottom_toBottomOf="@+id/radioMozilla"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintHorizontal_bias="0.0"
-                            app:layout_constraintStart_toEndOf="@+id/radioMozilla"
-                            app:layout_constraintTop_toTopOf="@+id/radioMozilla" />
-
-                        <TextView
-                            android:id="@+id/descriptionMozilla"
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/modelMozilla"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:layout_marginTop="16dp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="8dp"
-                            android:text="@string/description_model_mozilla"
-                            android:focusable="false"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintHorizontal_bias="0.0"
                             app:layout_constraintStart_toEndOf="@+id/radioMozilla"
-                            app:layout_constraintTop_toBottomOf="@+id/titleMozilla"
-                            app:layout_constraintVertical_bias="0.0" />
+                            app:layout_constraintTop_toTopOf="parent">
 
-                        <ImageView
-                            android:id="@+id/arrowMozilla"
-                            android:layout_width="42dp"
-                            android:layout_height="42dp"
-                            android:layout_marginEnd="24dp"
-                            android:layout_marginBottom="2dp"
-                            android:contentDescription="@string/description_manage_mozilla_button"
-                            app:layout_constraintBottom_toBottomOf="@+id/titleMozilla"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintHorizontal_bias="1.0"
-                            app:layout_constraintStart_toEndOf="@+id/titleMozilla"
-                            app:layout_constraintTop_toTopOf="@+id/titleMozilla"
-                            android:src="@drawable/right_arrow_icon"
-                            android:tint="?attr/colorTextLevel4" />
+                            <TextView
+                                android:id="@+id/titleMozilla"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="0dp"
+                                android:layout_marginTop="20dp"
+                                android:layout_marginBottom="20dp"
+                                android:focusable="false"
+                                android:text="@string/performance"
+                                android:textColor="?attr/colorTextLevel2"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="0.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="0.0" />
 
+                            <TextView
+                                android:id="@+id/descriptionMozilla"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="0dp"
+                                android:layout_marginTop="16dp"
+                                android:layout_marginEnd="16dp"
+                                android:layout_marginBottom="8dp"
+                                android:focusable="false"
+                                android:text="@string/description_model_mozilla"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="0.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/titleMozilla"
+                                app:layout_constraintVertical_bias="0.0" />
+
+                            <ImageView
+                                android:id="@+id/arrowMozilla"
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
+                                android:layout_marginEnd="24dp"
+                                android:layout_marginBottom="2dp"
+                                android:contentDescription="@string/description_manage_mozilla_button"
+                                android:src="@drawable/right_arrow_icon"
+                                android:tint="?attr/colorTextLevel4"
+                                app:layout_constraintBottom_toBottomOf="@+id/titleMozilla"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toEndOf="@+id/titleMozilla"
+                                app:layout_constraintTop_toTopOf="@+id/titleMozilla" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
@@ -346,6 +359,7 @@
                 android:screenReaderFocusable="true"
                 android:focusable="false">
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/resourceDict"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"

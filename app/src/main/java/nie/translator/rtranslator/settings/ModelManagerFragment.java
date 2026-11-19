@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -23,6 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
@@ -35,14 +37,18 @@ import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.LoadingActivity;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.access.AccessActivity;
+import nie.translator.rtranslator.databases.tatoeba.TatoebaDbWrapper;
 import nie.translator.rtranslator.downloader.DownloadGroupInfo;
 import nie.translator.rtranslator.downloader.DownloadInfo;
 import nie.translator.rtranslator.downloader.DownloadManager;
+import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.Tools;
+import nie.translator.rtranslator.tools.gui.GuiTools;
 import nie.translator.rtranslator.tools.gui.ResourceManagerView;
 import nie.translator.rtranslator.tools.gui.SegmentProgressBar;
+import nie.translator.rtranslator.voice_translation.neural_networks.translation.DictionaryTranslator;
 import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
 import worker8.com.github.radiogroupplus.RadioGroupPlus;
 
@@ -71,9 +77,11 @@ public class ModelManagerFragment extends Fragment {
     private RadioButton radioMozilla;
     private RadioButton radioHy;
     private RadioButton radioMadlad;
+    private ConstraintLayout mozillaManagerView;
     private ResourceManagerView hyManagerView;
     private ResourceManagerView madladManagerView;
     private ResourceManagerView tatoebaManagerView;
+    private ConstraintLayout dictionariesManagerView;
     private Button applyButton;
     private SegmentProgressBar barRam;
     private SwitchCompat switchMozillaForVoiceModes;
@@ -103,9 +111,11 @@ public class ModelManagerFragment extends Fragment {
         radioMozilla = view.findViewById(R.id.radioMozilla);
         radioHy = view.findViewById(R.id.radioHY);
         radioMadlad = view.findViewById(R.id.radioMadlad);
+        mozillaManagerView = view.findViewById(R.id.modelMozilla);
         hyManagerView = view.findViewById(R.id.modelHy);
         madladManagerView = view.findViewById(R.id.modelMadlad);
         tatoebaManagerView = view.findViewById(R.id.resourceTatoeba);
+        dictionariesManagerView = view.findViewById(R.id.resourceDict);
         applyButton = view.findViewById(R.id.buttonApply);
         barRam = view.findViewById(R.id.barRam);
         switchMozillaForVoiceModes = view.findViewById(R.id.switchMozillaForVoiceModes);
@@ -175,14 +185,41 @@ public class ModelManagerFragment extends Fragment {
                 }
             }
         };
-        arrowMozilla.setOnClickListener(new View.OnClickListener() {
+        View.OnClickListener mozillaManagerOpenListener = v -> {
+            if(activity instanceof SettingsActivity) {
+                ((SettingsActivity) activity).startFragment(SettingsActivity.MOZILLA_MANAGER, null);
+            }else if(activity instanceof AccessActivity){
+                ((AccessActivity) activity).startFragment(AccessActivity.MOZILLA_MANAGER, null);
+            }
+        };
+        mozillaManagerView.setOnClickListener(mozillaManagerOpenListener);
+        arrowMozilla.setOnClickListener(mozillaManagerOpenListener);
+        hyManagerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(activity instanceof SettingsActivity) {
-                    ((SettingsActivity) activity).startFragment(SettingsActivity.MOZILLA_MANAGER, null);
-                }else if(activity instanceof AccessActivity){
-                    ((AccessActivity) activity).startFragment(AccessActivity.MOZILLA_MANAGER, null);
-                }
+                //show supported languages dialog
+                showLanguageDialog(Translator.HY_MT);
+            }
+        });
+        madladManagerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //show supported languages dialog
+                showLanguageDialog(Translator.MADLAD);
+            }
+        });
+        tatoebaManagerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //show supported languages dialog
+                showLanguageDialog(Translator.TATOEBA);
+            }
+        });
+        dictionariesManagerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //show supported languages dialog
+                showLanguageDialog(Translator.DICTIONARIES);
             }
         });
         radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
@@ -250,6 +287,41 @@ public class ModelManagerFragment extends Fragment {
         super.onStop();
         guiStateRestored = false;
         downloadManager.unsubscribe();
+    }
+
+    public void showLanguageDialog(int mode){
+        //show supported languages dialog
+        String title = "";
+        switch (mode) {
+            case Translator.HY_MT:
+                title = "Languages supported by Quality mode";  //todo: convert text
+                break;
+            case Translator.MADLAD:
+                title = "Languages supported by Versatility mode";  //todo: convert text
+                break;
+            case Translator.TATOEBA:
+                title = "Languages supported by Tatoeba";  //todo: convert text
+                break;
+            case Translator.DICTIONARIES:
+                title = "Languages supported by Translation Dictionaries";  //todo: convert text
+                break;
+        }
+        ArrayList<CustomLocale> languages = null;
+        ArrayList<CustomLocale> highQualityLanguages = null;
+        CustomLocale selectedLanguage = global.getLanguage(true);;
+        if(mode == Translator.HY_MT || mode == Translator.MADLAD) {
+            languages = Translator.getSupportedLanguages(global, true, mode);
+            highQualityLanguages = Translator.getSupportedLanguages(global, false, mode);
+        } else if (mode == Translator.TATOEBA) {
+            languages = TatoebaDbWrapper.getTatoebaSupportedLanguages(global);
+            highQualityLanguages = languages;
+        } else if (mode == Translator.DICTIONARIES){
+            languages = DictionaryTranslator.getSupportedLanguages(global);
+            highQualityLanguages = languages;
+        }
+        if(languages != null && highQualityLanguages != null) {
+            GuiTools.showLanguageListDialog(activity, title, languages, highQualityLanguages, null, false, true, null);
+        }
     }
 
     public void restoreGuiPreferenceState(){

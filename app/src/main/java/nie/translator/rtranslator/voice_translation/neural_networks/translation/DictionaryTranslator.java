@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 import nie.translator.rtranslator.tools.CustomLocale;
@@ -15,6 +16,17 @@ public class DictionaryTranslator {
     static {
         System.loadLibrary("dictionary_translator_interface");
     }
+
+    private static final String[] LANGUAGES = {
+            "afr", "ara", "aze", "bel", "ben", "bul", "cat", "ces", "cym", "dan",
+            "deu", "ell", "epo", "est", "eus", "fas", "fin", "fra", "gla", "gle",
+            "glg", "hbs", "heb", "hin", "hun", "hye", "ind", "isl", "ita", "jpn",
+            "kat", "kaz", "khm", "kir", "kor", "kur", "lao", "lat", "lav", "lit",
+            "mal", "mar", "mkd", "mon", "mri", "msa", "mya", "nld", "nor", "pol",
+            "por", "ron", "rus", "slk", "slv", "spa", "sqi", "swa", "swe", "tam",
+            "tat", "tel", "tgk", "tgl", "tha", "tur", "ukr", "urd", "uzb", "vie",
+            "yid", "zho"
+    };
 
     public static void initializeService(String dbPath){
         initializeServiceNative(dbPath);
@@ -96,6 +108,14 @@ public class DictionaryTranslator {
             default:
                 return lang;
         }
+    }
+
+    public static ArrayList<CustomLocale> getSupportedLanguages(Context context){
+        ArrayList<CustomLocale> languages = new ArrayList<>(LANGUAGES.length);
+        for(String langCode: LANGUAGES){
+            languages.add(new CustomLocale(context, langCode));
+        }
+        return languages;
     }
 
 

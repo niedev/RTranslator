@@ -84,6 +84,8 @@ public class Translator extends NeuralNetworkApi {
     public static final int MADLAD_CACHE = 5;
     public static final int MOZILLA = 7;
     public static final int HY_MT = 8;
+    public static final int TATOEBA = 9;
+    public static final int DICTIONARIES = 10;
     private int mode = -1;
     private Tokenizer tokenizer;
     private OrtEnvironment onnxEnv;

@@ -117,8 +117,11 @@ public class GuiTools {
         return context.getResources().getColorStateList(android.R.color.transparent, null);
     }
 
+    public static void showLanguageListDialog(Activity activity, String title, ArrayList<CustomLocale> languages, ArrayList<CustomLocale> highQualityLanguages, @Nullable CustomLocale selectedLanguage, boolean showTTSInfo, boolean showLowQualityInfo, @Nullable OnLanguageClickListener clickListener) {
+        showLanguageListDialog(activity, title, languages, highQualityLanguages, selectedLanguage, showTTSInfo, showLowQualityInfo, clickListener, null);
+    }
 
-    public static void showLanguageListDialog(Activity activity, String title, ArrayList<CustomLocale> languages, ArrayList<CustomLocale> highQualityLanguages, CustomLocale selectedLanguage, boolean showTTSInfo, boolean showLowQualityInfo, OnLanguageClickListener clickListener) {
+    public static void showLanguageListDialog(Activity activity, String title, ArrayList<CustomLocale> languages, ArrayList<CustomLocale> highQualityLanguages, @Nullable CustomLocale selectedLanguage, boolean showTTSInfo, boolean showLowQualityInfo, @Nullable OnLanguageClickListener clickListener, @Nullable CompoundButton.OnCheckedChangeListener lowQualitySwitchListener) {
         LanguageListAdapter listViewAdapter;
         ListView listView;
         AlertDialog dialog;
@@ -147,21 +150,23 @@ public class GuiTools {
         boolean allHighQualityLanguages = languages.size() == highQualityLanguages.size();
 
         //initialize and show dialog list
-        listViewAdapter = new LanguageListAdapter(activity, showTTSInfo, showLowQualityInfo && !allHighQualityLanguages, languages, highQualityLanguages, selectedLanguage, qualityLow);
+        listViewAdapter = new LanguageListAdapter(activity, showTTSInfo, showLowQualityInfo && !allHighQualityLanguages, languages, highQualityLanguages, selectedLanguage, qualityLow, clickListener != null);
         listView.setEmptyView(emptyTextView);
         listView.setAdapter(listViewAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                CustomLocale language = null;
-                Object item = listViewAdapter.getItem(position);
-                if(item instanceof CustomLocale){
-                    language = (CustomLocale) item;
+        if(clickListener != null) {
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                    CustomLocale language = null;
+                    Object item = listViewAdapter.getItem(position);
+                    if (item instanceof CustomLocale) {
+                        language = (CustomLocale) item;
+                    }
+                    clickListener.onItemClick(parent, view, position, id, language);
+                    dialog.dismiss();
                 }
-                clickListener.onItemClick(parent, view, position, id, language);
-                dialog.dismiss();
-            }
-        });
+            });
+        }
 
         // set the initial scroll position to have the selected language in the middle of the screen
         listView.post(() -> {  // wait for layout before using the ListView's height.
@@ -191,15 +196,13 @@ public class GuiTools {
         //initialize low quality switch
         if(!allHighQualityLanguages) {
             switchLowQuality.setChecked(qualityLow);
-            switchLowQuality.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
-                    final SharedPreferences sharedPreferences = activity.getSharedPreferences("default", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putBoolean("languagesNNQualityLow", (Boolean) isChecked);
-                    editor.apply();
-                    listViewAdapter.setIncludeLowQuality(isChecked, searchView.getQuery().toString());
-                }
+            switchLowQuality.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                final SharedPreferences sharedPreferences1 = activity.getSharedPreferences("default", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences1.edit();
+                editor.putBoolean("languagesNNQualityLow", (Boolean) isChecked);
+                editor.apply();
+                listViewAdapter.setIncludeLowQuality(isChecked, searchView.getQuery().toString());
+                if(lowQualitySwitchListener != null) lowQualitySwitchListener.onCheckedChanged(buttonView, isChecked);
             });
         }else{
             switchLowQuality.setVisibility(View.INVISIBLE);
