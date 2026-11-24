@@ -15,7 +15,6 @@
         android:layout_marginEnd="8dp"
         android:clipToPadding="false"
         android:focusableInTouchMode="true"
-        android:overScrollMode="never"
         android:paddingTop="@dimen/spacing_small"
         android:paddingBottom="@dimen/spacing_small"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"

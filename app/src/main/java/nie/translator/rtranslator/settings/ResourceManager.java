@@ -33,6 +33,7 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
     private boolean progressUnzipping = false;
     private boolean progressTesting = false;
     private int error = -1;
+    @Nullable
     private final DownloadGroupInfo downloadInfo;
     @Nullable
     private ResourceManagerView view;
@@ -44,49 +45,57 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
     private final ResourceManagerView.Listener viewListener = new ResourceManagerView.Listener() {
         @Override
         public void onDownloadClicked() {
-            setState(ResourceManagerView.State.DOWNLOADING);
-            downloadManager.startDownload(downloadInfo);
+            if(downloadInfo != null) {
+                setState(ResourceManagerView.State.DOWNLOADING);
+                downloadManager.startDownload(downloadInfo);
+            }
         }
 
         @Override
         public void onPauseClicked() {
-            setState(ResourceManagerView.State.PAUSED);
-            downloadManager.pauseDownload(downloadInfo);
+            if(downloadInfo != null) {
+                setState(ResourceManagerView.State.PAUSED);
+                downloadManager.pauseDownload(downloadInfo);
+            }
         }
 
         @Override
         public void onResumeClicked() {
-            setState(ResourceManagerView.State.DOWNLOADING);
-            downloadManager.startDownload(downloadInfo);
+            if(downloadInfo != null) {
+                setState(ResourceManagerView.State.DOWNLOADING);
+                downloadManager.startDownload(downloadInfo);
+            }
         }
 
         @Override
         public void onDeletePressed() {
-            DownloadGroupInfo hyMtDownloadInfo = ((Global) activity.getApplication()).getHyMtDownloadInfo();
-            DownloadGroupInfo madladDownloadInfo = ((Global) activity.getApplication()).getMadladDownloadInfo();
-            if(isMozillaDownload(downloadInfo) || downloadInfo.equals(hyMtDownloadInfo) || downloadInfo.equals(madladDownloadInfo)) {
-                //this is to prevent the user from deleting all the translation models
-                int numberOfModelsAvailable = 0;
-                for (DownloadGroupInfo downloadGroupInfo : downloadManager.getSavedDownloadStatus()) {
-                    if (isMozillaDownload(downloadGroupInfo)) {
-                        if (downloadGroupInfo.isAllDownloadCompleted()) {
-                            numberOfModelsAvailable++;
-                            break;
+            if(downloadInfo != null) {
+                DownloadGroupInfo hyMtDownloadInfo = ((Global) activity.getApplication()).getHyMtDownloadInfo();
+                DownloadGroupInfo madladDownloadInfo = ((Global) activity.getApplication()).getMadladDownloadInfo();
+                if (isMozillaDownload(downloadInfo) || downloadInfo.equals(hyMtDownloadInfo) || downloadInfo.equals(madladDownloadInfo)) {
+                    //this is to prevent the user from deleting all the translation models
+                    int numberOfModelsAvailable = 0;
+                    for (DownloadGroupInfo downloadGroupInfo : downloadManager.getSavedDownloadStatus()) {
+                        if (isMozillaDownload(downloadGroupInfo)) {
+                            if (downloadGroupInfo.isAllDownloadCompleted()) {
+                                numberOfModelsAvailable++;
+                                break;
+                            }
                         }
                     }
+                    if (downloadManager.checkDownloadCompleted(hyMtDownloadInfo)) {
+                        numberOfModelsAvailable++;
+                    }
+                    if (downloadManager.checkDownloadCompleted(madladDownloadInfo)) {
+                        numberOfModelsAvailable++;
+                    }
+                    if (numberOfModelsAvailable <= 1) {
+                        showCannotDeleteDialog();
+                        return;
+                    }
                 }
-                if (downloadManager.checkDownloadCompleted(hyMtDownloadInfo)) {
-                    numberOfModelsAvailable++;
-                }
-                if (downloadManager.checkDownloadCompleted(madladDownloadInfo)) {
-                    numberOfModelsAvailable++;
-                }
-                if (numberOfModelsAvailable <= 1) {
-                    showCannotDeleteDialog();
-                    return;
-                }
+                showDeleteDialog();
             }
-            showDeleteDialog();
         }
 
         @Override
@@ -95,7 +104,7 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
         }
     };
 
-    public ResourceManager(Activity activity, DownloadGroupInfo downloadInfo, ResourceManagerView view, DownloadManager downloadManager) {
+    public ResourceManager(Activity activity, @Nullable DownloadGroupInfo downloadInfo, ResourceManagerView view, DownloadManager downloadManager) {
         this.activity = activity;
         this.downloadInfo = downloadInfo;
         this.view = view;
@@ -103,7 +112,7 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
         view.setListener(viewListener);
     }
 
-    public ResourceManager(Activity activity, DownloadGroupInfo downloadInfo, DownloadManager downloadManager, @Nullable String title, @Nullable String description, int modelSizeMb, @NonNull ResourceManagerView.State state, int progress, boolean animateDeletion) {
+    public ResourceManager(Activity activity, @Nullable DownloadGroupInfo downloadInfo, DownloadManager downloadManager, @Nullable String title, @Nullable String description, int modelSizeMb, @NonNull ResourceManagerView.State state, int progress, boolean animateDeletion) {
         this.activity = activity;
         this.downloadInfo = downloadInfo;
         this.downloadManager = downloadManager;
@@ -149,6 +158,7 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
         }
     }
 
+    @Nullable
     public DownloadGroupInfo getDownloadInfo() {
         return downloadInfo;
     }
@@ -204,10 +214,17 @@ public class ResourceManager implements MozillaLanguagesAdapter.ResourceManagerI
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        if(obj instanceof ResourceManager){
-            return downloadInfo.equals(((ResourceManager) obj).downloadInfo);
+        if(downloadInfo != null) {
+            if (obj instanceof ResourceManager) {
+                return downloadInfo.equals(((ResourceManager) obj).downloadInfo);
+            }
+            return downloadInfo.equals(obj);
+        }else{
+            if (obj instanceof ResourceManager && title != null) {
+                return title.equals(((ResourceManager) obj).title);
+            }
         }
-        return downloadInfo.equals(obj);
+        return false;
     }
 
     public void showDeleteDialog(){

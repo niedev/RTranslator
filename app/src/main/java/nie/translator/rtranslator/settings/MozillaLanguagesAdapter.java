@@ -98,7 +98,7 @@ public class MozillaLanguagesAdapter extends RecyclerView.Adapter<RecyclerView.V
                             oldCompleteIndex--;  //we decrement the oldCompleteIndex based on the new deletion of the header
                         }
                         notifyItemMoved(oldCompleteIndex, getCompleteIndex(ItemTypeExtended.ITEM_MODEL_AVAILABLE, newIndex));
-                        //todo: ricilare il codice con il setState
+                        //todo: riciclare il codice con il setState
                     }
                 }
             });

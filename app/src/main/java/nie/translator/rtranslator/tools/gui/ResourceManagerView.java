@@ -27,7 +27,8 @@ public class ResourceManagerView extends ConstraintLayout {
         EMPTY,
         PAUSED,
         DOWNLOADING,
-        DOWNLOADED
+        DOWNLOADED,
+        PREINSTALLED
     };
 
     public static final int BUTTON_DELETE_LEFT_MARGIN = 0;
@@ -186,8 +187,12 @@ public class ResourceManagerView extends ConstraintLayout {
             //we delete the eventual text progress and restore the normal text that show the size of the model
             setModelSize(modelSizeMb);
         }
+        if(state != State.PREINSTALLED){
+            //we reset the padding of the textDownload
+            textDownload.setPadding(0, 0, 0, 0);
+        }
         if(animate) {
-            if(this.state != oldState) {
+            if(this.state != oldState && oldState != State.PREINSTALLED) {  //the preinstalled state cannot be changed
                 switch (state) {
                     case DOWNLOADING:
                         if (oldState == State.EMPTY) {
@@ -271,6 +276,9 @@ public class ResourceManagerView extends ConstraintLayout {
                     break;
                 case DOWNLOADED:
                     applyStateDownloaded();
+                    break;
+                case PREINSTALLED:
+                    applyStatePreinstalled();
                     break;
             }
         }
@@ -367,6 +375,23 @@ public class ResourceManagerView extends ConstraintLayout {
         pauseIcon.setClickable(false);
         playIcon.setClickable(false);
         buttonDelete.setClickable(true);
+    }
+
+    private void applyStatePreinstalled(){
+        buttonDownload.setVisibility(INVISIBLE);
+        progressBarDownload.setVisibility(INVISIBLE);
+        pauseIcon.setVisibility(INVISIBLE);
+        playIcon.setVisibility(INVISIBLE);
+        buttonDelete.setVisibility(INVISIBLE);
+        setButtonDeleteSize(true, false);
+        setButtonDownloadAndProgressBarSize(true);
+        buttonDownload.setClickable(false);
+        pauseIcon.setClickable(false);
+        playIcon.setClickable(false);
+        buttonDelete.setClickable(false);
+        textDownload.setText("Preinstalled");   //todo: convert text
+        int preinstalledTextPadding = Tools.convertDpToPixels(getContext(), 10);
+        textDownload.setPadding(0, 0, preinstalledTextPadding, 0);
     }
 
     private void setButtonDeleteSize(boolean reduced, boolean marginsReduced){

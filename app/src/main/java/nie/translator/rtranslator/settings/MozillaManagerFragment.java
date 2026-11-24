@@ -38,6 +38,7 @@ import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.downloader.DownloadGroupInfo;
 import nie.translator.rtranslator.downloader.DownloadInfo;
 import nie.translator.rtranslator.downloader.DownloadManager;
+import nie.translator.rtranslator.tools.CustomLocale;
 import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.tools.gui.ResourceManagerView;
 
@@ -131,6 +132,17 @@ public class MozillaManagerFragment  extends Fragment {
         float compressionRatio = 1.4F;
         ArrayList<ResourceManager> mozillaModelsInstalled = new ArrayList<>();
         ArrayList<ResourceManager> mozillaModelsAvailable = new ArrayList<>();
+        mozillaModelsInstalled.add(new ResourceManager(   //we add the preinstalled English language
+                activity,
+                null,
+                downloadManager,
+                new CustomLocale(activity, "en").getDisplayLanguage(),
+                "",
+                0,
+                ResourceManagerView.State.PREINSTALLED,
+                100,
+                false
+        ));
         for(Global.MozillaLanguageDownloadInfo langDownloadInfo: mozillaLanguageDownloadInfos){
             int index = downloads.indexOf(langDownloadInfo.downloadGroupInfo);
             if(index != -1 && downloads.get(index).isAllDownloadCompleted()) {

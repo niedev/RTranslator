@@ -195,14 +195,16 @@ public class DownloadManager implements ServiceConnection {
         return new ArrayList<>();
     }
 
-    public boolean checkDownloadCompleted(DownloadGroupInfo downloadGroupInfo){
+    public boolean checkDownloadCompleted(@Nullable DownloadGroupInfo downloadGroupInfo){
         boolean found = false;
-        for(DownloadGroupInfo downloadGroupInfoItem : getSavedDownloadStatus()){
-            if(downloadGroupInfoItem.equals(downloadGroupInfo)){
-                if(downloadGroupInfoItem.isAllDownloadCompleted()){
-                    found = true;
+        if(downloadGroupInfo != null) {
+            for (DownloadGroupInfo downloadGroupInfoItem : getSavedDownloadStatus()) {
+                if (downloadGroupInfoItem.equals(downloadGroupInfo)) {
+                    if (downloadGroupInfoItem.isAllDownloadCompleted()) {
+                        found = true;
+                    }
+                    break;
                 }
-                break;
             }
         }
         return found;

@@ -60,7 +60,7 @@ public class DownloadGroupInfo implements Parcelable{
             downloadsInfoTarget = ((Downloader) obj).getDownloadGroupInfo().downloadsInfo;
         } else if(obj instanceof DownloadGroupInfo){
             downloadsInfoTarget = ((DownloadGroupInfo) obj).downloadsInfo;
-        } else if(obj instanceof ResourceManager){
+        } else if(obj instanceof ResourceManager && ((ResourceManager) obj).getDownloadInfo() != null){
             downloadsInfoTarget = ((ResourceManager) obj).getDownloadInfo().downloadsInfo;
         }
         //if downloadsInfoTarget contains the same downloads as downloadsInfo (order doesn't matter), we return true
