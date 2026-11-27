@@ -33,14 +33,14 @@ public class DictionaryTranslator {
     }
 
     public static void loadDictionary(@Nullable Context context, CustomLocale lang){
-        String langCode = convertToMacroLanguage(context, lang).getISO3Language();
+        String langCode = convertToMacroLanguage(context, lang).getCode();
         if(!Objects.equals(langCode, "eng")) {
             loadDictionaryNative(langCode);
         }
     }
 
     public static void unloadDictionary(@Nullable Context context, CustomLocale lang){
-        unloadDictionaryNative(convertToMacroLanguage(context, lang).getISO3Language());
+        unloadDictionaryNative(convertToMacroLanguage(context, lang).getCode());
     }
 
     @Nullable
@@ -49,7 +49,7 @@ public class DictionaryTranslator {
         String normalizedWord = TextTools.normalizeText(word);
         srcLang = convertToMacroLanguage(context, srcLang);
         tgtLang = convertToMacroLanguage(context, tgtLang);
-        String[] result = translateWordNative(normalizedWord, srcLang.getISO3Language(), tgtLang.getISO3Language());
+        String[] result = translateWordNative(normalizedWord, srcLang.getCode(), tgtLang.getCode());
         if(result != null) {
             for (int i = 0; i < result.length; i++) {
                 result[i] = TextTools.capitalizeFirstLetter(result[i], tgtLang);
@@ -62,14 +62,14 @@ public class DictionaryTranslator {
     public static boolean containsWord(@Nullable Context context, String word, CustomLocale lang){
         long time = System.currentTimeMillis();
         lang = convertToMacroLanguage(context, lang);
-        boolean result = containsWordNative(word, lang.getISO3Language());
+        boolean result = containsWordNative(word, lang.getCode());
         android.util.Log.i("dict_performance", "dictionary search done in: " + (System.currentTimeMillis()-time) + "ms");
         return result;
     }
 
     private static CustomLocale convertToMacroLanguage(@Nullable Context context, CustomLocale lang) {
         if(lang == null) return null;
-        String langCode = lang.getISO3Language();
+        String langCode = lang.getCode();
 
         // Convert to lowercase to ensure the check is case-insensitive
         switch (langCode.toLowerCase()) {

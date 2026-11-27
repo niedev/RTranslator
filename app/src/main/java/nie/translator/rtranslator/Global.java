@@ -169,6 +169,10 @@ public class Global extends Application implements DefaultLifecycleObserver {
                 .build();
         android.util.Log.i("performance_vad", "Vad initialization: " + (System.currentTimeMillis() - time) + "ms");
 
+        Translator.initializeNllbLanguagesCodes(this);
+        Translator.initializeMadladLanguagesCodes(this);
+        Translator.initializeMozillaLanguagesCodes(this);
+
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             REQUIRED_PERMISSIONS_PAIRING = new String[]{
                     Manifest.permission.BLUETOOTH,
@@ -561,10 +565,13 @@ public class Global extends Application implements DefaultLifecycleObserver {
             for (Global.MozillaLanguageDownloadInfo langDownloadInfo : mozillaLanguageDownloadInfos) {
                 int index = downloads.indexOf(langDownloadInfo.downloadGroupInfo);
                 if (index != -1 && downloads.get(index).isAllDownloadCompleted()) {
+                    if(langDownloadInfo.lang.equalsLanguage(new CustomLocale(this, "zho"))){
+                        mozillaInstalledLanguages.add(CustomLocale.getInstance(this, "zho-TWN"));  //traditional Chinese will be available together with simplified Chinese (we use the same model for both).
+                    }
                     mozillaInstalledLanguages.add(langDownloadInfo.lang);
                 }
             }
-            mozillaInstalledLanguages.add(new CustomLocale(this, "en"));  //English is always present, but it isn't present in the getMozillaLanguagesDownloadInfo list, so we add it manually
+            mozillaInstalledLanguages.add(new CustomLocale(this, "eng"));  //English is always present, but it isn't present in the getMozillaLanguagesDownloadInfo list, so we add it manually
             this.mozillaInstalledLanguages = mozillaInstalledLanguages;
             return mozillaInstalledLanguages;
         }
@@ -614,7 +621,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         String baseUrl = "https://github.com/niedev/OnnxModelsEnhancer/releases/download/v1.0.0-beta/";
         ArrayList<MozillaLanguageDownloadInfo> languageDownloadInfos = new ArrayList<>();
         for(Translator.MozillaLanguageInfo langInfo : getMozillaLanguagesInfo(recycleResult)){
-            String fileName = "Mozilla_"+langInfo.lang.getLanguage()+".zip";
+            String fileName = "Mozilla_"+Translator.getMozillaLanguageCode(langInfo.lang.getCode())+".zip";
             languageDownloadInfos.add(new MozillaLanguageDownloadInfo(
                     langInfo.lang,
                     new DownloadGroupInfo(new DownloadInfo[]{new DownloadInfo(fileName, baseUrl+fileName, downloadFolder, langInfo.sizeKb, false, true)})
@@ -880,7 +887,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             language = Global.this.language;
         } else {
             SharedPreferences sharedPreferences = Global.this.getSharedPreferences("default", Context.MODE_PRIVATE);
-            String code = sharedPreferences.getString("language", predefinedLanguage.getCode());
+            String code = sharedPreferences.getString("language", predefinedLanguage.getCompleteCode());
             if (code != null) {
                 language = CustomLocale.getInstance(this, code);
             }
@@ -894,7 +901,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             if (index2 != -1) {
                 language = predefinedLanguage;
             } else {
-                language = new CustomLocale(this, "en");
+                language = new CustomLocale(this, "eng");
             }
         }
 
@@ -910,7 +917,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             language = Global.this.firstLanguage;
         } else {
             SharedPreferences sharedPreferences = Global.this.getSharedPreferences("default", Context.MODE_PRIVATE);
-            String code = sharedPreferences.getString("firstLanguage", predefinedLanguage.getCode());
+            String code = sharedPreferences.getString("firstLanguage", predefinedLanguage.getCompleteCode());
             if (code != null) {
                 language = CustomLocale.getInstance(this, code);
             }
@@ -926,7 +933,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             } else if(!languages.isEmpty()) {
                 language = languages.get(0);  //we pick the first language of the list
             } else {
-                language = new CustomLocale(this, "en");
+                language = new CustomLocale(this, "eng");
             }
         }
 
@@ -952,7 +959,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         if (index != -1) {
             language = languages.get(index);
         } else {
-            language = new CustomLocale(this, "en");
+            language = new CustomLocale(this, "eng");
         }
 
         Global.this.secondLanguage = language;
@@ -967,7 +974,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             language = Global.this.firstTextLanguage;
         } else {
             SharedPreferences sharedPreferences = Global.this.getSharedPreferences("default", Context.MODE_PRIVATE);
-            String code = sharedPreferences.getString("firstTextLanguage", predefinedLanguage.getCode());
+            String code = sharedPreferences.getString("firstTextLanguage", predefinedLanguage.getCompleteCode());
             if (code != null) {
                 language = CustomLocale.getInstance(this, code);
             }
@@ -983,7 +990,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
             } else if(!languages.isEmpty()) {
                 language = languages.get(0);  //we pick the first language of the list
             } else {
-                language = new CustomLocale(this, "en");
+                language = new CustomLocale(this, "eng");
             }
         }
 
@@ -1008,7 +1015,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         if (index != -1) {
             language = languages.get(index);
         } else {
-            language = new CustomLocale(this, "en");
+            language = new CustomLocale(this, "eng");
         }
 
         Global.this.secondTextLanguage = language;
@@ -1031,7 +1038,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         this.language = language;
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("language", language.getCode());
+        editor.putString("language", language.getCompleteCode());
         editor.apply();
         if(ConversationService.isRunning && translator != null){
             translator.loadTgtLangResourcesForConversation(language, null);
@@ -1045,7 +1052,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         this.firstLanguage = language;
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("firstLanguage", language.getCode());
+        editor.putString("firstLanguage", language.getCompleteCode());
         editor.apply();
         loadLanguagesResources(language, getSecondLanguage(true), RTranslatorMode.WALKIE_TALKIE_MODE, ignoreError, listener);
     }
@@ -1054,7 +1061,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         this.secondLanguage = language;
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("secondLanguage", language.getCode());
+        editor.putString("secondLanguage", language.getCompleteCode());
         editor.apply();
         loadLanguagesResources(getFirstLanguage(true), language, RTranslatorMode.WALKIE_TALKIE_MODE, ignoreError, listener);
     }
@@ -1063,7 +1070,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         this.firstTextLanguage = language;
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("firstTextLanguage", language.getCode());
+        editor.putString("firstTextLanguage", language.getCompleteCode());
         editor.apply();
         loadLanguagesResources(language, getSecondTextLanguage(true), RTranslatorMode.TEXT_TRANSLATION_MODE, ignoreError, listener);
     }
@@ -1073,7 +1080,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         CustomLocale firstLanguage = getFirstTextLanguage(true);
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("secondTextLanguage", language.getCode());
+        editor.putString("secondTextLanguage", language.getCompleteCode());
         editor.apply();
         loadLanguagesResources(getFirstTextLanguage(true), language, RTranslatorMode.TEXT_TRANSLATION_MODE, ignoreError, listener);
     }
@@ -1085,8 +1092,8 @@ public class Global extends Application implements DefaultLifecycleObserver {
         this.secondTextLanguage = firstLanguage;
         SharedPreferences sharedPreferences = this.getSharedPreferences("default", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("firstTextLanguage", this.firstTextLanguage.getCode());
-        editor.putString("secondTextLanguage", this.secondTextLanguage.getCode());
+        editor.putString("firstTextLanguage", this.firstTextLanguage.getCompleteCode());
+        editor.putString("secondTextLanguage", this.secondTextLanguage.getCompleteCode());
         editor.apply();
         loadLanguagesResources(secondLanguage, firstLanguage, RTranslatorMode.TEXT_TRANSLATION_MODE, ignoreError, listener);
     }

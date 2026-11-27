@@ -17,295 +17,295 @@
 
 <languages>
     <language>
-        <code>ar</code>
+        <code>ara</code>
         <code_NLLB>arb_Arab</code_NLLB>
     </language>
     <language>
-        <code>af</code>
+        <code>afr</code>
         <code_NLLB>afr_Latn</code_NLLB>
     </language>
     <language>
-        <code>ak</code>
+        <code>aka</code>
         <code_NLLB>aka_Latn</code_NLLB>
     </language>
     <language>
-        <code>am</code>
+        <code>amh</code>
         <code_NLLB>amh_Ethi</code_NLLB>
     </language>
     <language>
-        <code>as</code>
+        <code>asm</code>
         <code_NLLB>asm_Beng</code_NLLB>
     </language>
     <language>
-        <code>eu</code>
+        <code>eus</code>
         <code_NLLB>eus_Latn</code_NLLB>
     </language>
     <language>
-        <code>ba</code>
+        <code>bak</code>
         <code_NLLB>bak_Cyrl</code_NLLB>
     </language>
     <language>
-        <code>bm</code>
+        <code>bam</code>
         <code_NLLB>bam_Latn</code_NLLB>
     </language>
     <language>
-        <code>be</code>
+        <code>bel</code>
         <code_NLLB>bel_Cyrl</code_NLLB>
     </language>
     <language>
-        <code>bn</code>
+        <code>ben</code>
         <code_NLLB>ben_Beng</code_NLLB>
     </language>
     <language>
-        <code>bs</code>
+        <code>bos</code>
         <code_NLLB>bos_Latn</code_NLLB>
     </language>
     <language>
-        <code>bg</code>
+        <code>bul</code>
         <code_NLLB>bul_Cyrl</code_NLLB>
     </language>
     <language>
-        <code>ca</code>
+        <code>cat</code>
         <code_NLLB>cat_Latn</code_NLLB>
     </language>
     <language>
-        <code>zh</code>
+        <code>zho</code>
         <code_NLLB>zho_Hans</code_NLLB>
     </language>
     <language>
-        <code>cs</code>
+        <code>ces</code>
         <code_NLLB>ces_Latn</code_NLLB>
     </language>
     <language>
-        <code>da</code>
+        <code>dan</code>
         <code_NLLB>dan_Latn</code_NLLB>
     </language>
     <language>
-        <code>dz</code>
+        <code>dzo</code>
         <code_NLLB>dzo_Tibt</code_NLLB>
     </language>
     <language>
-        <code>de</code>
+        <code>deu</code>
         <code_NLLB>deu_Latn</code_NLLB>
     </language>
     <language>
-        <code>eo</code>
+        <code>epo</code>
         <code_NLLB>epo_Latn</code_NLLB>
     </language>
     <language>
-        <code>et</code>
+        <code>est</code>
         <code_NLLB>est_Latn</code_NLLB>
     </language>
     <language>
-        <code>ee</code>
+        <code>ewe</code>
         <code_NLLB>ewe_Latn</code_NLLB>
     </language>
     <language>
-        <code>el</code>
+        <code>ell</code>
         <code_NLLB>ell_Grek</code_NLLB>
     </language>
     <language>
-        <code>en</code>
+        <code>eng</code>
         <code_NLLB>eng_Latn</code_NLLB>
     </language>
     <language>
-        <code>es</code>
+        <code>spa</code>
         <code_NLLB>spa_Latn</code_NLLB>
     </language>
     <language>
-        <code>fi</code>
+        <code>fin</code>
         <code_NLLB>fin_Latn</code_NLLB>
     </language>
     <language>
-        <code>fo</code>
+        <code>fao</code>
         <code_NLLB>fao_Latn</code_NLLB>
     </language>
     <language>
-        <code>fj</code>
+        <code>fij</code>
         <code_NLLB>fij_Latn</code_NLLB>
     </language>
     <language>
-        <code>gu</code>
+        <code>guj</code>
         <code_NLLB>guj_Gujr</code_NLLB>
     </language>
     <language>
-        <code>ha</code>
+        <code>hau</code>
         <code_NLLB>hau_Latn</code_NLLB>
     </language>
     <language>
-        <code>he</code>
+        <code>heb</code>
         <code_NLLB>heb_Hebr</code_NLLB>
     </language>
     <language>
-        <code>hi</code>
+        <code>hin</code>
         <code_NLLB>hin_Deva</code_NLLB>
     </language>
     <language>
-        <code>hu</code>
+        <code>hun</code>
         <code_NLLB>hun_Latn</code_NLLB>
     </language>
     <!--<language>
-        <code>id</code>
+        <code>ind</code>
         <code_NLLB>ind_Latn</code_NLLB>
     </language>-->  <!-- NLLB treats this language (indonesian) as if it were English (bug) -->
     <language>
-        <code>jv</code>
+        <code>jav</code>
         <code_NLLB>jav_Latn</code_NLLB>
     </language>
     <language>
-        <code>ka</code>
+        <code>kat</code>
         <code_NLLB>kat_Geor</code_NLLB>
     </language>
     <language>
-        <code>tl</code>
+        <code>tgl</code>
         <code_NLLB>tgl_Latn</code_NLLB>
     </language>
     <language>
-        <code>fr</code>
+        <code>fra</code>
         <code_NLLB>fra_Latn</code_NLLB>
     </language>
     <language>
-        <code>gl</code>
+        <code>glg</code>
         <code_NLLB>glg_Latn</code_NLLB>
     </language>
     <language>
-        <code>gn</code>
+        <code>grn</code>
         <code_NLLB>grn_Latn</code_NLLB>
     </language>
     <language>
-        <code>hr</code>
+        <code>hrv</code>
         <code_NLLB>hrv_Latn</code_NLLB>
     </language>
     <language>
-        <code>it</code>
+        <code>ita</code>
         <code_NLLB>ita_Latn</code_NLLB>
     </language>
     <language>
-        <code>ja</code>
+        <code>jpn</code>
         <code_NLLB>jpn_Jpan</code_NLLB>
     </language>
     <language>
-        <code>ko</code>
+        <code>kor</code>
         <code_NLLB>kor_Hang</code_NLLB>
     </language>
     <language>
-        <code>mk</code>
+        <code>mkd</code>
         <code_NLLB>mkd_Cyrl</code_NLLB>
     </language>
     <language>
-        <code>nl</code>
+        <code>nld</code>
         <code_NLLB>nld_Latn</code_NLLB>
     </language>
     <language>
-        <code>pl</code>
+        <code>pol</code>
         <code_NLLB>pol_Latn</code_NLLB>
     </language>
     <language>
-        <code>pt</code>
+        <code>por</code>
         <code_NLLB>por_Latn</code_NLLB>
     </language>
     <language>
-        <code>ro</code>
+        <code>ron</code>
         <code_NLLB>ron_Latn</code_NLLB>
     </language>
     <language>
-        <code>ru</code>
+        <code>rus</code>
         <code_NLLB>rus_Cyrl</code_NLLB>
     </language>
     <language>
-        <code>sk</code>
+        <code>slk</code>
         <code_NLLB>slk_Latn</code_NLLB>
     </language>
     <language>
-        <code>sv</code>
+        <code>swe</code>
         <code_NLLB>swe_Latn</code_NLLB>
     </language>
     <language>
-        <code>ta</code>
+        <code>tam</code>
         <code_NLLB>tam_Taml</code_NLLB>
     </language>
     <language>
-        <code>th</code>
+        <code>tha</code>
         <code_NLLB>tha_Thai</code_NLLB>
     </language>
     <language>
-        <code>tr</code>
+        <code>tur</code>
         <code_NLLB>tur_Latn</code_NLLB>
     </language>
     <language>
-        <code>uk</code>
+        <code>ukr</code>
         <code_NLLB>ukr_Cyrl</code_NLLB>
     </language>
     <language>
-        <code>ur</code>
+        <code>urd</code>
         <code_NLLB>urd_Arab</code_NLLB>
     </language>
     <language>
-        <code>vi</code>
+        <code>vie</code>
         <code_NLLB>vie_Latn</code_NLLB>
     </language>
     <language>
-        <code>kn</code>
+        <code>kan</code>
         <code_NLLB>kan_Knda</code_NLLB>
     </language>
     <language>
-        <code>ks</code>
+        <code>kas</code>
         <code_NLLB>kas_Arab</code_NLLB>
     </language>
     <language>
-        <code>kk</code>
+        <code>kaz</code>
         <code_NLLB>kaz_Cyrl</code_NLLB>
     </language>
     <language>
-        <code>ki</code>
+        <code>kik</code>
         <code_NLLB>kik_Latn</code_NLLB>
     </language>
     <language>
-        <code>ga</code>
+        <code>gle</code>
         <code_NLLB>gle_Latn</code_NLLB>
     </language>
     <language>
-        <code>rw</code>
+        <code>kin</code>
         <code_NLLB>kin_Latn</code_NLLB>
     </language>
     <language>
-        <code>ky</code>
+        <code>kir</code>
         <code_NLLB>kir_Cyrl</code_NLLB>
     </language>
     <language>
-        <code>lo</code>
+        <code>lao</code>
         <code_NLLB>lao_Laoo</code_NLLB>
     </language>
     <language>
-        <code>li</code>
+        <code>lim</code>
         <code_NLLB>lim_Latn</code_NLLB>
     </language>
     <language>
-        <code>ln</code>
+        <code>lin</code>
         <code_NLLB>lin_Latn</code_NLLB>
     </language>
     <language>
-        <code>lt</code>
+        <code>lit</code>
         <code_NLLB>lit_Latn</code_NLLB>
     </language>
     <language>
-        <code>lb</code>
+        <code>ltz</code>
         <code_NLLB>ltz_Latn</code_NLLB>
     </language>
     <language>
-        <code>bo</code>
+        <code>bod</code>
         <code_NLLB>bod_Tibt</code_NLLB>
     </language>
     <language>
-        <code>fa</code>
+        <code>fas</code>
         <code_NLLB>pes_Arab</code_NLLB>
     </language>
     <language>
-        <code>km</code>
+        <code>khm</code>
         <code_NLLB>khm_Khmr</code_NLLB>
     </language>
     <!--<language>
-        <code>id</code>
+        <code>ind</code>
         <code_NLLB>ind_Latn</code_NLLB>
     </language>-->
 </languages>

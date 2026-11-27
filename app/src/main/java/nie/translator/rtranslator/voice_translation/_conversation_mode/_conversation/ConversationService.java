@@ -94,7 +94,7 @@ public class ConversationService extends VoiceTranslationService {
                     CustomLocale language = global.getLanguage(true);
                     int sampleRate = getVoiceRecorderSampleRate();
                     if (sampleRate != 0) {
-                        voiceRecognizer.recognize(data, SPEECH_BEAM_SIZE, language.getCode());
+                        voiceRecognizer.recognize(data, SPEECH_BEAM_SIZE, language);
                     }
                 }
             }
@@ -264,9 +264,8 @@ public class ConversationService extends VoiceTranslationService {
         voiceRecognizer = global.getSpeechRecognizer();
         voiceRecognizerCallback = new VoiceTranslationServiceRecognizerListener() {
             @Override
-            public void onSpeechRecognizedResult(String text, String languageCode, double confidenceScore, boolean isFinal) {
-                if (text != null && languageCode != null && !text.equals("") && !isMetaText(text)) {
-                    CustomLocale language = CustomLocale.getInstance(ConversationService.this, languageCode);
+            public void onSpeechRecognizedResult(String text, CustomLocale language, double confidenceScore, boolean isFinal) {
+                if (text != null && language != null && !text.equals("") && !isMetaText(text)) {
                     GuiMessage guiMessage = new GuiMessage(new Message(global, text), language, language, global.getTranslator().incrementCurrentResultID(), true, isFinal);
                     if (isFinal) {
                         // send the message
@@ -304,7 +303,7 @@ public class ConversationService extends VoiceTranslationService {
 
     private void sendMessage(ConversationMessage conversationMessage) {
         if(global.getBluetoothCommunicator() != null) {
-            String languageCode = conversationMessage.getPayload().getLanguage().getCode();
+            String languageCode = conversationMessage.getPayload().getLanguage().getCompleteCode();
             global.getBluetoothCommunicator().sendMessage(new Message(global, conversationMessage.getPayload().getText() + languageCode + languageCode.length()));
         }
     }

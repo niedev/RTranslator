@@ -16,6 +16,8 @@
 
 package nie.translator.rtranslator.voice_translation.neural_networks.translation;
 
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 
 import java.io.IOException;
@@ -153,12 +155,14 @@ public class Tokenizer {
                 tgtLangZhName = tgtLangInfo.zhName;
             }
             String prompt;
-            if(srcLanguage.equals("zh")) {
+            if(srcLanguage.equals("zho")) {
                 prompt = "<｜hy_begin▁of▁sentence｜><｜hy_User｜>将以下文本翻译为"+tgtLangZhName+"，注意只需要输出翻译后的结果，不要额外解释：\n\n"+text+"<｜hy_Assistant｜>";
             } else {
                 prompt = "<｜hy_begin▁of▁sentence｜><｜hy_User｜>Translate the following segment into "+tgtLangEnName+", without additional explanation.\n\n"+text+"<｜hy_Assistant｜>";
             }
             Encoding result = hfTokenizer.encode(new String[]{excludePrompt ? text : prompt}, false, false);
+
+            Log.d("tokenizer_prompt", prompt);
 
             //we convert inputIds and attention mask from long[] to int[]
             long[] inputIdsLong = result.getIds();

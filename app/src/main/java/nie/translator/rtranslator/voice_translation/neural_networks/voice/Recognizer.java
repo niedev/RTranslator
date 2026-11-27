@@ -17,9 +17,10 @@
 package nie.translator.rtranslator.voice_translation.neural_networks.voice;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.SystemClock;
 import android.util.Log;
+
+import com.github.houbb.opencc4j.util.ZhConverterUtil;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -54,6 +55,7 @@ import nie.translator.rtranslator.tools.ErrorCodes;
 import nie.translator.rtranslator.tools.nn.TensorUtils;
 import nie.translator.rtranslator.tools.nn.Utils;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
+import nie.translator.rtranslator.voice_translation.neural_networks.translation.Translator;
 
 
 public class Recognizer extends NeuralNetworkApi {
@@ -168,6 +170,7 @@ public class Recognizer extends NeuralNetworkApi {
             "su",
             "yue"
     };
+    private static final Map<String, String> whisperLanguagesCodes = new HashMap<>();
 
     private final int START_TOKEN_ID = 50258;
     private final int TRANSCRIBE_TOKEN_ID = 50359;
@@ -187,6 +190,8 @@ public class Recognizer extends NeuralNetworkApi {
         this.global = global;
         //onnxEnv = OrtEnvironment.getEnvironment(OrtLoggingLevel.ORT_LOGGING_LEVEL_VERBOSE);
         onnxEnv = OrtEnvironment.getEnvironment();
+
+        initializeWhisperLanguagesCodes(global);
 
         String modelInitPath = global.getFilesDir().getPath() + "/Whisper_initializer.onnx";
         String decoderPath = global.getFilesDir().getPath() + "/Whisper_decoder.onnx";
@@ -279,6 +284,33 @@ public class Recognizer extends NeuralNetworkApi {
         }).start();
     }
 
+    public static void initializeWhisperLanguagesCodes(Context context){
+        if(whisperLanguagesCodes.isEmpty()) {
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            try {
+                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                Document document = documentBuilder.parse(context.getResources().openRawResource(R.raw.whisper_supported_languages_all));
+                NodeList listCode = document.getElementsByTagName("code");
+                NodeList listCodeModel = document.getElementsByTagName("code_whisper");
+                for (int i = 0; i < listCode.getLength(); i++) {
+                    whisperLanguagesCodes.put(listCode.item(i).getTextContent(), listCodeModel.item(i).getTextContent());
+                }
+            } catch (IOException | SAXException | ParserConfigurationException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static String getWhisperLanguageCode(String languageCode){
+        String modelCode = whisperLanguagesCodes.get(languageCode);
+        if (modelCode == null) {
+            Log.e("error", "Error Converting Language code " + languageCode + " to Whisper code");
+            return languageCode;
+        } else {
+            return modelCode;
+        }
+    }
+
     public void initializeEncoderSession() throws OrtException {
         // release of encoder session in case of a restart
         if(encoderSession != null){
@@ -308,7 +340,7 @@ public class Recognizer extends NeuralNetworkApi {
      *
      * @param data The audio data.
      */
-    public void recognize(final float[] data, int beamSize, final String languageCode) {
+    public void recognize(final float[] data, int beamSize, final CustomLocale language) {
         new Thread("recognizer"){
             @Override
             public void run() {
@@ -316,7 +348,7 @@ public class Recognizer extends NeuralNetworkApi {
                 synchronized (lock) {
                     Log.e("recognizer","recognizingCalled");
                     if (data != null) {
-                        dataToRecognize.addLast(new DataContainer(data, beamSize, languageCode));
+                        dataToRecognize.addLast(new DataContainer(data, beamSize, language));
                         if (dataToRecognize.size() >= 1 && !recognizing) {
                             recognize();
                         }
@@ -326,7 +358,7 @@ public class Recognizer extends NeuralNetworkApi {
         }.start();
     }
 
-    public void recognize(final float[] data, int beamSize, final String languageCode1, final String languageCode2) {
+    public void recognize(final float[] data, int beamSize, final CustomLocale language1, final CustomLocale language2) {
         new Thread("recognizer"){
             @Override
             public void run() {
@@ -334,7 +366,7 @@ public class Recognizer extends NeuralNetworkApi {
                 synchronized (lock) {
                     Log.e("recognizer","recognizingCalled");
                     if (data != null) {
-                        dataToRecognize.addLast(new DataContainer(data, beamSize, languageCode1, languageCode2));
+                        dataToRecognize.addLast(new DataContainer(data, beamSize, language1, language2));
                         if (dataToRecognize.size() >= 1 && !recognizing) {
                             recognize();
                         }
@@ -397,7 +429,7 @@ public class Recognizer extends NeuralNetworkApi {
                     float[] outputValues2 = null;
                     int batchSize = 1;
 
-                    if(data.languageCode2 != null){
+                    if(data.language2 != null){
                         batchSize = 2;
                     }
 
@@ -434,10 +466,10 @@ public class Recognizer extends NeuralNetworkApi {
                     boolean isFirstIteration = true;  //It is used to avoid closing initialResult
                     int j = 1;
                     //first we run the decoder with the first 3 fixed values (START_TOKEN_ID, languageID, TRANSCRIBE_TOKEN_ID, NO_TIMESTAMPS_TOKEN_ID)
-                    int languageID = getLanguageID(data.languageCode);
+                    int languageID = getLanguageID(data.language.getCompleteCode());
                     int languageID2 = -1;
                     if(batchSize == 2){
-                        languageID2 = getLanguageID(data.languageCode2);
+                        languageID2 = getLanguageID(data.language2.getCompleteCode());
                     }
                     int[] decoderInitialInputIDs = {START_TOKEN_ID, languageID, TRANSCRIBE_TOKEN_ID, NO_TIMESTAMPS_TOKEN_ID};
                     int[] decoderInitialInputIDs2 = {START_TOKEN_ID, languageID2, TRANSCRIBE_TOKEN_ID, NO_TIMESTAMPS_TOKEN_ID};
@@ -562,11 +594,16 @@ public class Recognizer extends NeuralNetworkApi {
                             finalText = ((String[][]) finalTextResult)[0][0];
                             detokenizerOutputs.close();
                         }
-                        android.util.Log.i("result", "result: " + correctText(finalText));
+
+                        finalText = correctText(finalText);
+                        if(data.language.getISO3Country().equalsIgnoreCase("TWN")){
+                            //we translate the result from simplified Chinese to traditional
+                            finalText = ZhConverterUtil.toTraditional(finalText);
+                        }
+                        android.util.Log.i("result", "result: " + finalText);
                         android.util.Log.i("score", "score: " + outputProbability1);
 
-                        outputs.close();
-                        notifyResult(correctText(finalText), data.languageCode, outputProbability1, true);
+                        notifyResult(finalText, data.language, outputProbability1, true);
 
                     }else{
                         String firstText = UNDEFINED_TEXT;
@@ -590,12 +627,23 @@ public class Recognizer extends NeuralNetworkApi {
                             detokenizerOutputs2.close();
                         }
 
-                        android.util.Log.i("result", "result 1: " + correctText(firstText));
-                        android.util.Log.i("result", "result 2: " + correctText(secondText));
+                        firstText = correctText(firstText);
+                        if(data.language.getISO3Country().equalsIgnoreCase("TWN")){
+                            //we translate the result from simplified Chinese to traditional
+                            firstText = ZhConverterUtil.toTraditional(firstText);
+                        }
+                        secondText = correctText(secondText);
+                        if(data.language2.getISO3Country().equalsIgnoreCase("TWN")){
+                            //we translate the result from simplified Chinese to traditional
+                            secondText = ZhConverterUtil.toTraditional(secondText);
+                        }
+
+                        android.util.Log.i("result", "result 1: " + firstText);
+                        android.util.Log.i("result", "result 2: " + secondText);
                         android.util.Log.i("result", "score 1: " + outputProbability1);
                         android.util.Log.i("result", "score 2: " + outputProbability2);
 
-                        notifyMultiResult(correctText(firstText), data.languageCode, outputProbability1, correctText(secondText), data.languageCode2, outputProbability2);
+                        notifyMultiResult(firstText, data.language, outputProbability1, secondText, data.language2, outputProbability2);
                     }
                     //closing all results
                     outputs.close();
@@ -710,6 +758,9 @@ public class Recognizer extends NeuralNetworkApi {
     }
 
     public int getLanguageID(String language){
+        if(language.length() > 2){
+            language = getWhisperLanguageCode(language);
+        }
         for (int i = 0; i < LANGUAGES.length; i++) {
             if (LANGUAGES[i].equals(language)) {
                 return START_TOKEN_ID + i + 1;
@@ -735,15 +786,15 @@ public class Recognizer extends NeuralNetworkApi {
         multiCallbacks.remove(callback);
     }
 
-    private void notifyResult(String text, String languageCode, double confidenceScore, boolean isFinal) {
+    private void notifyResult(String text, CustomLocale language, double confidenceScore, boolean isFinal) {
         for (int i = 0; i < callbacks.size(); i++) {
-            callbacks.get(i).onSpeechRecognizedResult(text, languageCode, confidenceScore, isFinal);
+            callbacks.get(i).onSpeechRecognizedResult(text, language, confidenceScore, isFinal);
         }
     }
 
-    private void notifyMultiResult(String text1, String languageCode1, double confidenceScore1, String text2, String languageCode2, double confidenceScore2) {
+    private void notifyMultiResult(String text1, CustomLocale language1, double confidenceScore1, String text2, CustomLocale language2, double confidenceScore2) {
         for (int i = 0; i < multiCallbacks.size(); i++) {
-            multiCallbacks.get(i).onSpeechRecognizedResult(text1, languageCode1, confidenceScore1, text2, languageCode2, confidenceScore2);
+            multiCallbacks.get(i).onSpeechRecognizedResult(text1, language1, confidenceScore1, text2, language2, confidenceScore2);
         }
     }
 
@@ -759,21 +810,21 @@ public class Recognizer extends NeuralNetworkApi {
 
     private static class DataContainer{
         private float[] data;
-        private String languageCode;
-        private String languageCode2;
+        private CustomLocale language;
+        private CustomLocale language2;
         private int beamSize;
 
-        private DataContainer(float[] data, int beamSize, String languageCode){
+        private DataContainer(float[] data, int beamSize, CustomLocale language){
             this.data = data;
             this.beamSize = beamSize;
-            this.languageCode = languageCode;
+            this.language = language;
         }
 
-        private DataContainer(float[] data, int beamSize, String languageCode, String languageCode2){
+        private DataContainer(float[] data, int beamSize, CustomLocale language1, CustomLocale language2){
             this.data = data;
             this.beamSize = beamSize;
-            this.languageCode = languageCode;
-            this.languageCode2 = languageCode2;
+            this.language = language1;
+            this.language2 = language2;
         }
     }
 }

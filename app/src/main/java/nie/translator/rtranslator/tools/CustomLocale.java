@@ -17,6 +17,7 @@
 package nie.translator.rtranslator.tools;
 
 import android.content.Context;
+import android.icu.util.ULocale;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -127,8 +128,13 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
         return locale.toLanguageTag();
     }
 
-    public String getISO3Language() throws MissingResourceException {
-        /**
+    /**
+     * This method returns the ISO3 language code of this CustomLocale.
+     * @return ISO3 language code
+     * @throws MissingResourceException
+     */
+    public String getCode() throws MissingResourceException {
+        /*
          * This method is cached because locale.getISO3Language() is a relatively heavy operation (circa 0.5 ms),
          * and without cache this can impact the performance where this method
          * is called for operations regarding a lot of languages (> 400), for example in the languages list dialogs.
@@ -139,13 +145,17 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
         return cachedIso3Language;
     }
 
-    public String getISO3Country() throws MissingResourceException {
-        return locale.getISO3Country();
+    public String getISO3Country() {
+        try {
+            return locale.getISO3Country();
+        }catch (Exception e){
+            return "";
+        }
     }
 
-    public String getCode() {
-        final StringBuilder language = new StringBuilder(locale.getLanguage());
-        final String country = locale.getCountry();
+    public String getCompleteCode() {
+        final StringBuilder language = new StringBuilder(locale.getISO3Language());
+        final String country = locale.getISO3Country();
         if (!TextUtils.isEmpty(country)) {
             language.append("-");
             language.append(country);
@@ -154,7 +164,7 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     }
 
     public String getDisplayLanguage() {
-        return locale.getDisplayLanguage();
+        return locale.getDisplayName();
     }
 
     public String getDisplayLanguage(Locale locale) {
@@ -195,24 +205,36 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     }
 
     public String getDisplayName() {
+        return getDisplayName(true);
+    }
+
+    public String getDisplayName(boolean showVariant) {
         /**
          * This method is cached because locale.getDisplayName() and the conversion of the first letter to uppercase, together,
          * are relatively heavy operations (circa 1 ms), and without cache this can impact the performance where this method
          * is called for operations regarding a lot of languages (> 400), for example in the languages list dialogs.
          */
-        if (cachedDisplayName != null) {
+        if (cachedDisplayName != null && showVariant) {
             return cachedDisplayName;
         }
 
         String name = locale.getDisplayName();
+        if(showVariant) {
+            // for Chinese we distinguish the variants
+            if (getCompleteCode().equals("zho")) {
+                name = ULocale.forLanguageTag("zh-Hans").getDisplayName();
+            } else if (getCompleteCode().equals("zho-TWN")) {
+                name = ULocale.forLanguageTag("zh-Hant").getDisplayName();
+            }
+        }
         if(name.length() <= 3){  //if the name of the language is not provided by the locale (in this case we will have the 3 letter language code)
             int resId = context != null ?
-                    context.getResources().getIdentifier(getISO3Language(), "string", context.getPackageName())
+                    context.getResources().getIdentifier(getCode(), "string", context.getPackageName())
                     : 0;
             if(resId != 0){
                 name = context.getString(resId);
             }else{
-                name = locale.getDisplayName(new Locale("en"));
+                name = locale.getDisplayName(new Locale("eng"));
             }
         }
         if (!name.isEmpty()) {
@@ -242,16 +264,16 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof CustomLocale) {
             CustomLocale locale = (CustomLocale) obj;
-            if (equalsLanguage(locale) && getCountry() != null && locale.getCountry() != null) {  // if the language matches and the country is present in both
-                return getCountry().equals(locale.getCountry());
+            if (equalsLanguage(locale)) {  //compare of the languages
+                return getCountry().equals(locale.getCountry());  //we compare also the countries (if they are both undefined they will be equal)
             }
         }
         return false;
     }
 
     public boolean equalsLanguage(CustomLocale locale) {
-        if (getLanguage() != null && locale != null && locale.getLanguage() != null) {
-            return getISO3Language().equals(locale.getISO3Language());
+        if (getCode() != null && locale != null && locale.getCode() != null) {
+            return getCode().equals(locale.getCode());
         } else {
             return false;
         }
@@ -296,6 +318,6 @@ public class CustomLocale implements Comparable<CustomLocale>, Serializable {
 
     private void initCacheValues(){
         getDisplayName();
-        getISO3Language();
+        getCode();
     }
 }

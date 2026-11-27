@@ -17,190 +17,241 @@
 
 <languages>
     <language>
-        <code>ar</code>
+        <code>ara</code>
+        <code_mozilla>ar</code_mozilla>
         <size>48500</size>
     </language>
     <language>
-        <code>bg</code>
+        <code>bul</code>
+        <code_mozilla>bg</code_mozilla>
         <size>48100</size>
     </language>
     <language>
-        <code>bn</code>
+        <code>ben</code>
+        <code_mozilla>bn</code_mozilla>
         <size>28800</size>
     </language>
     <language>
-        <code>ca</code>
+        <code>cat</code>
+        <code_mozilla>ca</code_mozilla>
         <size>48700</size>
     </language>
     <language>
-        <code>cs</code>
+        <code>ces</code>
+        <code_mozilla>cs</code_mozilla>
         <size>48900</size>
     </language>
     <language>
-        <code>da</code>
+        <code>dan</code>
+        <code_mozilla>da</code_mozilla>
         <size>28400</size>
     </language>
     <language>
-        <code>de</code>
+        <code>deu</code>
+        <code_mozilla>de</code_mozilla>
         <size>48800</size>
     </language>
     <language>
-        <code>el</code>
+        <code>ell</code>
+        <code_mozilla>el</code_mozilla>
         <size>28200</size>
     </language>
     <language>
-        <code>es</code>
+        <code>spa</code>
+        <code_mozilla>es</code_mozilla>
         <size>49200</size>
     </language>
     <language>
-        <code>et</code>
+        <code>est</code>
+        <code_mozilla>et</code_mozilla>
         <size>48400</size>
     </language>
     <language>
-        <code>eu</code>
+        <code>eus</code>
+        <code_mozilla>eu</code_mozilla>
         <size>48300</size>
     </language>
     <language>
-        <code>fa</code>
+        <code>fas</code>
+        <code_mozilla>fa</code_mozilla>
         <size>29200</size>
     </language>
     <language>
-        <code>fi</code>
+        <code>fin</code>
+        <code_mozilla>fi</code_mozilla>
         <size>48400</size>
     </language>
     <language>
-        <code>fr</code>
+        <code>fra</code>
+        <code_mozilla>fr</code_mozilla>
         <size>49600</size>
     </language>
     <language>
-        <code>gl</code>
+        <code>glg</code>
+        <code_mozilla>gl</code_mozilla>
         <size>48700</size>
     </language>
     <language>
-        <code>gu</code>
+        <code>guj</code>
+        <code_mozilla>gu</code_mozilla>
         <size>28600</size>
     </language>
     <language>
-        <code>he</code>
+        <code>heb</code>
+        <code_mozilla>he</code_mozilla>
         <size>29200</size>
     </language>
     <language>
-        <code>hi</code>
+        <code>hin</code>
+        <code_mozilla>hi</code_mozilla>
         <size>28900</size>
     </language>
     <language>
-        <code>hu</code>
+        <code>hun</code>
+        <code_mozilla>hu</code_mozilla>
         <size>40300</size>
     </language>
     <language>
-        <code>id</code>
+        <code>ind</code>
+        <code_mozilla>id</code_mozilla>
         <size>28400</size>
     </language>
     <language>
-        <code>is</code>
+        <code>isl</code>
+        <code_mozilla>is</code_mozilla>
         <size>48300</size>
     </language>
     <language>
-        <code>it</code>
+        <code>ita</code>
+        <code_mozilla>it</code_mozilla>
         <size>50300</size>
     </language>
     <language>
-        <code>ja</code>
+        <code>jpn</code>
+        <code_mozilla>ja</code_mozilla>
         <size>80900</size>
     </language>
     <language>
-        <code>kn</code>
+        <code>kan</code>
+        <code_mozilla>kn</code_mozilla>
         <size>29100</size>
     </language>
     <language>
-        <code>ko</code>
+        <code>kor</code>
+        <code_mozilla>ko</code_mozilla>
         <size>93600</size>
     </language>
     <language>
-        <code>lt</code>
+        <code>lit</code>
+        <code_mozilla>lt</code_mozilla>
         <size>38400</size>
     </language>
     <language>
-        <code>lv</code>
+        <code>lav</code>
+        <code_mozilla>lv</code_mozilla>
         <size>39200</size>
     </language>
     <language>
-        <code>ml</code>
+        <code>mal</code>
+        <code_mozilla>ml</code_mozilla>
         <size>28500</size>
     </language>
     <language>
-        <code>ms</code>
+        <code>msa</code>
+        <code_mozilla>ms</code_mozilla>
         <size>29200</size>
     </language>
     <language>
-        <code>nb</code>
+        <code>nob</code>
+        <code_mozilla>nb</code_mozilla>
         <size>29800</size>
     </language>
     <language>
-        <code>nl</code>
+        <code>nld</code>
+        <code_mozilla>nl</code_mozilla>
         <size>49200</size>
     </language>
     <language>
-        <code>no</code>
+        <code>nor</code>
+        <code_mozilla>no</code_mozilla>
         <size>29800</size>
     </language>
     <language>
-        <code>pl</code>
+        <code>pol</code>
+        <code_mozilla>pl</code_mozilla>
         <size>48100</size>
     </language>
     <language>
-        <code>pt</code>
+        <code>por</code>
+        <code_mozilla>pt</code_mozilla>
         <size>49100</size>
     </language>
     <language>
-        <code>ro</code>
+        <code>ron</code>
+        <code_mozilla>ro</code_mozilla>
         <size>28300</size>
     </language>
     <language>
-        <code>ru</code>
+        <code>rus</code>
+        <code_mozilla>ru</code_mozilla>
         <size>45300</size>
     </language>
     <language>
-        <code>sk</code>
+        <code>slk</code>
+        <code_mozilla>sk</code_mozilla>
         <size>38700</size>
     </language>
     <language>
-        <code>sl</code>
+        <code>slv</code>
+        <code_mozilla>sl</code_mozilla>
         <size>48700</size>
     </language>
     <language>
-        <code>sv</code>
+        <code>swe</code>
+        <code_mozilla>sv</code_mozilla>
         <size>29100</size>
     </language>
     <language>
-        <code>ta</code>
+        <code>tam</code>
+        <code_mozilla>ta</code_mozilla>
         <size>49100</size>
     </language>
     <language>
-        <code>te</code>
+        <code>tel</code>
+        <code_mozilla>te</code_mozilla>
         <size>28900</size>
     </language>
     <language>
-        <code>th</code>
+        <code>tha</code>
+        <code_mozilla>th</code_mozilla>
         <size>48300</size>
     </language>
     <language>
-        <code>tr</code>
+        <code>tur</code>
+        <code_mozilla>tr</code_mozilla>
         <size>28900</size>
     </language>
     <language>
-        <code>uk</code>
+        <code>ukr</code>
+        <code_mozilla>uk</code_mozilla>
         <size>37900</size>
     </language>
     <language>
-        <code>vi</code>
+        <code>vie</code>
+        <code_mozilla>vi</code_mozilla>
         <size>40100</size>
     </language>
     <language>
-        <code>zh</code>
+        <code>zho</code>
+        <code_mozilla>zh</code_mozilla>
+        <size>82600</size>
+    </language>
+    <language>
+        <code>zho-TWN</code>
+        <code_mozilla>zh</code_mozilla>
         <size>82600</size>
     </language>
     <!--<language>
-        <code>zh_hant</code>
+        <code_mozilla>zh_hant</code_mozilla>
     </language> todo: make traditional chinese model work -->
 </languages>

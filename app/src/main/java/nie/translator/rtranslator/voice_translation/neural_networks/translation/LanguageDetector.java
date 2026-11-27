@@ -5,6 +5,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.github.houbb.opencc4j.util.ZhConverterUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,7 +22,6 @@ public class LanguageDetector {
     static {
         System.loadLibrary("fasttext-lib");
     }
-
 
     private static final String TAG = "LanguageDetector";
     private static final String MODEL_FILE_NAME = "fasttext.ftz";
@@ -73,9 +74,9 @@ public class LanguageDetector {
                         if(TextTools.countWords(normalizedText) == 1){
                             //we use specialWordsLanguages mapping
                             String langCode = identifySpecialWordLanguage(normalizedText);
-                            if(!langCode.equals("und")){
+                            if(!langCode.equalsIgnoreCase("und")){
                                 for (CustomLocale lang: languages) {
-                                    if(lang.getISO3Language().equals(langCode)){
+                                    if(lang.getCode().equalsIgnoreCase(langCode)){
                                         listener.onSuccess(langCode);
                                         return;
                                     }
@@ -84,14 +85,28 @@ public class LanguageDetector {
                             //we use dictionaries for detection
                             for (CustomLocale language: languages) {
                                 if(DictionaryTranslator.containsWord(context, normalizedText, language)){
-                                    listener.onSuccess(language.getISO3Language());
+                                    if(language.getCode().equalsIgnoreCase("zho")) {  // eventual chinese variant recognition
+                                        String chineseCode = getChineseVariant(text, languages);
+                                        if(!chineseCode.equals("und")){
+                                            listener.onSuccess(chineseCode);
+                                            return;
+                                        }
+                                    }
+                                    listener.onSuccess(language.getCode());
                                     return;
                                 }
                             }
                         }
                         // we use Lingua for detection
-                        String langCode = languageResourcesManager.detectLanguageWithLingua(text);
-                        if(!langCode.equals("und")){
+                        String langCode = languageResourcesManager.detectLanguageWithLingua(text, languages);
+                        if(!langCode.equalsIgnoreCase("und")){
+                            if(langCode.equalsIgnoreCase("zho")) {  // eventual chinese variant recognition
+                                String chineseCode = getChineseVariant(text, languages);
+                                if(!chineseCode.equals("und")){
+                                    listener.onSuccess(chineseCode);
+                                    return;
+                                }
+                            }
                             listener.onSuccess(langCode);
                             return;
                         }
@@ -100,6 +115,13 @@ public class LanguageDetector {
                     if(wordsCount <= 1) {
                         long time = System.currentTimeMillis();
                         String langCode = predictLanguage(nativePtr, text, confidenceThreshold);
+                        if(langCode.equalsIgnoreCase("zho")) {  // eventual chinese variant recognition
+                            String chineseCode = getChineseVariant(text, languages);
+                            if(!chineseCode.equals("und")){
+                                listener.onSuccess(chineseCode);
+                                return;
+                            }
+                        }
                         android.util.Log.i("lid_performance", "FastText language identification done in: " + (System.currentTimeMillis() - time) + "ms");
                         listener.onSuccess(langCode);
                         return;
@@ -136,6 +158,30 @@ public class LanguageDetector {
             release(nativePtr);
             nativePtr = 0;
         }
+    }
+
+    private String getChineseVariant(String text, CustomLocale[] languages){
+        boolean containsSimplifiedChinese = false;
+        boolean containsTraditionChinese = false;
+        for (CustomLocale lang : languages) {
+            if (lang.getCompleteCode().equalsIgnoreCase("zho-TWN")) {
+                containsTraditionChinese = true;
+            } else if (lang.getCompleteCode().equalsIgnoreCase("zho")) {
+                containsSimplifiedChinese = true;
+            }
+        }
+        if(containsSimplifiedChinese && containsTraditionChinese){
+            if(ZhConverterUtil.isTraditional(text)){
+                return "zho-TWN";
+            }else{
+                return "zho";
+            }
+        } else if(containsTraditionChinese) {
+            return "zho-TWN";
+        }else if(containsSimplifiedChinese){
+            return "zho";
+        }
+        return "und";
     }
 
 

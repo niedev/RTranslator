@@ -48,8 +48,8 @@ public class BergamotTranslator {
     }
 
     public static void loadModelIntoCache(Context context, CustomLocale lang) throws Exception{
-        String langCode = lang.getLanguage();
-        if(!Objects.equals(langCode, "en")) {
+        String langCode = lang.getCode();
+        if(!Objects.equals(langCode, "eng")) {
             String toEngCfg = modelConfigGeneration(context, langCode, ModelType.TO_ENGLISH);
             String fromEngCfg = modelConfigGeneration(context, langCode, ModelType.FROM_ENGLISH);
             loadModelIntoCacheNative(toEngCfg, fromEngCfg, langCode);
@@ -57,11 +57,11 @@ public class BergamotTranslator {
     }
 
     public static void unloadModelFromCache(CustomLocale lang){
-        unloadModelFromCacheNative(lang.getLanguage());
+        unloadModelFromCacheNative(lang.getCode());
     }
 
     public static String[] translateMultiple(String[] inputs, CustomLocale srcLang, CustomLocale trgLang) {
-        return translateMultipleNative(inputs, srcLang.getLanguage(), trgLang.getLanguage());
+        return translateMultipleNative(inputs, srcLang.getCode(), trgLang.getCode());
     }
 
     public static void cleanup(){
@@ -69,7 +69,8 @@ public class BergamotTranslator {
     }
 
     //todo: aggiungere una vera gestione degli errori (basata sulle eccezioni)
-    private static String modelConfigGeneration(Context context, String lang, ModelType modelType) throws Exception{
+    private static String modelConfigGeneration(Context context, String langISO3, ModelType modelType) throws Exception{
+        String lang = Translator.getMozillaLanguageCode(langISO3);
         String basePath;
         if(Global.USE_EXTERNAL_MEMORY_FOR_RESOURCES){
             basePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/models/" + "Translation/Mozilla/";

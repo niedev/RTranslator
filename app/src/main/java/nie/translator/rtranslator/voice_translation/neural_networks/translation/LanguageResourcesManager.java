@@ -206,7 +206,7 @@ public class LanguageResourcesManager {
                 currentModeResources[1] != null &&
                 !(currentModeResources[0].equals(srcLang) && currentModeResources[1].equals(tgtLang)) &&
                 !languageResourcesIndicator.isResourcePairContainedInOtherModes(currentModeResources[0], currentModeResources[1], rtranslatorMode)) {
-            tatoebaLinks.remove(currentModeResources[0].getISO3Language() + "-" + currentModeResources[1].getISO3Language());
+            tatoebaLinks.remove(currentModeResources[0].getCode() + "-" + currentModeResources[1].getCode());
         }
         //we load all the resources of the new languages that are not already loaded
         performLoadLanguageResources(srcLang, tgtLang, rtranslatorMode);
@@ -253,7 +253,7 @@ public class LanguageResourcesManager {
             if (resource != null &&
                     !(resource.equals(tgtLang)) &&
                     !languageResourcesIndicator.isResourcePairContainedInOtherModes(srcResource, resource, Global.RTranslatorMode.CONVERSATION_MODE)) {
-                tatoebaLinks.remove(srcResource.getISO3Language() + "-" + resource.getISO3Language());
+                tatoebaLinks.remove(srcResource.getCode() + "-" + resource.getCode());
             }
         }
         //we load the new resources if are is not already loaded
@@ -305,7 +305,7 @@ public class LanguageResourcesManager {
                 !languageResourcesIndicator.isResourcePairContainedInOtherPeers(srcLang, tgtLang, peer) &&
                 !languageResourcesIndicator.isResourcePairContainedInOtherModes(resource, tgtLang, Global.RTranslatorMode.CONVERSATION_MODE
                 )) {
-            tatoebaLinks.remove(resource.getISO3Language() + "-" + tgtLang.getISO3Language());
+            tatoebaLinks.remove(resource.getCode() + "-" + tgtLang.getCode());
         }
         //we load all the resources of the new languages that are not already loaded
         performLoadLanguageResources(srcLang, tgtLang, Global.RTranslatorMode.CONVERSATION_MODE);
@@ -348,7 +348,7 @@ public class LanguageResourcesManager {
         if (resource != null &&
                 !(resource.equals(tgtLang)) &&
                 !languageResourcesIndicator.isResourcePairContainedInOtherModes(resource, tgtLang, Global.RTranslatorMode.CONVERSATION_MODE)) {
-            tatoebaLinks.remove(resource.getISO3Language() + "-" + tgtLang.getISO3Language());
+            tatoebaLinks.remove(resource.getCode() + "-" + tgtLang.getCode());
         }
         //we update the indicator to reflect the new models status
         conversationSrcResources.remove(peer.getUniqueName());
@@ -374,7 +374,7 @@ public class LanguageResourcesManager {
         for(CustomLocale srcResource: languageResourcesIndicator.conversationSrcResources.values()) {
             if (srcResource != null &&
                     !languageResourcesIndicator.isResourcePairContainedInOtherModes(srcResource, tgtLang, Global.RTranslatorMode.CONVERSATION_MODE)) {
-                tatoebaLinks.remove(srcResource.getISO3Language() + "-" + tgtLang.getISO3Language());
+                tatoebaLinks.remove(srcResource.getCode() + "-" + tgtLang.getCode());
             }
         }
         // unload of the mozilla models of conversationTgtResource (all tatoeba resources have already been removed in the loop above)
@@ -413,9 +413,22 @@ public class LanguageResourcesManager {
         return tatoebaDb;
     }
 
-    public String detectLanguageWithLingua(String text){
+    public String detectLanguageWithLingua(String text, CustomLocale[] languages){
         if (linguaLanguageDetector == null || text == null || text.trim().isEmpty()) {
             return "und";
+        }else{
+            int supportedLanguagesCount = 0;
+            for(Language languageLingua : linguaLanguageDetector.getLanguages$lingua()){
+                for(CustomLocale language: languages){
+                    if(language.getCode().equalsIgnoreCase(languageLingua.getIsoCode639_3().toString())){
+                        supportedLanguagesCount++;
+                    }
+                }
+            }
+            if(supportedLanguagesCount < 2){
+                Log.e("lingua_lid", "Lingua skipped, too few supported languages");
+                return "und";
+            }
         }
 
         try {
@@ -512,46 +525,46 @@ public class LanguageResourcesManager {
     }
 
     private void performLoadLanguageResources(@NonNull CustomLocale srcLang, @NonNull CustomLocale tgtLang, Global.RTranslatorMode rtranslatorMode) throws Exception {
-        Log.d("lang_res", "Language pair loaded: "+srcLang.getLanguage() +" - "+tgtLang.getLanguage());
+        Log.d("lang_res", "Language pair loaded: "+srcLang.getCode() +" - "+tgtLang.getCode());
         long initTime = System.currentTimeMillis();
         long time = System.currentTimeMillis();
         if(isMozillaEnabled(rtranslatorMode)){
-            if (!srcLang.getLanguage().equals("en")) {
+            if (!srcLang.getCode().equals("eng")) {
                 BergamotTranslator.loadModelIntoCache(global, srcLang);
             }
-            if (!tgtLang.getLanguage().equals("en")) {
+            if (!tgtLang.getCode().equals("eng")) {
                 BergamotTranslator.loadModelIntoCache(global, tgtLang);
             }
-            Log.d("perf_lang_res", "Mozilla loading for "+srcLang.getLanguage() +" - "+tgtLang.getLanguage() +" in "+(System.currentTimeMillis()-time)+" ms");
+            Log.d("perf_lang_res", "Mozilla loading for "+srcLang.getCode() +" - "+tgtLang.getCode() +" in "+(System.currentTimeMillis()-time)+" ms");
         }
         if(useTranslationDictionaries || rtranslatorMode == Global.RTranslatorMode.WALKIE_TALKIE_MODE){  // WalkieTalkie mode must always have dicts loaded for LID
             time = System.currentTimeMillis();
-            if (!srcLang.getISO3Language().equals("eng")) {
+            if (!srcLang.getCode().equals("eng")) {
                 DictionaryTranslator.loadDictionary(global, srcLang);
             }
-            if (!tgtLang.getISO3Language().equals("eng")) {
+            if (!tgtLang.getCode().equals("eng")) {
                 DictionaryTranslator.loadDictionary(global, tgtLang);
             }
-            Log.d("perf_lang_res", "Dicts loading for "+srcLang.getLanguage() +" - "+tgtLang.getLanguage() +" in "+(System.currentTimeMillis()-time)+" ms");
+            Log.d("perf_lang_res", "Dicts loading for "+srcLang.getCode() +" - "+tgtLang.getCode() +" in "+(System.currentTimeMillis()-time)+" ms");
         }
         if(useTatoeba){
             time = System.currentTimeMillis();
-            String langPairCode = srcLang.getISO3Language() + "-" + tgtLang.getISO3Language();
+            String langPairCode = srcLang.getCode() + "-" + tgtLang.getCode();
             if(!tatoebaLinks.containsKey(langPairCode)){
-                LinksData.DataMap links = tatoebaDb.getLinkData(srcLang.getISO3Language(), tgtLang.getISO3Language());
+                LinksData.DataMap links = tatoebaDb.getLinkData(srcLang.getCode(), tgtLang.getCode());
                 tatoebaLinks.put(
                         langPairCode,
                         links
                 );
             }
-            Log.d("perf_lang_res", "Tatoeba loading for "+srcLang.getLanguage() +" - "+tgtLang.getLanguage() +" in "+(System.currentTimeMillis()-time)+" ms");
+            Log.d("perf_lang_res", "Tatoeba loading for "+srcLang.getCode() +" - "+tgtLang.getCode() +" in "+(System.currentTimeMillis()-time)+" ms");
         }
         //load of lingua resources for language detection in walkieTalkie mode
         if(rtranslatorMode == Global.RTranslatorMode.WALKIE_TALKIE_MODE) {
             time = System.currentTimeMillis();
             if(linguaLanguageDetector != null) linguaLanguageDetector.unloadLanguageModels();
             linguaLanguageDetector = buildDetectorFromLocales(new CustomLocale[]{srcLang, tgtLang});
-            Log.d("perf_lang_res", "Lingua LID loading for "+srcLang.getLanguage() +" - "+tgtLang.getLanguage() +" in "+(System.currentTimeMillis()-time)+" ms");
+            Log.d("perf_lang_res", "Lingua LID loading for "+srcLang.getCode() +" - "+tgtLang.getCode() +" in "+(System.currentTimeMillis()-time)+" ms");
         }
         Log.d("perf_lang_res", "Resources loaded in: "+(System.currentTimeMillis()-initTime));
     }
@@ -563,7 +576,7 @@ public class LanguageResourcesManager {
         for (CustomLocale locale : locales) {
             try {
                 // Explicitly fetching the 3-letter ISO code string
-                String upperCaseLanguage = locale.getISO3Language().toUpperCase(Locale.ROOT);
+                String upperCaseLanguage = locale.getCode().toUpperCase(Locale.ROOT);
                 IsoCode639_3 code = IsoCode639_3.valueOf(upperCaseLanguage);
 
                 // Prevent duplicate entries in our config list

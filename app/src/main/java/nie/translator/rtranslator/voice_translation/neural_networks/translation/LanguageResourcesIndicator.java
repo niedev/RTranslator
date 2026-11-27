@@ -52,13 +52,13 @@ public class LanguageResourcesIndicator {
     public ArrayList<String> getAllUniqueResourcePairs(){
         ArrayList<String> pairs = new ArrayList<>();
         if(textTranslationResources[0] != null && textTranslationResources[1] != null){
-            String pairCode = textTranslationResources[0].getISO3Language()+"-"+textTranslationResources[1].getISO3Language();
+            String pairCode = textTranslationResources[0].getCode()+"-"+textTranslationResources[1].getCode();
             if(!pairs.contains(pairCode)){
                 pairs.add(pairCode);
             }
         }
         if(walkieTalkieResources[0] != null && walkieTalkieResources[1] != null){
-            String pairCode = walkieTalkieResources[0].getISO3Language()+"-"+walkieTalkieResources[1].getISO3Language();
+            String pairCode = walkieTalkieResources[0].getCode()+"-"+walkieTalkieResources[1].getCode();
             if(!pairs.contains(pairCode)){
                 pairs.add(pairCode);
             }
@@ -66,7 +66,7 @@ public class LanguageResourcesIndicator {
         if(conversationTgtResource != null) {
             for (CustomLocale srcResource : conversationSrcResources.values()) {
                 if (srcResource != null) {
-                    String pairCode = srcResource.getISO3Language()+"-"+conversationTgtResource.getISO3Language();
+                    String pairCode = srcResource.getCode()+"-"+conversationTgtResource.getCode();
                     if(!pairs.contains(pairCode)){
                         pairs.add(pairCode);
                     }
@@ -91,7 +91,7 @@ public class LanguageResourcesIndicator {
         if(conversationTgtResource != null) {
             for (CustomLocale srcResource : conversationSrcResources.values()) {
                 if (srcResource != null) {
-                    String pairCode = srcResource.getISO3Language()+"-"+conversationTgtResource.getISO3Language();
+                    String pairCode = srcResource.getCode()+"-"+conversationTgtResource.getCode();
                     if(!pairs.contains(pairCode)){
                         pairs.add(pairCode);
                     }
@@ -136,8 +136,8 @@ public class LanguageResourcesIndicator {
     public boolean isResourcePairContainedInOtherModes(CustomLocale srcLang, CustomLocale tgtLang, Global.RTranslatorMode currentMode){
         if(currentMode != Global.RTranslatorMode.TEXT_TRANSLATION_MODE){
             if(textTranslationResources[0] != null && textTranslationResources[1] != null) {
-                String pairCode = srcLang.getISO3Language() + "-" + tgtLang.getISO3Language();
-                String pairCodeResource = textTranslationResources[0].getISO3Language() + "-" + textTranslationResources[1].getISO3Language();
+                String pairCode = srcLang.getCode() + "-" + tgtLang.getCode();
+                String pairCodeResource = textTranslationResources[0].getCode() + "-" + textTranslationResources[1].getCode();
                 if(pairCode.equals(pairCodeResource)) {
                     return true;
                 }
@@ -145,8 +145,8 @@ public class LanguageResourcesIndicator {
         }
         if(currentMode != Global.RTranslatorMode.WALKIE_TALKIE_MODE){
             if(walkieTalkieResources[0] != null && walkieTalkieResources[1] != null) {
-                String pairCode = srcLang.getISO3Language() + "-" + tgtLang.getISO3Language();
-                String pairCodeResource = walkieTalkieResources[0].getISO3Language() + "-" + walkieTalkieResources[1].getISO3Language();
+                String pairCode = srcLang.getCode() + "-" + tgtLang.getCode();
+                String pairCodeResource = walkieTalkieResources[0].getCode() + "-" + walkieTalkieResources[1].getCode();
                 if(pairCode.equals(pairCodeResource)) {
                     return true;
                 }
@@ -155,8 +155,8 @@ public class LanguageResourcesIndicator {
         if(currentMode != Global.RTranslatorMode.CONVERSATION_MODE){
             for (CustomLocale srcResource : conversationSrcResources.values()) {
                 if (srcResource != null && conversationTgtResource != null) {
-                    String pairCode = srcLang.getISO3Language() + "-" + tgtLang.getISO3Language();
-                    String pairCodeResource = srcResource.getISO3Language()+"-"+conversationTgtResource.getISO3Language();
+                    String pairCode = srcLang.getCode() + "-" + tgtLang.getCode();
+                    String pairCodeResource = srcResource.getCode()+"-"+conversationTgtResource.getCode();
                     if(pairCode.equals(pairCodeResource)) {
                         return true;
                     }
@@ -172,8 +172,8 @@ public class LanguageResourcesIndicator {
             CustomLocale value = entry.getValue();
 
             if(!key.equals(peer.getUniqueName()) && value != null && conversationTgtResource != null){
-                String pairCode = srcLang.getISO3Language() + "-" + tgtLang.getISO3Language();
-                String pairCodeResource = value.getISO3Language()+"-"+conversationTgtResource.getISO3Language();
+                String pairCode = srcLang.getCode() + "-" + tgtLang.getCode();
+                String pairCodeResource = value.getCode()+"-"+conversationTgtResource.getCode();
                 if(pairCode.equals(pairCodeResource)) {
                     return true;
                 }

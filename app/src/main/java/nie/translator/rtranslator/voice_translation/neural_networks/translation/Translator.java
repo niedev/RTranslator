@@ -74,6 +74,7 @@ import nie.translator.rtranslator.tools.nn.Utils;
 import nie.translator.rtranslator.voice_translation._conversation_mode._conversation.ConversationMessage;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApiResult;
+import com.github.houbb.opencc4j.util.ZhConverterUtil;
 
 
 public class Translator extends NeuralNetworkApi {
@@ -86,6 +87,7 @@ public class Translator extends NeuralNetworkApi {
     public static final int HY_MT = 8;
     public static final int TATOEBA = 9;
     public static final int DICTIONARIES = 10;
+    public static final int MAX_SYNONYMS = 5;
     private int mode = -1;
     private Tokenizer tokenizer;
     private OrtEnvironment onnxEnv;
@@ -95,7 +97,9 @@ public class Translator extends NeuralNetworkApi {
     private OrtSession embedAndLmHeadSession;
     private OrtSession embedSession;
     private LanguageDetector languageDetector;
-    private final Map<String, String> nllbLanguagesCodes = new HashMap<>();
+    private static final Map<String, String> nllbLanguagesCodes = new HashMap<>();
+    private static final Map<String, String> madladLanguagesCodes = new HashMap<>();
+    private static final Map<String, String> mozillaLanguagesCodes = new HashMap<>();
     private final Map<String, HyLanguageInfo> hyLanguagesInfo = new HashMap<>();
     private static final double EOS_PENALTY = 0.0;
     private static final double WORD_REWARD = 0.5;  //When this is > 0 the LENGTH_ALPHA should be 0, deactivating length normalization, because this already do that job, but it can also generate positive scores, which will break classic length normalization
@@ -128,7 +132,7 @@ public class Translator extends NeuralNetworkApi {
     public Translator(@NonNull Global global, int mode, boolean useMozillaForVoiceTranslation, boolean useTatoeba, boolean useTranslationDicts, GeneralListener initListener) {
         this.global = global;
         mainHandler = new android.os.Handler(Looper.getMainLooper());
-        initializeNllbLanguagesCodes(global);
+
         initializeHyLanguagesInfo(global);
 
         setTranslationStatus(mode, useMozillaForVoiceTranslation, useTatoeba, useTranslationDicts, initListener);
@@ -387,7 +391,7 @@ public class Translator extends NeuralNetworkApi {
     }
 
     public abstract static class TranslateListener extends TranslatorListener {
-        public static enum ResultType {
+        public enum ResultType {
             NORMAL,
             TATOEBA,
             DICTIONARY
@@ -525,7 +529,7 @@ public class Translator extends NeuralNetworkApi {
                     responseListener.onFailure(new int[ErrorCodes.LANGUAGE_UNKNOWN], 0);
                     Log.i("language detection", "Can't identify language.");
                 } else {
-                    result.setLanguage(new CustomLocale(global, languageCode));
+                    result.setLanguage(CustomLocale.getInstance(global, languageCode));
                     responseListener.onDetectedText(result);
                     Log.i("language detection", "Language: " + languageCode);
                 }
@@ -546,7 +550,7 @@ public class Translator extends NeuralNetworkApi {
                     firstResultFailed = true;
                     Log.i("language detection", "Can't identify language.");
                 } else {
-                    firstResult.setLanguage(new CustomLocale(global, languageCode));
+                    firstResult.setLanguage(CustomLocale.getInstance(global, languageCode));
                     Log.i("language detection", "Language: " + languageCode);
                 }
                 detectSecondLanguage(firstResult, secondResult, forceResult, firstResultFailed, languages, responseListener);
@@ -571,7 +575,7 @@ public class Translator extends NeuralNetworkApi {
                     }
                 }else{  //detection of second result success
                     Log.i("language detection", "Language: " + languageCode);
-                    secondResult.setLanguage(new CustomLocale(global, languageCode));
+                    secondResult.setLanguage(CustomLocale.getInstance(global, languageCode));
                     if (firstResultFailed) {  //detection of first result failed
                         responseListener.onDetectedText(firstResult, secondResult, ErrorCodes.FIRST_RESULT_FAIL);
                     }else{    //detection of first result success
@@ -729,6 +733,7 @@ public class Translator extends NeuralNetworkApi {
             boolean isTatoebaResult = false;  //will be true and remain true is one of the splits of the text is translated by tatoeba
             boolean isDictionaryResult = false;  //will be true and remain true only if all the splits of the text are translated by a dictionary
             String[] synonyms = null;
+            TranslateListener.ResultType resultType;
 
             int performMode = mode;
             if(global.isUseMozillaForVoiceTranslation() && (rtranslatorMode == Global.RTranslatorMode.CONVERSATION_MODE || rtranslatorMode == Global.RTranslatorMode.WALKIE_TALKIE_MODE)){
@@ -762,112 +767,155 @@ public class Translator extends NeuralNetworkApi {
             }
 
             //translation execution
-            if(performMode != MOZILLA){
-                int maxLength = 200;
-                if(performMode == NLLB || performMode == NLLB_CACHE){
-                    maxLength = 200;
-                }else if(performMode == MADLAD || performMode == MADLAD_CACHE){
-                    maxLength = 200;  //todo: research the best value for madlad
-                }else if(performMode == HY_MT){
-                    maxLength = 5000;   //todo: research the best value for hy-mt
-                }
-                //we split the input text in sentences
-                ArrayList<String> textSplit = new ArrayList<>();
-                BreakIterator iterator = BreakIterator.getSentenceInstance(inputLanguage.getLocale());
-                iterator.setText(textToTranslate);
-                int start = iterator.first();
-                for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
-                    textSplit.add(textToTranslate.substring(start, end));
-                }
-                //we rejoin separated substrings whose union does not exceed the maximum input size
-                boolean joined = true;
-                while (joined) {
-                    joined = false;
-                    for (int i = 1; i < textSplit.size(); i++) {
-                        int numTokens = tokenize(textSplit.get(i - 1), inputLanguage, outputLanguage, true).getInputIDs().length;
-                        int numTokens2 = tokenize(textSplit.get(i), inputLanguage, outputLanguage, true).getInputIDs().length;
-                        if ((numTokens + numTokens2 < maxLength) || (numTokens2 < 5)) {
-                            textSplit.set(i - 1, textSplit.get(i - 1) + textSplit.get(i));
-                            textSplit.remove(i);
-                            i = i - 1;
-                            joined = true;
-                        }
+            if(!inputLanguage.getCode().equals(outputLanguage.getCode())) {  //if the input and output languages are different
+                if (performMode != MOZILLA) {
+                    int maxLength = 200;
+                    if (performMode == NLLB || performMode == NLLB_CACHE) {
+                        maxLength = 200;
+                    } else if (performMode == MADLAD || performMode == MADLAD_CACHE) {
+                        maxLength = 200;  //todo: research the best value for madlad
+                    } else if (performMode == HY_MT) {
+                        maxLength = 5000;   //todo: research the best value for hy-mt
                     }
-                }
-                android.util.Log.i("result", "Input text splitted in " + textSplit.size() + " subtexts:");
-                for (String subtext : textSplit) {
-                    android.util.Log.i("result", subtext);
-                }
-                android.util.Log.i("performance", "Text split done in: " + (System.currentTimeMillis() - initTime) + "ms");
-
-                final String[] joinedStringOutput = {""};
-                for (int i = 0; i < textSplit.size(); i++) {
-                    String finalSplitResult = null;
-                    if(global.isUseTranslationDictionaries()) {
-                        String[] dictionaryResult = performDictionaryTranslation(textSplit.get(i), inputLanguage, outputLanguage);
-                        if(dictionaryResult != null && dictionaryResult.length > 0) {
-                            finalSplitResult = dictionaryResult[0];
-                            if(textSplit.size() == 1 && dictionaryResult.length > 1){
-                                synonyms = new String[dictionaryResult.length-1];
-                                System.arraycopy(dictionaryResult, 1, synonyms, 0, dictionaryResult.length - 1);
+                    //we split the input text in sentences
+                    ArrayList<String> textSplit = new ArrayList<>();
+                    BreakIterator iterator = BreakIterator.getSentenceInstance(inputLanguage.getLocale());
+                    iterator.setText(textToTranslate);
+                    int start = iterator.first();
+                    for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
+                        textSplit.add(textToTranslate.substring(start, end));
+                    }
+                    //we rejoin separated substrings whose union does not exceed the maximum input size
+                    boolean joined = true;
+                    while (joined) {
+                        joined = false;
+                        for (int i = 1; i < textSplit.size(); i++) {
+                            int numTokens = tokenize(textSplit.get(i - 1), inputLanguage, outputLanguage, true).getInputIDs().length;
+                            int numTokens2 = tokenize(textSplit.get(i), inputLanguage, outputLanguage, true).getInputIDs().length;
+                            if ((numTokens + numTokens2 < maxLength) || (numTokens2 < 5)) {
+                                textSplit.set(i - 1, textSplit.get(i - 1) + textSplit.get(i));
+                                textSplit.remove(i);
+                                i = i - 1;
+                                joined = true;
                             }
                         }
                     }
-                    if(finalSplitResult == null) {
-                        isDictionaryResult = false;  //if this split is not translated by a dictionary we set isDictionaryResult to false
-                        if (global.isUseTatoeba()) {
-                            finalSplitResult = performTatoebaTranslation(textSplit.get(i), inputLanguage, outputLanguage);
-                        }
+                    android.util.Log.i("result", "Input text splitted in " + textSplit.size() + " subtexts:");
+                    for (String subtext : textSplit) {
+                        android.util.Log.i("result", subtext);
+                    }
+                    android.util.Log.i("performance", "Text split done in: " + (System.currentTimeMillis() - initTime) + "ms");
 
+                    final String[] joinedStringOutput = {""};
+                    for (int i = 0; i < textSplit.size(); i++) {
+                        String finalSplitResult = null;
+                        if (global.isUseTranslationDictionaries()) {
+                            String[] dictionaryResult = performDictionaryTranslation(textSplit.get(i), inputLanguage, outputLanguage);
+                            if (dictionaryResult != null && dictionaryResult.length > 0) {
+                                finalSplitResult = dictionaryResult[0];
+                                if (textSplit.size() == 1 && dictionaryResult.length > 1) {
+                                    int numSynonyms = Math.min((dictionaryResult.length - 1), MAX_SYNONYMS);
+                                    synonyms = new String[numSynonyms];
+                                    System.arraycopy(dictionaryResult, 1, synonyms, 0, numSynonyms);
+                                }
+                            }
+                        }
                         if (finalSplitResult == null) {
-                            //we execute translation of the current split using Neural Network
-                            finalSplitResult = performNNTextTranslation(textSplit.get(i), joinedStringOutput, inputLanguage, outputLanguage, beamSize, saveResults, responseListener);
+                            isDictionaryResult = false;  //if this split is not translated by a dictionary we set isDictionaryResult to false
+                            if (global.isUseTatoeba()) {
+                                finalSplitResult = performTatoebaTranslation(textSplit.get(i), inputLanguage, outputLanguage);
+                            }
+
+                            if (finalSplitResult == null) {
+                                //we execute translation of the current split using Neural Network
+                                finalSplitResult = performNNTextTranslation(textSplit.get(i), joinedStringOutput, inputLanguage, outputLanguage, beamSize, saveResults, responseListener);
+                            } else {
+                                isTatoebaResult = true;
+                            }
                         } else {
-                            isTatoebaResult = true;
+                            //we set isDictionary only if all the previous splits has been translated by the dictionary or if this is the first split
+                            if (i == 0 || isDictionaryResult) {
+                                isDictionaryResult = true;
+                            }
                         }
-                    }else{
-                        //we set isDictionary only if all the previous splits has been translated by the dictionary or if this is the first split
-                        if(i==0 || isDictionaryResult){
-                            isDictionaryResult = true;
+                        // join the split result with the previous results
+                        if (joinedStringOutput[0].equals("")) {
+                            joinedStringOutput[0] = joinedStringOutput[0] + finalSplitResult;
+                        } else {
+                            joinedStringOutput[0] = joinedStringOutput[0] + " " + finalSplitResult;
                         }
                     }
-                    // join the split result with the previous results
-                    if (joinedStringOutput[0].equals("")) {
-                        joinedStringOutput[0] = joinedStringOutput[0] + finalSplitResult;
+                    long time = System.currentTimeMillis();
+                    //String finalResult = tokenizer.decode(completeOutputArray);
+                    finalResult = joinedStringOutput[0];
+                    android.util.Log.i("performance", "Detokenization done in: " + (System.currentTimeMillis() - time) + "ms");
+                } else {
+                    //perform text translation using mozilla models
+                    android.util.Log.i("translator", "Translating using Bergamot models...");
+                    if (global.isUseTranslationDictionaries()) {
+                        String[] dictionaryResult = performDictionaryTranslation(textToTranslate, inputLanguage, outputLanguage);
+                        if (dictionaryResult != null && dictionaryResult.length > 0) {
+                            finalResult = dictionaryResult[0];
+                            if (dictionaryResult.length > 1) {
+                                int numSynonyms = Math.min((dictionaryResult.length - 1), MAX_SYNONYMS);
+                                synonyms = new String[numSynonyms];
+                                System.arraycopy(dictionaryResult, 1, synonyms, 0, numSynonyms);
+                            }
+                        }
+                    }
+                    if (finalResult == null) {
+                        if (global.isUseTatoeba()) {
+                            finalResult = performTatoebaTranslation(textToTranslate, inputLanguage, outputLanguage);
+                        }
+                        synchronized (langResourcesLock) {
+                            if (finalResult == null) {
+                                String text = textToTranslate;
+                                if (inputLanguage.getISO3Country().equalsIgnoreCase("TWN")) {
+                                    text = ZhConverterUtil.toSimple(textToTranslate);  // if the input is traditional Chinese, we convert it to simplified (like the model we have)
+                                }
+                                finalResult = BergamotTranslator.translateMultiple(new String[]{text}, inputLanguage, outputLanguage)[0];
+                            } else {
+                                isTatoebaResult = true;
+                            }
+                        }
                     } else {
-                        joinedStringOutput[0] = joinedStringOutput[0] + " " + finalSplitResult;
+                        isDictionaryResult = true;
                     }
                 }
-                long time = System.currentTimeMillis();
-                //String finalResult = tokenizer.decode(completeOutputArray);
-                finalResult = joinedStringOutput[0];
-                android.util.Log.i("performance", "Detokenization done in: " + (System.currentTimeMillis() - time) + "ms");
-            }else{
-                //perform text translation using mozilla models
-                android.util.Log.i("translator", "Translating using Bergamot models...");
-                if(global.isUseTranslationDictionaries()) {
-                    String[] dictionaryResult = performDictionaryTranslation(textToTranslate, inputLanguage, outputLanguage);
-                    if(dictionaryResult != null && dictionaryResult.length > 0) {
-                        finalResult = dictionaryResult[0];
-                        if(dictionaryResult.length > 1){
-                            synonyms = new String[dictionaryResult.length-1];
-                            System.arraycopy(dictionaryResult, 1, synonyms, 0, dictionaryResult.length - 1);
+
+                if(isDictionaryResult){
+                    resultType = TranslateListener.ResultType.DICTIONARY;
+                } else if(isTatoebaResult) {
+                    resultType = TranslateListener.ResultType.TATOEBA;
+                } else {
+                    resultType = TranslateListener.ResultType.NORMAL;
+                }
+                if(outputLanguage.getISO3Country().equalsIgnoreCase("TWN")){
+                    if(performMode != HY_MT || resultType != TranslateListener.ResultType.NORMAL){
+                        long time = System.currentTimeMillis();
+                        //we translate the result and the eventual synonyms from simplified Chinese to traditional
+                        finalResult = ZhConverterUtil.toTraditional(finalResult);
+                        if(synonyms != null) {
+                            for (int i = 0; i<synonyms.length; i++) {
+                                synonyms[i] = ZhConverterUtil.toTraditional(synonyms[i]);
+                            }
                         }
+                        android.util.Log.i("performance", "Chinese variant translation done in: " + (System.currentTimeMillis() - time) + "ms");
                     }
                 }
-                if(finalResult == null) {
-                    if (global.isUseTatoeba()) {
-                        finalResult = performTatoebaTranslation(textToTranslate, inputLanguage, outputLanguage);
+            }else{   //if the input and output languages are the same
+                resultType = TranslateListener.ResultType.NORMAL;
+                if(inputLanguage.getCode().equals("zho") && !inputLanguage.getISO3Country().equals(outputLanguage.getISO3Country())){
+                    long time = System.currentTimeMillis();
+                    //if the languages are Chinese and the country is different we use OpenCC to translate simplified to traditional Chinese or vice versa
+                    if(outputLanguage.getISO3Country().equalsIgnoreCase("TWN")) {
+                        finalResult = ZhConverterUtil.toTraditional(textToTranslate);
+                    }else{
+                        finalResult = ZhConverterUtil.toSimple(textToTranslate);
                     }
-                    synchronized (langResourcesLock) {
-                        if (finalResult == null) {
-                            finalResult = BergamotTranslator.translateMultiple(new String[]{textToTranslate}, inputLanguage, outputLanguage)[0];
-                        } else {
-                            isTatoebaResult = true;
-                        }
-                    }
+                    android.util.Log.i("performance", "Chinese variant translation done in: " + (System.currentTimeMillis() - time) + "ms");
                 }else{
-                    isDictionaryResult = true;
+                    finalResult = textToTranslate;
                 }
             }
             android.util.Log.i("performance", "TRANSLATION DONE IN: " + (System.currentTimeMillis() - initTime) + "ms");
@@ -876,14 +924,6 @@ public class Translator extends NeuralNetworkApi {
             }
             final long currentResultIDCopy = currentResultID;  //we do a copy because otherwise the currentResultID is incremented before notifying the message (due to the notification being executed in the mainThread)
             String finalResultConst = finalResult;
-            TranslateListener.ResultType resultType;
-            if(isDictionaryResult){
-                resultType = TranslateListener.ResultType.DICTIONARY;
-            } else if(isTatoebaResult) {
-                resultType = TranslateListener.ResultType.TATOEBA;
-            } else {
-                resultType = TranslateListener.ResultType.NORMAL;
-            }
             String[] finalSynonyms = synonyms;
             if (responseListener != null) {
                 mainHandler.post(() -> responseListener.onTranslatedText(textToTranslate, finalResultConst, finalSynonyms, currentResultIDCopy, true, resultType, inputLanguage, outputLanguage));
@@ -904,7 +944,7 @@ public class Translator extends NeuralNetworkApi {
     @Nullable
     private String performTatoebaTranslation(String text, CustomLocale inputLanguage, CustomLocale outputLanguage){
         synchronized (langResourcesLock) {
-            LinksData.DataMap linksContainer = languageResourcesManager.getTatoebaLinks().getOrDefault(inputLanguage.getISO3Language() + "-" + outputLanguage.getISO3Language(), null);
+            LinksData.DataMap linksContainer = languageResourcesManager.getTatoebaLinks().getOrDefault(inputLanguage.getCode() + "-" + outputLanguage.getCode(), null);
             String normalizedText = TextTools.normalizeText(text);
             String hash = Tools.shake256Hex(normalizedText, 8);
             if (linksContainer != null) {
@@ -985,14 +1025,18 @@ public class Translator extends NeuralNetworkApi {
                 } else {
                     outputText = joinedStringOutput[0] + " " + translatedText;
                 }
+                if(outputLanguage.getISO3Country().equalsIgnoreCase("TWN") && mode != HY_MT) {
+                    outputText = ZhConverterUtil.toTraditional(outputText);
+                }
                 if (saveResults) {
                     lastOutputText = new GuiMessage(new Message(global, outputText), inputLanguage, outputLanguage, currentResultID, false, false);
                 }
                 final long currentResultIDCopy = currentResultID;  //we do a copy because otherwise the currentResultID is incremented before notifying the message (due to the notification being executed in the mainThread)
+                String finalOutputText = outputText;
                 if (responseListener != null) {
-                    mainHandler.post(() -> responseListener.onTranslatedText(textToTranslate, outputText, synonyms, currentResultIDCopy, false, resultType, inputLanguage, outputLanguage));
+                    mainHandler.post(() -> responseListener.onTranslatedText(textToTranslate, finalOutputText, synonyms, currentResultIDCopy, false, resultType, inputLanguage, outputLanguage));
                 } else {
-                    mainHandler.post(() -> notifyResult(textToTranslate, outputText, synonyms, currentResultIDCopy, false, resultType, inputLanguage, outputLanguage));
+                    mainHandler.post(() -> notifyResult(textToTranslate, finalOutputText, synonyms, currentResultIDCopy, false, resultType, inputLanguage, outputLanguage));
                 }
             }
 
@@ -1792,38 +1836,68 @@ public class Translator extends NeuralNetworkApi {
     }
 
     private TokenizerResult tokenize(String text, final CustomLocale inputLanguage, final CustomLocale outputLanguage){
-        if (mode == MADLAD_CACHE || mode == MADLAD) {
-            return tokenizer.tokenize(text, inputLanguage.getCode(), outputLanguage.getCode());
-        } else if(mode == NLLB_CACHE || mode == NLLB){
-            return tokenizer.tokenize(text, getNllbLanguageCode(inputLanguage.getCode()), getNllbLanguageCode(outputLanguage.getCode()));
-        }else{   //if mode == HY_MT
-            return tokenizer.tokenize(text, inputLanguage.getCode(), outputLanguage.getCode(), getHyLanguageInfo(inputLanguage.getCode()), getHyLanguageInfo(outputLanguage.getCode()), false);
-        }
+        return tokenize(text, inputLanguage, outputLanguage, false);
     }
 
     private TokenizerResult tokenize(String text, final CustomLocale inputLanguage, final CustomLocale outputLanguage, boolean excludePrompt){
         if (mode == MADLAD_CACHE || mode == MADLAD) {
-            return tokenizer.tokenize(text, inputLanguage.getCode(), outputLanguage.getCode());
+            return tokenizer.tokenize(text, getMadladLanguageCode(inputLanguage.getCode()), getMadladLanguageCode(outputLanguage.getCode()));
         } else if(mode == NLLB_CACHE || mode == NLLB){
             return tokenizer.tokenize(text, getNllbLanguageCode(inputLanguage.getCode()), getNllbLanguageCode(outputLanguage.getCode()));
         }else{   //if mode == HY_MT
-            return tokenizer.tokenize(text, inputLanguage.getCode(), outputLanguage.getCode(), getHyLanguageInfo(inputLanguage.getCode()), getHyLanguageInfo(outputLanguage.getCode()), excludePrompt);
+            return tokenizer.tokenize(text, inputLanguage.getCode(), outputLanguage.getCode(), getHyLanguageInfo(inputLanguage), getHyLanguageInfo(outputLanguage), excludePrompt);
         }
     }
 
 
-    private void initializeNllbLanguagesCodes(Context context){
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        try {
-            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            Document document = documentBuilder.parse(context.getResources().openRawResource(R.raw.nllb_supported_languages_all));
-            NodeList listCode = document.getElementsByTagName("code");
-            NodeList listCodeNllb = document.getElementsByTagName("code_NLLB");
-            for (int i = 0; i < listCode.getLength(); i++) {
-                nllbLanguagesCodes.put(listCode.item(i).getTextContent(), listCodeNllb.item(i).getTextContent());
+    public static void initializeNllbLanguagesCodes(Context context){
+        if(nllbLanguagesCodes.isEmpty()) {
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            try {
+                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                Document document = documentBuilder.parse(context.getResources().openRawResource(R.raw.nllb_supported_languages_all));
+                NodeList listCode = document.getElementsByTagName("code");
+                NodeList listCodeModel = document.getElementsByTagName("code_NLLB");
+                for (int i = 0; i < listCode.getLength(); i++) {
+                    nllbLanguagesCodes.put(listCode.item(i).getTextContent(), listCodeModel.item(i).getTextContent());
+                }
+            } catch (IOException | SAXException | ParserConfigurationException e) {
+                e.printStackTrace();
             }
-        } catch (IOException | SAXException | ParserConfigurationException e) {
-            e.printStackTrace();
+        }
+    }
+
+    public static void initializeMadladLanguagesCodes(Context context){
+        if(madladLanguagesCodes.isEmpty()) {
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            try {
+                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                Document document = documentBuilder.parse(context.getResources().openRawResource(R.raw.madlad_supported_launguages_all));
+                NodeList listCode = document.getElementsByTagName("code");
+                NodeList listCodeModel = document.getElementsByTagName("code_madlad");
+                for (int i = 0; i < listCode.getLength(); i++) {
+                    madladLanguagesCodes.put(listCode.item(i).getTextContent(), listCodeModel.item(i).getTextContent());
+                }
+            } catch (IOException | SAXException | ParserConfigurationException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void initializeMozillaLanguagesCodes(Context context){
+        if(mozillaLanguagesCodes.isEmpty()) {
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            try {
+                DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                Document document = documentBuilder.parse(context.getResources().openRawResource(R.raw.mozilla_supported_languages));
+                NodeList listCode = document.getElementsByTagName("code");
+                NodeList listCodeModel = document.getElementsByTagName("code_mozilla");
+                for (int i = 0; i < listCode.getLength(); i++) {
+                    mozillaLanguagesCodes.put(listCode.item(i).getTextContent(), listCodeModel.item(i).getTextContent());
+                }
+            } catch (IOException | SAXException | ParserConfigurationException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -1843,17 +1917,38 @@ public class Translator extends NeuralNetworkApi {
         }
     }
 
-    private String getNllbLanguageCode(String languageCode){
-        String nllbCode = nllbLanguagesCodes.get(languageCode);
-        if (nllbCode == null) {
+    public static String getNllbLanguageCode(String languageCode){
+        String modelCode = nllbLanguagesCodes.get(languageCode);
+        if (modelCode == null) {
             Log.e("error", "Error Converting Language code " + languageCode + " to NLLB code");
             return languageCode;
         } else {
-            return nllbCode;
+            return modelCode;
         }
     }
 
-    private HyLanguageInfo getHyLanguageInfo(String languageCode){
+    public static String getMadladLanguageCode(String languageCode){
+        String modelCode = madladLanguagesCodes.get(languageCode);
+        if (modelCode == null) {
+            Log.e("error", "Error Converting Language code " + languageCode + " to Madlad code");
+            return languageCode;
+        } else {
+            return modelCode;
+        }
+    }
+
+    public static String getMozillaLanguageCode(String languageCode){
+        String modelCode = mozillaLanguagesCodes.get(languageCode);
+        if (modelCode == null) {
+            Log.e("error", "Error Converting Language code " + languageCode + " to Mozilla code");
+            return languageCode;
+        } else {
+            return modelCode;
+        }
+    }
+
+    private HyLanguageInfo getHyLanguageInfo(CustomLocale language){
+        String languageCode = language.getCompleteCode();
         HyLanguageInfo hyLanguageInfo = hyLanguagesInfo.get(languageCode);
         if (hyLanguageInfo == null) {
             Log.e("error", "Error Converting Language code " + languageCode + " to HY language info");
@@ -1949,7 +2044,11 @@ public class Translator extends NeuralNetworkApi {
             NodeList listCodes = document.getElementsByTagName("code");
             NodeList listSizes = document.getElementsByTagName("size");
             for (int i = 0; i < listCodes.getLength(); i++) {
-                languages.add(new MozillaLanguageInfo(CustomLocale.getInstance(context, listCodes.item(i).getTextContent()), Integer.parseInt(listSizes.item(i).getTextContent())));
+                String langCode = listCodes.item(i).getTextContent();
+                int langSize = Integer.parseInt(listSizes.item(i).getTextContent());
+                if(!langCode.equals("zho-TWN")) {   //traditional Chinese will not be displayed as a separate language to download, but it will be available together with simplified Chinese (we use the same model for both).
+                    languages.add(new MozillaLanguageInfo(CustomLocale.getInstance(context, langCode), langSize));
+                }
             }
         } catch (IOException | SAXException | ParserConfigurationException e) {
             e.printStackTrace();
@@ -1959,14 +2058,14 @@ public class Translator extends NeuralNetworkApi {
 
     public void testAllLanguages(ArrayList<CustomLocale> languages){
         String inputText = "Hello, how are you?";
-        CustomLocale inputLanguage = new CustomLocale(global, "en");
+        CustomLocale inputLanguage = new CustomLocale(global, "eng");
         CustomLocale language = languages.remove(languages.size()-1);
         if(!languages.isEmpty()) {
             performTextTranslation(inputText, inputLanguage, language, 1, false, Global.RTranslatorMode.TEXT_TRANSLATION_MODE, new TranslateListener() {
                 @Override
                 public void onTranslatedText(String textToTranslate, String translatedText, @Nullable String[] synonyms, long resultID, boolean isFinal, ResultType resultType, CustomLocale inputLanguage, CustomLocale outputLanguage) {
                     if (isFinal) {
-                        Log.i("translator_test", "Language: " + language.getDisplayName() + ", language code: " + language.getISO3Language() +
+                        Log.i("translator_test", "Language: " + language.getDisplayName() + ", language code: " + language.getCode() +
                                 ", tokenizer lang code: " + language.getCode() + ", translation: " + translatedText);
                         testAllLanguages(languages);
                     }
@@ -1974,7 +2073,7 @@ public class Translator extends NeuralNetworkApi {
 
                 @Override
                 public void onFailure(int[] reasons, long value) {
-                    Log.i("translator_test", "Language: " + language.getDisplayName() + ", language code: " + language.getISO3Language() +
+                    Log.i("translator_test", "Language: " + language.getDisplayName() + ", language code: " + language.getCode() +
                             ", tokenizer lang code: " + language.getCode() + " translation: ERROR");
                     testAllLanguages(languages);
                 }

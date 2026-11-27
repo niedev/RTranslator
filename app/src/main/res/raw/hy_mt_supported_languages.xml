@@ -17,192 +17,192 @@
 
 <languages>
     <language>
-        <code>ar</code>
+        <code>ara</code>
         <en_name>Arabic</en_name>
         <zh_name>阿拉伯语</zh_name>
     </language>
     <language>
-        <code>bn</code>
+        <code>ben</code>
         <en_name>Bengali</en_name>
         <zh_name>孟加拉语</zh_name>
     </language>
     <language>
-        <code>my</code>
+        <code>mya</code>
         <en_name>Burmese</en_name>
         <zh_name>缅甸语</zh_name>
     </language>
-    <language>
-        <code>yue</code>   <!-- todo: implement a management of this -->
+    <!--<language>  //this doesn't work
+        <code>yue</code>
         <en_name>Cantonese</en_name>
         <zh_name>粤语</zh_name>
-    </language>
+    </language>-->
     <language>
-        <code>zh</code>
+        <code>zho</code>
         <en_name>Chinese</en_name>
         <zh_name>中文</zh_name>
     </language>
     <language>
-        <code>cs</code>
+        <code>ces</code>
         <en_name>Czech</en_name>
         <zh_name>捷克语</zh_name>
     </language>
     <language>
-        <code>nl</code>
+        <code>nld</code>
         <en_name>Dutch</en_name>
         <zh_name>荷兰语</zh_name>
     </language>
     <language>
-        <code>en</code>
+        <code>eng</code>
         <en_name>English</en_name>
         <zh_name>英语</zh_name>
     </language>
     <language>
-        <code>tl</code>
+        <code>tgl</code>
         <en_name>Filipino</en_name>
         <zh_name>菲律宾语</zh_name>
     </language>
     <language>
-        <code>fr</code>
+        <code>fra</code>
         <en_name>French</en_name>
         <zh_name>法语</zh_name>
     </language>
     <language>
-        <code>de</code>
+        <code>deu</code>
         <en_name>German</en_name>
         <zh_name>德语</zh_name>
     </language>
     <language>
-        <code>gu</code>
+        <code>guj</code>
         <en_name>Gujarati</en_name>
         <zh_name>古吉拉特语</zh_name>
     </language>
     <language>
-        <code>he</code>
+        <code>heb</code>
         <en_name>Hebrew</en_name>
         <zh_name>希伯来语</zh_name>
     </language>
     <language>
-        <code>hi</code>
+        <code>hin</code>
         <en_name>Hindi</en_name>
         <zh_name>印地语</zh_name>
     </language>
     <language>
-        <code>id</code>
+        <code>ind</code>
         <en_name>Indonesian</en_name>
         <zh_name>印尼语</zh_name>
     </language>
     <language>
-        <code>it</code>
+        <code>ita</code>
         <en_name>Italian</en_name>
         <zh_name>意大利语</zh_name>
     </language>
     <language>
-        <code>ja</code>
+        <code>jpn</code>
         <en_name>Japanese</en_name>
         <zh_name>日语</zh_name>
     </language>
     <language>
-        <code>kk</code>
+        <code>kaz</code>
         <en_name>Kazakh</en_name>
         <zh_name>哈萨克语</zh_name>
     </language>
     <language>
-        <code>km</code>
+        <code>khm</code>
         <en_name>Khmer</en_name>
         <zh_name>高棉语</zh_name>
     </language>
     <language>
-        <code>ko</code>
+        <code>kor</code>
         <en_name>Korean</en_name>
         <zh_name>韩语</zh_name>
     </language>
     <language>
-        <code>ms</code>
+        <code>msa</code>
         <en_name>Malay</en_name>
         <zh_name>马来语</zh_name>
     </language>
     <language>
-        <code>mr</code>
+        <code>mar</code>
         <en_name>Marathi</en_name>
         <zh_name>马拉地语</zh_name>
     </language>
     <language>
-        <code>mn</code>
+        <code>mon</code>
         <en_name>Mongolian</en_name>
         <zh_name>蒙古语</zh_name>
     </language>
     <language>
-        <code>fa</code>
+        <code>fas</code>
         <en_name>Persian</en_name>
         <zh_name>波斯语</zh_name>
     </language>
     <language>
-        <code>pl</code>
+        <code>pol</code>
         <en_name>Polish</en_name>
         <zh_name>波兰语</zh_name>
     </language>
     <language>
-        <code>pt</code>
+        <code>por</code>
         <en_name>Portuguese</en_name>
         <zh_name>葡萄牙语</zh_name>
     </language>
     <language>
-        <code>ru</code>
+        <code>rus</code>
         <en_name>Russian</en_name>
         <zh_name>俄语</zh_name>
     </language>
     <language>
-        <code>es</code>
+        <code>spa</code>
         <en_name>Spanish</en_name>
         <zh_name>西班牙语</zh_name>
     </language>
     <language>
-        <code>ta</code>
+        <code>tam</code>
         <en_name>Tamil</en_name>
         <zh_name>泰米尔语</zh_name>
     </language>
     <language>
-        <code>te</code>
+        <code>tel</code>
         <en_name>Telugu</en_name>
         <zh_name>泰卢固语</zh_name>
     </language>
     <language>
-        <code>th</code>
+        <code>tha</code>
         <en_name>Thai</en_name>
         <zh_name>泰语</zh_name>
     </language>
     <language>
-        <code>bo</code>
+        <code>bod</code>
         <en_name>Tibetan</en_name>
         <zh_name>藏语</zh_name>
     </language>
     <language>
-        <code>zh-HANT</code>
+        <code>zho-TWN</code>
         <en_name>Traditional Chinese</en_name>
         <zh_name>繁体中文</zh_name>
     </language>
     <language>
-        <code>tr</code>
+        <code>tur</code>
         <en_name>Turkish</en_name>
         <zh_name>土耳其语</zh_name>
     </language>
     <language>
-        <code>uk</code>
+        <code>ukr</code>
         <en_name>Ukrainian</en_name>
         <zh_name>乌克兰语</zh_name>
     </language>
     <language>
-        <code>ur</code>
+        <code>urd</code>
         <en_name>Urdu</en_name>
         <zh_name>乌尔都语</zh_name>
     </language>
     <language>
-        <code>ug</code>
+        <code>uig</code>
         <en_name>Uyghur</en_name>
         <zh_name>维吾尔语</zh_name>
     </language>
     <language>
-        <code>vi</code>
+        <code>vie</code>
         <en_name>Vietnamese</en_name>
         <zh_name>越南语</zh_name>
     </language>

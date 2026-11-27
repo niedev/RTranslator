@@ -187,7 +187,7 @@ public class ConversationBluetoothCommunicator {
                             String completeText = message.getText();
                             int srcLanguageCodeSize = Integer.valueOf(completeText.substring(completeText.length() - 1));
                             String srcLanguageCode = completeText.substring(completeText.length() - (srcLanguageCodeSize + 1), completeText.length() - 1);
-                            CustomLocale srcLanguage = new CustomLocale(global, srcLanguageCode);
+                            CustomLocale srcLanguage = CustomLocale.getInstance(global, srcLanguageCode);
                             Log.d("ConvBluetoothCommunicator", "language received: " + srcLanguageCode);
                             firstLoad = global.getTranslator().getLanguageResourcesManager().isPeerLoaded(message.getSender());
                             global.getTranslator().loadSrcLangResourcesForPeer(srcLanguage, message.getSender(), null);
@@ -339,7 +339,7 @@ public class ConversationBluetoothCommunicator {
     }
 
     public void sendLanguage(CustomLocale lang, Peer receiver) {
-        String languageCode = lang.getCode();
+        String languageCode = lang.getCompleteCode();
         bluetoothCommunicator.sendMessage(new Message(global, "l", languageCode + languageCode.length(), receiver));  //this message will be used by the other Peer to load the language resources for our language
     }
 

@@ -72,11 +72,11 @@ std::vector<std::string> translateMultiple(std::vector<std::string> &&inputs, co
     if(srcLang == trgLang) return inputs;
 
     // Assume models are already loaded in cache
-    if (srcLang != "en") {
+    if (srcLang != "eng") {
         if(model_cache.find(srcLang) == model_cache.end()) throw std::runtime_error("Missing loaded src model: "+srcLang);
         firstModel = model_cache[srcLang]->toEnglishModel;
     }
-    if (trgLang != "en") {
+    if (trgLang != "eng") {
         if(model_cache.find(trgLang) == model_cache.end()) throw std::runtime_error("Missing loaded trg model: "+trgLang);
         secondModel = model_cache[trgLang]->fromEnglishModel;
     }

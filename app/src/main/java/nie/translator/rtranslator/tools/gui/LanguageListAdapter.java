@@ -66,7 +66,7 @@ public class LanguageListAdapter extends BaseAdapter implements Filterable {
         });
         this.languages = new ArrayList<>(languages.size());
         this.filteredLanguages = new ArrayList<>(languages.size());
-        CustomLocale english = new CustomLocale(activity, "en");
+        CustomLocale english = new CustomLocale(activity, "eng");
         for (CustomLocale language : languages) {
             boolean lowQuality = !CustomLocale.containsLanguage(highQualityLanguages, language) && !language.equals(english);
             CustomLocalePlus item = new CustomLocalePlus(language, lowQuality);  //using the same object for the languages and filteredLanguages will replicate the status change of a language in initializeTTSLanguageList for both the language in languages and filteredLanguages, as we expect
@@ -110,8 +110,8 @@ public class LanguageListAdapter extends BaseAdapter implements Filterable {
         CustomLocalePlus item = filteredLanguages.get(position);
 
         // Use the unique language code's hash as the ID  (we use the code, not the name, because names might be identical in rare cases)
-        if (item != null && item.getISO3Language() != null) {
-            return item.getISO3Language().hashCode();
+        if (item != null && item.getCode() != null) {
+            return item.getCode().hashCode();
         }
         return position; // Fallback
     }

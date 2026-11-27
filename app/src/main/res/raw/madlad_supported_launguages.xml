@@ -18,404 +18,542 @@
 <languages>
     <language>
         <code>ace</code>
+        <code_madlad>ace</code_madlad>
     </language>
     <language>
         <code>acm</code>
+        <code_madlad>acm</code_madlad>
     </language>
     <language>
         <code>acq</code>
+        <code_madlad>acq</code_madlad>
     </language>
     <language>
         <code>aeb</code>
+        <code_madlad>aeb</code_madlad>
     </language>
     <language>
-        <code>af</code>
+        <code>afr</code>
+        <code_madlad>af</code_madlad>
     </language>
     <language>
         <code>ajp</code>
+        <code_madlad>ajp</code_madlad>
     </language>
     <language>
-        <code>am</code>
+        <code>amh</code>
+        <code_madlad>am</code_madlad>
     </language>
     <language>
         <code>apc</code>
+        <code_madlad>apc</code_madlad>
     </language>
     <language>
-        <code>ar</code>
+        <code>ara</code>
+        <code_madlad>ar</code_madlad>
     </language>
     <language>
         <code>ars</code>
+        <code_madlad>ars</code_madlad>
     </language>
     <language>
         <code>arz</code>
+        <code_madlad>arz</code_madlad>
     </language>
     <language>
-        <code>as</code>
+        <code>asm</code>
+        <code_madlad>as</code_madlad>
     </language>
     <language>
         <code>ast</code>
+        <code_madlad>ast</code_madlad>
     </language>
     <language>
         <code>awa</code>
+        <code_madlad>awa</code_madlad>
     </language>
     <language>
         <code>ban</code>
+        <code_madlad>ban</code_madlad>
     </language>
     <language>
-        <code>be</code>
+        <code>bel</code>
+        <code_madlad>be</code_madlad>
     </language>
     <language>
-        <code>bg</code>
+        <code>bul</code>
+        <code_madlad>bg</code_madlad>
     </language>
     <language>
         <code>bho</code>
+        <code_madlad>bho</code_madlad>
     </language>
     <language>
         <code>bjn</code>
+        <code_madlad>bjn</code_madlad>
     </language>
     <language>
-        <code>bn</code>
+        <code>ben</code>
+        <code_madlad>bn</code_madlad>
     </language>
     <language>
-        <code>bs</code>
+        <code>bos</code>
+        <code_madlad>bs</code_madlad>
     </language>
     <language>
-        <code>ca</code>
+        <code>cat</code>
+        <code_madlad>ca</code_madlad>
     </language>
     <language>
         <code>ceb</code>
+        <code_madlad>ceb</code_madlad>
     </language>
     <language>
         <code>ckb</code>
+        <code_madlad>ckb</code_madlad>
     </language>
     <language>
         <code>crh</code>
+        <code_madlad>crh</code_madlad>
     </language>
     <language>
-        <code>cs</code>
+        <code>ces</code>
+        <code_madlad>cs</code_madlad>
     </language>
     <language>
-        <code>cy</code>
+        <code>cym</code>
+        <code_madlad>cy</code_madlad>
     </language>
     <language>
-        <code>da</code>
+        <code>dan</code>
+        <code_madlad>da</code_madlad>
     </language>
     <language>
-        <code>de</code>
+        <code>deu</code>
+        <code_madlad>de</code_madlad>
     </language>
     <language>
-        <code>dz</code>
+        <code>dzo</code>
+        <code_madlad>dz</code_madlad>
     </language>
     <language>
-        <code>el</code>
+        <code>ell</code>
+        <code_madlad>el</code_madlad>
     </language>
     <language>
-        <code>en</code>
+        <code>eng</code>
+        <code_madlad>en</code_madlad>
     </language>
     <language>
-        <code>eo</code>
+        <code>epo</code>
+        <code_madlad>eo</code_madlad>
     </language>
     <language>
-        <code>es</code>
+        <code>spa</code>
+        <code_madlad>es</code_madlad>
     </language>
     <language>
-        <code>et</code>
+        <code>est</code>
+        <code_madlad>et</code_madlad>
     </language>
     <language>
-        <code>eu</code>
+        <code>eus</code>
+        <code_madlad>eu</code_madlad>
     </language>
     <language>
-        <code>fa</code>
+        <code>fas</code>
+        <code_madlad>fa</code_madlad>
     </language>
     <language>
-        <code>fi</code>
+        <code>fin</code>
+        <code_madlad>fi</code_madlad>
     </language>
     <language>
         <code>fil</code>
+        <code_madlad>fil</code_madlad>
     </language>
     <language>
-        <code>fo</code>
+        <code>fao</code>
+        <code_madlad>fo</code_madlad>
     </language>
     <language>
-        <code>fr</code>
+        <code>fra</code>
+        <code_madlad>fr</code_madlad>
     </language>
     <language>
         <code>fur</code>
+        <code_madlad>fur</code_madlad>
     </language>
     <language>
-        <code>ga</code>
+        <code>gle</code>
+        <code_madlad>ga</code_madlad>
     </language>
     <language>
-        <code>gd</code>
+        <code>gla</code>
+        <code_madlad>gd</code_madlad>
     </language>
     <language>
-        <code>gl</code>
+        <code>glg</code>
+        <code_madlad>gl</code_madlad>
     </language>
     <language>
-        <code>gu</code>
+        <code>guj</code>
+        <code_madlad>gu</code_madlad>
     </language>
     <language>
-        <code>ha</code>
+        <code>hau</code>
+        <code_madlad>ha</code_madlad>
     </language>
     <language>
-        <code>he</code>
+        <code>heb</code>
+        <code_madlad>he</code_madlad>
     </language>
     <language>
-        <code>hi</code>
+        <code>hin</code>
+        <code_madlad>hi</code_madlad>
     </language>
     <language>
         <code>hne</code>
+        <code_madlad>hne</code_madlad>
     </language>
     <language>
-        <code>hr</code>
+        <code>hrv</code>
+        <code_madlad>hr</code_madlad>
     </language>
     <language>
-        <code>ht</code>
+        <code>hat</code>
+        <code_madlad>ht</code_madlad>
     </language>
     <language>
-        <code>hu</code>
+        <code>hun</code>
+        <code_madlad>hu</code_madlad>
     </language>
     <language>
-        <code>hy</code>
+        <code>hye</code>
+        <code_madlad>hy</code_madlad>
     </language>
     <language>
-        <code>id</code>
+        <code>ind</code>
+        <code_madlad>id</code_madlad>
     </language>
     <language>
-        <code>ig</code>
+        <code>ibo</code>
+        <code_madlad>ig</code_madlad>
     </language>
     <language>
         <code>ilo</code>
+        <code_madlad>ilo</code_madlad>
     </language>
     <language>
-        <code>is</code>
+        <code>isl</code>
+        <code_madlad>is</code_madlad>
     </language>
     <language>
-        <code>it</code>
+        <code>ita</code>
+        <code_madlad>it</code_madlad>
     </language>
     <language>
-        <code>ja</code>
+        <code>jpn</code>
+        <code_madlad>ja</code_madlad>
     </language>
     <language>
-        <code>jv</code>
+        <code>jav</code>
+        <code_madlad>jv</code_madlad>
     </language>
     <language>
-        <code>ka</code>
+        <code>kat</code>
+        <code_madlad>ka</code_madlad>
     </language>
     <language>
         <code>kea</code>
+        <code_madlad>kea</code_madlad>
     </language>
     <language>
-        <code>kk</code>
+        <code>kaz</code>
+        <code_madlad>kk</code_madlad>
     </language>
     <language>
-        <code>km</code>
+        <code>khm</code>
+        <code_madlad>km</code_madlad>
     </language>
     <language>
-        <code>kn</code>
+        <code>kan</code>
+        <code_madlad>kn</code_madlad>
     </language>
     <language>
-        <code>ko</code>
+        <code>kor</code>
+        <code_madlad>ko</code_madlad>
     </language>
     <language>
-        <code>ks</code>
+        <code>kas</code>
+        <code_madlad>ks</code_madlad>
     </language>
     <language>
-        <code>ku</code>
+        <code>kur</code>
+        <code_madlad>ku</code_madlad>
     </language>
     <language>
-        <code>li</code>
+        <code>lim</code>
+        <code_madlad>li</code_madlad>
     </language>
     <language>
         <code>lij</code>
+        <code_madlad>lij</code_madlad>
     </language>
     <language>
         <code>lmo</code>
+        <code_madlad>lmo</code_madlad>
     </language>
     <language>
-        <code>lo</code>
+        <code>lao</code>
+        <code_madlad>lo</code_madlad>
     </language>
     <language>
-        <code>lt</code>
+        <code>lit</code>
+        <code_madlad>lt</code_madlad>
     </language>
     <language>
         <code>ltg</code>
+        <code_madlad>ltg</code_madlad>
     </language>
     <language>
-        <code>lv</code>
+        <code>lav</code>
+        <code_madlad>lv</code_madlad>
     </language>
     <language>
         <code>mag</code>
+        <code_madlad>mag</code_madlad>
     </language>
     <language>
         <code>mai</code>
+        <code_madlad>mai</code_madlad>
     </language>
     <language>
-        <code>mg</code>
+        <code>mlg</code>
+        <code_madlad>mg</code_madlad>
     </language>
     <language>
         <code>min</code>
+        <code_madlad>min</code_madlad>
     </language>
     <language>
-        <code>mk</code>
+        <code>mkd</code>
+        <code_madlad>mk</code_madlad>
     </language>
     <language>
-        <code>ml</code>
+        <code>mal</code>
+        <code_madlad>ml</code_madlad>
     </language>
     <language>
-        <code>mn</code>
+        <code>mon</code>
+        <code_madlad>mn</code_madlad>
     </language>
     <language>
         <code>mni</code>
+        <code_madlad>mni</code_madlad>
     </language>
     <language>
-        <code>mr</code>
+        <code>mar</code>
+        <code_madlad>mr</code_madlad>
     </language>
     <language>
-        <code>ms</code>
+        <code>msa</code>
+        <code_madlad>ms</code_madlad>
     </language>
     <language>
-        <code>mt</code>
+        <code>mlt</code>
+        <code_madlad>mt</code_madlad>
     </language>
     <language>
-        <code>my</code>
+        <code>mya</code>
+        <code_madlad>my</code_madlad>
     </language>
     <language>
-        <code>ne</code>
+        <code>nep</code>
+        <code_madlad>ne</code_madlad>
     </language>
     <language>
-        <code>nl</code>
+        <code>nld</code>
+        <code_madlad>nl</code_madlad>
     </language>
     <language>
-        <code>nn</code>
+        <code>nno</code>
+        <code_madlad>nn</code_madlad>
     </language>
     <language>
-        <code>no</code>
+        <code>nor</code>
+        <code_madlad>no</code_madlad>
     </language>
     <language>
         <code>nso</code>
+        <code_madlad>nso</code_madlad>
     </language>
     <language>
-        <code>oc</code>
+        <code>oci</code>
+        <code_madlad>oc</code_madlad>
     </language>
     <language>
-        <code>or</code>
+        <code>ori</code>
+        <code_madlad>or</code_madlad>
     </language>
     <language>
-        <code>pa</code>
+        <code>pan</code>
+        <code_madlad>pa</code_madlad>
     </language>
     <language>
         <code>pap</code>
+        <code_madlad>pap</code_madlad>
     </language>
     <language>
-        <code>pl</code>
+        <code>pol</code>
+        <code_madlad>pl</code_madlad>
     </language>
     <language>
-        <code>ps</code>
+        <code>pus</code>
+        <code_madlad>ps</code_madlad>
     </language>
     <language>
-        <code>pt</code>
+        <code>por</code>
+        <code_madlad>pt</code_madlad>
     </language>
     <language>
-        <code>ro</code>
+        <code>ron</code>
+        <code_madlad>ro</code_madlad>
     </language>
     <language>
-        <code>ru</code>
+        <code>rus</code>
+        <code_madlad>ru</code_madlad>
     </language>
     <language>
-        <code>rw</code>
+        <code>kin</code>
+        <code_madlad>rw</code_madlad>
     </language>
     <language>
-        <code>sc</code>
+        <code>srd</code>
+        <code_madlad>sc</code_madlad>
     </language>
     <language>
         <code>scn</code>
+        <code_madlad>scn</code_madlad>
     </language>
     <language>
-        <code>sd</code>
+        <code>snd</code>
+        <code_madlad>sd</code_madlad>
     </language>
     <language>
-        <code>si</code>
+        <code>sin</code>
+        <code_madlad>si</code_madlad>
     </language>
     <language>
-        <code>sk</code>
+        <code>slk</code>
+        <code_madlad>sk</code_madlad>
     </language>
     <language>
-        <code>sl</code>
+        <code>slv</code>
+        <code_madlad>sl</code_madlad>
     </language>
     <language>
-        <code>sm</code>
+        <code>smo</code>
+        <code_madlad>sm</code_madlad>
     </language>
     <language>
-        <code>so</code>
+        <code>som</code>
+        <code_madlad>so</code_madlad>
     </language>
     <language>
-        <code>sq</code>
+        <code>sqi</code>
+        <code_madlad>sq</code_madlad>
     </language>
     <language>
-        <code>sr</code>
+        <code>srp</code>
+        <code_madlad>sr</code_madlad>
     </language>
     <language>
-        <code>st</code>
+        <code>sot</code>
+        <code_madlad>st</code_madlad>
     </language>
     <language>
-        <code>su</code>
+        <code>sun</code>
+        <code_madlad>su</code_madlad>
     </language>
     <language>
-        <code>sv</code>
+        <code>swe</code>
+        <code_madlad>sv</code_madlad>
     </language>
     <language>
-        <code>sw</code>
+        <code>swa</code>
+        <code_madlad>sw</code_madlad>
     </language>
     <language>
         <code>szl</code>
+        <code_madlad>szl</code_madlad>
     </language>
     <language>
-        <code>ta</code>
+        <code>tam</code>
+        <code_madlad>ta</code_madlad>
     </language>
     <language>
-        <code>te</code>
+        <code>tel</code>
+        <code_madlad>te</code_madlad>
     </language>
     <language>
-        <code>th</code>
+        <code>tha</code>
+        <code_madlad>th</code_madlad>
     </language>
     <language>
-        <code>tk</code>
+        <code>tuk</code>
+        <code_madlad>tk</code_madlad>
     </language>
     <language>
-        <code>tr</code>
+        <code>tur</code>
+        <code_madlad>tr</code_madlad>
     </language>
     <language>
-        <code>uk</code>
+        <code>ukr</code>
+        <code_madlad>uk</code_madlad>
     </language>
     <language>
-        <code>ur</code>
+        <code>urd</code>
+        <code_madlad>ur</code_madlad>
     </language>
     <language>
-        <code>uz</code>
+        <code>uzb</code>
+        <code_madlad>uz</code_madlad>
     </language>
     <language>
         <code>vec</code>
+        <code_madlad>vec</code_madlad>
     </language>
     <language>
-        <code>vi</code>
+        <code>vie</code>
+        <code_madlad>vi</code_madlad>
     </language>
     <language>
         <code>war</code>
+        <code_madlad>war</code_madlad>
     </language>
     <language>
-        <code>xh</code>
+        <code>xho</code>
+        <code_madlad>xh</code_madlad>
     </language>
     <language>
-        <code>yi</code>
+        <code>yid</code>
+        <code_madlad>yi</code_madlad>
     </language>
     <language>
         <code>yue</code>
+        <code_madlad>yue</code_madlad>
     </language>
     <language>
-        <code>zh</code>
+        <code>zho</code>
+        <code_madlad>zh</code_madlad>
     </language>
     <language>
-        <code>zu</code>
+        <code>zho-TWN</code>
+        <code_madlad>zh</code_madlad>
+    </language>
+    <language>
+        <code>zul</code>
+        <code_madlad>zu</code_madlad>
     </language>
 </languages>

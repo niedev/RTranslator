@@ -22,7 +22,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -247,19 +246,19 @@ public class WalkieTalkieService extends VoiceTranslationService {
                 if(speechRecognizer != null && global.isSpeechRecognizerInitialized()) {
                     if (manualRecognizingFirstLanguage) {
                         // we start the speech recognition in only the first language
-                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode());
+                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage);
 
                     } else if (manualRecognizingSecondLanguage) {
                         // we start the speech recognition in only the second language
-                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, secondLanguage.getCode());
+                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, secondLanguage);
 
                     } else if (manualRecognizingAutoLanguage) {
                         // we start the speech recognition in both languages
-                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode(), secondLanguage.getCode());
+                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage, secondLanguage);
 
                     } else if (isMicAutomatic) {
                         // we start the speech recognition in both languages
-                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage.getCode(), secondLanguage.getCode());
+                        speechRecognizer.recognize(data, SPEECH_BEAM_SIZE, firstLanguage, secondLanguage);
                     }
                 }
             }
@@ -287,7 +286,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
         };
         speechRecognizerCallback = new RecognizerMultiListener() {
             @Override
-            public void onSpeechRecognizedResult(String text1, String languageCode1, double confidenceScore1, String text2, String languageCode2, double confidenceScore2) {
+            public void onSpeechRecognizedResult(String text1, CustomLocale language1, double confidenceScore1, String text2, CustomLocale language2, double confidenceScore2) {
                 NeuralNetworkApiResult firstResult = new NeuralNetworkApiResult(text1, confidenceScore1, true);
                 NeuralNetworkApiResult secondResult = new NeuralNetworkApiResult(text2, confidenceScore2, true);
                 compareResults(firstResult, secondResult);
@@ -304,7 +303,7 @@ public class WalkieTalkieService extends VoiceTranslationService {
         };
         speechRecognizerSingleCallback = new RecognizerListener() {
             @Override
-            public void onSpeechRecognizedResult(String text, String languageCode, double confidenceScore, boolean isFinal) {
+            public void onSpeechRecognizedResult(String text, CustomLocale language, double confidenceScore, boolean isFinal) {
                 if(manualRecognizingFirstLanguage){
                     translate(text, firstLanguage, secondLanguage, TRANSLATOR_BEAM_SIZE, false, firstResultTranslateListener);
                 } else if (manualRecognizingSecondLanguage) {
