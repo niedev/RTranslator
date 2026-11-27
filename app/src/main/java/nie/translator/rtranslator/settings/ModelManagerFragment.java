@@ -82,6 +82,7 @@ public class ModelManagerFragment extends Fragment {
     private ResourceManagerView madladManagerView;
     private ResourceManagerView tatoebaManagerView;
     private ConstraintLayout dictionariesManagerView;
+    private ImageView dictionariesInfoIcon;
     private Button applyButton;
     private SegmentProgressBar barRam;
     private SwitchCompat switchMozillaForVoiceModes;
@@ -116,6 +117,7 @@ public class ModelManagerFragment extends Fragment {
         madladManagerView = view.findViewById(R.id.modelMadlad);
         tatoebaManagerView = view.findViewById(R.id.resourceTatoeba);
         dictionariesManagerView = view.findViewById(R.id.resourceDict);
+        dictionariesInfoIcon = view.findViewById(R.id.infoIconDicts);
         applyButton = view.findViewById(R.id.buttonApply);
         barRam = view.findViewById(R.id.barRam);
         switchMozillaForVoiceModes = view.findViewById(R.id.switchMozillaForVoiceModes);
@@ -193,29 +195,53 @@ public class ModelManagerFragment extends Fragment {
             }
         };
         mozillaManagerView.setOnClickListener(mozillaManagerOpenListener);
-        arrowMozilla.setOnClickListener(mozillaManagerOpenListener);
         hyManagerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                radioGroup.check(R.id.radioHY);
+            }
+        });
+        madladManagerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                radioGroup.check(R.id.radioMadlad);
+            }
+        });
+        tatoebaManagerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switchTatoeba.performClick();
+            }
+        });
+        dictionariesManagerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switchTranslationDict.performClick();
+            }
+        });
+        arrowMozilla.setOnClickListener(mozillaManagerOpenListener);
+        hyManagerView.setInfoIconClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //show supported languages dialog
                 showLanguageDialog(Translator.HY_MT);
             }
         });
-        madladManagerView.setOnClickListener(new View.OnClickListener() {
+        madladManagerView.setInfoIconClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //show supported languages dialog
                 showLanguageDialog(Translator.MADLAD);
             }
         });
-        tatoebaManagerView.setOnClickListener(new View.OnClickListener() {
+        tatoebaManagerView.setInfoIconClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //show supported languages dialog
                 showLanguageDialog(Translator.TATOEBA);
             }
         });
-        dictionariesManagerView.setOnClickListener(new View.OnClickListener() {
+        dictionariesInfoIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //show supported languages dialog

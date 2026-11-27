@@ -51,6 +51,9 @@ public class ResourceManagerView extends ConstraintLayout {
     private ImageView playIcon;
     private ImageView pauseIcon;
     private ImageView errorIcon;
+    private ImageView infoIcon;
+    private boolean infoIconEnabled = false;
+    private OnClickListener infoIconListener;
     private CustomAnimator animator = new CustomAnimator();
     private Animator animation;
 
@@ -84,6 +87,7 @@ public class ResourceManagerView extends ConstraintLayout {
         playIcon = findViewById(R.id.playImage);
         pauseIcon = findViewById(R.id.pauseImage);
         errorIcon = findViewById(R.id.errorIcon);
+        infoIcon = findViewById(R.id.infoIcon);
 
         //initialize buttonDelete reduced measures
         ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) buttonDelete.getLayoutParams();
@@ -121,8 +125,18 @@ public class ResourceManagerView extends ConstraintLayout {
                     setState(State.values()[stateIndex], false);
                 }
             }
+            if (a.hasValue(R.styleable.ResourceManagerView_infoIconEnabled)) {
+                infoIconEnabled = a.getBoolean(R.styleable.ResourceManagerView_infoIconEnabled, false);
+            }
 
             a.recycle();
+        }
+
+        if(infoIconEnabled){
+            infoIcon.setVisibility(VISIBLE);
+        }else{
+            infoIcon.setVisibility(INVISIBLE);
+            infoIcon.setOnClickListener(null);
         }
 
         // Set up callbacks
@@ -175,6 +189,14 @@ public class ResourceManagerView extends ConstraintLayout {
 
     // Public APIs to manipulate the component from the Activity/Fragment ---
 
+    public void setInfoIconClickListener(OnClickListener infoIconListener){
+        if(infoIconEnabled) {
+            this.infoIconListener = infoIconListener;
+            if (infoIcon.getVisibility() == VISIBLE) {
+                infoIcon.setOnClickListener(infoIconListener);  //here we set the click listener
+            }
+        }
+    }
 
     public void setState(State state, boolean animate) {
         State oldState = this.state;
@@ -208,7 +230,7 @@ public class ResourceManagerView extends ConstraintLayout {
                             GuiTools.requestAccessibilityFocus(pauseIcon);
                         }
                         if (errorIcon.getVisibility() != INVISIBLE) {   //we eventually remove the error
-                            errorIcon.setVisibility(INVISIBLE);
+                            changeErrorIconVisibility(false);
                         }
                         break;
                     case PAUSED:
@@ -234,7 +256,7 @@ public class ResourceManagerView extends ConstraintLayout {
                             });
                         }
                         if (errorIcon.getVisibility() != INVISIBLE) {   //we eventually remove the error
-                            errorIcon.setVisibility(INVISIBLE);
+                            changeErrorIconVisibility(false);
                         }
                         break;
                     case DOWNLOADED:
@@ -262,7 +284,7 @@ public class ResourceManagerView extends ConstraintLayout {
                 case DOWNLOADING:
                     applyStateDownloading();
                     if (errorIcon.getVisibility() != INVISIBLE) {   //we eventually remove the error
-                        errorIcon.setVisibility(INVISIBLE);
+                        changeErrorIconVisibility(false);
                     }
                     break;
                 case PAUSED:
@@ -271,7 +293,7 @@ public class ResourceManagerView extends ConstraintLayout {
                 case EMPTY:
                     applyStateEmpty();
                     if (errorIcon.getVisibility() != INVISIBLE) {   //we eventually remove the error
-                        errorIcon.setVisibility(INVISIBLE);
+                        changeErrorIconVisibility(false);
                     }
                     break;
                 case DOWNLOADED:
@@ -478,7 +500,12 @@ public class ResourceManagerView extends ConstraintLayout {
     }
 
     public void setError(int reason){
-        if(reason != -1){
+        changeErrorIconVisibility(reason != -1);
+    }
+
+    public void changeErrorIconVisibility(boolean visible){
+        if(visible){
+            // make error icon visible and clickable
             errorIcon.setVisibility(VISIBLE);
             errorIcon.setOnClickListener(new OnClickListener() {
                 @Override
@@ -488,9 +515,18 @@ public class ResourceManagerView extends ConstraintLayout {
                     }
                 }
             });
-        }else{
+            // make info icon invisible and not clickable
+            infoIcon.setVisibility(INVISIBLE);
+            infoIcon.setOnClickListener(null);
+        }else {
+            // make error icon invisible and not clickable
             errorIcon.setVisibility(INVISIBLE);
             errorIcon.setOnClickListener(null);
+            // make info icon visible and clickable
+            if(infoIconEnabled) {
+                infoIcon.setVisibility(VISIBLE);
+                infoIcon.setOnClickListener(infoIconListener);
+            }
         }
     }
 

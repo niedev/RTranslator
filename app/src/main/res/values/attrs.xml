@@ -4,6 +4,7 @@
         <attr name="modelTitle" format="string" />
         <attr name="modelDescription" format="string" />
         <attr name="modelSize" format="integer" />
+        <attr name="infoIconEnabled" format="boolean" />
         <attr name="state" format="enum">
             <enum name="empty" value="0" />
             <enum name="paused" value="1" />

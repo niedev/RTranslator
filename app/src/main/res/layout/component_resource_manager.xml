@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- todo: convert text -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -135,9 +136,11 @@
 
     <ImageView
         android:id="@+id/errorIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="2dp"
+        android:padding="11dp"
         app:layout_constraintBottom_toBottomOf="@+id/titleResource"
         app:layout_constraintEnd_toStartOf="@+id/textDownload"
         app:layout_constraintHorizontal_bias="1.0"
@@ -147,5 +150,22 @@
         android:tint="?attr/colorError"
         android:visibility="invisible"
         android:contentDescription="@string/description_download_error"/>
+
+    <ImageView
+        android:id="@+id/infoIcon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="2dp"
+        android:padding="11dp"
+        android:src="@drawable/info_icon"
+        android:tint="?attr/colorTextLevel3"
+        android:contentDescription="info"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/titleResource"
+        app:layout_constraintEnd_toStartOf="@+id/textDownload"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/titleResource"
+        app:layout_constraintTop_toTopOf="@+id/titleResource" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
