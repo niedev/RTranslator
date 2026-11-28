@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.tools.DownloaderTools;
 import nie.translator.rtranslator.voice_translation.neural_networks.NeuralNetworkApi;
 
@@ -36,7 +37,7 @@ public class Downloader {
     public static final int GENERAL_ERROR = 1;
     public static final int UNZIP_FAILED = 2;
     public static final int INTEGRITY_CHECK_FAILED = 3;
-    private Context context;
+    private Global global;
     private final DownloadGroupInfo downloadGroupInfo;
     private ClientCallback callback;
     private int lastDownloadSuccessIndex = -1;
@@ -48,11 +49,11 @@ public class Downloader {
     @Nullable
     private Thread testIntegrityThread = null;
 
-    public Downloader(DownloadGroupInfo downloadGroupInfo, Context context, int id, ClientCallback callback) {
+    public Downloader(DownloadGroupInfo downloadGroupInfo, Global global, int id, ClientCallback callback) {
         this.downloadGroupInfo = downloadGroupInfo;
         this.mainHandler = new android.os.Handler(Looper.getMainLooper());
         //this.downloadGroupInfo.setRunningDownloadIndex(-1);
-        this.context = context;
+        this.global = global;
         this.id = id;
         this.callback = callback;
     }
@@ -310,7 +311,7 @@ public class Downloader {
                 testIntegrityThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        NeuralNetworkApi.testModelIntegrity(finishedDownload.getDestinationCompletePath(), listener);
+                        NeuralNetworkApi.testModelIntegrity(global, finishedDownload.getDestinationCompletePath(), listener);
                     }
                 });
                 testIntegrityThread.start();
@@ -324,7 +325,7 @@ public class Downloader {
                         } else {
                             folderPath = finishedDownload.getDestinationPath();
                         }
-                        NeuralNetworkApi.testFolderIntegrity(folderPath, listener);
+                        NeuralNetworkApi.testFolderIntegrity(global, folderPath, listener);
                     }
                 });
                 testIntegrityThread.start();

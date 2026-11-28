@@ -19,6 +19,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 
+import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.R;
 import nie.translator.rtranslator.tools.DownloaderTools;
 
@@ -151,7 +152,7 @@ public class DownloaderService extends Service {
                             }else{
                                 // in this case the download is paused so we add it to the downloaders but without starting it (plus we create its notification)
                                 int index;
-                                Downloader downloader = new Downloader(groupInfo, this, nextNotificationId++, downloaderCallback);
+                                Downloader downloader = new Downloader(groupInfo, (Global) getApplication(), nextNotificationId++, downloaderCallback);
                                 downloaders.add(downloader);
                                 int runningDownloadIndex = downloader.findFirstIncompletedDownload();
                                 if(runningDownloadIndex < downloader.getDownloadGroupInfo().downloadsInfo.length) {
@@ -201,7 +202,7 @@ public class DownloaderService extends Service {
     public void startDownload(DownloadGroupInfo download) {
         int index = downloaders.indexOf(download);
         if(index == -1) {
-            final Downloader newDownloader = new Downloader(download, this, nextNotificationId++, downloaderCallback);
+            final Downloader newDownloader = new Downloader(download, (Global) getApplication(), nextNotificationId++, downloaderCallback);
             downloaders.add(newDownloader);
             index = downloaders.size()-1;
             addDownloadGroupInfoPreference(download);

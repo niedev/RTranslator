@@ -1469,7 +1469,7 @@ public class Global extends Application implements DefaultLifecycleObserver {
         ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
         actManager.getMemoryInfo(memInfo);
         long availableMemory = memInfo.availMem;
-        android.util.Log.i("memory", "Total memory: " + availableMemory);
+        android.util.Log.i("memory", "Available memory in MB: " + availableMemory / 1000000);
         return (int) (availableMemory / 1000000);
     }
 

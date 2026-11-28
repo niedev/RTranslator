@@ -16,6 +16,8 @@
 
 package nie.translator.rtranslator.voice_translation.neural_networks;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import org.apache.commons.io.FileUtils;
@@ -32,6 +34,7 @@ import nie.translator.rtranslator.Global;
 import nie.translator.rtranslator.tools.ErrorCodes;
 
 public class NeuralNetworkApi {
+    private static int MAX_MODEL_RAM_CONSUMPTION_MB = 2000;
     protected Global global;
     private ArrayList<Thread> pendingThreads= new ArrayList<>();
     public static boolean isVerifying = false;
@@ -48,7 +51,7 @@ public class NeuralNetworkApi {
         }
     }
 
-    public static void testModelIntegrity(@NonNull String testModelPath, InitListener initListener){
+    public static void testModelIntegrity(Global global, @NonNull String testModelPath, InitListener initListener){
         //we try to load the model in testModelPath, if we don't have an exception the model file is perfect, else we have an integrity problem
         try {
             isVerifying = true;
@@ -63,7 +66,8 @@ public class NeuralNetworkApi {
                         if (!testModelPath.contains("detokenizer.onnx")) {   //for Whisper_detokenizer.onnx we test with OnnxRuntime optimization because we do it that way in the Recognizer
                             testOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
                         }
-                        try (OrtSession testSession = onnxEnv.createSession(testModelPath, testOptions)) {
+                        if(global.getAvailableRamSize() > MAX_MODEL_RAM_CONSUMPTION_MB + global.getRamThreshold()) {  // if the available RAM is too little we skip the testing
+                            try (OrtSession testSession = onnxEnv.createSession(testModelPath, testOptions)) {}
                         }
                     }
                 }
@@ -80,7 +84,7 @@ public class NeuralNetworkApi {
         }
     }
 
-    public static void testFolderIntegrity(@NonNull String testFolderPath, InitListener initListener){
+    public static void testFolderIntegrity(Global global, @NonNull String testFolderPath, InitListener initListener){
         //we try to load the model in testModelPath, if we don't have an exception the model file is perfect, else we have an integrity problem
         try {
             isVerifying = true;
@@ -99,7 +103,9 @@ public class NeuralNetworkApi {
                         }else{
                             testOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT);
                         }
-                        try (OrtSession testSession = onnxEnv.createSession(modelFile.getPath(), testOptions)) {}
+                        if(global.getAvailableRamSize() > MAX_MODEL_RAM_CONSUMPTION_MB + global.getRamThreshold()) {  // if the available RAM is too little we skip the testing
+                            try (OrtSession testSession = onnxEnv.createSession(modelFile.getPath(), testOptions)) {}
+                        }
                     }
                 }
             }
